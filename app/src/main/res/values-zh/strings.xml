@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">笔记</string>
+    <string name="title">标题</string>
+    <string name="date">日期</string>
+    <string name="ascending">升序</string>
+    <string name="descending">降序</string>
+    <string name="search">搜索</string>
+    <string name="all_notes">全部笔记</string>
+    <string name="trash">回收站</string>
+    <string name="folders">文件夹</string>
+    <string name="manage_folders">管理文件夹</string>
+    <string name="settings">设置</string>
+    <string name="style">样式</string>
+    <string name="theme">主题</string>
+    <string name="color">色彩</string>
+    <string name="language">语言</string>
+    <string name="Safety">安全</string>
+    <string name="password">密码保护</string>
+    <string name="encryption">加密保存</string>
+    <string name="other">其它</string>
+    <string name="privacy_policy">隐私权政策</string>
+    <string name="rate_this_app">评价应用</string>
+    <string name="share_this_app">分享应用</string>
+    <string name="system_default">跟随系统</string>
+    <string name="light">浅色</string>
+    <string name="dark">深色</string>
+    <string name="dynamic_only_android_12">动态（仅 Android 12+）</string>
+    <string name="purple">紫色</string>
+    <string name="blue">蓝色</string>
+    <string name="green">绿色</string>
+    <string name="edited">最后编辑时间：</string>
+    <string name="search_history">搜索历史</string>
+    <string name="sort_by">排序方式</string>
+    <string name="content">正文</string>
+    <string name="delete">删除</string>
+    <string name="login">登录</string>
+    <string name="biometric_login">生物信息认证</string>
+    <string name="log_in_using_your_biometric_credential">使用您的生物信息凭据登录应用</string>
+    <string name="data">数据</string>
+    <string name="delete_all_notes">删除所有笔记</string>
+    <string name="please_relaunch_the_app">请重启应用</string>
+</resources>

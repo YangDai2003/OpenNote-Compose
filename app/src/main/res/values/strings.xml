@@ -1,0 +1,44 @@
+<resources>
+    <string name="app_name">Open Note</string>
+    <string name="title">Title</string>
+    <string name="date">Date</string>
+    <string name="ascending">Ascending</string>
+    <string name="descending">Descending</string>
+    <string name="search">Search</string>
+    <string name="all_notes">All notes</string>
+    <string name="trash">Trash</string>
+    <string name="folders">Folders</string>
+    <string name="manage_folders">Manage folders</string>
+    <string name="settings">Settings</string>
+    <string name="style">STYLE</string>
+    <string name="theme">Theme</string>
+    <string name="color">Color</string>
+    <string name="language">Language</string>
+    <string name="Safety">SAFETY</string>
+    <string name="password">Password</string>
+    <string name="encryption">Encryption</string>
+    <string name="other">OTHER</string>
+    <string name="privacy_policy">Privacy Policy</string>
+    <string name="rate_this_app">Rate this app</string>
+    <string name="share_this_app">Share this app</string>
+    <string name="system_default">System Default</string>
+    <string name="light">Light</string>
+    <string name="dark">Dark</string>
+    <string name="dynamic_only_android_12">Dynamic (Only Android 12+)</string>
+    <string name="purple">Purple</string>
+    <string name="blue">Blue</string>
+    <string name="green">Green</string>
+    <string name="edited">"Edited: "</string>
+    <string name="search_history">Search History</string>
+    <string name="sort_by">Sort by</string>
+    <string name="content">Content</string>
+    <string name="delete">Delete</string>
+    <string name="login">Login</string>
+    <string name="biometric_login">Biometric login</string>
+    <string name="log_in_using_your_biometric_credential">Log in using your biometric credential</string>
+    <string name="data">Data</string>
+    <string name="delete_all_notes">Delete all notes</string>
+    <string name="please_relaunch_the_app">Please relaunch the app</string>
+    <string name="shareContent" translatable="false" />
+    <string name="remind">Remind</string>
+</resources>
