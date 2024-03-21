@@ -13,7 +13,11 @@ class NoteRepositoryImpl(
         return dao.getAllNotes()
     }
 
-    override fun getNotesByFolderId(folderId: Long): Flow<List<NoteEntity>> {
+    override fun getAllDeletedNotes(): Flow<List<NoteEntity>> {
+        return dao.getAllDeletedNotes()
+    }
+
+    override fun getNotesByFolderId(folderId: Long?): Flow<List<NoteEntity>> {
         return dao.getNotesByFolderId(folderId)
     }
 
@@ -25,8 +29,12 @@ class NoteRepositoryImpl(
         dao.insertNote(note)
     }
 
-    override suspend fun deleteNote(id: Long) {
-        dao.deleteNote(id)
+    override suspend fun deleteNoteById(id: Long) {
+        dao.deleteNoteById(id)
+    }
+
+    override suspend fun deleteNotesByFolderId(folderId: Long?) {
+        dao.deleteNotesByFolderId(folderId)
     }
 
     override suspend fun updateNote(note: NoteEntity) {

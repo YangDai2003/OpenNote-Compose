@@ -3,14 +3,22 @@ package com.yangdai.opennote.data.di
 import android.content.Context
 import androidx.room.Room
 import com.yangdai.opennote.data.local.Database
+import com.yangdai.opennote.data.repository.FolderRepositoryImpl
 import com.yangdai.opennote.data.repository.NoteRepositoryImpl
+import com.yangdai.opennote.domain.operations.AddFolder
 import com.yangdai.opennote.domain.repository.NoteRepository
-import com.yangdai.opennote.domain.use_case.AddNote
-import com.yangdai.opennote.domain.use_case.DeleteNote
-import com.yangdai.opennote.domain.use_case.GetNote
-import com.yangdai.opennote.domain.use_case.GetAllNotes
-import com.yangdai.opennote.domain.use_case.NoteUseCases
-import com.yangdai.opennote.domain.use_case.SearchNotes
+import com.yangdai.opennote.domain.operations.AddNote
+import com.yangdai.opennote.domain.operations.DeleteFolder
+import com.yangdai.opennote.domain.operations.DeleteNoteById
+import com.yangdai.opennote.domain.operations.DeleteNotesByFolderId
+import com.yangdai.opennote.domain.operations.FindNote
+import com.yangdai.opennote.domain.operations.GetFolders
+import com.yangdai.opennote.domain.operations.GetNotes
+import com.yangdai.opennote.domain.operations.Operations
+import com.yangdai.opennote.domain.operations.SearchNotes
+import com.yangdai.opennote.domain.operations.UpdateFolder
+import com.yangdai.opennote.domain.operations.UpdateNote
+import com.yangdai.opennote.domain.repository.FolderRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -38,13 +46,27 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideNoteUseCases(repository: NoteRepository): NoteUseCases {
-        return NoteUseCases(
-            getAllNotes = GetAllNotes(repository),
-            deleteNote = DeleteNote(repository),
-            addNote = AddNote(repository),
-            getNote = GetNote(repository),
-            searchNotes = SearchNotes(repository)
+    fun provideFolderRepository(database: Database): FolderRepository =
+        FolderRepositoryImpl(dao = database.folderDao)
+
+    @Provides
+    @Singleton
+    fun provideNoteUseCases(
+        noteRepository: NoteRepository,
+        folderRepository: FolderRepository
+    ): Operations {
+        return Operations(
+            getNotes = GetNotes(noteRepository),
+            deleteNoteById = DeleteNoteById(noteRepository),
+            addNote = AddNote(noteRepository),
+            findNote = FindNote(noteRepository),
+            searchNotes = SearchNotes(noteRepository),
+            updateNote = UpdateNote(noteRepository),
+            deleteNotesByFolderId = DeleteNotesByFolderId(noteRepository),
+            addFolder = AddFolder(folderRepository),
+            updateFolder = UpdateFolder(folderRepository),
+            deleteFolder = DeleteFolder(folderRepository),
+            getFolders = GetFolders(folderRepository)
         )
     }
 }

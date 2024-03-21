@@ -8,8 +8,8 @@ import com.yangdai.opennote.ui.theme.*
 @Entity
 data class FolderEntity(
     @PrimaryKey val id: Long? = null,
-    @ColumnInfo(name = "name") val name: String,
-    @ColumnInfo(name = "color") val color: String
+    @ColumnInfo(name = "name") val name: String = "",
+    @ColumnInfo(name = "color") val color: Int? = null
 ) {
     companion object {
         val folderColors = listOf(

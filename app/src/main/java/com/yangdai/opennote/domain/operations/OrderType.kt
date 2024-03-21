@@ -1,4 +1,4 @@
-package com.yangdai.opennote.domain.use_case
+package com.yangdai.opennote.domain.operations
 
 sealed class OrderType {
     data object Ascending: OrderType()

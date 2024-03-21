@@ -11,16 +11,17 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.MenuBook
+import androidx.compose.material.icons.automirrored.outlined.MenuBook
 import androidx.compose.material.icons.filled.Alarm
 import androidx.compose.material.icons.filled.CalendarMonth
-import androidx.compose.material.icons.filled.DeleteForever
+import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material.icons.filled.EditNote
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.DropdownMenu
@@ -30,13 +31,16 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -44,11 +48,14 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.yangdai.opennote.R
 import com.yangdai.opennote.note.NoteEvent
 import com.yangdai.opennote.note.NoteState
 import com.yangdai.opennote.timestampToFormatLocalDateTime
+import com.yangdai.opennote.ui.components.FolderListSheet
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -58,10 +65,12 @@ fun NoteScreen(
 ) {
     val context = LocalContext.current
 
+    // 阅读和编辑模式切换
     var isReadMode by remember {
         mutableStateOf(false)
     }
 
+    // 控制顶栏菜单显示状态
     var showMenu by remember {
         mutableStateOf(false)
     }
@@ -70,31 +79,55 @@ fun NoteScreen(
         onEvent(NoteEvent.NavigateBack)
     }
 
+    // 记录所属文件夹名
+    var folderName by remember {
+        mutableStateOf("")
+    }
+
+    folderName = if (state.folderId == null) {
+        stringResource(id = R.string.all_notes)
+    } else {
+        val matchingFolder = state.folders.find { it.id == state.folderId }
+        matchingFolder?.name ?: ""
+    }
+
+    val sheetState = rememberModalBottomSheetState()
+    val scope = rememberCoroutineScope()
+    var showBottomSheet by remember { mutableStateOf(false) }
+
     Scaffold(
         topBar = {
             TopAppBar(
-                title = {},
+                title = {
+                    OutlinedButton(
+                        modifier = Modifier.sizeIn(maxWidth = 160.dp),
+                        onClick = {
+                            showBottomSheet = true
+                        }) {
+                        Text(text = folderName, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    }
+                },
                 navigationIcon = {
                     IconButton(onClick = { onEvent(NoteEvent.NavigateBack) }) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = ""
+                            contentDescription = "Back"
                         )
                     }
                 },
                 actions = {
                     IconButton(onClick = { isReadMode = !isReadMode }) {
                         Icon(
-                            imageVector = if (!isReadMode) Icons.AutoMirrored.Filled.MenuBook
+                            imageVector = if (!isReadMode) Icons.AutoMirrored.Outlined.MenuBook
                             else Icons.Default.EditNote,
-                            contentDescription = ""
+                            contentDescription = "Mode"
                         )
                     }
 
                     IconButton(onClick = { showMenu = !showMenu }) {
                         Icon(
                             imageVector = Icons.Default.MoreVert,
-                            contentDescription = ""
+                            contentDescription = "More"
                         )
                     }
 
@@ -103,7 +136,7 @@ fun NoteScreen(
                             leadingIcon = {
                                 Icon(
                                     imageVector = Icons.Default.Alarm,
-                                    contentDescription = ""
+                                    contentDescription = "Remind"
                                 )
                             },
                             text = { Text(text = stringResource(id = R.string.remind)) },
@@ -118,8 +151,8 @@ fun NoteScreen(
                         DropdownMenuItem(
                             leadingIcon = {
                                 Icon(
-                                    imageVector = Icons.Default.DeleteForever,
-                                    contentDescription = ""
+                                    imageVector = Icons.Default.DeleteOutline,
+                                    contentDescription = "Delete"
                                 )
                             },
                             text = { Text(text = stringResource(id = R.string.delete)) },
@@ -178,7 +211,7 @@ fun NoteScreen(
                 Icon(
                     modifier = Modifier.size(16.dp),
                     imageVector = Icons.Default.CalendarMonth,
-                    contentDescription = "",
+                    contentDescription = "Date",
                     tint = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
@@ -204,6 +237,23 @@ fun NoteScreen(
                     }
                 }
             )
+
+            if (showBottomSheet) {
+                FolderListSheet(
+                    oFolderId = state.folderId,
+                    folders = state.folders,
+                    sheetState = sheetState,
+                    onDismissRequest = { showBottomSheet = false },
+                    onCloseClick = {
+                        scope.launch { sheetState.hide() }.invokeOnCompletion {
+                            if (!sheetState.isVisible) {
+                                showBottomSheet = false
+                            }
+                        }
+                    }) {
+                    onEvent(NoteEvent.FolderChanged(it))
+                }
+            }
         }
     }
 }

@@ -12,6 +12,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -27,8 +28,10 @@ import androidx.compose.material.icons.outlined.CleaningServices
 import androidx.compose.material.icons.outlined.DarkMode
 import androidx.compose.material.icons.outlined.IosShare
 import androidx.compose.material.icons.outlined.Language
+import androidx.compose.material.icons.outlined.Numbers
 import androidx.compose.material.icons.outlined.Palette
 import androidx.compose.material.icons.outlined.Password
+import androidx.compose.material.icons.outlined.PermDeviceInformation
 import androidx.compose.material.icons.outlined.PrivacyTip
 import androidx.compose.material.icons.outlined.StarRate
 import androidx.compose.material3.ButtonDefaults
@@ -55,6 +58,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
@@ -108,6 +112,8 @@ fun SettingsScreen(
         mutableStateOf(initPasswordSelect)
     }
 
+    var appInfoExpended by remember { mutableStateOf(false) }
+
     Scaffold(
         modifier = Modifier
             .nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -117,7 +123,7 @@ fun SettingsScreen(
                     IconButton(onClick = onNavigateToMain) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = ""
+                            contentDescription = "Back"
                         )
                     }
                 },
@@ -135,7 +141,7 @@ fun SettingsScreen(
     ) { innerPadding ->
         Column(
             modifier = Modifier
-                .fillMaxWidth()
+                .fillMaxSize()
                 .padding(innerPadding)
                 .verticalScroll(rememberScrollState())
         ) {
@@ -160,14 +166,14 @@ fun SettingsScreen(
                 leadingContent = {
                     Icon(
                         imageVector = Icons.Outlined.DarkMode,
-                        contentDescription = ""
+                        contentDescription = "Theme"
                     )
                 },
                 headlineContent = { Text(text = stringResource(R.string.theme)) },
                 trailingContent = {
                     Icon(
                         imageVector = if (!modeExpended) Icons.AutoMirrored.Filled.ArrowRight else Icons.Default.ArrowDropDown,
-                        contentDescription = ""
+                        contentDescription = "Arrow"
                     )
                 })
 
@@ -214,14 +220,14 @@ fun SettingsScreen(
                 leadingContent = {
                     Icon(
                         imageVector = Icons.Outlined.Palette,
-                        contentDescription = ""
+                        contentDescription = "Color"
                     )
                 },
                 headlineContent = { Text(text = stringResource(R.string.color)) },
                 trailingContent = {
                     Icon(
                         imageVector = if (!colorExpended) Icons.AutoMirrored.Filled.ArrowRight else Icons.Default.ArrowDropDown,
-                        contentDescription = ""
+                        contentDescription = "Arrow"
                     )
                 })
 
@@ -261,38 +267,47 @@ fun SettingsScreen(
                 }
             }
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                ListItem(modifier = Modifier.clickable {
+                ListItem(
+                    modifier = Modifier.clickable {
 
-                    try {
-                        val intent = Intent(Settings.ACTION_APP_LOCALE_SETTINGS)
-                        intent.setData(
-                            Uri.fromParts(
-                                "package",
-                                context.packageName,
-                                null
-                            )
-                        )
-                        context.startActivity(intent)
-                    } catch (e: Exception) {
                         try {
-                            val intent =
-                                Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+                            val intent = Intent(Settings.ACTION_APP_LOCALE_SETTINGS)
                             intent.setData(
                                 Uri.fromParts(
-                                    "package", context.packageName, null
+                                    "package",
+                                    context.packageName,
+                                    null
                                 )
                             )
                             context.startActivity(intent)
-                        } catch (ignored: Exception) {
+                        } catch (e: Exception) {
+                            try {
+                                val intent =
+                                    Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+                                intent.setData(
+                                    Uri.fromParts(
+                                        "package", context.packageName, null
+                                    )
+                                )
+                                context.startActivity(intent)
+                            } catch (ignored: Exception) {
+                            }
                         }
-                    }
 
-                }, leadingContent = {
-                    Icon(
-                        imageVector = Icons.Outlined.Language,
-                        contentDescription = ""
-                    )
-                }, headlineContent = { Text(text = stringResource(R.string.language)) })
+                    },
+                    leadingContent = {
+                        Icon(
+                            imageVector = Icons.Outlined.Language,
+                            contentDescription = "Language"
+                        )
+                    },
+                    headlineContent = { Text(text = stringResource(R.string.language)) },
+                    trailingContent = {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowRight,
+                            contentDescription = "Arrow"
+                        )
+                    })
             }
 
             Row(
@@ -311,7 +326,7 @@ fun SettingsScreen(
                 leadingContent = {
                     Icon(
                         imageVector = Icons.Outlined.Password,
-                        contentDescription = ""
+                        contentDescription = "Password"
                     )
                 },
                 headlineContent = { Text(text = stringResource(R.string.password)) },
@@ -331,7 +346,7 @@ fun SettingsScreen(
                 leadingContent = {
                     Icon(
                         imageVector = Icons.Outlined.CleaningServices,
-                        contentDescription = ""
+                        contentDescription = "Clear"
                     )
                 },
                 headlineContent = { Text(text = stringResource(R.string.delete_all_notes)) },
@@ -363,13 +378,13 @@ fun SettingsScreen(
             ListItem(leadingContent = {
                 Icon(
                     imageVector = Icons.Outlined.PrivacyTip,
-                    contentDescription = ""
+                    contentDescription = "Privacy Policy"
                 )
             }, headlineContent = { Text(text = stringResource(R.string.privacy_policy)) })
             ListItem(leadingContent = {
                 Icon(
                     imageVector = Icons.Outlined.StarRate,
-                    contentDescription = ""
+                    contentDescription = "Rate"
                 )
             }, headlineContent = { Text(text = stringResource(R.string.rate_this_app)) })
             ListItem(
@@ -382,9 +397,73 @@ fun SettingsScreen(
                 leadingContent = {
                     Icon(
                         imageVector = Icons.Outlined.IosShare,
-                        contentDescription = ""
+                        contentDescription = "Share"
                     )
                 }, headlineContent = { Text(text = stringResource(R.string.share_this_app)) })
+
+            ListItem(
+                modifier = Modifier.clickable {
+                    appInfoExpended = !appInfoExpended
+                },
+                leadingContent = {
+                    Icon(
+                        imageVector = Icons.Outlined.PermDeviceInformation,
+                        contentDescription = "App Info"
+                    )
+                },
+                headlineContent = { Text(text = stringResource(R.string.app_info)) },
+                trailingContent = {
+                    Icon(
+                        imageVector = if (!appInfoExpended) Icons.AutoMirrored.Filled.ArrowRight else Icons.Default.ArrowDropDown,
+                        contentDescription = "Arrow"
+                    )
+                })
+
+            AnimatedVisibility(visible = appInfoExpended) {
+
+                Column(Modifier.padding(horizontal = 16.dp)) {
+                    ListItem(
+                        leadingContent = {
+                            Icon(
+                                imageVector = Icons.Outlined.Numbers,
+                                contentDescription = "Version"
+                            )
+                        },
+                        headlineContent = {
+                            Text(text = stringResource(R.string.version))
+                        },
+                        trailingContent = {
+                            val packageInfo =
+                                context.packageManager.getPackageInfo(context.packageName, 0)
+                            val version = packageInfo.versionName
+                            Text(text = version)
+                        }
+                    )
+                    ListItem(
+                        modifier = Modifier.clickable {
+                            val intent = Intent(Intent.ACTION_VIEW)
+                            intent.data =
+                                Uri.parse("https://github.com/YangDai2003/OpenNote-Compose")
+                            context.startActivity(intent)
+                        },
+                        leadingContent = {
+                            Icon(
+                                painter = painterResource(id = R.drawable.github),
+                                contentDescription = "GitHub"
+                            )
+                        },
+                        headlineContent = {
+                            Text(text = stringResource(R.string.github))
+                        },
+                        trailingContent = {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowRight,
+                                contentDescription = "Arrow"
+                            )
+                        }
+                    )
+                }
+            }
         }
     }
 }

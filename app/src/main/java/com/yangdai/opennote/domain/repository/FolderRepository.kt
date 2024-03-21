@@ -7,8 +7,6 @@ interface FolderRepository {
 
     fun getAllFolders(): Flow<List<FolderEntity>>
 
-    suspend fun getFolderById(id: Long): FolderEntity?
-
     suspend fun insertFolder(folder: FolderEntity)
 
     suspend fun deleteFolder(id: Long)

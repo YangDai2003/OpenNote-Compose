@@ -6,8 +6,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.yangdai.opennote.R
-import com.yangdai.opennote.domain.use_case.NoteOrder
-import com.yangdai.opennote.domain.use_case.OrderType
+import com.yangdai.opennote.domain.operations.NoteOrder
+import com.yangdai.opennote.domain.operations.OrderType
 
 @Composable
 fun OrderSection(

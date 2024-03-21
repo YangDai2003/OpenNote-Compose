@@ -14,9 +14,7 @@
     <string name="theme">Theme</string>
     <string name="color">Color</string>
     <string name="language">Language</string>
-    <string name="Safety">SAFETY</string>
     <string name="password">Password</string>
-    <string name="encryption">Encryption</string>
     <string name="other">OTHER</string>
     <string name="privacy_policy">Privacy Policy</string>
     <string name="rate_this_app">Rate this app</string>
@@ -41,4 +39,15 @@
     <string name="please_relaunch_the_app">Please relaunch the app</string>
     <string name="shareContent" translatable="false" />
     <string name="remind">Remind</string>
+    <string name="restore_all">All restore</string>
+    <string name="delete_all">All delete</string>
+    <string name="move">Move</string>
+    <string name="checked">"Selected: "</string>
+    <string name="modify">Folder</string>
+    <string name="warning">Warning</string>
+    <string name="deleting_a_folder_will_also_delete_all_the_notes_it_contains_and_they_cannot_be_restored_do_you_want_to_continue">Deleting a folder will also delete all the notes it contains and they cannot be restored. Do you want to continue?</string>
+    <string name="restore">Restore</string>
+    <string name="app_info">Info</string>
+    <string name="version">Version</string>
+    <string name="github" translatable="false">Github</string>
 </resources>

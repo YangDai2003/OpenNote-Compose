@@ -13,10 +13,6 @@ class FolderRepositoryImpl(
         return dao.getAllFolders()
     }
 
-    override suspend fun getFolderById(id: Long): FolderEntity? {
-        return dao.getFolderById(id)
-    }
-
     override suspend fun insertFolder(folder: FolderEntity) {
         dao.insertFolder(folder)
     }

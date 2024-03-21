@@ -2,15 +2,18 @@ package com.yangdai.opennote.ui.components
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.basicMarquee
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.sizeIn
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -18,29 +21,48 @@ import com.yangdai.opennote.data.local.entity.NoteEntity
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun NoteCard(note: NoteEntity, onNoteClick: (NoteEntity) -> Unit) =
+fun NoteCard(
+    note: NoteEntity,
+    isEnabled: Boolean,
+    isSelected: Boolean,
+    onNoteClick: (NoteEntity) -> Unit,
+    onEnableChange: (Boolean) -> Unit
+) =
     ElevatedCard(modifier = Modifier
         .sizeIn(minHeight = 80.dp, maxHeight = 320.dp)
-        .clickable {
-            onNoteClick(note)
-        }) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp)
-        ) {
-            Text(
+        .combinedClickable(
+            onLongClick = {
+                onEnableChange(true)
+            },
+            onClick = { onNoteClick(note) }
+        )
+    ) {
+        Box(modifier = Modifier.fillMaxWidth()) {
+            if (isEnabled)
+                Checkbox(
+                    checked = isSelected, onCheckedChange = null, modifier = Modifier
+                        .padding(10.dp)
+                        .align(Alignment.TopEnd)
+                )
+            Column(
                 modifier = Modifier
-                    .basicMarquee()
-                    .padding(bottom = 8.dp),
-                text = note.title,
-                style = MaterialTheme.typography.titleMedium,
-                maxLines = 1
-            )
-            Text(
-                text = note.content,
-                style = MaterialTheme.typography.bodyMedium,
-                overflow = TextOverflow.Ellipsis
-            )
+                    .fillMaxWidth()
+                    .padding(8.dp)
+            ) {
+                Text(
+                    modifier = Modifier
+                        .basicMarquee()
+                        .padding(bottom = 8.dp),
+                    text = note.title,
+                    style = MaterialTheme.typography.titleMedium,
+                    maxLines = 1
+                )
+                Text(
+                    text = note.content,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
         }
     }

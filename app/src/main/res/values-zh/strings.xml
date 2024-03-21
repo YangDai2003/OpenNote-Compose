@@ -15,9 +15,7 @@
     <string name="theme">主题</string>
     <string name="color">色彩</string>
     <string name="language">语言</string>
-    <string name="Safety">安全</string>
     <string name="password">密码保护</string>
-    <string name="encryption">加密保存</string>
     <string name="other">其它</string>
     <string name="privacy_policy">隐私权政策</string>
     <string name="rate_this_app">评价应用</string>
@@ -40,4 +38,15 @@
     <string name="data">数据</string>
     <string name="delete_all_notes">删除所有笔记</string>
     <string name="please_relaunch_the_app">请重启应用</string>
+    <string name="remind">提醒</string>
+    <string name="restore_all">全部恢复</string>
+    <string name="delete_all">全部删除</string>
+    <string name="move">移动</string>
+    <string name="checked">已勾选：</string>
+    <string name="modify">文件夹</string>
+    <string name="warning">警告</string>
+    <string name="deleting_a_folder_will_also_delete_all_the_notes_it_contains_and_they_cannot_be_restored_do_you_want_to_continue">删除文件夹将同时删除其包含的所有笔记，且不可恢复，是否继续操作?</string>
+    <string name="restore">恢复</string>
+    <string name="app_info">信息</string>
+    <string name="version">版本号</string>
 </resources>

@@ -6,10 +6,11 @@ import android.os.Bundle
 
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_STRONG
+import androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_WEAK
+import androidx.biometric.BiometricManager.Authenticators.DEVICE_CREDENTIAL
 import androidx.biometric.BiometricPrompt
 import androidx.compose.animation.AnimatedContentTransitionScope
-import androidx.compose.animation.EnterTransition
-import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -30,6 +31,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
@@ -40,17 +42,24 @@ import androidx.fragment.app.FragmentActivity
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavBackStackEntry
+import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import androidx.preference.PreferenceManager
+import com.yangdai.opennote.home.MainViewModel
 import com.yangdai.opennote.note.NoteViewModel
 import com.yangdai.opennote.note.UiEvent
+import com.yangdai.opennote.ui.screens.FolderScreen
 import com.yangdai.opennote.ui.screens.MainScreen
 import com.yangdai.opennote.ui.screens.NoteScreen
 import com.yangdai.opennote.ui.screens.SettingsScreen
 import com.yangdai.opennote.ui.theme.OpenNoteTheme
+import com.yangdai.opennote.ui.theme.*
 import dagger.hilt.android.AndroidEntryPoint
 import java.util.concurrent.Executor
 
@@ -86,7 +95,7 @@ class MainActivity : FragmentActivity() {
             promptInfo = BiometricPrompt.PromptInfo.Builder()
                 .setTitle(stringResource(R.string.biometric_login))
                 .setSubtitle(stringResource(R.string.log_in_using_your_biometric_credential))
-                .setNegativeButtonText(stringResource(id = android.R.string.cancel))
+                .setAllowedAuthenticators(BIOMETRIC_STRONG or BIOMETRIC_WEAK or DEVICE_CREDENTIAL)
                 .build()
 
             val context = LocalContext.current
@@ -108,11 +117,11 @@ class MainActivity : FragmentActivity() {
 
             val needLogin = defaultSharedPreferences.getBoolean("APP_PASSWORD", false)
 
-            var logined by remember {
+            var loggedIn by remember {
                 mutableStateOf(false)
             }
 
-            if (!needLogin || authenticationSucceeded) logined = true
+            if (!needLogin || authenticationSucceeded) loggedIn = true
 
             val lifecycleOwner = LocalLifecycleOwner.current
 
@@ -121,7 +130,7 @@ class MainActivity : FragmentActivity() {
                 val observer = LifecycleEventObserver { _, event ->
                     if (event == Lifecycle.Event.ON_STOP) {
                         if (needLogin) {
-                            logined = false
+                            loggedIn = false
                             authenticationSucceeded = false
                         }
                     }
@@ -142,16 +151,18 @@ class MainActivity : FragmentActivity() {
 
                 val navController = rememberNavController()
 
-                val time = 300
+                val time = 350
 
                 val modifier: Modifier = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                     Modifier
+                        .fillMaxSize()
                         .blur(16.dp)
                         .pointerInput(Unit) {
 
                         }
                 } else {
                     Modifier
+                        .fillMaxSize()
                         .background(color = MaterialTheme.colorScheme.surface)
                         .pointerInput(Unit) {
 
@@ -159,16 +170,26 @@ class MainActivity : FragmentActivity() {
                 }
 
                 NavHost(
-                    modifier = if (!logined) modifier else Modifier,
-                    navController = navController, startDestination = Route.NOTE_LIST,
+                    modifier = if (!loggedIn) modifier else Modifier,
+                    navController = navController, startDestination = Route.MAIN,
                     enterTransition = {
                         slideIntoContainer(
                             animationSpec = tween(time),
                             towards = AnimatedContentTransitionScope.SlideDirection.Left
                         )
                     },
-                    exitTransition = { ExitTransition.None },
-                    popEnterTransition = { EnterTransition.None },
+                    exitTransition = {
+                        slideOutOfContainer(
+                            animationSpec = tween(time),
+                            towards = AnimatedContentTransitionScope.SlideDirection.Left
+                        )
+                    },
+                    popEnterTransition = {
+                        slideIntoContainer(
+                            animationSpec = tween(time),
+                            towards = AnimatedContentTransitionScope.SlideDirection.Right
+                        )
+                    },
                     popExitTransition = {
                         slideOutOfContainer(
                             animationSpec = tween(time),
@@ -176,14 +197,26 @@ class MainActivity : FragmentActivity() {
                         )
                     }
                 ) {
+                    navigation(
+                        startDestination = Route.NOTE_LIST,
+                        route = Route.MAIN
+                    ) {
+                        composable(Route.NOTE_LIST) {
+                            val viewModel =
+                                it.sharedViewModel<MainViewModel>(navController = navController)
+                            MainScreen(navController, viewModel)
+                        }
 
-                    composable(Route.NOTE_LIST) {
-                        MainScreen(navController)
+                        composable(Route.FOLDERS) {
+                            val viewModel =
+                                it.sharedViewModel<MainViewModel>(navController = navController)
+                            FolderScreen(navController, viewModel)
+                        }
                     }
 
                     composable(Route.NOTE) {
                         val viewModel = hiltViewModel<NoteViewModel>()
-                        val noteState by viewModel.state.collectAsStateWithLifecycle()
+                        val noteState by viewModel.stateFlow.collectAsStateWithLifecycle()
                         LaunchedEffect(key1 = true) {
                             viewModel.event.collect { event ->
                                 when (event) {
@@ -200,9 +233,10 @@ class MainActivity : FragmentActivity() {
                             navController.navigateUp()
                         })
                     }
+
                 }
 
-                if (!logined) {
+                if (!loggedIn) {
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
@@ -214,7 +248,19 @@ class MainActivity : FragmentActivity() {
                     ) {
                         Text(
                             text = stringResource(id = R.string.app_name),
-                            style = MaterialTheme.typography.headlineMedium
+                            style = MaterialTheme.typography.headlineLarge.copy(
+                                brush = Brush.linearGradient(
+                                    colors = listOf(
+                                        Red,
+                                        Orange,
+                                        Yellow,
+                                        Green,
+                                        Cyan,
+                                        Blue,
+                                        Purple
+                                    )
+                                )
+                            )
                         )
 
                         OutlinedButton(onClick = {
@@ -227,6 +273,15 @@ class MainActivity : FragmentActivity() {
             }
         }
     }
+}
+
+@Composable
+inline fun <reified T : ViewModel> NavBackStackEntry.sharedViewModel(navController: NavController): T {
+    val navGraphRoute = destination.parent?.route ?: return hiltViewModel()
+    val parentEntry = remember(this) {
+        navController.getBackStackEntry(navGraphRoute)
+    }
+    return hiltViewModel(parentEntry)
 }
 
 @Composable

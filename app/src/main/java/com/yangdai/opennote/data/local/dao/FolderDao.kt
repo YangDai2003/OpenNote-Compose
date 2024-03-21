@@ -14,14 +14,6 @@ interface FolderDao {
     @Query("SELECT * FROM FOLDERENTITY")
     fun getAllFolders(): Flow<List<FolderEntity>>
 
-    @Query(
-        """
-        SELECT * FROM FOLDERENTITY
-        WHERE id = :id
-    """
-    )
-    suspend fun getFolderById(id: Long): FolderEntity?
-
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertFolder(folderEntity: FolderEntity)
 

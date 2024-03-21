@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "8cb8171a73166d2108d2cb6cae225186",
+    "identityHash": "80865e5cffc957624fc5f02c98d6fed5",
     "entities": [
       {
         "tableName": "NoteEntity",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER, `title` TEXT NOT NULL, `content` TEXT NOT NULL, `folder` INTEGER, `timestamp` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER, `title` TEXT NOT NULL, `content` TEXT NOT NULL, `folderId` INTEGER, `isDeleted` INTEGER NOT NULL, `timestamp` INTEGER NOT NULL, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -28,9 +28,15 @@
           },
           {
             "fieldPath": "folderId",
-            "columnName": "folder",
+            "columnName": "folderId",
             "affinity": "INTEGER",
             "notNull": false
+          },
+          {
+            "fieldPath": "isDeleted",
+            "columnName": "isDeleted",
+            "affinity": "INTEGER",
+            "notNull": true
           },
           {
             "fieldPath": "timestamp",
@@ -50,7 +56,7 @@
       },
       {
         "tableName": "FolderEntity",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER, `name` TEXT NOT NULL, `color` TEXT NOT NULL, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER, `name` TEXT NOT NULL, `color` INTEGER, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -67,8 +73,8 @@
           {
             "fieldPath": "color",
             "columnName": "color",
-            "affinity": "TEXT",
-            "notNull": true
+            "affinity": "INTEGER",
+            "notNull": false
           }
         ],
         "primaryKey": {
@@ -84,7 +90,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '8cb8171a73166d2108d2cb6cae225186')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '80865e5cffc957624fc5f02c98d6fed5')"
     ]
   }
 }
