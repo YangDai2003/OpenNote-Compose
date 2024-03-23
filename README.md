@@ -15,6 +15,8 @@ This project is still in early stages of construction and features may change, b
 - Move notes to different folders
 - Move notes to the trash
 - OCR text recognition using ML Kit and CameraX
+- Support for writing, rendering and displaying notes in Markdown format
+- Ability to export notes as HTML or TXT files
 
 ## Technical Details
 

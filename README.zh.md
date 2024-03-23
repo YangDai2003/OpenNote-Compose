@@ -15,6 +15,8 @@ OpenNote是一款完全使用Compose构建的现代Android记事本应用程序�
 - 将笔记移动到不同的文件夹
 - 将笔记移动到回收站
 - 使用ML Kit和CameraX进行OCR文本识别
+- 支持以Markdown格式编写笔记并正确渲染显示
+- 支持将笔记导出为HTML或TXT文件
 
 ## 技术细节
 
