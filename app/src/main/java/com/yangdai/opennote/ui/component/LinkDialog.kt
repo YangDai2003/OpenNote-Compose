@@ -1,6 +1,8 @@
 package com.yangdai.opennote.ui.component
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -10,7 +12,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import com.yangdai.opennote.R
 import com.yangdai.opennote.ui.state.LinkState
 
@@ -21,14 +25,14 @@ fun LinkDialog(
     onConfirm: (LinkState) -> Unit
 ) {
 
-    var title by remember {
+    var name by remember {
         mutableStateOf("")
     }
 
     var uri by remember {
         mutableStateOf("")
     }
-    var titleError by remember { mutableStateOf(false) }
+    var nameError by remember { mutableStateOf(false) }
     var uriError by remember { mutableStateOf(false) }
 
     AlertDialog(
@@ -38,15 +42,17 @@ fun LinkDialog(
         text = {
             Column {
                 OutlinedTextField(
-                    value = title,
+                    value = name,
                     onValueChange = {
-                        title = it
-                        titleError = it.isBlank()
+                        name = it
+                        nameError = it.isBlank()
                     },
                     singleLine = true,
-                    isError = titleError,
-                    placeholder = { Text(text = stringResource(R.string.title)) },
-                )
+                    isError = nameError,
+                    placeholder = { Text(text = stringResource(R.string.name)) })
+
+                Spacer(modifier = Modifier.height(8.dp))
+
                 OutlinedTextField(
                     value = uri,
                     onValueChange = {
@@ -55,7 +61,7 @@ fun LinkDialog(
                     },
                     singleLine = true,
                     isError = uriError,
-                    placeholder = { Text(text = stringResource(R.string.link)) },
+                    placeholder = { Text(text = stringResource(R.string.uri_example)) }
                 )
             }
         },
@@ -65,14 +71,14 @@ fun LinkDialog(
         confirmButton = {
             TextButton(
                 onClick = {
-                    if (title.isBlank()) {
-                        titleError = true
+                    if (name.isBlank()) {
+                        nameError = true
                     }
                     if (uri.isBlank()) {
                         uriError = true
                     }
-                    if (!titleError && !uriError) {
-                        onConfirm(LinkState(title.trim(), uri.trim()))
+                    if (!nameError && !uriError) {
+                        onConfirm(LinkState(name.trim(), uri.trim()))
                         onDismissRequest()
                     }
                 }

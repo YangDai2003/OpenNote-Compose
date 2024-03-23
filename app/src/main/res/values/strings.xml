@@ -55,5 +55,6 @@
     <string name="export_txt">Export .txt</string>
     <string name="share">Share</string>
     <string name="name">Name</string>
-    <string name="link" translatable="false">https://www.example.com</string>
+    <string name="uri_example" translatable="false">https://www.example.com</string>
+    <string name="link">Link</string>
 </resources>

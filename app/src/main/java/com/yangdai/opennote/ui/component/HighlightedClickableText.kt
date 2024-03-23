@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.style.LineBreak
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
 
@@ -53,7 +54,7 @@ fun HighlightedClickableText(text: String) {
         ClickableText(
             modifier = Modifier.verticalScroll(rememberScrollState()),
             text = annotatedString,
-            style = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface),
+            style = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface, lineBreak = LineBreak.Paragraph),
             onClick = { offset ->
                 try {
                     annotatedString.getStringAnnotations(tag = "URL", start = offset, end = offset)

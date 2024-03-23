@@ -245,7 +245,8 @@ fun SettingsScreen(
                                                 0 -> {
                                                     if (isSystemDarkTheme != isAppInDarkTheme) {
                                                         switchDarkTheme()
-
+                                                    } else {
+                                                        settingScreenViewModel.putInt(APP_THEME, 0)
                                                     }
                                                     settingScreenViewModel.putBoolean(
                                                         SHOULD_FOLLOW_SYSTEM, true

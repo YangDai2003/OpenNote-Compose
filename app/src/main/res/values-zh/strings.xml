@@ -54,4 +54,5 @@
     <string name="export_txt">导出 .txt</string>
     <string name="share">分享</string>
     <string name="name">名称</string>
+    <string name="link">链接</string>
 </resources>
