@@ -19,7 +19,7 @@ Third-party SDKs will be explained in the following table:
 
 The list of permissions required by the app can be found in the `AndroidManifest.xml` file:
 
-https://github.com/YangDai2003/OpenNote-Compose/blob/af1ad9c66ca6e5c5d21c6c4ee98153ed9eceee4a/app/src/main/AndroidManifest.xml#L5_12
+https://github.com/YangDai2003/OpenNote-Compose/blob/af1ad9c66ca6e5c5d21c6c4ee98153ed9eceee4a/app/src/main/AndroidManifest.xml#L5-L12
 <br/>
 
 
