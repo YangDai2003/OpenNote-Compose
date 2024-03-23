@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">笔记</string>
     <string name="title">标题</string>
     <string name="date">日期</string>
     <string name="ascending">升序</string>
@@ -49,4 +48,10 @@
     <string name="restore">恢复</string>
     <string name="app_info">信息</string>
     <string name="version">版本号</string>
+    <string name="failed">失败</string>
+    <string name="saved_download">文件已保存到下载目录。</string>
+    <string name="shareContent">欢迎使用\"Open Note\"，这是一款轻量化、美观且符合Material 3设计风格的应用。应用提供本地存储功能，无需网络也能随时记录你的想法。高效的搜索功能可以帮助你快速找到你的笔记，而文件夹分类功能则可以帮助你更好地组织你的笔记。此外，应用还提供文本OCR功能，可以将图片中的文字转换为可编辑的文本。我们的目标是为你提供最便捷、最高效的笔记体验。</string>
+    <string name="export_txt">导出 .txt</string>
+    <string name="share">分享</string>
+    <string name="name">名称</string>
 </resources>

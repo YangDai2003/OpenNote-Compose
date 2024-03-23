@@ -1,4 +1,4 @@
-package com.yangdai.opennote.home
+package com.yangdai.opennote.ui.state
 
 import androidx.compose.runtime.Stable
 import com.yangdai.opennote.data.local.entity.FolderEntity

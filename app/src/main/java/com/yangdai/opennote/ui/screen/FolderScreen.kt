@@ -1,4 +1,4 @@
-package com.yangdai.opennote.ui.screens
+package com.yangdai.opennote.ui.screen
 
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -6,8 +6,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -21,7 +21,7 @@ import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -30,20 +30,20 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.yangdai.opennote.R
 import com.yangdai.opennote.data.local.entity.FolderEntity
-import com.yangdai.opennote.home.FolderEvent
-import com.yangdai.opennote.home.ListEvent
-import com.yangdai.opennote.home.MainViewModel
-import com.yangdai.opennote.ui.components.FolderItem
-import com.yangdai.opennote.ui.components.ModifyDialog
+import com.yangdai.opennote.ui.event.FolderEvent
+import com.yangdai.opennote.ui.event.ListEvent
+import com.yangdai.opennote.ui.viewmodel.MainScreenViewModel
+import com.yangdai.opennote.ui.component.FolderItem
+import com.yangdai.opennote.ui.component.ModifyDialog
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FolderScreen(
     navController: NavController,
-    viewModel: MainViewModel
+    viewModel: MainScreenViewModel
 ) {
 
-    var showAddFolderDialog by remember {
+    var showAddFolderDialog by rememberSaveable {
         mutableStateOf(false)
     }
 
@@ -73,7 +73,7 @@ fun FolderScreen(
                 navigationIcon = {
                     IconButton(onClick = { navController.navigateUp() }) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
                             contentDescription = "Back"
                         )
                     }
@@ -88,7 +88,7 @@ fun FolderScreen(
                 actions = {
                     IconButton(onClick = { showAddFolderDialog = true }) {
                         Icon(
-                            imageVector = Icons.Default.Add,
+                            imageVector = Icons.Outlined.Add,
                             contentDescription = "Add"
                         )
                     }

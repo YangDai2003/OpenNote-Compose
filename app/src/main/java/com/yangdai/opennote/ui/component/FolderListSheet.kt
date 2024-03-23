@@ -1,4 +1,4 @@
-package com.yangdai.opennote.ui.components
+package com.yangdai.opennote.ui.component
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -10,7 +10,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Cancel
 import androidx.compose.material.icons.outlined.DoneOutline
-import androidx.compose.material.icons.outlined.Folder
+import androidx.compose.material.icons.outlined.FolderOpen
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -84,7 +84,7 @@ fun FolderListSheet(
                     }
                 )
 
-                Icon(imageVector = Icons.Outlined.Folder, contentDescription = "")
+                Icon(imageVector = Icons.Outlined.FolderOpen, contentDescription = "")
 
                 Text(
                     text = stringResource(id = R.string.all_notes),
@@ -109,7 +109,7 @@ fun FolderListSheet(
                     }
                 )
 
-                Icon(imageVector = Icons.Outlined.Folder, contentDescription = "Leading Icon")
+                Icon(imageVector = Icons.Outlined.FolderOpen, contentDescription = "Leading Icon")
 
                 Text(
                     text = folder.name,

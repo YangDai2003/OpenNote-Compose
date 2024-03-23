@@ -12,4 +12,16 @@
         <item name="android:navigationBarColor">@android:color/transparent</item>
     </style>
 
+    <style name="Theme.OpenNote.Starting" parent="Theme.SplashScreen">
+
+        <!-- Use windowSplashScreenAnimatedIcon to add a drawable or an animated
+             drawable. One of these is required. -->
+        <item name="windowSplashScreenAnimatedIcon">@drawable/avd_anim</item>
+        <!-- Required for animated icons. -->
+        <item name="windowSplashScreenAnimationDuration">800</item>
+
+        <!-- Set the theme of the Activity that directly follows your splash
+        screen. This is required. -->
+        <item name="postSplashScreenTheme">@style/Theme.OpenNote</item>
+    </style>
 </resources>

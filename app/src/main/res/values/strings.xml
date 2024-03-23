@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Open Note</string>
+    <string name="app_name" translatable="false">Open Note</string>
     <string name="title">Title</string>
     <string name="date">Date</string>
     <string name="ascending">Ascending</string>
@@ -37,7 +37,7 @@
     <string name="data">Data</string>
     <string name="delete_all_notes">Delete all notes</string>
     <string name="please_relaunch_the_app">Please relaunch the app</string>
-    <string name="shareContent" translatable="false" />
+    <string name="shareContent" >Welcome to \"Open Note\", a lightweight, aesthetically pleasing application that adheres to the Material 3 design style. Our app offers local storage, allowing you to jot down your thoughts anytime, anywhere, even without an internet connection. The efficient search function helps you quickly locate your notes, while the folder categorization feature aids in better organization of your notes. Additionally, it provides a text OCR feature, capable of converting text in images into editable text. The goal is to provide you with the most convenient and efficient note-taking experience.</string>
     <string name="remind">Remind</string>
     <string name="restore_all">All restore</string>
     <string name="delete_all">All delete</string>
@@ -50,4 +50,10 @@
     <string name="app_info">Info</string>
     <string name="version">Version</string>
     <string name="github" translatable="false">Github</string>
+    <string name="failed">Failed</string>
+    <string name="saved_download">File saved to download folder.</string>
+    <string name="export_txt">Export .txt</string>
+    <string name="share">Share</string>
+    <string name="name">Name</string>
+    <string name="link" translatable="false">https://www.example.com</string>
 </resources>

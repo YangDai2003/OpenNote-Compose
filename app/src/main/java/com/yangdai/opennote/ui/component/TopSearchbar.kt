@@ -1,4 +1,4 @@
-package com.yangdai.opennote.ui.components
+package com.yangdai.opennote.ui.component
 
 import android.content.res.Configuration
 import androidx.compose.animation.AnimatedVisibility
@@ -12,12 +12,12 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.MenuOpen
+import androidx.compose.material.icons.automirrored.outlined.MenuOpen
 import androidx.compose.material.icons.automirrored.outlined.Sort
-import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material.icons.filled.History
-import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.outlined.Clear
 import androidx.compose.material.icons.outlined.DeleteForever
+import androidx.compose.material.icons.outlined.History
+import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.DockedSearchBar
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -93,7 +93,7 @@ fun TopSearchbar(
                 }
             }) {
                 Icon(
-                    imageVector = Icons.AutoMirrored.Filled.MenuOpen,
+                    imageVector = Icons.AutoMirrored.Outlined.MenuOpen,
                     contentDescription = "Open Menu"
                 )
             }
@@ -103,7 +103,7 @@ fun TopSearchbar(
                 active = false
                 onSearch(inputText)
             }) {
-                Icon(imageVector = Icons.Default.Search, contentDescription = "Search")
+                Icon(imageVector = Icons.Outlined.Search, contentDescription = "Search")
             }
 
         }
@@ -121,7 +121,7 @@ fun TopSearchbar(
                 }
             }) {
                 Icon(
-                    imageVector = Icons.Default.Clear,
+                    imageVector = Icons.Outlined.Clear,
                     contentDescription = "Clear"
                 )
             }
@@ -170,7 +170,7 @@ fun TopSearchbar(
                 leadingContent = {
                     Icon(
                         modifier = Modifier.padding(end = 12.dp),
-                        imageVector = Icons.Default.History,
+                        imageVector = Icons.Outlined.History,
                         contentDescription = "History"
                     )
                 })
@@ -200,9 +200,8 @@ fun TopSearchbar(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(end = 12.dp)
                 .statusBarsPadding(),
-            horizontalArrangement = Arrangement.End,
+            horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically
         ) {
             DockedSearchBar(

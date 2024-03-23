@@ -10,6 +10,7 @@ It is developed using Kotlin(Compose), and uses Gradle with Kotlin DSL for build
 - Sorting and filtering of notes and folders
 - Move notes to different folders
 - Move notes to the trash
+- OCR text recognition using ML Kit and CameraX
 
 ## Technical Details
 
@@ -27,6 +28,8 @@ It is developed using Kotlin(Compose), and uses Gradle with Kotlin DSL for build
 - Room: A persistence library that provides an abstraction layer over SQLite.
 - Navigation: A library that simplifies the implementation of navigation in Android apps.
 - Material Icons: A library that provides Material Design icons.
+- ML Kit: A library used for OCR text recognition.
+- CameraX: A library used for custom camera functionality.
 
 ## Installation
 
@@ -41,3 +44,7 @@ In Android Studio, select `Run > Run 'app'` to start the application.
 ## Contribution
 
 Any form of contribution is welcome! If you find a bug or have a new feature request, please create an issue. If you want to contribute code directly to this project, you can create a pull request.
+
+## References
+
+- [MaskAnim](https://github.com/setruth/MaskAnim): Implementation of the theme switching function using mask animation.

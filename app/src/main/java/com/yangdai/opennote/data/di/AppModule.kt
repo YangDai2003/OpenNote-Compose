@@ -3,6 +3,7 @@ package com.yangdai.opennote.data.di
 import android.content.Context
 import androidx.room.Room
 import com.yangdai.opennote.data.local.Database
+import com.yangdai.opennote.data.repository.DataStoreRepositoryImpl
 import com.yangdai.opennote.data.repository.FolderRepositoryImpl
 import com.yangdai.opennote.data.repository.NoteRepositoryImpl
 import com.yangdai.opennote.domain.operations.AddFolder
@@ -18,6 +19,7 @@ import com.yangdai.opennote.domain.operations.Operations
 import com.yangdai.opennote.domain.operations.SearchNotes
 import com.yangdai.opennote.domain.operations.UpdateFolder
 import com.yangdai.opennote.domain.operations.UpdateNote
+import com.yangdai.opennote.domain.repository.DataStoreRepository
 import com.yangdai.opennote.domain.repository.FolderRepository
 import dagger.Module
 import dagger.Provides
@@ -29,6 +31,12 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object AppModule {
+
+    @Singleton
+    @Provides
+    fun provideDataStoreRepository(
+        @ApplicationContext context: Context
+    ): DataStoreRepository = DataStoreRepositoryImpl(context)
 
     @Provides
     @Singleton

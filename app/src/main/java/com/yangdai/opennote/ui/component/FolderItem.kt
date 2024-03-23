@@ -1,4 +1,4 @@
-package com.yangdai.opennote.ui.components
+package com.yangdai.opennote.ui.component
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -15,7 +15,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.DriveFileRenameOutline
-import androidx.compose.material.icons.outlined.Folder
+import androidx.compose.material.icons.outlined.FolderOpen
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -68,7 +68,7 @@ fun FolderItem(
         Row(Modifier.weight(1f)) {
             Icon(
                 modifier = Modifier.padding(horizontal = 16.dp),
-                imageVector = Icons.Outlined.Folder,
+                imageVector = Icons.Outlined.FolderOpen,
                 tint = if (folder.color != null) Color(folder.color) else MaterialTheme.colorScheme.onSurface,
                 contentDescription = "Leading Icon"
             )
@@ -159,7 +159,8 @@ fun ModifyDialog(
                 OutlinedTextField(
                     value = text,
                     onValueChange = { text = it },
-                    singleLine = true
+                    singleLine = true,
+                    placeholder = { Text(text = stringResource(R.string.name)) },
                 )
                 LazyRow(
                     modifier = Modifier.padding(vertical = 16.dp),

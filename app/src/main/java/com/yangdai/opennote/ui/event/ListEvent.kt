@@ -1,4 +1,4 @@
-package com.yangdai.opennote.home
+package com.yangdai.opennote.ui.event
 
 import com.yangdai.opennote.domain.operations.NoteOrder
 import com.yangdai.opennote.domain.operations.OrderType

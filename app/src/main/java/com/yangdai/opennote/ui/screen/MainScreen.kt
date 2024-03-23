@@ -1,4 +1,4 @@
-package com.yangdai.opennote.ui.screens
+package com.yangdai.opennote.ui.screen
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
@@ -21,17 +21,17 @@ import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridS
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.MenuOpen
 import androidx.compose.material.icons.automirrored.outlined.DriveFileMove
 import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.DeleteOutline
-import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.RestartAlt
+import androidx.compose.material.icons.automirrored.outlined.MenuOpen
+import androidx.compose.material.icons.automirrored.outlined.Sort
+import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Book
 import androidx.compose.material.icons.outlined.Delete
-import androidx.compose.material.icons.outlined.Folder
+import androidx.compose.material.icons.outlined.FolderOpen
 import androidx.compose.material.icons.outlined.KeyboardArrowDown
+import androidx.compose.material.icons.outlined.MoreVert
+import androidx.compose.material.icons.outlined.RestartAlt
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.BottomAppBar
@@ -61,6 +61,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -75,20 +76,20 @@ import com.yangdai.opennote.R
 import com.yangdai.opennote.Route
 import com.yangdai.opennote.data.local.entity.FolderEntity
 import com.yangdai.opennote.data.local.entity.NoteEntity
-import com.yangdai.opennote.home.ListEvent
-import com.yangdai.opennote.ui.components.NoteCard
-import com.yangdai.opennote.home.MainViewModel
-import com.yangdai.opennote.ui.components.DrawerItem
-import com.yangdai.opennote.ui.components.FolderListSheet
-import com.yangdai.opennote.ui.components.OrderSection
-import com.yangdai.opennote.ui.components.TopSearchbar
+import com.yangdai.opennote.ui.event.ListEvent
+import com.yangdai.opennote.ui.component.NoteCard
+import com.yangdai.opennote.ui.viewmodel.MainScreenViewModel
+import com.yangdai.opennote.ui.component.DrawerItem
+import com.yangdai.opennote.ui.component.FolderListSheet
+import com.yangdai.opennote.ui.component.OrderSection
+import com.yangdai.opennote.ui.component.TopSearchbar
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(
     navController: NavController,
-    viewModel: MainViewModel
+    viewModel: MainScreenViewModel
 ) {
     // 协程作用域
     val scope = rememberCoroutineScope()
@@ -98,15 +99,24 @@ fun MainScreen(
     var isSearchBarActive by remember { mutableStateOf(false) }
 
     // 侧边栏状态, SearchBarActive为true时不允许打开侧边栏
-    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed, confirmStateChange = { !isSearchBarActive })
+    val drawerState = rememberDrawerState(
+        initialValue = DrawerValue.Closed,
+        confirmStateChange = { !isSearchBarActive })
 
     // 瀑布流状态
     val gridState = rememberLazyStaggeredGridState()
     val density = LocalDensity.current
 
     // 侧边栏选择的项和文件夹，0表示all 1表示回收站 其余为文件夹index
-    var selectedDrawer by remember { mutableIntStateOf(0) }
+    var selectedDrawer by rememberSaveable { mutableIntStateOf(0) }
     var selectedFolder by remember { mutableStateOf(FolderEntity()) }
+    var folderName by rememberSaveable { mutableStateOf("") }
+    // 防止配置变化后文件夹名字丢失
+    LaunchedEffect(selectedFolder) {
+        if (selectedFolder.id != null) {
+            folderName = selectedFolder.name
+        }
+    }
 
     // 记录是否已经长按开启多选模式
     var isEnabled by remember { mutableStateOf(false) }
@@ -121,7 +131,7 @@ fun MainScreen(
     }
 
     // 记录文件夹列表是否展开
-    var isFoldersExpended by remember { mutableStateOf(false) }
+    var isFoldersExpended by rememberSaveable { mutableStateOf(false) }
 
     // 文件夹列表弹窗状态
     val sheetState = rememberModalBottomSheetState()
@@ -247,7 +257,7 @@ fun MainScreen(
                         Column {
                             listState.folders.forEachIndexed { index, folder ->
                                 DrawerItem(
-                                    icon = Icons.Outlined.Folder,
+                                    icon = Icons.Outlined.FolderOpen,
                                     iconTint = if (folder.color != null) Color(folder.color) else MaterialTheme.colorScheme.onSurface,
                                     label = folder.name,
                                     selected = selectedDrawer == index + 2
@@ -314,7 +324,7 @@ fun MainScreen(
                             title = {
                                 Text(
                                     text = if (selectedDrawer == 1) stringResource(id = R.string.trash)
-                                    else selectedFolder.name,
+                                    else folderName,
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis
                                 )
@@ -328,16 +338,22 @@ fun MainScreen(
                                     }
                                 }) {
                                     Icon(
-                                        imageVector = Icons.AutoMirrored.Filled.MenuOpen,
+                                        imageVector = Icons.AutoMirrored.Outlined.MenuOpen,
                                         contentDescription = "Open Menu"
                                     )
                                 }
                             },
                             actions = {
+                                IconButton(onClick = { viewModel.onListEvent(ListEvent.ToggleOrderSection) }) {
+                                    Icon(
+                                        imageVector = Icons.AutoMirrored.Outlined.Sort,
+                                        contentDescription = "Sort"
+                                    )
+                                }
                                 if (selectedDrawer == 1) {
                                     IconButton(onClick = { showMenu = !showMenu }) {
                                         Icon(
-                                            imageVector = Icons.Default.MoreVert,
+                                            imageVector = Icons.Outlined.MoreVert,
                                             contentDescription = "More"
                                         )
                                     }
@@ -348,7 +364,7 @@ fun MainScreen(
                                         DropdownMenuItem(
                                             leadingIcon = {
                                                 Icon(
-                                                    imageVector = Icons.Default.RestartAlt,
+                                                    imageVector = Icons.Outlined.RestartAlt,
                                                     contentDescription = "Restore"
                                                 )
                                             },
@@ -362,7 +378,7 @@ fun MainScreen(
                                         DropdownMenuItem(
                                             leadingIcon = {
                                                 Icon(
-                                                    imageVector = Icons.Default.DeleteOutline,
+                                                    imageVector = Icons.Outlined.Delete,
                                                     contentDescription = "Delete"
                                                 )
                                             },
@@ -428,7 +444,7 @@ fun MainScreen(
                                     }) {
                                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                             Icon(
-                                                imageVector = Icons.Default.RestartAlt,
+                                                imageVector = Icons.Outlined.RestartAlt,
                                                 contentDescription = "Restore"
                                             )
                                             Text(text = stringResource(id = R.string.restore))
@@ -477,7 +493,7 @@ fun MainScreen(
                     enter = slideInHorizontally { with(density) { 100.dp.roundToPx() } },
                     exit = slideOutHorizontally { with(density) { 100.dp.roundToPx() } }) {
                     FloatingActionButton(onClick = { navController.navigate(Route.NOTE) }) {
-                        Icon(imageVector = Icons.Default.Add, contentDescription = "Add")
+                        Icon(imageVector = Icons.Outlined.Add, contentDescription = "Add")
                     }
                 }
 
@@ -511,7 +527,14 @@ fun MainScreen(
                                 .padding(top = 12.dp),
                             noteOrder = listState.noteOrder,
                             onOrderChange = {
-                                viewModel.onListEvent(ListEvent.Sort(noteOrder = it))
+                                viewModel.onListEvent(
+                                    ListEvent.Sort(
+                                        noteOrder = it,
+                                        trash = selectedDrawer == 1,
+                                        filterFolder = selectedDrawer != 0 && selectedDrawer != 1,
+                                        folderId = selectedFolder.id
+                                    )
+                                )
                             }
                         )
                     },

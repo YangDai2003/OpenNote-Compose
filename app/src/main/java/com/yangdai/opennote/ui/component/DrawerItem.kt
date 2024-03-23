@@ -1,4 +1,4 @@
-package com.yangdai.opennote.ui.components
+package com.yangdai.opennote.ui.component
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape

@@ -17,20 +17,20 @@ import androidx.core.view.WindowCompat
 
 @Composable
 fun OpenNoteTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
+    darkMode: Boolean = isSystemInDarkTheme(),
     color: Int = 0,
     content: @Composable () -> Unit
 ) {
     val colorScheme = when (color) {
-        1 -> if (darkTheme) DarkPurpleColors else LightPurpleColors
-        2 -> if (darkTheme) DarkBlueColors else LightBlueColors
-        3 -> if (darkTheme) DarkGreenColors else LightGreenColors
+        1 -> if (darkMode) DarkPurpleColors else LightPurpleColors
+        2 -> if (darkMode) DarkBlueColors else LightBlueColors
+        3 -> if (darkMode) DarkGreenColors else LightGreenColors
 
         else -> if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             val context = LocalContext.current
-            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+            if (darkMode) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         } else {
-            if (darkTheme) DarkPurpleColors else LightPurpleColors
+            if (darkMode) DarkPurpleColors else LightPurpleColors
         }
     }
 
@@ -48,7 +48,7 @@ fun OpenNoteTheme(
         SideEffect {
             val window = (view.context as Activity).window
             window.statusBarColor = Color.Transparent.toArgb()
-            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !darkTheme
+            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !darkMode
         }
     }
 

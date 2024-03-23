@@ -1,4 +1,4 @@
-package com.yangdai.opennote.home
+package com.yangdai.opennote.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -6,6 +6,9 @@ import com.yangdai.opennote.data.local.entity.NoteEntity
 import com.yangdai.opennote.domain.operations.NoteOrder
 import com.yangdai.opennote.domain.operations.Operations
 import com.yangdai.opennote.domain.operations.OrderType
+import com.yangdai.opennote.ui.event.FolderEvent
+import com.yangdai.opennote.ui.event.ListEvent
+import com.yangdai.opennote.ui.state.ListState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -16,7 +19,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class MainViewModel @Inject constructor(
+class MainScreenViewModel @Inject constructor(
     private val operations: Operations
 ) : ViewModel() {
 
@@ -190,5 +193,4 @@ class MainViewModel @Inject constructor(
             }
             .launchIn(viewModelScope)
     }
-
 }

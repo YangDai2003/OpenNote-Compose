@@ -1,4 +1,4 @@
-package com.yangdai.opennote.ui.components
+package com.yangdai.opennote.ui.component
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.basicMarquee
@@ -29,7 +29,7 @@ fun NoteCard(
     onEnableChange: (Boolean) -> Unit
 ) =
     ElevatedCard(modifier = Modifier
-        .sizeIn(minHeight = 80.dp, maxHeight = 320.dp)
+        .sizeIn(minHeight = 80.dp, maxHeight = 360.dp)
         .combinedClickable(
             onLongClick = {
                 onEnableChange(true)
@@ -47,12 +47,12 @@ fun NoteCard(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(8.dp)
+                    .padding(vertical = 8.dp, horizontal = 10.dp)
             ) {
                 Text(
                     modifier = Modifier
                         .basicMarquee()
-                        .padding(bottom = 8.dp),
+                        .padding(bottom = 12.dp),
                     text = note.title,
                     style = MaterialTheme.typography.titleMedium,
                     maxLines = 1

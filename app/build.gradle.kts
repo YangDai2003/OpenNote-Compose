@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.jetbrainsKotlinAndroid)
     alias(libs.plugins.googleHilt)
     alias(libs.plugins.googleKsp)
+    alias(libs.plugins.googleGms)
 }
 
 android {
@@ -56,12 +57,27 @@ android {
 }
 
 dependencies {
-    implementation (libs.androidx.biometric)
-    implementation(libs.material)
+
+    implementation (libs.androidx.camera.core)
+    implementation (libs.androidx.camera.camera2)
+    implementation (libs.androidx.camera.lifecycle)
+    implementation (libs.androidx.camera.view)
+    implementation (libs.androidx.camera.extensions)
+    implementation(libs.androidx.camera.mlkit.vision)
+    // To recognize Latin script
+    implementation (libs.text.recognition)
+    // To recognize Chinese script
+    implementation (libs.text.recognition.chinese)
+    // To recognize Japanese script
+    implementation (libs.text.recognition.japanese)
+    // To recognize Korean script
+    implementation (libs.text.recognition.korean)
+
+    // Firebase, if u don't have google-services.json, remove this block
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.analytics)
 
     implementation(libs.androidx.room.runtime)
-    implementation(libs.androidx.lifecycle.runtime.compose)
-    implementation(libs.androidx.preference.ktx)
     annotationProcessor(libs.androidx.room.compiler)
     ksp(libs.androidx.room.compiler)
     implementation(libs.androidx.room.ktx)
@@ -73,9 +89,14 @@ dependencies {
 
     implementation(libs.androidx.navigation)
     implementation(libs.androidx.material.icons)
-
+    implementation(libs.material)
+    implementation(libs.androidx.core.splashscreen)
+    implementation (libs.androidx.biometric)
+    implementation(libs.androidx.datastore.preferences)
+    implementation(libs.androidx.preference.ktx)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.androidx.activity.compose)
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.ui)

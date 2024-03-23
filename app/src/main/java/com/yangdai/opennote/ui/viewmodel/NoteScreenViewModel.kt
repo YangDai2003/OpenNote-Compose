@@ -1,10 +1,16 @@
-package com.yangdai.opennote.note
+package com.yangdai.opennote.ui.viewmodel
 
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.text2.input.TextFieldState
+import androidx.compose.ui.text.TextRange
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.yangdai.opennote.data.local.entity.NoteEntity
 import com.yangdai.opennote.domain.operations.Operations
+import com.yangdai.opennote.ui.event.NoteEvent
+import com.yangdai.opennote.ui.state.NoteState
+import com.yangdai.opennote.ui.event.UiEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
@@ -17,11 +23,14 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+@OptIn(ExperimentalFoundationApi::class)
 @HiltViewModel
-class NoteViewModel @Inject constructor(
+class NoteScreenViewModel @Inject constructor(
     private val operations: Operations,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
+
+    var textFieldState: TextFieldState = TextFieldState("")
 
     private val _state = MutableStateFlow(NoteState())
     val stateFlow = _state.asStateFlow()
@@ -49,6 +58,7 @@ class NoteViewModel @Inject constructor(
                     oTitle = note.title
                     oContent = note.content
                     oFolderId = note.folderId
+                    textFieldState = TextFieldState(note.content)
                     _state.update { noteState ->
                         noteState.copy(
                             id = note.id,
@@ -64,34 +74,50 @@ class NoteViewModel @Inject constructor(
         getFolders()
     }
 
+    fun undo() {
+        textFieldState.undoState.undo()
+    }
+
+    fun redo() {
+        textFieldState.undoState.redo()
+    }
+
+    fun addLink(link: String) {
+        val initialSelection = textFieldState.text.selectionInChars
+        textFieldState.edit {
+            replace(initialSelection.min, initialSelection.max, link)
+            selectCharsIn(
+                TextRange(
+                    initialSelection.min,
+                    initialSelection.min + link.length
+                )
+            )
+        }
+    }
+
+    fun addScannedText(text: String) {
+        textFieldState.edit {
+            append(text)
+        }
+    }
+
+    fun canUndo() = textFieldState.undoState.canUndo
+
+    fun canRedo() = textFieldState.undoState.canRedo
+
     private fun getFolders() {
         queryFoldersJob?.cancel()
         queryFoldersJob = operations.getFolders()
             .onEach { folders ->
-                _state.value = stateFlow.value.copy(
-                    folders = folders
-                )
+                _state.update {
+                    it.copy(folders = folders)
+                }
             }
             .launchIn(viewModelScope)
     }
 
     fun onEvent(event: NoteEvent) {
         when (event) {
-            is NoteEvent.ContentChanged -> {
-                _state.update {
-                    it.copy(
-                        content = event.value
-                    )
-                }
-            }
-
-            is NoteEvent.TitleChanged -> {
-                _state.update {
-                    it.copy(
-                        title = event.value
-                    )
-                }
-            }
 
             is NoteEvent.FolderChanged -> {
                 _state.update {
@@ -101,18 +127,18 @@ class NoteViewModel @Inject constructor(
                 }
             }
 
-            NoteEvent.NavigateBack -> {
+            is NoteEvent.NavigateBack -> {
                 viewModelScope.launch {
                     val noteState = stateFlow.value
                     val note = NoteEntity(
                         id = noteState.id,
                         title = noteState.title,
-                        content = noteState.content,
+                        content = textFieldState.text.toString(),
                         folderId = noteState.folderId,
                         timestamp = System.currentTimeMillis()
                     )
-                    if (noteState.id == null) {
-                        if (noteState.title.isNotEmpty()) {
+                    if (note.id == null) {
+                        if (note.title.isNotEmpty() || note.content.isNotEmpty()) {
                             operations.addNote(note)
                         }
                     } else {
@@ -139,6 +165,14 @@ class NoteViewModel @Inject constructor(
                         )
                     }
                     sendEvent(UiEvent.NavigateBack)
+                }
+            }
+
+            is NoteEvent.TitleChanged -> {
+                _state.update {
+                    it.copy(
+                        title = event.value
+                    )
                 }
             }
         }

@@ -1,4 +1,4 @@
-package com.yangdai.opennote.ui.screens
+package com.yangdai.opennote.ui.screen
 
 import android.content.Context
 import android.content.Intent
@@ -9,6 +9,7 @@ import android.util.Log
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -21,9 +22,9 @@ import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.ArrowRight
-import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.automirrored.outlined.ArrowRight
+import androidx.compose.material.icons.outlined.ArrowDropDown
 import androidx.compose.material.icons.outlined.CleaningServices
 import androidx.compose.material.icons.outlined.DarkMode
 import androidx.compose.material.icons.outlined.IosShare
@@ -35,7 +36,6 @@ import androidx.compose.material.icons.outlined.PermDeviceInformation
 import androidx.compose.material.icons.outlined.PrivacyTip
 import androidx.compose.material.icons.outlined.StarRate
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -46,13 +46,16 @@ import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarColors
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -62,33 +65,48 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
-import androidx.preference.PreferenceManager
+import androidx.datastore.preferences.core.booleanPreferencesKey
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.floatPreferencesKey
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
+import com.yangdai.opennote.Constants.APP_COLOR
+import com.yangdai.opennote.Constants.APP_THEME
+import com.yangdai.opennote.Constants.NEED_PASSWORD
+import com.yangdai.opennote.Constants.IS_APP_IN_DARK_MODE
+import com.yangdai.opennote.Constants.IS_DARK_SWITCH_ACTIVE
+import com.yangdai.opennote.Constants.MASK_CLICK_X
+import com.yangdai.opennote.Constants.MASK_CLICK_Y
+import com.yangdai.opennote.Constants.SHOULD_FOLLOW_SYSTEM
 import com.yangdai.opennote.R
+import com.yangdai.opennote.ui.viewmodel.SettingScreenViewModel
 import com.yangdai.opennote.data.di.AppModule
+import com.yangdai.opennote.ui.component.RatingDialog
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
-    onNavigateToMain: () -> Unit
+    settingScreenViewModel: SettingScreenViewModel = hiltViewModel(),
+    navController: NavController
 ) {
     val context = LocalContext.current
-
-    val defaultSharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
 
     val scrollBehavior =
         TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
 
     val modeOptions = listOf(
         stringResource(R.string.system_default),
-        stringResource(R.string.light), stringResource(R.string.dark)
+        stringResource(R.string.light),
+        stringResource(R.string.dark)
     )
-    var modeExpended by remember { mutableStateOf(false) }
-    val initModeSelect = defaultSharedPreferences.getInt("APP_MODE", 0)
-    val (selectedMode, onModeSelected) = remember {
+    var modeExpended by rememberSaveable { mutableStateOf(false) }
+    val initModeSelect = settingScreenViewModel.getInt(APP_THEME) ?: 0
+    val (selectedMode, onModeSelected) = rememberSaveable {
         mutableStateOf(
             modeOptions[initModeSelect]
         )
@@ -96,23 +114,48 @@ fun SettingsScreen(
 
     val colorOptions = listOf(
         stringResource(R.string.dynamic_only_android_12),
-        stringResource(R.string.purple), stringResource(R.string.blue),
+        stringResource(R.string.purple),
+        stringResource(R.string.blue),
         stringResource(R.string.green)
     )
-    var colorExpended by remember { mutableStateOf(false) }
-    val initColorSelect = defaultSharedPreferences.getInt("APP_COLOR", 0)
-    val (selectedColor, onColorSelected) = remember {
+    var colorExpended by rememberSaveable { mutableStateOf(false) }
+    val initColorSelect = settingScreenViewModel.getInt(APP_COLOR) ?: 0
+    val (selectedColor, onColorSelected) = rememberSaveable {
         mutableStateOf(
             colorOptions[initColorSelect]
         )
     }
 
-    val initPasswordSelect = defaultSharedPreferences.getBoolean("APP_PASSWORD", false)
-    var passwordChecked by remember {
+    val initPasswordSelect = settingScreenViewModel.getBoolean(NEED_PASSWORD) ?: false
+    var passwordChecked by rememberSaveable {
         mutableStateOf(initPasswordSelect)
     }
 
-    var appInfoExpended by remember { mutableStateOf(false) }
+    var appInfoExpended by rememberSaveable { mutableStateOf(false) }
+
+    val scope = rememberCoroutineScope()
+
+    val isAppInDarkTheme by settingScreenViewModel.getFlow()
+        .map { preferences ->
+            preferences[booleanPreferencesKey(IS_APP_IN_DARK_MODE)] ?: false
+        }
+        .collectAsState(initial = false)
+
+    fun switchDarkTheme() {
+        scope.launch {
+            settingScreenViewModel
+                .getDataStore()
+                .edit {
+                    it[floatPreferencesKey(MASK_CLICK_X)] = 0f
+                    it[floatPreferencesKey(MASK_CLICK_Y)] = 0f
+                    it[booleanPreferencesKey(IS_DARK_SWITCH_ACTIVE)] = true
+                }
+        }
+    }
+
+    val isSystemDarkTheme = isSystemInDarkTheme()
+
+    var showRatingDialog by rememberSaveable { mutableStateOf(false) }
 
     Scaffold(
         modifier = Modifier
@@ -120,9 +163,9 @@ fun SettingsScreen(
         topBar = {
             LargeTopAppBar(
                 navigationIcon = {
-                    IconButton(onClick = onNavigateToMain) {
+                    IconButton(onClick = { navController.navigateUp() }) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
                             contentDescription = "Back"
                         )
                     }
@@ -139,6 +182,7 @@ fun SettingsScreen(
             )
         }
     ) { innerPadding ->
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -169,10 +213,14 @@ fun SettingsScreen(
                         contentDescription = "Theme"
                     )
                 },
-                headlineContent = { Text(text = stringResource(R.string.theme)) },
+                headlineContent = {
+                    Text(
+                        text = stringResource(R.string.theme)
+                    )
+                },
                 trailingContent = {
                     Icon(
-                        imageVector = if (!modeExpended) Icons.AutoMirrored.Filled.ArrowRight else Icons.Default.ArrowDropDown,
+                        imageVector = if (!modeExpended) Icons.AutoMirrored.Outlined.ArrowRight else Icons.Outlined.ArrowDropDown,
                         contentDescription = "Arrow"
                     )
                 })
@@ -189,10 +237,44 @@ fun SettingsScreen(
                                     selected = (text == selectedMode),
                                     onClick = {
                                         onModeSelected(text)
-                                        defaultSharedPreferences
-                                            .edit()
-                                            .putInt("APP_MODE", index)
-                                            .apply()
+
+                                        val mode = settingScreenViewModel.getInt(APP_THEME)
+
+                                        if (mode != index) {
+                                            when (index) {
+                                                0 -> {
+                                                    if (isSystemDarkTheme != isAppInDarkTheme) {
+                                                        switchDarkTheme()
+
+                                                    }
+                                                    settingScreenViewModel.putBoolean(
+                                                        SHOULD_FOLLOW_SYSTEM, true
+                                                    )
+                                                }
+
+                                                1 -> {
+                                                    if (isAppInDarkTheme) {
+                                                        switchDarkTheme()
+                                                    }
+                                                    settingScreenViewModel.putBoolean(
+                                                        SHOULD_FOLLOW_SYSTEM,
+                                                        false
+                                                    )
+                                                    settingScreenViewModel.putInt(APP_THEME, 1)
+                                                }
+
+                                                2 -> {
+                                                    if (!isAppInDarkTheme) {
+                                                        switchDarkTheme()
+                                                    }
+                                                    settingScreenViewModel.putBoolean(
+                                                        SHOULD_FOLLOW_SYSTEM,
+                                                        false
+                                                    )
+                                                    settingScreenViewModel.putInt(APP_THEME, 2)
+                                                }
+                                            }
+                                        }
                                     },
                                     role = Role.RadioButton
                                 )
@@ -206,7 +288,9 @@ fun SettingsScreen(
                             Text(
                                 text = text,
                                 style = MaterialTheme.typography.bodyLarge,
-                                modifier = Modifier.padding(start = 16.dp)
+                                modifier = Modifier
+                                    .padding(start = 16.dp)
+
                             )
                         }
                     }
@@ -223,10 +307,12 @@ fun SettingsScreen(
                         contentDescription = "Color"
                     )
                 },
-                headlineContent = { Text(text = stringResource(R.string.color)) },
+                headlineContent = {
+                    Text(text = stringResource(R.string.color))
+                },
                 trailingContent = {
                     Icon(
-                        imageVector = if (!colorExpended) Icons.AutoMirrored.Filled.ArrowRight else Icons.Default.ArrowDropDown,
+                        imageVector = if (!colorExpended) Icons.AutoMirrored.Outlined.ArrowRight else Icons.Outlined.ArrowDropDown,
                         contentDescription = "Arrow"
                     )
                 })
@@ -243,10 +329,7 @@ fun SettingsScreen(
                                     selected = (text == selectedColor),
                                     onClick = {
                                         onColorSelected(text)
-                                        defaultSharedPreferences
-                                            .edit()
-                                            .putInt("APP_COLOR", index)
-                                            .apply()
+                                        settingScreenViewModel.putInt(APP_COLOR, index)
                                     },
                                     role = Role.RadioButton
                                 )
@@ -304,7 +387,7 @@ fun SettingsScreen(
                     headlineContent = { Text(text = stringResource(R.string.language)) },
                     trailingContent = {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowRight,
+                            imageVector = Icons.AutoMirrored.Outlined.ArrowRight,
                             contentDescription = "Arrow"
                         )
                     })
@@ -335,10 +418,7 @@ fun SettingsScreen(
                         checked = passwordChecked,
                         onCheckedChange = {
                             passwordChecked = it
-                            defaultSharedPreferences
-                                .edit()
-                                .putBoolean("APP_PASSWORD", it)
-                                .apply()
+                            settingScreenViewModel.putBoolean(NEED_PASSWORD, it)
                         }
                     )
                 })
@@ -351,12 +431,14 @@ fun SettingsScreen(
                 },
                 headlineContent = { Text(text = stringResource(R.string.delete_all_notes)) },
                 trailingContent = {
-                    ElevatedButton(
+                    TextButton(
                         onClick = {
                             clear(context)
                         },
-                        colors = ButtonDefaults.buttonColors()
-                            .copy(containerColor = MaterialTheme.colorScheme.error)
+                        colors = ButtonDefaults.textButtonColors().copy(
+                            containerColor = MaterialTheme.colorScheme.errorContainer,
+                            contentColor = MaterialTheme.colorScheme.error
+                        )
                     ) {
                         Text(text = stringResource(id = R.string.delete))
                     }
@@ -375,24 +457,37 @@ fun SettingsScreen(
                     color = MaterialTheme.colorScheme.primary
                 )
             }
-            ListItem(leadingContent = {
-                Icon(
-                    imageVector = Icons.Outlined.PrivacyTip,
-                    contentDescription = "Privacy Policy"
-                )
-            }, headlineContent = { Text(text = stringResource(R.string.privacy_policy)) })
-            ListItem(leadingContent = {
-                Icon(
-                    imageVector = Icons.Outlined.StarRate,
-                    contentDescription = "Rate"
-                )
-            }, headlineContent = { Text(text = stringResource(R.string.rate_this_app)) })
+            ListItem(
+                modifier = Modifier.clickable {
+                    val intent = Intent(Intent.ACTION_VIEW)
+                    intent.data =
+                        Uri.parse("https://github.com/YangDai2003/OpenNote-Compose/blob/master/PRIVACY_POLICY.md")
+                    context.startActivity(intent)
+                },
+                leadingContent = {
+                    Icon(
+                        imageVector = Icons.Outlined.PrivacyTip,
+                        contentDescription = "Privacy Policy"
+                    )
+                },
+                headlineContent = { Text(text = stringResource(R.string.privacy_policy)) })
+            ListItem(
+                modifier = Modifier.clickable {
+                    showRatingDialog = true
+                },
+                leadingContent = {
+                    Icon(
+                        imageVector = Icons.Outlined.StarRate,
+                        contentDescription = "Rate"
+                    )
+                }, headlineContent = { Text(text = stringResource(R.string.rate_this_app)) })
             ListItem(
                 modifier = Modifier.clickable {
                     val sendIntent = Intent(Intent.ACTION_SEND)
                     sendIntent.setType("text/plain")
+                    sendIntent.putExtra(Intent.EXTRA_TITLE, context.getString(R.string.app_name))
                     sendIntent.putExtra(Intent.EXTRA_TEXT, context.getString(R.string.shareContent))
-                    context.startActivity(Intent.createChooser(sendIntent, ""))
+                    context.startActivity(Intent.createChooser(sendIntent, null))
                 },
                 leadingContent = {
                     Icon(
@@ -414,7 +509,7 @@ fun SettingsScreen(
                 headlineContent = { Text(text = stringResource(R.string.app_info)) },
                 trailingContent = {
                     Icon(
-                        imageVector = if (!appInfoExpended) Icons.AutoMirrored.Filled.ArrowRight else Icons.Default.ArrowDropDown,
+                        imageVector = if (!appInfoExpended) Icons.AutoMirrored.Outlined.ArrowRight else Icons.Outlined.ArrowDropDown,
                         contentDescription = "Arrow"
                     )
                 })
@@ -457,13 +552,18 @@ fun SettingsScreen(
                         },
                         trailingContent = {
                             Icon(
-                                imageVector = Icons.AutoMirrored.Filled.ArrowRight,
+                                imageVector = Icons.AutoMirrored.Outlined.ArrowRight,
                                 contentDescription = "Arrow"
                             )
                         }
                     )
                 }
             }
+        }
+        RatingDialog(
+            showDialog = showRatingDialog,
+            onDismissRequest = { showRatingDialog = false }) {
+
         }
     }
 }
