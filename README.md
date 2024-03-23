@@ -3,6 +3,10 @@
 OpenNote is a modern Android note-taking application built entirely with Compose. 
 It is developed using Kotlin(Compose), and uses Gradle with Kotlin DSL for building the project.
 
+## Notice
+
+This project is still in early stages of construction and features may change, be added or removed. If you have any suggestions or questions please feel free to let me know.
+
 ## Features
 
 - Create, edit, and delete notes
