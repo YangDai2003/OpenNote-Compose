@@ -13,7 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun DefaultRadioButton(
+fun FilterRadioButton(
     text: String,
     selected: Boolean,
     onSelect: () -> Unit,

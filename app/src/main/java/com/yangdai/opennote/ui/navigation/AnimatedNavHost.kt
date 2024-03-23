@@ -115,7 +115,6 @@ fun AnimatedNavHost(
         )
     }
 
-    // CameraX 拥有ScaleIn和ScaleOut的开关动画
     composable(
         route = Route.CAMERAX,
         enterTransition = { scaleIn(animationSpec = tween(NAV_ANIMATION_TIME)) },

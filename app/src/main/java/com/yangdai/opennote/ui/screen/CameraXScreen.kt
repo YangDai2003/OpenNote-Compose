@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.util.Log
+import androidx.activity.compose.BackHandler
 import androidx.annotation.OptIn
 import androidx.camera.core.ExperimentalGetImage
 import androidx.camera.core.ImageCapture
@@ -17,14 +18,19 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Camera
 import androidx.compose.material.icons.filled.CloseFullscreen
 import androidx.compose.material.icons.filled.Done
+import androidx.compose.material.icons.filled.FlashAuto
+import androidx.compose.material.icons.filled.FlashOff
+import androidx.compose.material.icons.filled.FlashOn
 import androidx.compose.material.icons.filled.TextFields
 import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.CircularProgressIndicator
@@ -33,10 +39,13 @@ import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberBottomSheetScaffoldState
+import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -71,18 +80,33 @@ fun CameraXScreen(
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val scope = rememberCoroutineScope()
-    val scaffoldState = rememberBottomSheetScaffoldState()
+    val bottomSheetState =
+        rememberStandardBottomSheetState(initialValue = SheetValue.Hidden, skipHiddenState = false)
+    val scaffoldState = rememberBottomSheetScaffoldState(bottomSheetState)
+
     if (!hasRequiredPermissions(context)) {
         ActivityCompat.requestPermissions(
             context as Activity, CAMERAX_PERMISSIONS, 0
         )
     }
 
+    BackHandler(scaffoldState.bottomSheetState.isVisible) {
+        scope.launch {
+            scaffoldState.bottomSheetState.hide()
+        }
+    }
+
+    var flashMode by rememberSaveable {
+        mutableIntStateOf(ImageCapture.FLASH_MODE_OFF)
+    }
+
     val controller = remember { LifecycleCameraController(context) }
     controller.bindToLifecycle(lifecycleOwner)
+    controller.imageCaptureFlashMode = flashMode
 
     val previewView = remember { PreviewView(context) }
     previewView.controller = controller
+    previewView.scaleType = PreviewView.ScaleType.FIT_CENTER
 
     val executor = remember { Executors.newSingleThreadExecutor() }
 
@@ -134,12 +158,16 @@ fun CameraXScreen(
                 .padding(padding)
         ) {
 
-            AndroidView(factory = { previewView }, modifier = Modifier.fillMaxSize())
+            AndroidView(
+                factory = { previewView },
+                modifier = Modifier.fillMaxSize()
+            )
 
             FilledTonalIconButton(
                 modifier = Modifier
                     .align(Alignment.TopStart)
-                    .padding(32.dp),
+                    .statusBarsPadding()
+                    .padding(start = 32.dp, top = 32.dp),
                 onClick = {
                     navController.navigateUp()
                 }
@@ -153,7 +181,8 @@ fun CameraXScreen(
             FilledTonalIconButton(
                 modifier = Modifier
                     .align(Alignment.TopEnd)
-                    .padding(32.dp),
+                    .statusBarsPadding()
+                    .padding(end = 32.dp, top = 32.dp),
                 onClick = {
                     navController.previousBackStackEntry?.savedStateHandle?.set("scannedText", text)
                     navController.navigateUp()
@@ -167,7 +196,40 @@ fun CameraXScreen(
 
             FilledTonalIconButton(
                 modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .navigationBarsPadding()
+                    .padding(32.dp),
+                onClick = {
+                    when (flashMode) {
+                        ImageCapture.FLASH_MODE_OFF -> {
+                            flashMode = ImageCapture.FLASH_MODE_ON
+                        }
+
+                        ImageCapture.FLASH_MODE_ON -> {
+                            flashMode = ImageCapture.FLASH_MODE_AUTO
+                        }
+
+                        ImageCapture.FLASH_MODE_AUTO -> {
+                            flashMode = ImageCapture.FLASH_MODE_OFF
+                        }
+                    }
+                }
+            ) {
+                Icon(
+                    imageVector = when (flashMode) {
+                        ImageCapture.FLASH_MODE_OFF -> Icons.Default.FlashOff
+                        ImageCapture.FLASH_MODE_ON -> Icons.Default.FlashOn
+                        ImageCapture.FLASH_MODE_AUTO -> Icons.Default.FlashAuto
+                        else -> Icons.Default.FlashOff
+                    },
+                    contentDescription = "Flash"
+                )
+            }
+
+            FilledTonalIconButton(
+                modifier = Modifier
                     .align(Alignment.BottomStart)
+                    .navigationBarsPadding()
                     .padding(32.dp),
                 onClick = {
                     scope.launch {
@@ -189,9 +251,15 @@ fun CameraXScreen(
                 )
             } else {
                 val orientation = context.resources.configuration.orientation
+                val modifier = if (orientation == Configuration.ORIENTATION_PORTRAIT) {
+                    Modifier
+                        .align(Alignment.BottomCenter)
+                        .navigationBarsPadding()
+                } else {
+                    Modifier.align(Alignment.CenterEnd)
+                }
                 IconButton(
-                    modifier = Modifier
-                        .align(if (orientation == Configuration.ORIENTATION_PORTRAIT) Alignment.BottomCenter else Alignment.CenterEnd)
+                    modifier = modifier
                         .padding(32.dp)
                         .size(64.dp),
                     onClick = {

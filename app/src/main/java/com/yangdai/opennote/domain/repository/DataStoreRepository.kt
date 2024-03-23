@@ -16,8 +16,6 @@ interface DataStoreRepository {
     fun intFlow(key: String): Flow<Int>
     fun stringFlow(key: String): Flow<String>
     fun booleanFlow(key: String): Flow<Boolean>
-
     fun preferencesFlow(): Flow<Preferences>
-
     fun getDataStore(): DataStore<Preferences>
 }
