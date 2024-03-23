@@ -1,7 +1,13 @@
 package com.yangdai.opennote.ui.screen
 
+import android.annotation.SuppressLint
 import android.content.Intent
+import android.graphics.Color
 import android.net.Uri
+import android.view.ViewGroup
+import android.webkit.WebResourceRequest
+import android.webkit.WebView
+import android.webkit.WebViewClient
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -58,24 +64,29 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import com.yangdai.opennote.R
 import com.yangdai.opennote.Route
 import com.yangdai.opennote.exportNote
-import com.yangdai.opennote.ui.event.NoteEvent
 import com.yangdai.opennote.timestampToFormatLocalDateTime
 import com.yangdai.opennote.ui.component.FolderListSheet
-import com.yangdai.opennote.ui.component.HighlightedClickableText
 import com.yangdai.opennote.ui.component.LinkDialog
+import com.yangdai.opennote.ui.event.NoteEvent
 import com.yangdai.opennote.ui.viewmodel.NoteScreenViewModel
 import kotlinx.coroutines.launch
+import org.intellij.markdown.flavours.commonmark.CommonMarkFlavourDescriptor
+import org.intellij.markdown.html.HtmlGenerator
+import org.intellij.markdown.parser.MarkdownParser
 
+@SuppressLint("SetJavaScriptEnabled")
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun NoteScreen(
@@ -348,7 +359,60 @@ fun NoteScreen(
             val scrollState = rememberScrollState()
 
             if (isReadMode) {
-                HighlightedClickableText(text = viewModel.textFieldState.text.toString())
+
+                val src = viewModel.textFieldState.text.toString()
+                val flavour = CommonMarkFlavourDescriptor()
+                val parsedTree = MarkdownParser(flavour).buildMarkdownTreeFromString(src)
+                val html = HtmlGenerator(src, parsedTree, flavour).generateHtml()
+
+                val textColor = MaterialTheme.colorScheme.onSurface.toArgb()
+                val hexColor = String.format("#%06X", 0xFFFFFF and textColor)
+                AndroidView(modifier = Modifier.fillMaxSize(), factory = {
+                    WebView(it).apply {
+                        layoutParams = ViewGroup.LayoutParams(
+                            ViewGroup.LayoutParams.MATCH_PARENT,
+                            ViewGroup.LayoutParams.MATCH_PARENT
+                        )
+                        webViewClient = object : WebViewClient() {
+                            override fun shouldOverrideUrlLoading(
+                                view: WebView?,
+                                request: WebResourceRequest
+                            ): Boolean {
+                                return true
+                            }
+
+                            @Deprecated("Deprecated in Java", ReplaceWith("true"))
+                            override fun shouldOverrideUrlLoading(
+                                view: WebView?,
+                                url: String?
+                            ): Boolean {
+                                return true
+                            }
+                        }
+                        settings.allowFileAccess = true
+                        settings.javaScriptEnabled = true
+                        settings.setSupportZoom(true)
+                        settings.builtInZoomControls = true
+                        settings.displayZoomControls = false
+                        settings.loadWithOverviewMode = false
+                        settings.useWideViewPort = false
+                        settings
+                        setBackgroundColor(Color.TRANSPARENT)
+                        loadDataWithBaseURL(
+                            null,
+                            "<html><head>"
+                                    + "<style type=\"text/css\">body{color: ${hexColor};}"
+                                    + "</style></head>"
+                                    + "<body>"
+                                    + html
+                                    + "</body></html>",
+                            "text/html",
+                            "UTF-8",
+                            null
+                        )
+                    }
+                })
+//                HighlightedClickableText(text = viewModel.textFieldState.text.toString())
             } else {
                 BasicTextField2(
                     state = viewModel.textFieldState,

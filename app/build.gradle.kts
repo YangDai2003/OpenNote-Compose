@@ -57,7 +57,7 @@ android {
 }
 
 dependencies {
-
+    implementation(libs.markdown)
     implementation (libs.androidx.camera.core)
     implementation (libs.androidx.camera.camera2)
     implementation (libs.androidx.camera.lifecycle)
