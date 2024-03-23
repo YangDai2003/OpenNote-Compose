@@ -173,7 +173,6 @@ fun BaseScreen(
                         baseScreenViewModel.putBoolean(IS_APP_IN_DARK_MODE, !isAppInDarkTheme)
                 }
             },
-            animTime = 800,
             animFinish = {
                 when (maskAnimWay) {
                     MaskAnimWay.DARK_SWITCH -> {

@@ -1,7 +1,13 @@
 package com.yangdai.opennote.ui.navigation
 
 import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -73,8 +79,28 @@ fun AnimatedNavHost(
         }
     }
 
-    composable(Route.NOTE) {
-        val viewModel : NoteScreenViewModel = hiltViewModel()
+    composable(
+        route = Route.NOTE,
+        enterTransition = {
+            slideIntoContainer(
+                animationSpec = tween(NAV_ANIMATION_TIME),
+                towards = AnimatedContentTransitionScope.SlideDirection.Left
+            )
+        },
+        exitTransition = {
+            fadeOut(animationSpec = tween(NAV_ANIMATION_TIME))
+        },
+        popEnterTransition = {
+            fadeIn(animationSpec = tween(NAV_ANIMATION_TIME))
+        },
+        popExitTransition = {
+            slideOutOfContainer(
+                animationSpec = tween(NAV_ANIMATION_TIME),
+                towards = AnimatedContentTransitionScope.SlideDirection.Right
+            )
+        }
+    ) {
+        val viewModel: NoteScreenViewModel = hiltViewModel()
         LaunchedEffect(key1 = true) {
             viewModel.event.collect { event ->
                 when (event) {
@@ -89,7 +115,14 @@ fun AnimatedNavHost(
         )
     }
 
-    composable(Route.CAMERAX) {
+    // CameraX 拥有ScaleIn和ScaleOut的开关动画
+    composable(
+        route = Route.CAMERAX,
+        enterTransition = { scaleIn(animationSpec = tween(NAV_ANIMATION_TIME)) },
+        exitTransition = { ExitTransition.None },
+        popExitTransition = { scaleOut(animationSpec = tween(NAV_ANIMATION_TIME)) },
+        popEnterTransition = { EnterTransition.None }
+    ) {
         CameraXScreen(navController = navController)
     }
 

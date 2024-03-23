@@ -4,6 +4,7 @@ import android.Manifest
 import android.app.Activity
 import android.content.Context
 import android.content.pm.PackageManager
+import android.content.res.Configuration
 import android.util.Log
 import androidx.annotation.OptIn
 import androidx.camera.core.ExperimentalGetImage
@@ -12,6 +13,7 @@ import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.ImageProxy
 import androidx.camera.view.LifecycleCameraController
 import androidx.camera.view.PreviewView
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -19,6 +21,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Camera
@@ -28,6 +31,8 @@ import androidx.compose.material.icons.filled.TextFields
 import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledIconButton
+import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -42,8 +47,10 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.app.ActivityCompat
@@ -133,7 +140,7 @@ fun CameraXScreen(
 
             AndroidView(factory = { previewView }, modifier = Modifier.fillMaxSize())
 
-            IconButton(
+            FilledTonalIconButton(
                 modifier = Modifier
                     .align(Alignment.TopStart)
                     .padding(32.dp),
@@ -147,7 +154,7 @@ fun CameraXScreen(
                 )
             }
 
-            IconButton(
+            FilledTonalIconButton(
                 modifier = Modifier
                     .align(Alignment.TopEnd)
                     .padding(32.dp),
@@ -162,7 +169,7 @@ fun CameraXScreen(
                 )
             }
 
-            IconButton(
+            FilledTonalIconButton(
                 modifier = Modifier
                     .align(Alignment.BottomStart)
                     .padding(32.dp),
@@ -185,10 +192,11 @@ fun CameraXScreen(
                         .align(Alignment.Center)
                 )
             } else {
+                val orientation = context.resources.configuration.orientation
                 IconButton(
                     modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .padding(bottom = 32.dp)
+                        .align(if (orientation == Configuration.ORIENTATION_PORTRAIT) Alignment.BottomCenter else Alignment.CenterEnd)
+                        .padding(32.dp)
                         .size(64.dp),
                     onClick = {
                         controller.takePicture(
