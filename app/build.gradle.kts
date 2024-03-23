@@ -63,7 +63,7 @@ dependencies {
     implementation (libs.androidx.camera.lifecycle)
     implementation (libs.androidx.camera.view)
     implementation (libs.androidx.camera.extensions)
-    implementation(libs.androidx.camera.mlkit.vision)
+
     // To recognize Latin script
     implementation (libs.text.recognition)
     // To recognize Chinese script
