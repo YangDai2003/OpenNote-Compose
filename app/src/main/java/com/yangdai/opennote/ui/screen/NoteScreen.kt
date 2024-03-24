@@ -400,7 +400,7 @@ fun NoteScreen(
                         }
                     })
                 } else {
-                    HighlightedClickableText(text = viewModel.textFieldState.text.toString())
+                    HighlightedClickableText(viewModel.textFieldState.text.toString())
                 }
 
             } else {

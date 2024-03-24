@@ -17,7 +17,10 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
 
 @Composable
-fun HighlightedClickableText(text: String) {
+fun HighlightedClickableText(str: String) {
+
+    val text = str.replace("- [ ]", "◎").replace("- [x]", "◉")
+
     val pattern = "\\[(.*?)]\\((.*?)\\)".toRegex()
     val matches = pattern.findAll(text)
 
@@ -49,6 +52,7 @@ fun HighlightedClickableText(text: String) {
         // Append the rest of the text
         append(text.substring(lastIndex, text.length))
     }
+
     val context = LocalContext.current
     SelectionContainer {
         ClickableText(
