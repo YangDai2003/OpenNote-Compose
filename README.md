@@ -1,6 +1,6 @@
 # OpenNote
 
-OpenNote is a modern Android note-taking application built entirely with Compose. 
+OpenNote is a modern Android note-taking application built entirely with Compose.  
 It is developed using Kotlin(Compose), and uses Gradle with Kotlin DSL for building the project.
 
 ## Notice
@@ -15,8 +15,9 @@ This project is still in early stages of construction and features may change, b
 - Move notes to different folders
 - Move notes to the trash
 - OCR text recognition using ML Kit and CameraX
-- Support for writing, rendering and displaying notes in Markdown format
-- Ability to export notes as HTML or TXT files
+- Markdown Support: The application supports both CommonMark and GitHub Flavored Markdown (GFM) syntax. This allows for a wide range of formatting options, including headers, emphasis, lists, links, and more.
+- Rich Text Mode: For users who prefer a simpler writing experience, the application also supports a basic rich text mode.
+- Export Options: Notes can be exported in various formats including TXT, MD (Markdown), and HTML. This provides flexibility in how notes can be shared and used outside of the application.
 
 ## Technical Details
 
