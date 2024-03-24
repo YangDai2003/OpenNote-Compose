@@ -19,10 +19,10 @@ navVersion = "2.7.7"
 appcompat = "1.6.1"
 hilt = "2.51"
 hiltNav = "1.2.0"
+playServicesMlkit = "16.0.0"
 room = "2.6.1"
 ksp = "1.9.23-1.0.19"
 lifecycleRuntimeCompose = "2.7.0"
-preferenceKtx = "1.2.1"
 gms = "4.4.1"
 textRecognition = "16.0.0"
 
@@ -65,13 +65,13 @@ androidx-room-compiler = { group = "androidx.room", name = "room-compiler", vers
 androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
 androidx-room-testing = { group = "androidx.room", name = "room-testing", version.ref = "room" }
 androidx-lifecycle-runtime-compose = { group = "androidx.lifecycle", name = "lifecycle-runtime-compose", version.ref = "lifecycleRuntimeCompose" }
-androidx-preference-ktx = { group = "androidx.preference", name = "preference-ktx", version.ref = "preferenceKtx" }
 markdown = { module = "org.jetbrains:markdown", version.ref = "markdown" }
 material = { module = "com.google.android.material:material", version.ref = "material" }
+play-services-mlkit-text-recognition-devanagari = { module = "com.google.android.gms:play-services-mlkit-text-recognition-devanagari", version.ref = "playServicesMlkit" }
+play-services-mlkit-text-recognition-japanese = { module = "com.google.android.gms:play-services-mlkit-text-recognition-japanese", version.ref = "playServicesMlkit" }
+play-services-mlkit-text-recognition-korean = { module = "com.google.android.gms:play-services-mlkit-text-recognition-korean", version.ref = "playServicesMlkit" }
 text-recognition = { module = "com.google.mlkit:text-recognition", version.ref = "textRecognition" }
 text-recognition-chinese = { module = "com.google.mlkit:text-recognition-chinese", version.ref = "textRecognition" }
-text-recognition-japanese = { module = "com.google.mlkit:text-recognition-japanese", version.ref = "textRecognition" }
-text-recognition-korean = { module = "com.google.mlkit:text-recognition-korean", version.ref = "textRecognition" }
 
 
 [plugins]

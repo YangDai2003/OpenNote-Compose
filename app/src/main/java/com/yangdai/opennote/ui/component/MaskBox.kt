@@ -30,7 +30,7 @@ import kotlin.math.roundToInt
 
 /**
  * 激活遮罩动画，
- * 动画模式，点击的x坐标，点击的y坐标
+ * 动画模式，点击的 x坐标，点击的 y坐标
  */
 enum class MaskAnimModel {
     EXPEND,

@@ -6,21 +6,28 @@ import com.yangdai.opennote.data.local.entity.NoteEntity
 import com.yangdai.opennote.domain.operations.NoteOrder
 import com.yangdai.opennote.domain.operations.Operations
 import com.yangdai.opennote.domain.operations.OrderType
+import com.yangdai.opennote.domain.repository.DataStoreRepository
 import com.yangdai.opennote.ui.event.FolderEvent
 import com.yangdai.opennote.ui.event.ListEvent
 import com.yangdai.opennote.ui.state.ListState
+import com.yangdai.opennote.ui.util.Constants
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class MainScreenViewModel @Inject constructor(
-    private val operations: Operations
+    private val operations: Operations,
+    private val dataStoreRepository: DataStoreRepository
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(ListState())
@@ -193,4 +200,19 @@ class MainScreenViewModel @Inject constructor(
             }
             .launchIn(viewModelScope)
     }
+
+    fun putHistoryStringSet(value: Set<String>) {
+        viewModelScope.launch {
+            dataStoreRepository.putStringSet(Constants.HISTORY, value)
+        }
+    }
+
+    val historyStateFlow: StateFlow<Set<String>> = getData()
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = setOf()
+        )
+
+    private fun getData(): Flow<Set<String>> = dataStoreRepository.stringSetFlow(Constants.HISTORY)
 }

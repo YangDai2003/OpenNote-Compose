@@ -566,6 +566,11 @@ fun SettingsScreen(
         RatingDialog(
             showDialog = showRatingDialog,
             onDismissRequest = { showRatingDialog = false }) {
+            if (it > 3) {
+                // TODO
+            } else {
+                // TODO
+            }
         }
         WarningDialog(
             showDialog = showWarningDialog,

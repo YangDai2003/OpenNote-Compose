@@ -91,61 +91,59 @@ fun MainScreen(
     navController: NavController,
     viewModel: MainScreenViewModel
 ) {
-    // 协程作用域
     val scope = rememberCoroutineScope()
     val listState by viewModel.stateFlow.collectAsStateWithLifecycle()
 
-    // 搜索栏状态
+    // Search bar state
     var isSearchBarActive by remember { mutableStateOf(false) }
 
-    // 侧边栏状态, SearchBarActive为true时不允许打开侧边栏
+    // Navigation drawer state, confirmStateChange is used to prevent drawer from closing when search bar is active
     val drawerState = rememberDrawerState(
         initialValue = DrawerValue.Closed,
         confirmStateChange = { !isSearchBarActive })
 
-    // 瀑布流状态
+    // Staggered grid state, used to control the scroll state of the note grid
     val gridState = rememberLazyStaggeredGridState()
     val density = LocalDensity.current
 
-    // 侧边栏选择的项和文件夹，0表示all 1表示回收站 其余为文件夹index
+    // Selected drawer item and folder, 0 for all, 1 for trash, others for folder index
     var selectedDrawer by rememberSaveable { mutableIntStateOf(0) }
     var selectedFolder by remember { mutableStateOf(FolderEntity()) }
     var folderName by rememberSaveable { mutableStateOf("") }
-    // 防止配置变化后文件夹名字丢失
+    // Prevent the folder name from being lost after the configuration changes
     LaunchedEffect(selectedFolder) {
         if (selectedFolder.id != null) {
             folderName = selectedFolder.name
         }
     }
 
-    // 记录是否已经长按开启多选模式
+    // Record whether multi-select mode has been enabled, selected items and whether all items have been selected
     var isEnabled by remember { mutableStateOf(false) }
     var selectedItems by remember { mutableStateOf<Set<Long>>(emptySet()) }
     var selectAll by remember { mutableStateOf(false) }
 
-    // 是否展示悬浮按钮
+    // Whether to show the floating button, determined by the scroll state of the grid, the selected drawer, the search bar, and whether multi-select mode is enabled
     val showFloatingButton by remember {
         derivedStateOf {
             !gridState.isScrollInProgress && selectedDrawer == 0 && !isSearchBarActive && !isEnabled
         }
     }
 
-    // 记录文件夹列表是否展开
+    // Record whether the folder list is expanded
     var isFoldersExpended by rememberSaveable { mutableStateOf(false) }
 
-    // 文件夹列表弹窗状态
+    // Bottom sheet pop-up status for moving notes
     val sheetState = rememberModalBottomSheetState()
     var showBottomSheet by remember { mutableStateOf(false) }
 
-
-    // 重置多选
+    // Reset multi-select mode
     fun initSelect() {
         isEnabled = false
         selectedItems = emptySet()
         selectAll = false
     }
 
-    // 选择侧边栏项引发的操作
+    // Operation caused by selecting the drawer item
     fun selectDrawer(num: Int, onSelect: () -> Unit) {
         if (selectedDrawer != num) {
             selectedDrawer = num
@@ -154,7 +152,7 @@ fun MainScreen(
         }
     }
 
-    // 全选和撤销全选
+    // select all and deselect all, triggered by the checkbox in the bottom bar
     LaunchedEffect(key1 = selectAll) {
         selectedItems = if (selectAll)
             selectedItems.plus(listState.notes.mapNotNull { noteEntity -> noteEntity.id })
@@ -162,10 +160,10 @@ fun MainScreen(
             selectedItems.minus(listState.notes.mapNotNull { noteEntity -> noteEntity.id }.toSet())
     }
 
-    // 点击侧边栏重置多选模式
+    // Initialize the selected drawer item, triggered by the drawer item
     LaunchedEffect(selectedDrawer) { initSelect() }
 
-    // 拦截返回手势, 确保返回符合逻辑
+    // Back logic for better user experience
     BackHandler(isEnabled || drawerState.isOpen || selectedDrawer != 0) {
         if (drawerState.isOpen) {
             scope.launch {
@@ -310,14 +308,12 @@ fun MainScreen(
                         TopSearchbar(
                             scope = scope,
                             drawerState = drawerState,
-                            onSearch = { text -> viewModel.onListEvent(ListEvent.Search(text)) },
+                            viewModel = viewModel,
                             onActiveChange = { active ->
                                 initSelect()
                                 isSearchBarActive = active
                             }
-                        ) {
-                            viewModel.onListEvent(ListEvent.ToggleOrderSection)
-                        }
+                        )
                     } else {
                         var showMenu by remember {
                             mutableStateOf(false)

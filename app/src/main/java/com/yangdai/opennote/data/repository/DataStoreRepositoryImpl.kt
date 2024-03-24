@@ -7,6 +7,7 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
+import androidx.datastore.preferences.core.stringSetPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.yangdai.opennote.domain.repository.DataStoreRepository
 import kotlinx.coroutines.flow.Flow
@@ -77,6 +78,24 @@ class DataStoreRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun putStringSet(key: String, value: Set<String>) {
+        val preferencesKey = stringSetPreferencesKey(key)
+        context.dataStore.edit { preferences ->
+            preferences[preferencesKey] = value
+        }
+    }
+
+    override suspend fun getStringSet(key: String): Set<String>? {
+        return try {
+            val preferencesKey = stringSetPreferencesKey(key)
+            val preferences = context.dataStore.data.first()
+            preferences[preferencesKey]
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
+    }
+
     override fun intFlow(key: String): Flow<Int> {
         val preferencesKey = intPreferencesKey(key)
         return context.dataStore.data.map { preferences ->
@@ -95,6 +114,13 @@ class DataStoreRepositoryImpl @Inject constructor(
         val preferencesKey = booleanPreferencesKey(key)
         return context.dataStore.data.map { preferences ->
             preferences[preferencesKey] ?: false
+        }
+    }
+
+    override fun stringSetFlow(key: String): Flow<Set<String>> {
+        val preferencesKey = stringSetPreferencesKey(key)
+        return context.dataStore.data.map { preferences ->
+            preferences[preferencesKey] ?: setOf()
         }
     }
 

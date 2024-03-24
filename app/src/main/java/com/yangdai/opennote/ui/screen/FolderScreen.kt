@@ -43,11 +43,11 @@ fun FolderScreen(
     viewModel: MainScreenViewModel
 ) {
 
+    val listState by viewModel.stateFlow.collectAsStateWithLifecycle()
+
     var showAddFolderDialog by rememberSaveable {
         mutableStateOf(false)
     }
-
-    val listState = viewModel.stateFlow.collectAsStateWithLifecycle().value
 
     val scrollBehavior =
         TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
@@ -99,6 +99,7 @@ fun FolderScreen(
     ) { paddingValues ->
 
         val state = rememberLazyListState()
+
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()

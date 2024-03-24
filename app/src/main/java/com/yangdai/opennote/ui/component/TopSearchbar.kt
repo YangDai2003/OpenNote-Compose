@@ -4,9 +4,11 @@ import android.content.res.Configuration
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -16,15 +18,14 @@ import androidx.compose.material.icons.automirrored.outlined.MenuOpen
 import androidx.compose.material.icons.automirrored.outlined.Sort
 import androidx.compose.material.icons.outlined.Clear
 import androidx.compose.material.icons.outlined.DeleteForever
-import androidx.compose.material.icons.outlined.History
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.DockedSearchBar
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.ListItem
 import androidx.compose.material3.SearchBar
+import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -35,23 +36,28 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.preference.PreferenceManager
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.yangdai.opennote.R
+import com.yangdai.opennote.ui.event.ListEvent
+import com.yangdai.opennote.ui.viewmodel.MainScreenViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun TopSearchbar(
     scope: CoroutineScope,
     drawerState: DrawerState,
-    onSearch: (String) -> Unit,
-    onActiveChange: (Boolean) -> Unit,
-    onSort: () -> Unit
+    viewModel: MainScreenViewModel,
+    onActiveChange: (Boolean) -> Unit
 ) {
+
+    val historySet by viewModel.historyStateFlow.collectAsStateWithLifecycle()
+
     var inputText by remember {
         mutableStateOf("")
     }
@@ -63,23 +69,17 @@ fun TopSearchbar(
         onActiveChange(active)
     }
 
-    val context = LocalContext.current
-    val defaultSharedPrefs = PreferenceManager.getDefaultSharedPreferences(context)
-    val dataList = remember {
-        defaultSharedPrefs.getStringSet("history", setOf())?.sorted()?.toMutableList()
-            ?: mutableListOf()
-    }
-
     val configuration = LocalConfiguration.current
     val orientation = remember(configuration) { configuration.orientation }
 
     fun search(text: String) {
-        if (!dataList.contains(text) && text.isNotEmpty()) {
-            dataList.add(text)
-            defaultSharedPrefs.edit().putStringSet("history", dataList.toSet()).apply()
+        if (text.isNotEmpty()) {
+            val newSet = historySet.toMutableSet()
+            newSet.add(text)
+            viewModel.putHistoryStringSet(newSet)
         }
         active = false
-        onSearch(inputText)
+        viewModel.onListEvent(ListEvent.Search(text))
     }
 
     @Composable
@@ -99,10 +99,7 @@ fun TopSearchbar(
             }
         }
         AnimatedVisibility(visible = active, enter = fadeIn(), exit = fadeOut()) {
-            IconButton(onClick = {
-                active = false
-                onSearch(inputText)
-            }) {
+            IconButton(onClick = { search(inputText) }) {
                 Icon(imageVector = Icons.Outlined.Search, contentDescription = "Search")
             }
 
@@ -116,8 +113,7 @@ fun TopSearchbar(
                 if (inputText.isNotEmpty()) {
                     inputText = ""
                 } else {
-                    active = false
-                    onSearch(inputText)
+                    search("")
                 }
             }) {
                 Icon(
@@ -127,7 +123,7 @@ fun TopSearchbar(
             }
         }
         AnimatedVisibility(visible = !active, enter = fadeIn(), exit = fadeOut()) {
-            IconButton(onClick = onSort) {
+            IconButton(onClick = { viewModel.onListEvent(ListEvent.ToggleOrderSection) }) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Outlined.Sort,
                     contentDescription = "Sort"
@@ -151,10 +147,7 @@ fun TopSearchbar(
 
             Text(text = stringResource(R.string.search_history))
 
-            IconButton(onClick = {
-                dataList.clear()
-                defaultSharedPrefs.edit().putStringSet("history", setOf()).apply()
-            }) {
+            IconButton(onClick = { viewModel.putHistoryStringSet(emptySet()) }) {
                 Icon(
                     imageVector = Icons.Outlined.DeleteForever,
                     contentDescription = "Clear History"
@@ -163,17 +156,25 @@ fun TopSearchbar(
 
         }
 
-        repeat(dataList.size) {
-            ListItem(
-                modifier = Modifier.clickable { inputText = dataList[it] },
-                headlineContent = { Text(text = dataList[it]) },
-                leadingContent = {
-                    Icon(
-                        modifier = Modifier.padding(end = 12.dp),
-                        imageVector = Icons.Outlined.History,
-                        contentDescription = "History"
-                    )
-                })
+        FlowRow(
+            Modifier
+                .padding(top = 8.dp)
+                .padding(horizontal = 12.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            historySet.forEach {
+                SuggestionChip(
+                    modifier = Modifier.defaultMinSize(48.dp),
+                    onClick = { inputText = it },
+                    label = {
+                        Text(
+                            text = it,
+                            textAlign = TextAlign.Center,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    })
+            }
         }
     }
 

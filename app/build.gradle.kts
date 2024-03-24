@@ -29,7 +29,8 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isShrinkResources = true
+            isMinifyEnabled = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -63,14 +64,17 @@ dependencies {
     implementation (libs.androidx.camera.lifecycle)
     implementation (libs.androidx.camera.view)
 
+    // 拉丁语为广泛使用的语言，因此我们将其作为默认语言，且捆绑在应用中。中文由于中国无法使用Google Play服务，因此也捆绑在应用中。其它语言则通过Google Play服务下载。
     // To recognize Latin script
     implementation (libs.text.recognition)
     // To recognize Chinese script
     implementation (libs.text.recognition.chinese)
+    // To recognize Devanagari script
+    implementation (libs.play.services.mlkit.text.recognition.devanagari)
     // To recognize Japanese script
-    implementation (libs.text.recognition.japanese)
+    implementation (libs.play.services.mlkit.text.recognition.japanese)
     // To recognize Korean script
-    implementation (libs.text.recognition.korean)
+    implementation (libs.play.services.mlkit.text.recognition.korean)
 
     // Firebase, if u don't have google-services.json, remove this block
     implementation(platform(libs.firebase.bom))
@@ -92,7 +96,6 @@ dependencies {
     implementation(libs.androidx.core.splashscreen)
     implementation (libs.androidx.biometric)
     implementation(libs.androidx.datastore.preferences)
-    implementation(libs.androidx.preference.ktx)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.lifecycle.runtime.compose)

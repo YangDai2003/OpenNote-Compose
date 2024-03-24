@@ -3,6 +3,7 @@ package com.yangdai.opennote.ui.util
 object Constants {
     const val NAV_ANIMATION_TIME = 300
 
+    const val HISTORY = "SEARCH_HISTORY"
     const val APP_THEME = "APP_THEME"
     const val APP_COLOR = "APP_COLOR"
     const val NEED_PASSWORD = "NEED_PASSWORD"

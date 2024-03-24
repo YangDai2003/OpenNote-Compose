@@ -30,7 +30,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.automirrored.outlined.MenuBook
 import androidx.compose.material.icons.outlined.Alarm
-import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.EditNote
 import androidx.compose.material.icons.outlined.FileDownload
@@ -95,24 +94,27 @@ fun NoteScreen(
     val context = LocalContext.current
     val state by viewModel.stateFlow.collectAsStateWithLifecycle()
 
-    // 阅读和编辑模式切换
+    // Switch between read mode and edit mode
     var isReadMode by rememberSaveable {
         mutableStateOf(false)
     }
 
+    // Whether to show the link dialog
     var showLinkDialog by rememberSaveable {
         mutableStateOf(false)
     }
 
+    // Whether to show the task dialog
     var showTaskDialog by rememberSaveable {
         mutableStateOf(false)
     }
 
+    // Whether to show the export dialog
     var showExportDialog by rememberSaveable {
         mutableStateOf(false)
     }
 
-    // 控制顶栏菜单显示状态
+    // Whether to show the overflow menu
     var showMenu by rememberSaveable {
         mutableStateOf(false)
     }
@@ -121,7 +123,7 @@ fun NoteScreen(
         onEvent(NoteEvent.NavigateBack)
     }
 
-    // 记录所属文件夹名
+    // Folder name, default to "All Notes", or the name of the current folder the note is in
     var folderName by rememberSaveable {
         mutableStateOf("")
     }
@@ -139,6 +141,7 @@ fun NoteScreen(
 
     val textFieldScrollState = rememberScrollState()
 
+    // Get the scanned text from the camerax screen
     val scannedText =
         navController.currentBackStackEntry?.savedStateHandle?.get<String>("scannedText")
 
@@ -149,6 +152,7 @@ fun NoteScreen(
             }
         }
     }
+
     Scaffold(
         modifier = Modifier
             .fillMaxSize()
@@ -309,28 +313,21 @@ fun NoteScreen(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 8.dp),
+                    .padding(vertical = 4.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        modifier = Modifier.size(16.dp),
-                        imageVector = Icons.Outlined.CalendarMonth,
-                        contentDescription = "Date",
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Text(
-                        text = """${stringResource(R.string.edited)}$time""",
-                        style = MaterialTheme.typography.titleSmall.copy(
-                            lineHeightStyle = LineHeightStyle(
-                                trim = LineHeightStyle.Trim.None,
-                                alignment = LineHeightStyle.Alignment.Proportional
-                            )
-                        ),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
+
+                Text(
+                    text = """${stringResource(R.string.edited)}$time""",
+                    style = MaterialTheme.typography.titleSmall.copy(
+                        lineHeightStyle = LineHeightStyle(
+                            trim = LineHeightStyle.Trim.None,
+                            alignment = LineHeightStyle.Alignment.Proportional
+                        )
+                    ),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
 
                 Text(
                     text = if (state.isMarkdown) "MARKDOWN" else stringResource(R.string.rich_text),
@@ -342,10 +339,12 @@ fun NoteScreen(
                     ),
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
-
             }
 
-            HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp))
+            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+
+            val textColor = MaterialTheme.colorScheme.onSurface.toArgb()
+            val hexColor = String.format("#%06X", 0xFFFFFF and textColor)
 
             if (isReadMode) {
 
@@ -354,9 +353,6 @@ fun NoteScreen(
                     val flavour = GFMFlavourDescriptor()
                     val parsedTree = MarkdownParser(flavour).buildMarkdownTreeFromString(src)
                     val html = HtmlGenerator(src, parsedTree, flavour).generateHtml()
-
-                    val textColor = MaterialTheme.colorScheme.onSurface.toArgb()
-                    val hexColor = String.format("#%06X", 0xFFFFFF and textColor)
 
                     AndroidView(modifier = Modifier.fillMaxSize(), factory = {
                         WebView(it).apply {

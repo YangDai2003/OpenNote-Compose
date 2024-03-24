@@ -19,11 +19,9 @@ import androidx.compose.material.icons.outlined.FormatItalic
 import androidx.compose.material.icons.outlined.FormatPaint
 import androidx.compose.material.icons.outlined.FormatUnderlined
 import androidx.compose.material.icons.outlined.Link
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -46,12 +44,10 @@ fun NoteEditorRow(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(MaterialTheme.colorScheme.surfaceContainer)
+                .background(MaterialTheme.colorScheme.surfaceVariant)
                 .height(48.dp)
                 .horizontalScroll(rememberScrollState())
         ) {
-
-            HorizontalDivider()
 
             Row(Modifier.fillMaxSize(), verticalAlignment = Alignment.CenterVertically) {
                 IconButton(
@@ -73,8 +69,6 @@ fun NoteEditorRow(
                         contentDescription = "Redo"
                     )
                 }
-
-                VerticalDivider()
 
                 if (noteState.isMarkdown) {
                     IconButton(onClick = { viewModel.bold() }) {

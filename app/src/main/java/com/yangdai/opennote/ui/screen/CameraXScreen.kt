@@ -116,6 +116,7 @@ fun CameraXScreen(
 
     val locale = context.resources.configuration.locales[0].language
 
+    // Set the text recognizer based on the locale
     when (locale) {
         Locale.CHINESE.language -> {
             textRecognizer =
@@ -185,7 +186,10 @@ fun CameraXScreen(
                         .statusBarsPadding()
                         .padding(end = 32.dp, top = 32.dp),
                     onClick = {
-                        navController.previousBackStackEntry?.savedStateHandle?.set("scannedText", text)
+                        navController.previousBackStackEntry?.savedStateHandle?.set(
+                            "scannedText",
+                            text
+                        )
                         navController.navigateUp()
                     }
                 ) {
@@ -317,15 +321,11 @@ fun hasRequiredPermissions(
     context: Context
 ): Boolean {
     return CAMERAX_PERMISSIONS.all {
-        ContextCompat.checkSelfPermission(
-            context,
-            it
-        ) == PackageManager.PERMISSION_GRANTED
+        ContextCompat.checkSelfPermission(context, it) == PackageManager.PERMISSION_GRANTED
     }
 }
 
 
 val CAMERAX_PERMISSIONS = arrayOf(
-    Manifest.permission.CAMERA,
-    Manifest.permission.RECORD_AUDIO,
+    Manifest.permission.CAMERA
 )

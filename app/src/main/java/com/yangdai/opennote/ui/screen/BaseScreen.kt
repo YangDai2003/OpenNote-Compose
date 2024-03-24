@@ -20,7 +20,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -35,6 +35,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -74,10 +75,12 @@ fun BaseScreen(
 
     val settingsState by baseScreenViewModel.stateFlow.collectAsStateWithLifecycle()
 
+    // Biometric authentication
     var authenticated by rememberSaveable {
         mutableStateOf(false)
     }
 
+    // Check if the user is logged in
     val loggedIn by remember {
         derivedStateOf {
             !settingsState.needPassword || authenticated
@@ -124,37 +127,38 @@ fun BaseScreen(
         }
     }
 
-    val isAppInDarkTheme by baseScreenViewModel.getFlow()
-        .map { preferences ->
-            preferences[booleanPreferencesKey(IS_APP_IN_DARK_MODE)] ?: false
-        }
-        .collectAsState(initial = false)
-    val followSystem by baseScreenViewModel.getFlow()
-        .map { preferences ->
-            preferences[booleanPreferencesKey(SHOULD_FOLLOW_SYSTEM)] ?: false
-        }
-        .collectAsState(initial = false)
-    val darkSwitchActive by baseScreenViewModel.getFlow()
-        .map { preferences ->
-            preferences[booleanPreferencesKey(IS_DARK_SWITCH_ACTIVE)] ?: false
-        }
-        .collectAsState(initial = false)
-    val maskClickX by baseScreenViewModel.getFlow()
-        .map { preferences ->
-            preferences[floatPreferencesKey(MASK_CLICK_X)] ?: 0f
-        }
-        .collectAsState(initial = 0f)
-    val maskClickY by baseScreenViewModel.getFlow()
-        .map { preferences ->
-            preferences[floatPreferencesKey(MASK_CLICK_Y)] ?: 0f
-        }
-        .collectAsState(initial = 0f)
+    val isAppInDarkTheme by getPreferenceState(
+        baseScreenViewModel,
+        booleanPreferencesKey(IS_APP_IN_DARK_MODE),
+        false
+    )
+    val followSystem by getPreferenceState(
+        baseScreenViewModel,
+        booleanPreferencesKey(SHOULD_FOLLOW_SYSTEM),
+        false
+    )
+    val darkSwitchActive by getPreferenceState(
+        baseScreenViewModel,
+        booleanPreferencesKey(IS_DARK_SWITCH_ACTIVE),
+        false
+    )
+    val maskClickX by getPreferenceState(
+        baseScreenViewModel,
+        floatPreferencesKey(MASK_CLICK_X),
+        0f
+    )
+    val maskClickY by getPreferenceState(
+        baseScreenViewModel,
+        floatPreferencesKey(MASK_CLICK_Y),
+        0f
+    )
 
     var maskAnimWay by remember {
         mutableStateOf(MaskAnimWay.DARK_SWITCH)
     }
 
     val isSystemInDarkTheme = isSystemInDarkTheme()
+
     LaunchedEffect(isSystemInDarkTheme) {
         if (settingsState.mode == 0) {
             baseScreenViewModel.putBoolean(IS_APP_IN_DARK_MODE, isSystemInDarkTheme)
@@ -166,6 +170,7 @@ fun BaseScreen(
         darkMode = shouldUseDarkTheme(settingsState.mode, isAppInDarkTheme)
     ) {
 
+        // MaskBox is a custom composable that animates a mask over the screen
         MaskBox(
             maskComplete = {
                 when (maskAnimWay) {
@@ -247,6 +252,17 @@ fun BaseScreen(
             }
         }
     }
+}
+
+@Composable
+fun <T> getPreferenceState(
+    viewModel: BaseScreenViewModel,
+    key: Preferences.Key<T>,
+    defaultValue: T
+): State<T> {
+    return viewModel.getFlow()
+        .map { preferences -> preferences[key] ?: defaultValue }
+        .collectAsStateWithLifecycle(initialValue = defaultValue)
 }
 
 @Composable
