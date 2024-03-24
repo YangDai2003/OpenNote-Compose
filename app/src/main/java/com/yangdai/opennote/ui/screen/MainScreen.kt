@@ -73,7 +73,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.yangdai.opennote.R
-import com.yangdai.opennote.Route
+import com.yangdai.opennote.ui.navigation.Route
 import com.yangdai.opennote.data.local.entity.FolderEntity
 import com.yangdai.opennote.data.local.entity.NoteEntity
 import com.yangdai.opennote.ui.event.ListEvent
@@ -93,7 +93,7 @@ fun MainScreen(
 ) {
     // 协程作用域
     val scope = rememberCoroutineScope()
-    val listState = viewModel.stateFlow.collectAsStateWithLifecycle().value
+    val listState by viewModel.stateFlow.collectAsStateWithLifecycle()
 
     // 搜索栏状态
     var isSearchBarActive by remember { mutableStateOf(false) }
@@ -311,7 +311,10 @@ fun MainScreen(
                             scope = scope,
                             drawerState = drawerState,
                             onSearch = { text -> viewModel.onListEvent(ListEvent.Search(text)) },
-                            onActiveChange = { active -> isSearchBarActive = active }
+                            onActiveChange = { active ->
+                                initSelect()
+                                isSearchBarActive = active
+                            }
                         ) {
                             viewModel.onListEvent(ListEvent.ToggleOrderSection)
                         }

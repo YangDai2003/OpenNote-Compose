@@ -17,7 +17,6 @@ import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.DriveFileRenameOutline
 import androidx.compose.material.icons.outlined.FolderOpen
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -101,31 +100,11 @@ fun FolderItem(
             }
         }
 
-        if (delete) {
-            AlertDialog(
-                title = { Text(text = stringResource(R.string.warning)) },
-                text = { Text(text = stringResource(R.string.deleting_a_folder_will_also_delete_all_the_notes_it_contains_and_they_cannot_be_restored_do_you_want_to_continue)) },
-                onDismissRequest = { delete = false },
-                confirmButton = {
-                    TextButton(
-                        onClick = {
-                            onDelete()
-                            delete = false
-                        },
-                        colors = ButtonDefaults.textButtonColors().copy(
-                            containerColor = MaterialTheme.colorScheme.errorContainer,
-                            contentColor = MaterialTheme.colorScheme.error
-                        )
-                    ) {
-                        Text(text = stringResource(id = android.R.string.ok))
-                    }
-                },
-                dismissButton = {
-                    TextButton(onClick = { delete = false }) {
-                        Text(text = stringResource(id = android.R.string.cancel))
-                    }
-                }
-            )
+        WarningDialog(
+            showDialog = delete,
+            message = stringResource(R.string.deleting_a_folder_will_also_delete_all_the_notes_it_contains_and_they_cannot_be_restored_do_you_want_to_continue),
+            onDismissRequest = { delete = false }) {
+            onDelete()
         }
 
         if (modify) {

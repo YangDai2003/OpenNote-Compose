@@ -10,6 +10,7 @@ data class NoteEntity(
     @ColumnInfo(name = "title") val title: String = "",
     @ColumnInfo(name = "content") val content: String = "",
     @ColumnInfo(name = "folderId") val folderId: Long? = null,
+    val isMarkdown: Boolean = true,
     val isDeleted: Boolean = false,
     val timestamp: Long
 )

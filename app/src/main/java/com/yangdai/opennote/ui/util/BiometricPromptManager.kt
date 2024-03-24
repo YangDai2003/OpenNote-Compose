@@ -1,4 +1,4 @@
-package com.yangdai.opennote
+package com.yangdai.opennote.ui.util
 
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity

@@ -3,9 +3,9 @@ package com.yangdai.opennote.ui.viewmodel
 import androidx.datastore.preferences.core.Preferences
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.yangdai.opennote.Constants.APP_COLOR
-import com.yangdai.opennote.Constants.APP_THEME
-import com.yangdai.opennote.Constants.NEED_PASSWORD
+import com.yangdai.opennote.ui.util.Constants.APP_COLOR
+import com.yangdai.opennote.ui.util.Constants.APP_THEME
+import com.yangdai.opennote.ui.util.Constants.NEED_PASSWORD
 import com.yangdai.opennote.ui.state.SettingsState
 import com.yangdai.opennote.domain.repository.DataStoreRepository
 import dagger.hilt.android.lifecycle.HiltViewModel

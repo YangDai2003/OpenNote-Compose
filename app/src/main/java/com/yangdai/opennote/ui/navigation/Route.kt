@@ -1,4 +1,4 @@
-package com.yangdai.opennote
+package com.yangdai.opennote.ui.navigation
 
 object Route {
     const val MAIN = "main"

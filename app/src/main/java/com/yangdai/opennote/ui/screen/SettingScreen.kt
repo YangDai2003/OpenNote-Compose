@@ -70,18 +70,19 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.yangdai.opennote.Constants.APP_COLOR
-import com.yangdai.opennote.Constants.APP_THEME
-import com.yangdai.opennote.Constants.NEED_PASSWORD
-import com.yangdai.opennote.Constants.IS_APP_IN_DARK_MODE
-import com.yangdai.opennote.Constants.IS_DARK_SWITCH_ACTIVE
-import com.yangdai.opennote.Constants.MASK_CLICK_X
-import com.yangdai.opennote.Constants.MASK_CLICK_Y
-import com.yangdai.opennote.Constants.SHOULD_FOLLOW_SYSTEM
+import com.yangdai.opennote.ui.util.Constants.APP_COLOR
+import com.yangdai.opennote.ui.util.Constants.APP_THEME
+import com.yangdai.opennote.ui.util.Constants.NEED_PASSWORD
+import com.yangdai.opennote.ui.util.Constants.IS_APP_IN_DARK_MODE
+import com.yangdai.opennote.ui.util.Constants.IS_DARK_SWITCH_ACTIVE
+import com.yangdai.opennote.ui.util.Constants.MASK_CLICK_X
+import com.yangdai.opennote.ui.util.Constants.MASK_CLICK_Y
+import com.yangdai.opennote.ui.util.Constants.SHOULD_FOLLOW_SYSTEM
 import com.yangdai.opennote.R
 import com.yangdai.opennote.ui.viewmodel.SettingScreenViewModel
 import com.yangdai.opennote.data.di.AppModule
 import com.yangdai.opennote.ui.component.RatingDialog
+import com.yangdai.opennote.ui.component.WarningDialog
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.map
@@ -156,6 +157,7 @@ fun SettingsScreen(
     val isSystemDarkTheme = isSystemInDarkTheme()
 
     var showRatingDialog by rememberSaveable { mutableStateOf(false) }
+    var showWarningDialog by rememberSaveable { mutableStateOf(false) }
 
     Scaffold(
         modifier = Modifier
@@ -430,18 +432,18 @@ fun SettingsScreen(
                         contentDescription = "Clear"
                     )
                 },
-                headlineContent = { Text(text = stringResource(R.string.delete_all_notes)) },
+                headlineContent = { Text(text = stringResource(R.string.reset_database)) },
                 trailingContent = {
                     TextButton(
                         onClick = {
-                            clear(context)
+                            showWarningDialog = true
                         },
                         colors = ButtonDefaults.textButtonColors().copy(
                             containerColor = MaterialTheme.colorScheme.errorContainer,
                             contentColor = MaterialTheme.colorScheme.error
                         )
                     ) {
-                        Text(text = stringResource(id = R.string.delete))
+                        Text(text = stringResource(id = R.string.reset))
                     }
                 })
 
@@ -564,7 +566,12 @@ fun SettingsScreen(
         RatingDialog(
             showDialog = showRatingDialog,
             onDismissRequest = { showRatingDialog = false }) {
-
+        }
+        WarningDialog(
+            showDialog = showWarningDialog,
+            message = stringResource(R.string.reset_database_warning),
+            onDismissRequest = { showWarningDialog = false }) {
+            clear(context.applicationContext)
         }
     }
 }

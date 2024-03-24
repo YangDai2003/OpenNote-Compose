@@ -35,7 +35,7 @@
     <string name="biometric_login">生物信息认证</string>
     <string name="log_in_using_your_biometric_credential">使用您的生物信息凭据登录应用</string>
     <string name="data">数据</string>
-    <string name="delete_all_notes">删除所有笔记</string>
+    <string name="reset_database">重置数据库</string>
     <string name="please_relaunch_the_app">请重启应用</string>
     <string name="remind">提醒</string>
     <string name="restore_all">全部恢复</string>
@@ -51,8 +51,13 @@
     <string name="failed">失败</string>
     <string name="saved_download">文件已保存到下载目录。</string>
     <string name="shareContent">欢迎使用\"Open Note\"，这是一款轻量化、美观且符合Material 3设计风格的应用。应用提供本地存储功能，无需网络也能随时记录你的想法。高效的搜索功能可以帮助你快速找到你的笔记，而文件夹分类功能则可以帮助你更好地组织你的笔记。此外，应用还提供文本OCR功能，可以将图片中的文字转换为可编辑的文本。我们的目标是为你提供最便捷、最高效的笔记体验。</string>
-    <string name="export_txt">导出 .txt</string>
+    <string name="export">导出</string>
     <string name="share">分享</string>
     <string name="name">名称</string>
     <string name="link">链接</string>
+    <string name="reset">重置</string>
+    <string name="reset_database_warning">重置数据库会导致所有笔记和文件夹被彻底删除且不可恢复，请决定是否继续操作?</string>
+    <string name="task">任务</string>
+    <string name="completed">已完成</string>
+    <string name="rich_text">富文本</string>
 </resources>

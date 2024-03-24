@@ -1,4 +1,4 @@
-package com.yangdai.opennote
+package com.yangdai.opennote.ui.util
 
 import android.content.ContentValues
 import android.content.Context
@@ -6,6 +6,7 @@ import android.icu.text.DateFormat
 import android.os.Environment
 import android.provider.MediaStore
 import android.widget.Toast
+import com.yangdai.opennote.R
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -33,12 +34,18 @@ fun getOutputDirectory(context: Context): String {
     return directory.absolutePath
 }
 
-fun exportNote(context: Context, fileName: String, content: String) {
+fun exportNote(context: Context, fileName: String, content: String, type : String) {
+
+    val extension = when (type) {
+        "TXT" -> ".txt"
+        "MARKDOWN" -> ".md"
+        else -> ".html"
+    }
 
     getOutputDirectory(context)
 
     val values = ContentValues().apply {
-        put(MediaStore.Downloads.DISPLAY_NAME, "$fileName.txt")
+        put(MediaStore.Downloads.DISPLAY_NAME, "$fileName$extension")
         put(MediaStore.Downloads.MIME_TYPE, "text/*")
         put(
             MediaStore.Downloads.RELATIVE_PATH,

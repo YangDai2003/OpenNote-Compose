@@ -1,9 +1,11 @@
 package com.yangdai.opennote.ui.component
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -12,57 +14,53 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.yangdai.opennote.R
-import com.yangdai.opennote.ui.state.LinkState
+import com.yangdai.opennote.ui.state.TaskState
 
 
 @Composable
-fun LinkDialog(
+fun TaskDialog(
     onDismissRequest: () -> Unit,
-    onConfirm: (LinkState) -> Unit
+    onConfirm: (TaskState) -> Unit
 ) {
 
-    var name by remember {
+    var task by remember {
         mutableStateOf("")
     }
 
-    var uri by remember {
-        mutableStateOf("")
+    var checked by remember {
+        mutableStateOf(false)
     }
-    var nameError by remember { mutableStateOf(false) }
-    var uriError by remember { mutableStateOf(false) }
+
+    var taskError by remember { mutableStateOf(false) }
 
     AlertDialog(
         title = {
-            Text(text = stringResource(R.string.link))
+            Text(text = stringResource(R.string.task))
         },
         text = {
             Column {
+
                 OutlinedTextField(
-                    value = name,
+                    value = task,
                     onValueChange = {
-                        name = it
-                        nameError = it.isBlank()
+                        task = it
+                        taskError = it.isBlank()
                     },
                     singleLine = true,
-                    isError = nameError,
-                    placeholder = { Text(text = stringResource(R.string.name)) })
+                    isError = taskError
+                )
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                OutlinedTextField(
-                    value = uri,
-                    onValueChange = {
-                        uri = it
-                        uriError = it.isBlank()
-                    },
-                    singleLine = true,
-                    isError = uriError,
-                    placeholder = { Text(text = stringResource(R.string.uri_example)) }
-                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Checkbox(checked = checked, onCheckedChange = { checked = it })
+                    Text(text = stringResource(R.string.completed))
+                }
             }
         },
         onDismissRequest = {
@@ -71,21 +69,13 @@ fun LinkDialog(
         confirmButton = {
             TextButton(
                 onClick = {
-                    if (name.isBlank()) {
-                        nameError = true
+                    if (task.isBlank()) {
+                        taskError = true
                     }
-                    if (uri.isBlank()) {
-                        uriError = true
-                    }
-                    if (!nameError && !uriError) {
-                        name = name.trim()
-                        uri = uri.trim()
-                        if (!uri.startsWith("http://") && !uri.startsWith("https://")
-                            && uri.startsWith("www.")
-                        ) {
-                            uri = "https://$uri"
-                        }
-                        onConfirm(LinkState(name, uri))
+
+                    if (!taskError) {
+                        task = task.trim()
+                        onConfirm(TaskState(task, checked))
                         onDismissRequest()
                     }
                 }

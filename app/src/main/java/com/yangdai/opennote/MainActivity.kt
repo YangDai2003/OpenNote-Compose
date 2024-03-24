@@ -11,6 +11,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.animation.doOnEnd
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.yangdai.opennote.ui.screen.BaseScreen
+import com.yangdai.opennote.ui.util.BiometricPromptManager
 import com.yangdai.opennote.ui.viewmodel.BaseScreenViewModel
 import dagger.hilt.android.AndroidEntryPoint
 

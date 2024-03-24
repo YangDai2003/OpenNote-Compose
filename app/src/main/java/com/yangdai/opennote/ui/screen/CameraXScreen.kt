@@ -178,20 +178,22 @@ fun CameraXScreen(
                 )
             }
 
-            FilledTonalIconButton(
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .statusBarsPadding()
-                    .padding(end = 32.dp, top = 32.dp),
-                onClick = {
-                    navController.previousBackStackEntry?.savedStateHandle?.set("scannedText", text)
-                    navController.navigateUp()
+            if (text.isNotEmpty() && !isLoading) {
+                FilledTonalIconButton(
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .statusBarsPadding()
+                        .padding(end = 32.dp, top = 32.dp),
+                    onClick = {
+                        navController.previousBackStackEntry?.savedStateHandle?.set("scannedText", text)
+                        navController.navigateUp()
+                    }
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Done,
+                        contentDescription = "Done"
+                    )
                 }
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Done,
-                    contentDescription = "Done"
-                )
             }
 
             FilledTonalIconButton(

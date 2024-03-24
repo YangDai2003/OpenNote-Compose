@@ -17,8 +17,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
-import com.yangdai.opennote.Constants.NAV_ANIMATION_TIME
-import com.yangdai.opennote.Route
+import com.yangdai.opennote.ui.util.Constants.NAV_ANIMATION_TIME
 import com.yangdai.opennote.ui.event.UiEvent
 import com.yangdai.opennote.ui.screen.CameraXScreen
 import com.yangdai.opennote.ui.screen.FolderScreen

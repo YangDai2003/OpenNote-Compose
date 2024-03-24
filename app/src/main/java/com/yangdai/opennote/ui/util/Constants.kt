@@ -1,4 +1,4 @@
-package com.yangdai.opennote
+package com.yangdai.opennote.ui.util
 
 object Constants {
     const val NAV_ANIMATION_TIME = 300

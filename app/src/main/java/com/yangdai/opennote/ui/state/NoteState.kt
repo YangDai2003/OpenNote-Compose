@@ -9,6 +9,7 @@ data class NoteState(
     val title: String = "",
     val content: String = "",
     val folderId: Long? = null,
+    val isMarkdown: Boolean = true,
     val timestamp: Long? = null,
     val folders: List<FolderEntity> = emptyList()
 )

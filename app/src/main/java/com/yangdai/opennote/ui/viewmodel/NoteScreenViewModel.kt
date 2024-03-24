@@ -2,7 +2,6 @@ package com.yangdai.opennote.ui.viewmodel
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.text2.input.TextFieldState
-import androidx.compose.ui.text.TextRange
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -11,6 +10,13 @@ import com.yangdai.opennote.domain.operations.Operations
 import com.yangdai.opennote.ui.event.NoteEvent
 import com.yangdai.opennote.ui.state.NoteState
 import com.yangdai.opennote.ui.event.UiEvent
+import com.yangdai.opennote.ui.util.addLink
+import com.yangdai.opennote.ui.util.addTask
+import com.yangdai.opennote.ui.util.bold
+import com.yangdai.opennote.ui.util.inlineCode
+import com.yangdai.opennote.ui.util.italic
+import com.yangdai.opennote.ui.util.mark
+import com.yangdai.opennote.ui.util.underline
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
@@ -49,6 +55,7 @@ class NoteScreenViewModel @Inject constructor(
     private var oTitle = ""
     private var oContent = ""
     private var oFolderId: Long? = null
+    private var oIsMarkdown = true
 
     init {
         savedStateHandle.get<String>("id")?.let {
@@ -58,6 +65,7 @@ class NoteScreenViewModel @Inject constructor(
                     oTitle = note.title
                     oContent = note.content
                     oFolderId = note.folderId
+                    oIsMarkdown = note.isMarkdown
                     textFieldState = TextFieldState(note.content)
                     _state.update { noteState ->
                         noteState.copy(
@@ -65,6 +73,7 @@ class NoteScreenViewModel @Inject constructor(
                             title = note.title,
                             content = note.content,
                             folderId = note.folderId,
+                            isMarkdown = note.isMarkdown,
                             timestamp = note.timestamp
                         )
                     }
@@ -82,17 +91,32 @@ class NoteScreenViewModel @Inject constructor(
         textFieldState.undoState.redo()
     }
 
+    fun bold() {
+        textFieldState.edit { bold() }
+    }
+
+    fun italic() {
+        textFieldState.edit { italic() }
+    }
+
+    fun underline() {
+        textFieldState.edit { underline() }
+    }
+
+    fun mark() {
+        textFieldState.edit { mark() }
+    }
+
+    fun inlineCode() {
+        textFieldState.edit { inlineCode() }
+    }
+
+    fun addTask(task: String, checked: Boolean) {
+        textFieldState.edit { addTask(task, checked) }
+    }
+
     fun addLink(link: String) {
-        val initialSelection = textFieldState.text.selectionInChars
-        textFieldState.edit {
-            replace(initialSelection.min, initialSelection.max, link)
-            selectCharsIn(
-                TextRange(
-                    initialSelection.min,
-                    initialSelection.min + link.length
-                )
-            )
-        }
+        textFieldState.edit { addLink(link) }
     }
 
     fun addScannedText(text: String) {
@@ -135,6 +159,7 @@ class NoteScreenViewModel @Inject constructor(
                         title = noteState.title,
                         content = textFieldState.text.toString(),
                         folderId = noteState.folderId,
+                        isMarkdown = noteState.isMarkdown,
                         timestamp = System.currentTimeMillis()
                     )
                     if (note.id == null) {
@@ -142,7 +167,7 @@ class NoteScreenViewModel @Inject constructor(
                             operations.addNote(note)
                         }
                     } else {
-                        if (note.title != oTitle || note.content != oContent || note.folderId != oFolderId)
+                        if (note.title != oTitle || note.content != oContent || note.folderId != oFolderId || note.isMarkdown != oIsMarkdown)
                             operations.updateNote(note)
                     }
                     sendEvent(UiEvent.NavigateBack)
@@ -159,6 +184,7 @@ class NoteScreenViewModel @Inject constructor(
                                 title = note.title,
                                 content = note.content,
                                 folderId = note.folderId,
+                                isMarkdown = note.isMarkdown,
                                 timestamp = System.currentTimeMillis(),
                                 isDeleted = true
                             )
@@ -172,6 +198,14 @@ class NoteScreenViewModel @Inject constructor(
                 _state.update {
                     it.copy(
                         title = event.value
+                    )
+                }
+            }
+
+            NoteEvent.SwitchType -> {
+                _state.update {
+                    it.copy(
+                        isMarkdown = it.isMarkdown.not()
                     )
                 }
             }

@@ -10,7 +10,7 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
+import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,7 +18,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -30,18 +29,15 @@ import androidx.compose.foundation.text2.BasicTextField2
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.automirrored.outlined.MenuBook
-import androidx.compose.material.icons.automirrored.outlined.Redo
-import androidx.compose.material.icons.automirrored.outlined.Undo
 import androidx.compose.material.icons.outlined.Alarm
 import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material.icons.outlined.Delete
-import androidx.compose.material.icons.outlined.DocumentScanner
 import androidx.compose.material.icons.outlined.EditNote
 import androidx.compose.material.icons.outlined.FileDownload
 import androidx.compose.material.icons.outlined.FolderOpen
 import androidx.compose.material.icons.outlined.IosShare
-import androidx.compose.material.icons.outlined.Link
 import androidx.compose.material.icons.outlined.MoreVert
+import androidx.compose.material.icons.outlined.SwapHoriz
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -68,21 +64,23 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import com.yangdai.opennote.R
-import com.yangdai.opennote.Route
-import com.yangdai.opennote.exportNote
-import com.yangdai.opennote.timestampToFormatLocalDateTime
+import com.yangdai.opennote.ui.util.timestampToFormatLocalDateTime
+import com.yangdai.opennote.ui.component.ExportDialog
 import com.yangdai.opennote.ui.component.FolderListSheet
+import com.yangdai.opennote.ui.component.HighlightedClickableText
 import com.yangdai.opennote.ui.component.LinkDialog
+import com.yangdai.opennote.ui.component.NoteEditorRow
+import com.yangdai.opennote.ui.component.TaskDialog
 import com.yangdai.opennote.ui.event.NoteEvent
 import com.yangdai.opennote.ui.viewmodel.NoteScreenViewModel
 import kotlinx.coroutines.launch
-import org.intellij.markdown.flavours.commonmark.CommonMarkFlavourDescriptor
+import org.intellij.markdown.flavours.gfm.GFMFlavourDescriptor
 import org.intellij.markdown.html.HtmlGenerator
 import org.intellij.markdown.parser.MarkdownParser
 
@@ -103,6 +101,14 @@ fun NoteScreen(
     }
 
     var showLinkDialog by rememberSaveable {
+        mutableStateOf(false)
+    }
+
+    var showTaskDialog by rememberSaveable {
+        mutableStateOf(false)
+    }
+
+    var showExportDialog by rememberSaveable {
         mutableStateOf(false)
     }
 
@@ -131,6 +137,8 @@ fun NoteScreen(
     val scope = rememberCoroutineScope()
     var showBottomSheet by rememberSaveable { mutableStateOf(false) }
 
+    val textFieldScrollState = rememberScrollState()
+
     val scannedText =
         navController.currentBackStackEntry?.savedStateHandle?.get<String>("scannedText")
 
@@ -155,7 +163,7 @@ fun NoteScreen(
                         }) {
                         Icon(imageVector = Icons.Outlined.FolderOpen, contentDescription = "Folder")
                         Spacer(modifier = Modifier.size(6.dp))
-                        Text(text = folderName, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        Text(text = folderName, maxLines = 1, modifier = Modifier.basicMarquee())
                     }
                 },
                 navigationIcon = {
@@ -169,6 +177,14 @@ fun NoteScreen(
                     }
                 },
                 actions = {
+
+                    IconButton(onClick = { onEvent(NoteEvent.SwitchType) }) {
+                        Icon(
+                            imageVector = Icons.Outlined.SwapHoriz,
+                            contentDescription = "Switch Note Type"
+                        )
+                    }
+
                     IconButton(onClick = { isReadMode = !isReadMode }) {
                         Icon(
                             imageVector = if (!isReadMode) Icons.AutoMirrored.Outlined.MenuBook
@@ -219,13 +235,9 @@ fun NoteScreen(
                                     contentDescription = "Export"
                                 )
                             },
-                            text = { Text(text = stringResource(R.string.export_txt)) },
+                            text = { Text(text = stringResource(R.string.export)) },
                             onClick = {
-                                exportNote(
-                                    context.applicationContext,
-                                    state.title,
-                                    state.content
-                                )
+                                showExportDialog = true
                             })
 
                         DropdownMenuItem(
@@ -250,53 +262,13 @@ fun NoteScreen(
                 })
         },
         bottomBar = {
-            if (!isReadMode) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(MaterialTheme.colorScheme.surfaceContainer)
-                        .height(48.dp)
-                ) {
-                    HorizontalDivider()
-                    Row(Modifier.fillMaxSize(), verticalAlignment = Alignment.CenterVertically) {
-                        IconButton(
-                            onClick = { viewModel.undo() },
-                            enabled = viewModel.canUndo()
-                        ) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Outlined.Undo,
-                                contentDescription = "Undo"
-                            )
-                        }
-
-                        IconButton(
-                            onClick = { viewModel.redo() },
-                            enabled = viewModel.canRedo()
-                        ) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Outlined.Redo,
-                                contentDescription = "Redo"
-                            )
-                        }
-                        IconButton(onClick = {
-                            showLinkDialog = true
-                        }) {
-                            Icon(
-                                imageVector = Icons.Outlined.Link,
-                                contentDescription = "Link"
-                            )
-                        }
-                        IconButton(onClick = {
-                            navController.navigate(Route.CAMERAX)
-                        }) {
-                            Icon(
-                                imageVector = Icons.Outlined.DocumentScanner,
-                                contentDescription = "OCR"
-                            )
-                        }
-                    }
-                }
-            }
+            NoteEditorRow(
+                isReadMode = isReadMode,
+                noteState = state,
+                viewModel = viewModel,
+                navController = navController,
+                onTaskButtonClick = { showTaskDialog = true },
+                onLinkButtonClick = { showLinkDialog = true })
         }
     ) { paddingValues ->
         Column(
@@ -341,82 +313,101 @@ fun NoteScreen(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        modifier = Modifier.size(16.dp),
+                        imageVector = Icons.Outlined.CalendarMonth,
+                        contentDescription = "Date",
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Text(
+                        text = """${stringResource(R.string.edited)}$time""",
+                        style = MaterialTheme.typography.titleSmall.copy(
+                            lineHeightStyle = LineHeightStyle(
+                                trim = LineHeightStyle.Trim.None,
+                                alignment = LineHeightStyle.Alignment.Proportional
+                            )
+                        ),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+
                 Text(
-                    text = """${stringResource(R.string.edited)}$time""",
-                    style = MaterialTheme.typography.titleSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    text = if (state.isMarkdown) "MARKDOWN" else stringResource(R.string.rich_text),
+                    style = MaterialTheme.typography.titleSmall.copy(
+                        lineHeightStyle = LineHeightStyle(
+                            trim = LineHeightStyle.Trim.None,
+                            alignment = LineHeightStyle.Alignment.Proportional
+                        )
+                    ),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
-                Icon(
-                    modifier = Modifier.size(16.dp),
-                    imageVector = Icons.Outlined.CalendarMonth,
-                    contentDescription = "Date",
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+
             }
 
             HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp))
 
-            val scrollState = rememberScrollState()
-
             if (isReadMode) {
 
-                val src = viewModel.textFieldState.text.toString()
-                val flavour = CommonMarkFlavourDescriptor()
-                val parsedTree = MarkdownParser(flavour).buildMarkdownTreeFromString(src)
-                val html = HtmlGenerator(src, parsedTree, flavour).generateHtml()
+                if (state.isMarkdown) {
+                    val src = viewModel.textFieldState.text.toString()
+                    val flavour = GFMFlavourDescriptor()
+                    val parsedTree = MarkdownParser(flavour).buildMarkdownTreeFromString(src)
+                    val html = HtmlGenerator(src, parsedTree, flavour).generateHtml()
 
-                val textColor = MaterialTheme.colorScheme.onSurface.toArgb()
-                val hexColor = String.format("#%06X", 0xFFFFFF and textColor)
-                AndroidView(modifier = Modifier.fillMaxSize(), factory = {
-                    WebView(it).apply {
-                        layoutParams = ViewGroup.LayoutParams(
-                            ViewGroup.LayoutParams.MATCH_PARENT,
-                            ViewGroup.LayoutParams.MATCH_PARENT
-                        )
-                        webViewClient = object : WebViewClient() {
-                            override fun shouldOverrideUrlLoading(
-                                view: WebView?,
-                                request: WebResourceRequest
-                            ): Boolean {
-                                return true
-                            }
+                    val textColor = MaterialTheme.colorScheme.onSurface.toArgb()
+                    val hexColor = String.format("#%06X", 0xFFFFFF and textColor)
 
-                            @Deprecated("Deprecated in Java", ReplaceWith("true"))
-                            override fun shouldOverrideUrlLoading(
-                                view: WebView?,
-                                url: String?
-                            ): Boolean {
-                                return true
+                    AndroidView(modifier = Modifier.fillMaxSize(), factory = {
+                        WebView(it).apply {
+                            layoutParams = ViewGroup.LayoutParams(
+                                ViewGroup.LayoutParams.MATCH_PARENT,
+                                ViewGroup.LayoutParams.MATCH_PARENT
+                            )
+                            webViewClient = object : WebViewClient() {
+                                override fun shouldOverrideUrlLoading(
+                                    view: WebView?,
+                                    request: WebResourceRequest
+                                ): Boolean {
+                                    val url = request.url.toString()
+                                    if (url.startsWith("http://") || url.startsWith("https://")) {
+                                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                                        context.startActivity(intent)
+                                    }
+                                    return true
+                                }
                             }
+                            isVerticalScrollBarEnabled = false
+                            isHorizontalScrollBarEnabled = false
+                            settings.setSupportZoom(true)
+                            settings.builtInZoomControls = true
+                            settings.displayZoomControls = false
+                            setBackgroundColor(Color.TRANSPARENT)
+                            loadDataWithBaseURL(
+                                null,
+                                """
+                                <html><head>
+                                <style type="text/css">body{color: ${hexColor};}
+                                </style></head>
+                                <body>
+                                $html
+                                </body></html>
+                                """.trimIndent(),
+                                "text/html",
+                                "UTF-8",
+                                null
+                            )
                         }
-                        settings.allowFileAccess = true
-                        settings.javaScriptEnabled = true
-                        settings.setSupportZoom(true)
-                        settings.builtInZoomControls = true
-                        settings.displayZoomControls = false
-                        settings.loadWithOverviewMode = false
-                        settings.useWideViewPort = false
-                        settings
-                        setBackgroundColor(Color.TRANSPARENT)
-                        loadDataWithBaseURL(
-                            null,
-                            "<html><head>"
-                                    + "<style type=\"text/css\">body{color: ${hexColor};}"
-                                    + "</style></head>"
-                                    + "<body>"
-                                    + html
-                                    + "</body></html>",
-                            "text/html",
-                            "UTF-8",
-                            null
-                        )
-                    }
-                })
-//                HighlightedClickableText(text = viewModel.textFieldState.text.toString())
+                    })
+                } else {
+                    HighlightedClickableText(text = viewModel.textFieldState.text.toString())
+                }
+
             } else {
                 BasicTextField2(
+                    modifier = Modifier.fillMaxSize(),
                     state = viewModel.textFieldState,
-                    scrollState = scrollState,
+                    scrollState = textFieldScrollState,
                     textStyle = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface),
                     cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
                     decorator = { innerTextField ->
@@ -431,6 +422,19 @@ fun NoteScreen(
                         }
                     }
                 )
+            }
+
+            ExportDialog(
+                showExportDialog = showExportDialog,
+                title = state.title,
+                content = viewModel.textFieldState.text.toString(),
+                onDismissRequest = { showExportDialog = false }
+            )
+
+            if (showTaskDialog) {
+                TaskDialog(onDismissRequest = { showTaskDialog = false }) {
+                    viewModel.addTask(it.task, it.checked)
+                }
             }
 
             if (showLinkDialog) {
