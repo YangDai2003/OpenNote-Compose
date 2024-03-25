@@ -19,6 +19,15 @@ This project is still in early stages of construction and features may change, b
 - Rich Text Mode: For users who prefer a simpler writing experience, the application also supports a basic rich text mode.
 - Export Options: Notes can be exported in various formats including TXT, MD (Markdown), and HTML. This provides flexibility in how notes can be shared and used outside of the application.
 
+## Screenshots
+
+<img src="https://github.com/YangDai2003/OpenNote-Compose/blob/master/screenshots/Screenshot_1.png" width="15%" alt=""/>
+<img src="https://github.com/YangDai2003/OpenNote-Compose/blob/master/screenshots/Screenshot_2.png" width="15%" alt=""/>
+<img src="https://github.com/YangDai2003/OpenNote-Compose/blob/master/screenshots/Screenshot_3.png" width="15%" alt=""/>
+<img src="https://github.com/YangDai2003/OpenNote-Compose/blob/master/screenshots/Screenshot_4.png" width="15%" alt=""/>
+<img src="https://github.com/YangDai2003/OpenNote-Compose/blob/master/screenshots/Screenshot_5.png" width="15%" alt=""/>
+<img src="https://github.com/YangDai2003/OpenNote-Compose/blob/master/screenshots/Screenshot_6.png" width="15%" alt=""/>
+
 ## Technical Details
 
 - **Programming Languages**: Kotlin
