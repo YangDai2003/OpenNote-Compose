@@ -23,13 +23,13 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import com.yangdai.opennote.R
 import com.yangdai.opennote.ui.util.exportNote
-import org.intellij.markdown.flavours.gfm.GFMFlavourDescriptor
-import org.intellij.markdown.html.HtmlGenerator
-import org.intellij.markdown.parser.MarkdownParser
+import com.yangdai.opennote.ui.viewmodel.NoteScreenViewModel
+import org.commonmark.node.Node
 
 @Composable
 fun ExportDialog(
     showExportDialog: Boolean,
+    viewModel: NoteScreenViewModel,
     title: String,
     content: String,
     onDismissRequest: () -> Unit
@@ -87,11 +87,8 @@ fun ExportDialog(
                     onClick = {
                         if (selectedMode == "HTML") {
 
-                            val flavour = GFMFlavourDescriptor()
-                            val parsedTree =
-                                MarkdownParser(flavour).buildMarkdownTreeFromString(content)
-                            val html =
-                                HtmlGenerator(content, parsedTree, flavour).generateHtml()
+                            val document: Node = viewModel.parser.parse(content)
+                            val html = viewModel.renderer.render(document)
 
                             exportNote(
                                 context.applicationContext,

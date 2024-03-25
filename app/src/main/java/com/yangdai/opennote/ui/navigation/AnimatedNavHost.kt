@@ -1,5 +1,6 @@
 package com.yangdai.opennote.ui.navigation
 
+import android.content.Intent
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
@@ -17,6 +18,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
+import androidx.navigation.navDeepLink
 import com.yangdai.opennote.ui.util.Constants.NAV_ANIMATION_TIME
 import com.yangdai.opennote.ui.event.UiEvent
 import com.yangdai.opennote.ui.screen.CameraXScreen
@@ -80,6 +82,12 @@ fun AnimatedNavHost(
 
     composable(
         route = Route.NOTE,
+        deepLinks = listOf(
+            navDeepLink {
+                action = Intent.ACTION_SEND
+                mimeType = "text/*"
+            }
+        ),
         enterTransition = {
             slideIntoContainer(
                 animationSpec = tween(NAV_ANIMATION_TIME),

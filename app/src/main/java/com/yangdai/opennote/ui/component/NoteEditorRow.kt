@@ -1,16 +1,17 @@
 package com.yangdai.opennote.ui.component
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Redo
 import androidx.compose.material.icons.automirrored.outlined.Undo
+import androidx.compose.material.icons.filled.FormatQuote
+import androidx.compose.material.icons.filled.FormatStrikethrough
 import androidx.compose.material.icons.outlined.CheckBox
 import androidx.compose.material.icons.outlined.Code
 import androidx.compose.material.icons.outlined.DocumentScanner
@@ -19,6 +20,7 @@ import androidx.compose.material.icons.outlined.FormatItalic
 import androidx.compose.material.icons.outlined.FormatPaint
 import androidx.compose.material.icons.outlined.FormatUnderlined
 import androidx.compose.material.icons.outlined.Link
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -44,12 +46,22 @@ fun NoteEditorRow(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(MaterialTheme.colorScheme.surfaceVariant)
-                .height(48.dp)
-                .horizontalScroll(rememberScrollState())
+                .navigationBarsPadding()
         ) {
 
-            Row(Modifier.fillMaxSize(), verticalAlignment = Alignment.CenterVertically) {
+            HorizontalDivider(
+                Modifier.fillMaxWidth(),
+                color = MaterialTheme.colorScheme.surfaceDim,
+                thickness = 2.dp
+            )
+
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .height(40.dp)
+                    .horizontalScroll(rememberScrollState()),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 IconButton(
                     onClick = { viewModel.undo() },
                     enabled = viewModel.canUndo()
@@ -92,6 +104,13 @@ fun NoteEditorRow(
                         )
                     }
 
+                    IconButton(onClick = { viewModel.strikethrough() }) {
+                        Icon(
+                            imageVector = Icons.Default.FormatStrikethrough,
+                            contentDescription = "Strikethrough"
+                        )
+                    }
+
                     IconButton(onClick = { viewModel.mark() }) {
                         Icon(
                             imageVector = Icons.Outlined.FormatPaint,
@@ -103,6 +122,13 @@ fun NoteEditorRow(
                         Icon(
                             imageVector = Icons.Outlined.Code,
                             contentDescription = "Code"
+                        )
+                    }
+
+                    IconButton(onClick = { viewModel.quote() }) {
+                        Icon(
+                            imageVector = Icons.Default.FormatQuote,
+                            contentDescription = "Quote"
                         )
                     }
                 }

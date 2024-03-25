@@ -58,7 +58,12 @@ android {
 }
 
 dependencies {
-    implementation(libs.markdown)
+
+    implementation(libs.commonmark.ext.task.list.items)
+    implementation(libs.commonmark.ext.gfm.strikethrough)
+    implementation(libs.commonmark.ext.gfm.tables)
+    implementation(libs.commonmark)
+
     implementation (libs.androidx.camera.core)
     implementation (libs.androidx.camera.camera2)
     implementation (libs.androidx.camera.lifecycle)

@@ -1,10 +1,12 @@
 package com.yangdai.opennote.ui.viewmodel
 
+import android.content.Intent
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.text2.input.TextFieldState
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.navigation.NavController
 import com.yangdai.opennote.data.local.entity.NoteEntity
 import com.yangdai.opennote.domain.operations.Operations
 import com.yangdai.opennote.ui.event.NoteEvent
@@ -16,6 +18,8 @@ import com.yangdai.opennote.ui.util.bold
 import com.yangdai.opennote.ui.util.inlineCode
 import com.yangdai.opennote.ui.util.italic
 import com.yangdai.opennote.ui.util.mark
+import com.yangdai.opennote.ui.util.quote
+import com.yangdai.opennote.ui.util.strikeThrough
 import com.yangdai.opennote.ui.util.underline
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
@@ -27,7 +31,15 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import org.commonmark.Extension
+import org.commonmark.ext.gfm.strikethrough.StrikethroughExtension
+import org.commonmark.ext.gfm.tables.TablesExtension
+import org.commonmark.ext.task.list.items.TaskListItemsExtension
+import org.commonmark.parser.Parser
+import org.commonmark.renderer.html.HtmlRenderer
 import javax.inject.Inject
+
+const val MIME_TYPE_TEXT = "text/"
 
 @OptIn(ExperimentalFoundationApi::class)
 @HiltViewModel
@@ -37,6 +49,27 @@ class NoteScreenViewModel @Inject constructor(
 ) : ViewModel() {
 
     var textFieldState: TextFieldState = TextFieldState("")
+
+    private fun Intent.parseSharedContent(): String {
+        if (action != Intent.ACTION_SEND) return ""
+
+        return if (isTextMimeType()) {
+            getStringExtra(Intent.EXTRA_TEXT) ?: ""
+        } else {
+            ""
+        }
+    }
+
+    private fun Intent.isTextMimeType() = type?.startsWith(MIME_TYPE_TEXT) == true
+
+    private val extensions: List<Extension> = listOf(
+        TablesExtension.create(),
+        StrikethroughExtension.create(),
+        TaskListItemsExtension.create()
+    )
+
+    val parser: Parser by lazy { Parser.builder().extensions(extensions).build() }
+    val renderer: HtmlRenderer by lazy { HtmlRenderer.builder().extensions(extensions).build() }
 
     private val _state = MutableStateFlow(NoteState())
     val stateFlow = _state.asStateFlow()
@@ -80,6 +113,10 @@ class NoteScreenViewModel @Inject constructor(
                 }
             }
         }
+        savedStateHandle.get<Intent>(NavController.KEY_DEEP_LINK_INTENT)?.let {
+            val content = it.parseSharedContent()
+            textFieldState = TextFieldState(content)
+        }
         getFolders()
     }
 
@@ -103,12 +140,20 @@ class NoteScreenViewModel @Inject constructor(
         textFieldState.edit { underline() }
     }
 
+    fun strikethrough() {
+        textFieldState.edit { strikeThrough() }
+    }
+
     fun mark() {
         textFieldState.edit { mark() }
     }
 
     fun inlineCode() {
         textFieldState.edit { inlineCode() }
+    }
+
+    fun quote() {
+        textFieldState.edit { quote() }
     }
 
     fun addTask(task: String, checked: Boolean) {

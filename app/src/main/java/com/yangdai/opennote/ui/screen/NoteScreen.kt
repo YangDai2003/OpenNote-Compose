@@ -69,7 +69,6 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import com.yangdai.opennote.R
-import com.yangdai.opennote.ui.util.timestampToFormatLocalDateTime
 import com.yangdai.opennote.ui.component.ExportDialog
 import com.yangdai.opennote.ui.component.FolderListSheet
 import com.yangdai.opennote.ui.component.HighlightedClickableText
@@ -77,11 +76,11 @@ import com.yangdai.opennote.ui.component.LinkDialog
 import com.yangdai.opennote.ui.component.NoteEditorRow
 import com.yangdai.opennote.ui.component.TaskDialog
 import com.yangdai.opennote.ui.event.NoteEvent
+import com.yangdai.opennote.ui.util.timestampToFormatLocalDateTime
 import com.yangdai.opennote.ui.viewmodel.NoteScreenViewModel
 import kotlinx.coroutines.launch
-import org.intellij.markdown.flavours.gfm.GFMFlavourDescriptor
-import org.intellij.markdown.html.HtmlGenerator
-import org.intellij.markdown.parser.MarkdownParser
+import org.commonmark.node.Node
+
 
 @SuppressLint("SetJavaScriptEnabled")
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
@@ -349,10 +348,9 @@ fun NoteScreen(
             if (isReadMode) {
 
                 if (state.isMarkdown) {
-                    val src = viewModel.textFieldState.text.toString()
-                    val flavour = GFMFlavourDescriptor()
-                    val parsedTree = MarkdownParser(flavour).buildMarkdownTreeFromString(src)
-                    val html = HtmlGenerator(src, parsedTree, flavour).generateHtml()
+
+                    val document: Node = viewModel.parser.parse(viewModel.textFieldState.text.toString())
+                    val html = viewModel.renderer.render(document)
 
                     AndroidView(modifier = Modifier.fillMaxSize(), factory = {
                         WebView(it).apply {
@@ -379,6 +377,8 @@ fun NoteScreen(
                             settings.builtInZoomControls = true
                             settings.displayZoomControls = false
                             setBackgroundColor(Color.TRANSPARENT)
+                            settings.useWideViewPort = true
+                            settings.loadWithOverviewMode = false
                             loadDataWithBaseURL(
                                 null,
                                 """
@@ -422,6 +422,7 @@ fun NoteScreen(
 
             ExportDialog(
                 showExportDialog = showExportDialog,
+                viewModel = viewModel,
                 title = state.title,
                 content = viewModel.textFieldState.text.toString(),
                 onDismissRequest = { showExportDialog = false }

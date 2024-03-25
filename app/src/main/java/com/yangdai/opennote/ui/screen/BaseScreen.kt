@@ -65,6 +65,7 @@ import com.yangdai.opennote.ui.theme.Orange
 import com.yangdai.opennote.ui.theme.Purple
 import com.yangdai.opennote.ui.theme.Red
 import com.yangdai.opennote.ui.theme.Yellow
+import com.yangdai.opennote.ui.util.Constants
 import kotlinx.coroutines.flow.map
 
 @Composable
@@ -123,6 +124,8 @@ fun BaseScreen(
                     )
                 }
                 enrollLauncher.launch(enrollIntent)
+            } else {
+                baseScreenViewModel.putBoolean(Constants.NEED_PASSWORD, false)
             }
         }
     }

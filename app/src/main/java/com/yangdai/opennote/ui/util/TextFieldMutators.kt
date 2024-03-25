@@ -27,13 +27,34 @@ fun TextFieldBuffer.inlineWrap(
 
 fun TextFieldBuffer.bold() = inlineWrap("**")
 
-fun TextFieldBuffer.italic() = inlineWrap("*")
+fun TextFieldBuffer.italic() = inlineWrap("_")
 
 fun TextFieldBuffer.underline() = inlineWrap("<u>", "</u>")
+
+fun TextFieldBuffer.strikeThrough() = inlineWrap("~~")
 
 fun TextFieldBuffer.mark() = inlineWrap("<mark>", "</mark>")
 
 fun TextFieldBuffer.inlineCode() = inlineWrap("`")
+
+fun TextFieldBuffer.quote() {
+    val text = toString()
+    val lineStart = text.take(selectionInChars.min)
+        .lastIndexOf('\n')
+        .takeIf { it != -1 }
+        ?.let { it + 1 }
+        ?: 0
+
+    val initialSelection = selectionInChars
+
+    replace(lineStart, lineStart, "> ")
+    selectCharsIn(
+        TextRange(
+            initialSelection.min + 2,
+            initialSelection.max + 2
+        )
+    )
+}
 
 fun TextFieldBuffer.add(str: String) {
     val initialSelection = selectionInChars
