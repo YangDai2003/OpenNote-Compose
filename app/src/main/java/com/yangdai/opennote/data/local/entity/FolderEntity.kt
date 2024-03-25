@@ -3,7 +3,7 @@ package com.yangdai.opennote.data.local.entity
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.yangdai.opennote.ui.theme.*
+import com.yangdai.opennote.presentation.theme.*
 
 @Entity
 data class FolderEntity(
