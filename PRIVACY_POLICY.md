@@ -19,7 +19,7 @@ Third-party SDKs will be explained in the following table:
 
 The list of permissions required by the app can be found in the `AndroidManifest.xml` file:
 
-https://github.com/YangDai2003/OpenNote-Compose/blob/af1ad9c66ca6e5c5d21c6c4ee98153ed9eceee4a/app/src/main/AndroidManifest.xml#L5-L12
+https://github.com/YangDai2003/OpenNote-Compose/blob/3a2424e401cc1c2e5dd2cd974a5f024a1aed291a/app/src/main/AndroidManifest.xml#L5-L11
 <br/>
 
 
@@ -27,7 +27,6 @@ https://github.com/YangDai2003/OpenNote-Compose/blob/af1ad9c66ca6e5c5d21c6c4ee98
 |:----------------------------------:|:---------------------------------------------:|
 | `android.permission.USE_BIOMETRIC` | Used to implement application login function  |
 |    `android.permission.CAMERA`     | Used for OCR recognition and capturing images |
-| `android.permission.RECORD_AUDIO`  |           Used for recording audio            |
 
 
  <hr style="border:1px solid gray">
