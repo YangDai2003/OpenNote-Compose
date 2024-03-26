@@ -614,7 +614,7 @@ fun DrawerContent(
         DrawerItem(
             icon = Icons.Outlined.Book,
             label = stringResource(R.string.all_notes),
-            selected = selectedDrawer == 0
+            isSelected = selectedDrawer == 0
         ) {
             onClick(0, FolderEntity())
         }
@@ -622,7 +622,7 @@ fun DrawerContent(
         DrawerItem(
             icon = Icons.Outlined.Delete,
             label = stringResource(R.string.trash),
-            selected = selectedDrawer == 1
+            isSelected = selectedDrawer == 1
         ) {
             onClick(1, FolderEntity())
         }
@@ -633,7 +633,7 @@ fun DrawerContent(
             icon = if (!isFoldersExpended) Icons.AutoMirrored.Outlined.KeyboardArrowRight else Icons.Outlined.KeyboardArrowDown,
             label = stringResource(R.string.folders),
             badge = listState.folders.size.toString(),
-            selected = false
+            isSelected = false
         ) {
             isFoldersExpended = !isFoldersExpended
         }
@@ -645,7 +645,7 @@ fun DrawerContent(
                         icon = Icons.Outlined.FolderOpen,
                         iconTint = if (folder.color != null) Color(folder.color) else MaterialTheme.colorScheme.onSurface,
                         label = folder.name,
-                        selected = selectedDrawer == index + 2
+                        isSelected = selectedDrawer == index + 2
                     ) {
                         onClick(index + 2, folder)
                     }

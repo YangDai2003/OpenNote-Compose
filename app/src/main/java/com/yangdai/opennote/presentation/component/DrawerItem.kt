@@ -20,7 +20,7 @@ fun DrawerItem(
     iconTint: Color = MaterialTheme.colorScheme.onSurface,
     label: String,
     badge: String = "",
-    selected: Boolean,
+    isSelected: Boolean,
     onClick: () -> Unit
 ) = NavigationDrawerItem(
     modifier = Modifier.padding(horizontal = 8.dp),
@@ -48,6 +48,6 @@ fun DrawerItem(
         )
     },
     shape = RoundedCornerShape(16.dp),
-    selected = selected,
+    selected = isSelected,
     onClick = onClick
 )
