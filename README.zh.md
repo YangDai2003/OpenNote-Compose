@@ -1,3 +1,6 @@
+- [简体中文](README.zh.md)
+- [English](README.md)
+
 # OpenNote
 
 OpenNote是一款完全使用Compose构建的现代化Android记事本应用程序。

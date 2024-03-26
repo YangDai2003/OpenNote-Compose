@@ -1,3 +1,6 @@
+- [English](README.md)
+- [简体中文](README.zh.md)
+
 # OpenNote
 
 OpenNote is a modern Android note-taking application built entirely with Compose.  
