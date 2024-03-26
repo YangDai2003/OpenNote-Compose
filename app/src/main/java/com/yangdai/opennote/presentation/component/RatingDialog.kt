@@ -35,7 +35,6 @@ fun RatingDialog(
                     for (i in 1..5) {
                         IconButton(onClick = {
                             rating = i
-                            onRatingChanged(i)
                         }) {
                             Icon(
                                 imageVector = Icons.Filled.StarRate,
@@ -49,8 +48,8 @@ fun RatingDialog(
             onDismissRequest = onDismissRequest,
             confirmButton = {
                 TextButton(onClick = {
-                    onRatingChanged(rating)
                     onDismissRequest()
+                    onRatingChanged(rating)
                 }) {
                     Text(text = stringResource(id = android.R.string.ok))
                 }

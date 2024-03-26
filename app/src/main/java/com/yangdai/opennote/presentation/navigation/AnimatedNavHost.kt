@@ -10,6 +10,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
@@ -33,7 +34,8 @@ import com.yangdai.opennote.presentation.viewmodel.NoteScreenViewModel
 @Composable
 fun AnimatedNavHost(
     modifier: Modifier,
-    navController: NavHostController
+    navController: NavHostController,
+    windowSize: WindowSizeClass
 ) = NavHost(
     modifier = modifier.fillMaxSize(),
     navController = navController,
@@ -70,7 +72,7 @@ fun AnimatedNavHost(
         composable(Route.NOTE_LIST) {
             val viewModel =
                 it.sharedViewModel<MainScreenViewModel>(navController = navController)
-            MainScreen(navController, viewModel)
+            MainScreen(navController, viewModel, windowSize)
         }
 
         composable(Route.FOLDERS) {

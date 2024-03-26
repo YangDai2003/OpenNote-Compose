@@ -12,12 +12,8 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Text
+import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
@@ -27,13 +23,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
@@ -52,26 +44,19 @@ import com.yangdai.opennote.presentation.util.Constants.MASK_CLICK_X
 import com.yangdai.opennote.presentation.util.Constants.MASK_CLICK_Y
 import com.yangdai.opennote.presentation.util.Constants.SHOULD_FOLLOW_SYSTEM
 import com.yangdai.opennote.presentation.viewmodel.BaseScreenViewModel
-import com.yangdai.opennote.R
 import com.yangdai.opennote.presentation.component.MaskAnimModel
 import com.yangdai.opennote.presentation.component.MaskAnimWay
 import com.yangdai.opennote.presentation.component.MaskBox
 import com.yangdai.opennote.presentation.navigation.AnimatedNavHost
-import com.yangdai.opennote.presentation.theme.Blue
-import com.yangdai.opennote.presentation.theme.Cyan
-import com.yangdai.opennote.presentation.theme.Green
 import com.yangdai.opennote.presentation.theme.OpenNoteTheme
-import com.yangdai.opennote.presentation.theme.Orange
-import com.yangdai.opennote.presentation.theme.Purple
-import com.yangdai.opennote.presentation.theme.Red
-import com.yangdai.opennote.presentation.theme.Yellow
 import com.yangdai.opennote.presentation.util.Constants
 import kotlinx.coroutines.flow.map
 
 @Composable
 fun BaseScreen(
     promptManager: BiometricPromptManager,
-    baseScreenViewModel: BaseScreenViewModel
+    baseScreenViewModel: BaseScreenViewModel,
+    windowSize: WindowSizeClass
 ) {
 
     val settingsState by baseScreenViewModel.stateFlow.collectAsStateWithLifecycle()
@@ -212,46 +197,12 @@ fun BaseScreen(
 
             AnimatedNavHost(
                 modifier = if (!loggedIn) modifier else Modifier,
-                navController = rememberNavController()
+                navController = rememberNavController(),
+                windowSize = windowSize
             )
 
             AnimatedVisibility(visible = !loggedIn, enter = fadeIn(), exit = fadeOut()) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .pointerInput(Unit) {},
-                    verticalArrangement = Arrangement.SpaceEvenly,
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(
-                        text = stringResource(id = R.string.app_name),
-                        style = MaterialTheme.typography.headlineLarge.copy(
-                            brush = Brush.linearGradient(
-                                colors = listOf(
-                                    Red,
-                                    Orange,
-                                    Yellow,
-                                    Green,
-                                    Cyan,
-                                    Blue,
-                                    Purple
-                                )
-                            )
-                        )
-                    )
-
-                    val title = stringResource(R.string.biometric_login)
-                    val subtitle = stringResource(R.string.log_in_using_your_biometric_credential)
-
-                    OutlinedButton(onClick = {
-                        promptManager.showBiometricPrompt(
-                            title = title,
-                            subtitle = subtitle
-                        )
-                    }) {
-                        Text(text = stringResource(R.string.login))
-                    }
-                }
+                LoginOverlayScreen(promptManager = promptManager)
             }
         }
     }

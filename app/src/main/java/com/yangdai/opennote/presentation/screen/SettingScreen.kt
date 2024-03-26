@@ -70,19 +70,19 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.yangdai.opennote.R
+import com.yangdai.opennote.data.di.AppModule
+import com.yangdai.opennote.presentation.component.RatingDialog
+import com.yangdai.opennote.presentation.component.WarningDialog
 import com.yangdai.opennote.presentation.util.Constants.APP_COLOR
 import com.yangdai.opennote.presentation.util.Constants.APP_THEME
-import com.yangdai.opennote.presentation.util.Constants.NEED_PASSWORD
 import com.yangdai.opennote.presentation.util.Constants.IS_APP_IN_DARK_MODE
 import com.yangdai.opennote.presentation.util.Constants.IS_DARK_SWITCH_ACTIVE
 import com.yangdai.opennote.presentation.util.Constants.MASK_CLICK_X
 import com.yangdai.opennote.presentation.util.Constants.MASK_CLICK_Y
+import com.yangdai.opennote.presentation.util.Constants.NEED_PASSWORD
 import com.yangdai.opennote.presentation.util.Constants.SHOULD_FOLLOW_SYSTEM
-import com.yangdai.opennote.R
 import com.yangdai.opennote.presentation.viewmodel.SettingScreenViewModel
-import com.yangdai.opennote.data.di.AppModule
-import com.yangdai.opennote.presentation.component.RatingDialog
-import com.yangdai.opennote.presentation.component.WarningDialog
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.map
@@ -567,9 +567,26 @@ fun SettingsScreen(
             showDialog = showRatingDialog,
             onDismissRequest = { showRatingDialog = false }) {
             if (it > 3) {
-                // TODO
+                val intent = Intent(Intent.ACTION_VIEW)
+                intent.data =
+                    Uri.parse("https://play.google.com/store/apps/details?id=com.yangdai.opennote")
+                context.startActivity(intent)
             } else {
-                // TODO
+                // 获取当前应用的版本号
+                val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
+                val appVersion = packageInfo.versionName
+                val deviceModel = Build.MODEL
+                val systemVersion = Build.VERSION.SDK_INT
+
+                val emailIntent = Intent(Intent.ACTION_SENDTO)
+                emailIntent.setData(Uri.parse("mailto:"))
+                emailIntent.putExtra(Intent.EXTRA_EMAIL, arrayOf("dy15800837435@gmail.com"))
+                emailIntent.putExtra(Intent.EXTRA_SUBJECT, "Feedback - Open Note")
+                emailIntent.putExtra(
+                    Intent.EXTRA_TEXT,
+                    "Version: $appVersion\nDevice: $deviceModel\nSystem: $systemVersion\n"
+                )
+                context.startActivity(Intent.createChooser(emailIntent, "Feedback (E-mail)"))
             }
         }
         WarningDialog(

@@ -47,12 +47,16 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
+import androidx.compose.material3.PermanentDrawerSheet
+import androidx.compose.material3.PermanentNavigationDrawer
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.material3.windowsizeclass.WindowSizeClass
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
@@ -83,24 +87,21 @@ import com.yangdai.opennote.presentation.component.DrawerItem
 import com.yangdai.opennote.presentation.component.FolderListSheet
 import com.yangdai.opennote.presentation.component.OrderSection
 import com.yangdai.opennote.presentation.component.TopSearchbar
+import com.yangdai.opennote.presentation.state.ListState
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(
     navController: NavController,
-    viewModel: MainScreenViewModel
+    viewModel: MainScreenViewModel,
+    windowSize: WindowSizeClass
 ) {
     val scope = rememberCoroutineScope()
     val listState by viewModel.stateFlow.collectAsStateWithLifecycle()
 
     // Search bar state
     var isSearchBarActive by remember { mutableStateOf(false) }
-
-    // Navigation drawer state, confirmStateChange is used to prevent drawer from closing when search bar is active
-    val drawerState = rememberDrawerState(
-        initialValue = DrawerValue.Closed,
-        confirmStateChange = { !isSearchBarActive })
 
     // Staggered grid state, used to control the scroll state of the note grid
     val gridState = rememberLazyStaggeredGridState()
@@ -128,9 +129,6 @@ fun MainScreen(
             !gridState.isScrollInProgress && selectedDrawer == 0 && !isSearchBarActive && !isEnabled
         }
     }
-
-    // Record whether the folder list is expanded
-    var isFoldersExpended by rememberSaveable { mutableStateOf(false) }
 
     // Bottom sheet pop-up status for moving notes
     val sheetState = rememberModalBottomSheetState()
@@ -164,15 +162,7 @@ fun MainScreen(
     LaunchedEffect(selectedDrawer) { initSelect() }
 
     // Back logic for better user experience
-    BackHandler(isEnabled || drawerState.isOpen || selectedDrawer != 0) {
-        if (drawerState.isOpen) {
-            scope.launch {
-                drawerState.apply {
-                    close()
-                }
-            }
-            return@BackHandler
-        }
+    BackHandler(isEnabled || selectedDrawer != 0) {
         if (isEnabled) {
             initSelect()
             return@BackHandler
@@ -185,128 +175,22 @@ fun MainScreen(
         }
     }
 
-    ModalNavigationDrawer(
+    val smallScreen = windowSize.widthSizeClass < WindowWidthSizeClass.Expanded
 
-        drawerState = drawerState,
+    // Navigation drawer state, confirmStateChange is used to prevent drawer from closing when search bar is active
+    val drawerState = rememberDrawerState(
+        initialValue = DrawerValue.Closed,
+        confirmStateChange = { !isSearchBarActive })
 
-        drawerContent = {
-            ModalDrawerSheet {
-
-                Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.End
-                    ) {
-                        IconButton(
-                            modifier = Modifier.padding(12.dp),
-                            onClick = { navController.navigate(Route.SETTINGS) }
-                        ) {
-                            Icon(
-                                imageVector = Icons.Outlined.Settings,
-                                contentDescription = "Open Settings"
-                            )
-                        }
-                    }
-
-                    DrawerItem(
-                        icon = Icons.Outlined.Book,
-                        label = stringResource(R.string.all_notes),
-                        selected = selectedDrawer == 0
-                    ) {
-                        selectDrawer(0) {
-                            selectedFolder = FolderEntity()
-                            viewModel.onListEvent(ListEvent.Sort(trash = false))
-                        }
-
-                        scope.launch {
-                            drawerState.apply {
-                                close()
-                            }
-                        }
-                    }
-
-                    DrawerItem(
-                        icon = Icons.Outlined.Delete,
-                        label = stringResource(R.string.trash),
-                        selected = selectedDrawer == 1
-                    ) {
-                        selectDrawer(1) {
-                            viewModel.onListEvent(ListEvent.Sort(trash = true))
-                        }
-                        scope.launch {
-                            drawerState.apply {
-                                close()
-                            }
-                        }
-                    }
-
-                    HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp))
-
-                    DrawerItem(
-                        icon = if (!isFoldersExpended) Icons.AutoMirrored.Outlined.KeyboardArrowRight else Icons.Outlined.KeyboardArrowDown,
-                        label = stringResource(R.string.folders),
-                        badge = listState.folders.size.toString(),
-                        selected = false
-                    ) {
-                        isFoldersExpended = !isFoldersExpended
-                    }
-
-                    AnimatedVisibility(visible = isFoldersExpended) {
-                        Column {
-                            listState.folders.forEachIndexed { index, folder ->
-                                DrawerItem(
-                                    icon = Icons.Outlined.FolderOpen,
-                                    iconTint = if (folder.color != null) Color(folder.color) else MaterialTheme.colorScheme.onSurface,
-                                    label = folder.name,
-                                    selected = selectedDrawer == index + 2
-                                ) {
-
-                                    selectDrawer(index + 2) {
-                                        selectedFolder = folder
-                                        viewModel.onListEvent(
-                                            ListEvent.Sort(
-                                                filterFolder = true,
-                                                folderId = folder.id
-                                            )
-                                        )
-                                    }
-
-                                    scope.launch {
-                                        drawerState.apply {
-                                            close()
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-                        TextButton(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(12.dp),
-                            onClick = {
-                                navController.navigate(Route.FOLDERS)
-                            }) {
-                            Text(text = stringResource(R.string.manage_folders))
-                        }
-                    }
-                }
-            }
-        },
-    ) {
-
-
+    @Composable
+    fun MainContent() {
         Scaffold(
             topBar = {
                 AnimatedContent(targetState = selectedDrawer == 0, label = "") {
                     if (it) {
                         TopSearchbar(
                             scope = scope,
+                            showMenuIcon = smallScreen,
                             drawerState = drawerState,
                             viewModel = viewModel,
                             onActiveChange = { active ->
@@ -329,17 +213,19 @@ fun MainScreen(
                                 )
                             },
                             navigationIcon = {
-                                IconButton(onClick = {
-                                    scope.launch {
-                                        drawerState.apply {
-                                            if (isClosed) open() else close()
+                                if (smallScreen) {
+                                    IconButton(onClick = {
+                                        scope.launch {
+                                            drawerState.apply {
+                                                if (isClosed) open() else close()
+                                            }
                                         }
+                                    }) {
+                                        Icon(
+                                            imageVector = Icons.AutoMirrored.Outlined.MenuOpen,
+                                            contentDescription = "Open Menu"
+                                        )
                                     }
-                                }) {
-                                    Icon(
-                                        imageVector = Icons.AutoMirrored.Outlined.MenuOpen,
-                                        contentDescription = "Open Menu"
-                                    )
                                 }
                             },
                             actions = {
@@ -590,6 +476,196 @@ fun MainScreen(
                     .padding(horizontal = 16.dp)
                     .padding(top = 12.dp)
             )
+        }
+    }
+
+    if (smallScreen) {
+
+        ModalNavigationDrawer(
+            drawerState = drawerState,
+            drawerContent = {
+                ModalDrawerSheet {
+                    DrawerContent(
+                        navController = navController,
+                        listState = listState,
+                        selectedDrawer = selectedDrawer
+                    ) { position, folder ->
+                        when (position) {
+                            0 -> {
+                                selectDrawer(position) {
+                                    selectedFolder = folder
+                                    viewModel.onListEvent(ListEvent.Sort(trash = false))
+                                }
+
+                                scope.launch {
+                                    drawerState.apply {
+                                        close()
+                                    }
+                                }
+                            }
+
+                            1 -> {
+                                selectDrawer(position) {
+                                    viewModel.onListEvent(ListEvent.Sort(trash = true))
+                                }
+                                scope.launch {
+                                    drawerState.apply {
+                                        close()
+                                    }
+                                }
+                            }
+
+                            else -> {
+                                selectDrawer(position) {
+                                    selectedFolder = folder
+                                    viewModel.onListEvent(
+                                        ListEvent.Sort(
+                                            filterFolder = true,
+                                            folderId = folder.id
+                                        )
+                                    )
+                                }
+
+                                scope.launch {
+                                    drawerState.apply {
+                                        close()
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        ) {
+            MainContent()
+        }
+
+    } else {
+        PermanentNavigationDrawer(
+            drawerContent = {
+                PermanentDrawerSheet {
+                    DrawerContent(
+                        navController = navController,
+                        listState = listState,
+                        selectedDrawer = selectedDrawer
+                    ) { position, folder ->
+                        when (position) {
+                            0 -> {
+                                selectDrawer(position) {
+                                    selectedFolder = folder
+                                    viewModel.onListEvent(ListEvent.Sort(trash = false))
+                                }
+                            }
+
+                            1 -> {
+                                selectDrawer(position) {
+                                    viewModel.onListEvent(ListEvent.Sort(trash = true))
+                                }
+                            }
+
+                            else -> {
+                                selectDrawer(position) {
+                                    selectedFolder = folder
+                                    viewModel.onListEvent(
+                                        ListEvent.Sort(
+                                            filterFolder = true,
+                                            folderId = folder.id
+                                        )
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        ) {
+            MainContent()
+        }
+    }
+}
+
+@Composable
+fun DrawerContent(
+    navController: NavController,
+    listState: ListState,
+    selectedDrawer: Int,
+    onClick: (Int, FolderEntity) -> Unit
+) {
+    // Record whether the folder list is expanded
+    var isFoldersExpended by rememberSaveable { mutableStateOf(false) }
+    val scrollState = rememberScrollState()
+
+    Column(modifier = Modifier.verticalScroll(scrollState)) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.End
+        ) {
+            IconButton(
+                modifier = Modifier.padding(12.dp),
+                onClick = { navController.navigate(Route.SETTINGS) }
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.Settings,
+                    contentDescription = "Open Settings"
+                )
+            }
+        }
+
+        DrawerItem(
+            icon = Icons.Outlined.Book,
+            label = stringResource(R.string.all_notes),
+            selected = selectedDrawer == 0
+        ) {
+            onClick(0, FolderEntity())
+        }
+
+        DrawerItem(
+            icon = Icons.Outlined.Delete,
+            label = stringResource(R.string.trash),
+            selected = selectedDrawer == 1
+        ) {
+            onClick(1, FolderEntity())
+        }
+
+        HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp))
+
+        DrawerItem(
+            icon = if (!isFoldersExpended) Icons.AutoMirrored.Outlined.KeyboardArrowRight else Icons.Outlined.KeyboardArrowDown,
+            label = stringResource(R.string.folders),
+            badge = listState.folders.size.toString(),
+            selected = false
+        ) {
+            isFoldersExpended = !isFoldersExpended
+        }
+
+        AnimatedVisibility(visible = isFoldersExpended) {
+            Column {
+                listState.folders.forEachIndexed { index, folder ->
+                    DrawerItem(
+                        icon = Icons.Outlined.FolderOpen,
+                        iconTint = if (folder.color != null) Color(folder.color) else MaterialTheme.colorScheme.onSurface,
+                        label = folder.name,
+                        selected = selectedDrawer == index + 2
+                    ) {
+                        onClick(index + 2, folder)
+                    }
+                }
+            }
+        }
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center
+        ) {
+            TextButton(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(12.dp),
+                onClick = {
+                    navController.navigate(Route.FOLDERS)
+                }) {
+                Text(text = stringResource(R.string.manage_folders))
+            }
         }
     }
 }

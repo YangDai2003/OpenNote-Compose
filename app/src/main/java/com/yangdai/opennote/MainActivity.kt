@@ -8,6 +8,8 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
+import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.core.animation.doOnEnd
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.yangdai.opennote.presentation.screen.BaseScreen
@@ -20,6 +22,7 @@ class MainActivity : AppCompatActivity() {
 
     private val promptManager by lazy { BiometricPromptManager(this) }
     private val baseScreenViewModel: BaseScreenViewModel by viewModels()
+    @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         // Handle the splash screen transition.
         installSplashScreen().apply {
@@ -51,7 +54,8 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         setContent {
-            BaseScreen(promptManager = promptManager, baseScreenViewModel = baseScreenViewModel)
+            val windowSize = calculateWindowSizeClass(activity = this)
+            BaseScreen(promptManager = promptManager, baseScreenViewModel = baseScreenViewModel, windowSize = windowSize)
         }
     }
 }

@@ -1,16 +1,13 @@
 package com.yangdai.opennote.presentation.component
 
 import android.content.res.Configuration
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material.icons.Icons
@@ -18,12 +15,14 @@ import androidx.compose.material.icons.automirrored.outlined.MenuOpen
 import androidx.compose.material.icons.automirrored.outlined.Sort
 import androidx.compose.material.icons.outlined.Clear
 import androidx.compose.material.icons.outlined.DeleteForever
+import androidx.compose.material.icons.outlined.History
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.DockedSearchBar
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.ListItem
 import androidx.compose.material3.SearchBar
 import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.Text
@@ -51,6 +50,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun TopSearchbar(
     scope: CoroutineScope,
+    showMenuIcon: Boolean = true,
     drawerState: DrawerState,
     viewModel: MainScreenViewModel,
     onActiveChange: (Boolean) -> Unit
@@ -84,82 +84,82 @@ fun TopSearchbar(
 
     @Composable
     fun LeadingIcon() {
-        AnimatedVisibility(visible = !active, enter = fadeIn(), exit = fadeOut()) {
-            IconButton(onClick = {
-                scope.launch {
-                    drawerState.apply {
-                        if (isClosed) open() else close()
+        if (showMenuIcon) {
+            AnimatedContent(targetState = active, label = "leading") {
+                if (it) {
+                    IconButton(onClick = { search(inputText) }) {
+                        Icon(imageVector = Icons.Outlined.Search, contentDescription = "Search")
+                    }
+                } else {
+                    IconButton(onClick = {
+                        scope.launch {
+                            drawerState.apply {
+                                if (isClosed) open() else close()
+                            }
+                        }
+                    }) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Outlined.MenuOpen,
+                            contentDescription = "Open Menu"
+                        )
                     }
                 }
-            }) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Outlined.MenuOpen,
-                    contentDescription = "Open Menu"
-                )
             }
-        }
-        AnimatedVisibility(visible = active, enter = fadeIn(), exit = fadeOut()) {
-            IconButton(onClick = { search(inputText) }) {
-                Icon(imageVector = Icons.Outlined.Search, contentDescription = "Search")
-            }
-
+        } else {
+            Icon(imageVector = Icons.Outlined.Search, contentDescription = "Search")
         }
     }
 
     @Composable
     fun TrailingIcon() {
-        AnimatedVisibility(visible = active, enter = fadeIn(), exit = fadeOut()) {
-            IconButton(onClick = {
-                if (inputText.isNotEmpty()) {
-                    inputText = ""
-                } else {
-                    search("")
+        AnimatedContent(targetState = active, label = "trailing") {
+            if (it) {
+                IconButton(onClick = {
+                    if (inputText.isNotEmpty()) {
+                        inputText = ""
+                    } else {
+                        search("")
+                    }
+                }) {
+                    Icon(
+                        imageVector = Icons.Outlined.Clear,
+                        contentDescription = "Clear"
+                    )
                 }
-            }) {
-                Icon(
-                    imageVector = Icons.Outlined.Clear,
-                    contentDescription = "Clear"
-                )
-            }
-        }
-        AnimatedVisibility(visible = !active, enter = fadeIn(), exit = fadeOut()) {
-            IconButton(onClick = { viewModel.onListEvent(ListEvent.ToggleOrderSection) }) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Outlined.Sort,
-                    contentDescription = "Sort"
-                )
+            } else {
+                IconButton(onClick = { viewModel.onListEvent(ListEvent.ToggleOrderSection) }) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Outlined.Sort,
+                        contentDescription = "Sort"
+                    )
+                }
             }
         }
     }
 
     @Composable
     fun History() {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 16.dp)
-                .padding(end = 8.dp)
-                .padding(top = 12.dp)
-                .height(24.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
 
-            Text(text = stringResource(R.string.search_history))
-
-            IconButton(onClick = { viewModel.putHistoryStringSet(emptySet()) }) {
+        ListItem(
+            leadingContent = {
                 Icon(
-                    imageVector = Icons.Outlined.DeleteForever,
-                    contentDescription = "Clear History"
+                    imageVector = Icons.Outlined.History,
+                    contentDescription = "History"
                 )
+            },
+            headlineContent = { Text(text = stringResource(R.string.search_history)) },
+            trailingContent = {
+                IconButton(onClick = { viewModel.putHistoryStringSet(emptySet()) }) {
+                    Icon(
+                        imageVector = Icons.Outlined.DeleteForever,
+                        contentDescription = "Clear History"
+                    )
+                }
             }
-
-        }
+        )
 
         FlowRow(
-            Modifier
-                .padding(top = 8.dp)
-                .padding(horizontal = 12.dp),
+            Modifier.padding(horizontal = 12.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             historySet.forEach {
