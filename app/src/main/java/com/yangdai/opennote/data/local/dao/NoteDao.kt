@@ -40,6 +40,6 @@ interface NoteDao {
     @Update
     suspend fun updateNote(noteEntity: NoteEntity)
 
-    @Query("SELECT * FROM NOTEENTITY WHERE isDeleted = 0 AND title LIKE '%' || :keyword || '%' OR content LIKE '%' || :keyword || '%'")
+    @Query("SELECT * FROM NOTEENTITY WHERE isDeleted = 0 AND (title LIKE '%' || :keyword || '%' OR content LIKE '%' || :keyword || '%')")
     fun getNotesByKeyWord(keyword: String): Flow<List<NoteEntity>>
 }

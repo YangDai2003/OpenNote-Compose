@@ -60,4 +60,6 @@
     <string name="task">任务</string>
     <string name="completed">已完成</string>
     <string name="rich_text">富文本</string>
+    <string name="firebase">Firebase 数据分析</string>
+    <string name="firebase_description">仅用于改善使用体验，不会收集个人信息。</string>
 </resources>

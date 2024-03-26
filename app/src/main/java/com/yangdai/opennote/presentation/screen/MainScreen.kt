@@ -9,11 +9,13 @@ import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.items
@@ -190,9 +192,9 @@ fun MainScreen(
                     if (it) {
                         TopSearchbar(
                             scope = scope,
-                            showMenuIcon = smallScreen,
                             drawerState = drawerState,
                             viewModel = viewModel,
+                            isSmallScreen = smallScreen,
                             onActiveChange = { active ->
                                 initSelect()
                                 isSearchBarActive = active
@@ -436,10 +438,22 @@ fun MainScreen(
             }
 
             LazyVerticalStaggeredGrid(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .statusBarsPadding()
+                    // The top padding is used to prevent the top of the grid from being blocked by the search bar(56.dp)
+                    .padding(top = 72.dp),
                 state = gridState,
-                columns = StaggeredGridCells.Adaptive(180.dp),
+                // The staggered grid layout is adaptive, with a minimum column width of 160dp(mdpi)
+                columns = StaggeredGridCells.Adaptive(160.dp),
                 verticalItemSpacing = 8.dp,
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
+                // for better edgeToEdge experience
+                contentPadding = PaddingValues(
+                    start = 16.dp,
+                    end = 16.dp,
+                    bottom = innerPadding.calculateBottomPadding()
+                ),
                 content = {
                     items(listState.notes, key = { item: NoteEntity -> item.id!! }) { note ->
                         NoteCard(
@@ -469,12 +483,7 @@ fun MainScreen(
                                 }
                             })
                     }
-                },
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding)
-                    .padding(horizontal = 16.dp)
-                    .padding(top = 12.dp)
+                }
             )
         }
     }

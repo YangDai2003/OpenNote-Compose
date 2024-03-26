@@ -2,6 +2,8 @@ package com.yangdai.opennote.presentation.component
 
 import android.content.res.Configuration
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
@@ -50,9 +52,9 @@ import kotlinx.coroutines.launch
 @Composable
 fun TopSearchbar(
     scope: CoroutineScope,
-    showMenuIcon: Boolean = true,
     drawerState: DrawerState,
     viewModel: MainScreenViewModel,
+    isSmallScreen: Boolean,
     onActiveChange: (Boolean) -> Unit
 ) {
 
@@ -77,14 +79,16 @@ fun TopSearchbar(
             val newSet = historySet.toMutableSet()
             newSet.add(text)
             viewModel.putHistoryStringSet(newSet)
+            viewModel.onListEvent(ListEvent.Search(text))
+        } else {
+            viewModel.onListEvent(ListEvent.Sort())
         }
         active = false
-        viewModel.onListEvent(ListEvent.Search(text))
     }
 
     @Composable
     fun LeadingIcon() {
-        if (showMenuIcon) {
+        if (isSmallScreen) {
             AnimatedContent(targetState = active, label = "leading") {
                 if (it) {
                     IconButton(onClick = { search(inputText) }) {
@@ -149,12 +153,14 @@ fun TopSearchbar(
             },
             headlineContent = { Text(text = stringResource(R.string.search_history)) },
             trailingContent = {
-                IconButton(onClick = { viewModel.putHistoryStringSet(emptySet()) }) {
-                    Icon(
-                        imageVector = Icons.Outlined.DeleteForever,
-                        contentDescription = "Clear History"
-                    )
-                }
+                // To align the icon with search bar, use icon.clickable{} instead of IconButton onClick()
+                Icon(
+                    modifier = Modifier.clickable {
+                        viewModel.putHistoryStringSet(emptySet())
+                    },
+                    imageVector = Icons.Outlined.DeleteForever,
+                    contentDescription = "Clear History"
+                )
             }
         )
 
@@ -178,13 +184,21 @@ fun TopSearchbar(
         }
     }
 
-    if (orientation == Configuration.ORIENTATION_PORTRAIT) {
+    // Search bar layout, switch between docked and expanded search bar based on window size and orientation
+    if (orientation == Configuration.ORIENTATION_PORTRAIT && isSmallScreen) {
+
+        // Animate search bar padding when active state changes
+        val searchBarPadding by animateDpAsState(targetValue = if (active) 0.dp else 16.dp,
+            label = "searchBarPadding"
+        )
+
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically
         ) {
             SearchBar(
+                modifier = Modifier.padding(horizontal = searchBarPadding),
                 query = inputText,
                 onQueryChange = { inputText = it },
                 onSearch = { search(it) },
@@ -201,7 +215,8 @@ fun TopSearchbar(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .statusBarsPadding(),
+                .statusBarsPadding()
+                .padding(top = 8.dp),
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -211,7 +226,7 @@ fun TopSearchbar(
                 onSearch = { search(it) },
                 active = active,
                 onActiveChange = { active = it },
-                placeholder = { Text(text = "Search") },
+                placeholder = { Text(text = stringResource(R.string.search)) },
                 leadingIcon = { LeadingIcon() },
                 trailingIcon = { TrailingIcon() }
             ) {

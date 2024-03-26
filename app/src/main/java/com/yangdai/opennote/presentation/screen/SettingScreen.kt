@@ -24,6 +24,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.automirrored.outlined.ArrowRight
+import androidx.compose.material.icons.outlined.Analytics
 import androidx.compose.material.icons.outlined.ArrowDropDown
 import androidx.compose.material.icons.outlined.CleaningServices
 import androidx.compose.material.icons.outlined.DarkMode
@@ -70,12 +71,14 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.google.firebase.analytics.FirebaseAnalytics
 import com.yangdai.opennote.R
 import com.yangdai.opennote.data.di.AppModule
 import com.yangdai.opennote.presentation.component.RatingDialog
 import com.yangdai.opennote.presentation.component.WarningDialog
 import com.yangdai.opennote.presentation.util.Constants.APP_COLOR
 import com.yangdai.opennote.presentation.util.Constants.APP_THEME
+import com.yangdai.opennote.presentation.util.Constants.FIREBASE
 import com.yangdai.opennote.presentation.util.Constants.IS_APP_IN_DARK_MODE
 import com.yangdai.opennote.presentation.util.Constants.IS_DARK_SWITCH_ACTIVE
 import com.yangdai.opennote.presentation.util.Constants.MASK_CLICK_X
@@ -130,6 +133,11 @@ fun SettingsScreen(
     val initPasswordSelect = settingScreenViewModel.getBoolean(NEED_PASSWORD) ?: false
     var passwordChecked by rememberSaveable {
         mutableStateOf(initPasswordSelect)
+    }
+
+    val initFirebaseSelect = settingScreenViewModel.getBoolean(FIREBASE) ?: false
+    var firebaseEnabled by rememberSaveable {
+        mutableStateOf(initFirebaseSelect)
     }
 
     var appInfoExpended by rememberSaveable { mutableStateOf(false) }
@@ -408,6 +416,25 @@ fun SettingsScreen(
                     color = MaterialTheme.colorScheme.primary
                 )
             }
+            ListItem(
+                leadingContent = {
+                    Icon(
+                        imageVector = Icons.Outlined.Analytics,
+                        contentDescription = "Firebase"
+                    )
+                },
+                headlineContent = { Text(text = stringResource(R.string.firebase)) },
+                supportingContent = { Text(text = stringResource(R.string.firebase_description)) },
+                trailingContent = {
+                    Switch(
+                        checked = firebaseEnabled,
+                        onCheckedChange = {
+                            firebaseEnabled = it
+                            settingScreenViewModel.putBoolean(FIREBASE, it)
+                            FirebaseAnalytics.getInstance(context).setAnalyticsCollectionEnabled(it)
+                        }
+                    )
+                })
             ListItem(
                 leadingContent = {
                     Icon(

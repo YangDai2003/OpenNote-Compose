@@ -62,4 +62,6 @@
     <string name="task">Task</string>
     <string name="completed">Completed</string>
     <string name="rich_text">RTF</string>
+    <string name="firebase">Firebase Analytics</string>
+    <string name="firebase_description">It is only used to improve the user experience and no personal information will be collected.</string>
 </resources>

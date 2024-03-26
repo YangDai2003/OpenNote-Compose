@@ -10,6 +10,8 @@
 
     <uses-permission android:name="android.permission.CAMERA" />
 
+    <uses-permission android:name="com.google.android.gms.permission.AD_ID"/>
+
     <queries>
         <intent>
             <action android:name="android.intent.action.TTS_SERVICE" />
@@ -54,6 +56,8 @@
                 <data android:mimeType="text/*" />
             </intent-filter>
         </activity>
+
+        <meta-data android:name="firebase_analytics_collection_enabled" android:value="false" />
 
         <meta-data
             android:name="com.google.mlkit.vision.DEPENDENCIES"

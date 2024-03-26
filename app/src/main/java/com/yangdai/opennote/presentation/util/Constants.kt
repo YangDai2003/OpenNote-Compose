@@ -7,6 +7,7 @@ object Constants {
     const val APP_THEME = "APP_THEME"
     const val APP_COLOR = "APP_COLOR"
     const val NEED_PASSWORD = "NEED_PASSWORD"
+    const val FIREBASE = "FIREBASE"
     const val IS_APP_IN_DARK_MODE = "IS_APP_IN_DARK_MODE"
     const val SHOULD_FOLLOW_SYSTEM = "SHOULD_FOLLOW_SYSTEM"
     const val IS_DARK_SWITCH_ACTIVE = "IS_DARK_SWITCH_ACTIVE"
