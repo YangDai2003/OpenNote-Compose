@@ -1,7 +1,7 @@
 # OpenNote
 
-OpenNote是一款完全使用Compose构建的现代Android记事本应用程序。
-它使用Kotlin(Compose)进行开发，并使用Gradle和Kotlin DSL进行项目构建和依赖管理。
+OpenNote是一款完全使用Compose构建的现代化Android记事本应用程序。
+它使用Gradle和Kotlin DSL进行项目构建和依赖管理, 采用MVVM架构。
 
 ## 注意
 
@@ -9,33 +9,41 @@ OpenNote是一款完全使用Compose构建的现代Android记事本应用程序�
 
 ## 功能
 
-- 创建、编辑和删除笔记
-- 创建、编辑和删除文件夹
-- 对笔记和文件夹进行排序和过滤
-- 将笔记移动到不同的文件夹
-- 将笔记移动到回收站
-- 使用ML Kit和CameraX进行OCR文本识别
-- 支持以Markdown格式编写笔记并正确渲染显示
-- 支持将笔记导出为HTML或TXT文件
+- **创建、编辑和删除笔记**：用户可以轻松创建、编辑和删除笔记。
+- **创建、编辑和删除文件夹**：使用文件夹管理功能有效地组织笔记。
+- **排序和过滤**：根据各种条件轻松排序和过滤笔记和文件夹。
+- **移动笔记**：在不同文件夹之间无缝移动笔记以更好地组织。
+- **垃圾箱**：将笔记安全地移至垃圾箱，以便在永久删除之前临时存储。
+- **OCR 文本识别**：利用 ML Kit 和 CameraX 直接从图像进行光学字符识别 (OCR)。
+- **Markdown 支持**：支持 CommonMark 和 GitHub Flavored Markdown (GFM) 语法，以实现多种格式选项。
+- **富文本模式**：通过基本的富文本编辑功能提供简化的书写体验。
+- **导出选项**：笔记可以以各种格式导出，包括 TXT、MD (Markdown) 和 HTML，以实现多种共享和使用。
+- **Material 3 Design**：遵循 Material Design 指南，打造现代且具有凝聚力的用户界面。
+- **响应式设计**：针对不同屏幕尺寸和方向的设备进行了优化。
 
 ## 技术细节
 
 - **编程语言**：Kotlin
 - **构建工具**：Gradle和Kotlin DSL
 - **Android版本**：应用程序目标为Android SDK版本34，并且与运行Android SDK版本29及以上的设备兼容。
-- **Kotlin版本**：应用程序使用Kotlin版本1.5.10。
+- **Kotlin版本**：应用程序使用Kotlin版本1.5.11。
 - **Java版本**：应用程序使用Java版本17。
+
+## 架构
+
+- **MVVM（模型-视图-视图模型）**：将用户界面逻辑与业务逻辑分开，提供清晰的关注点分离。
+- **干净架构**：强调关注点和抽象层的分离，使应用程序更加模块化、可扩展和可维护。
 
 ## 库和框架
 
-- Compose：用于构建原生Android UI的现代工具包。
-- Hilt：Android的依赖注入库。
-- KSP：Kotlin符号处理API。
-- Room：提供SQLite抽象层的持久性库。
-- Navigation：简化Android应用导航实现的库。
-- Material Icons：提供Material Design图标的库。
-- ML Kit：用于OCR文本识别的库。
-- CameraX：用于自定义相机功能的库。
+- **Compose**：用于构建本机 Android UI 的现代化工具包。
+- **Hilt**：Android 的依赖注入库。
+- **KSP（Kotlin 符号处理 API）**：通过额外的元数据处理增强 Kotlin 编译。
+- **Room**：一个持久性库，提供 SQLite 上的抽象层。
+- **Compose Navigation**：简化应用程序中不同屏幕间导航的实现。
+- **Material Icons**：提供材质设计图标以实现一致的视觉元素。
+- **ML Kit**：用于 OCR 文本识别。
+- **CameraX**：用于自定义相机功能。
 
 ## 安装
 

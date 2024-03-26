@@ -1,7 +1,7 @@
 # OpenNote
 
 OpenNote is a modern Android note-taking application built entirely with Compose.  
-It is developed using Kotlin(Compose), and uses Gradle with Kotlin DSL for building the project.
+It is developed using Kotlin (Compose) and follows the MVVM (Model-View-ViewModel) architecture pattern along with Clean Architecture principles.
 
 ## Notice
 
@@ -9,15 +9,17 @@ This project is still in early stages of construction and features may change, b
 
 ## Features
 
-- Create, edit, and delete notes
-- Create, edit, and delete folders
-- Sorting and filtering of notes and folders
-- Move notes to different folders
-- Move notes to the trash
-- OCR text recognition using ML Kit and CameraX
-- Markdown Support: The application supports both CommonMark and GitHub Flavored Markdown (GFM) syntax. This allows for a wide range of formatting options, including headers, emphasis, lists, links, and more.
-- Rich Text Mode: For users who prefer a simpler writing experience, the application also supports a basic rich text mode.
-- Export Options: Notes can be exported in various formats including TXT, MD (Markdown), and HTML. This provides flexibility in how notes can be shared and used outside of the application.
+- **Create, Edit, and Delete Notes**: Users can create, edit, and delete notes effortlessly.
+- **Create, Edit, and Delete Folders**: Organize notes efficiently with folder management functionalities.
+- **Sorting and Filtering**: Easily sort and filter notes and folders based on various criteria.
+- **Move Notes**: Seamlessly move notes between different folders for better organization.
+- **Trash Bin**: Safely move notes to the trash for temporary storage before permanent deletion.
+- **OCR Text Recognition**: Utilizes ML Kit and CameraX for optical character recognition (OCR) directly from images.
+- **Markdown Support**: Supports both CommonMark and GitHub Flavored Markdown (GFM) syntax for versatile formatting options.
+- **Rich Text Mode**: Offers a simplified writing experience with basic rich text editing capabilities.
+- **Export Options**: Notes can be exported in various formats including TXT, MD (Markdown), and HTML for versatile sharing and usage.
+- **Material 3 Design**: Adheres to Material Design guidelines for a modern and cohesive user interface.
+- **Responsive Design**: Optimized for devices with different screen sizes and orientations.
 
 ## Screenshots
 
@@ -37,19 +39,24 @@ This project is still in early stages of construction and features may change, b
 - **Programming Languages**: Kotlin
 - **Build Tool**: Gradle with Kotlin DSL
 - **Android Version**: The application targets Android SDK version 34 and is compatible with devices running Android SDK version 29 and above.
-- **Kotlin Version**: The application uses Kotlin version 1.5.10.
+- **Kotlin Version**: The application uses Kotlin version 1.5.11.
 - **Java Version**: The application uses Java version 17.
+
+## Architecture
+
+- **MVVM (Model-View-ViewModel)**: Separates the user interface logic from the business logic, providing a clear separation of concerns.
+- **Clean Architecture**: Emphasizes separation of concerns and layers of abstraction, making the application more modular, scalable, and maintainable.
 
 ## Libraries and Frameworks
 
-- Compose: A modern toolkit for building native Android UI.
-- Hilt: A dependency injection library for Android.
-- KSP: Kotlin Symbol Processing API.
-- Room: A persistence library that provides an abstraction layer over SQLite.
-- Navigation: A library that simplifies the implementation of navigation in Android apps.
-- Material Icons: A library that provides Material Design icons.
-- ML Kit: A library used for OCR text recognition.
-- CameraX: A library used for custom camera functionality.
+- **Compose**: A modern toolkit for building native Android UI.
+- **Hilt**: A dependency injection library for Android.
+- **KSP (Kotlin Symbol Processing API)**: Enhances Kotlin compilation with additional metadata processing.
+- **Room**: A persistence library providing an abstraction layer over SQLite.
+- **Compose Navigation**: Simplifies the implementation of navigation between screens.
+- **Material Icons**: Provides Material Design icons for consistent visual elements.
+- **ML Kit**: Utilized for OCR text recognition.
+- **CameraX**: Used for custom camera functionality.
 
 ## Installation
 
