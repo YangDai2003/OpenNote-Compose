@@ -6,6 +6,14 @@
 OpenNote是一款完全使用Compose构建的现代化Android记事本应用程序。
 它使用Gradle和Kotlin DSL进行项目构建和依赖管理, 采用MVVM架构。
 
+<a href="https://play.google.com/store/apps/details?id=com.yangdai.opennote">
+      <img alt="Get it on Google Play" src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" height="100">
+</a>
+
+<a href="https://github.com/YangDai2003/OpenNote-Compose/tree/master/app/release">
+      <img alt="Get it on GitHub" src="https://raw.githubusercontent.com/deckerst/common/main/assets/get-it-on-github.png" height="100">
+</a>
+
 ## 注意
 
 此项目仍在前期建设中，功能可能会改变或增减。如果您有任何建议或问题，请随时告诉我。
