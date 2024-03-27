@@ -2,6 +2,7 @@ package com.yangdai.opennote.presentation.util
 
 object Constants {
     const val NAV_ANIMATION_TIME = 300
+    const val MIME_TYPE_TEXT = "text/"
 
     const val HISTORY = "SEARCH_HISTORY"
     const val APP_THEME = "APP_THEME"

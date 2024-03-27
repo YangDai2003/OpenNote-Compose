@@ -349,52 +349,57 @@ fun NoteScreen(
 
                 if (state.isMarkdown) {
 
-                    val document: Node = viewModel.parser.parse(viewModel.textFieldState.text.toString())
+                    val document: Node =
+                        viewModel.parser.parse(viewModel.textFieldState.text.toString())
                     val html = viewModel.renderer.render(document)
 
-                    AndroidView(modifier = Modifier.fillMaxSize(), factory = {
-                        WebView(it).apply {
-                            layoutParams = ViewGroup.LayoutParams(
-                                ViewGroup.LayoutParams.MATCH_PARENT,
-                                ViewGroup.LayoutParams.MATCH_PARENT
-                            )
-                            webViewClient = object : WebViewClient() {
-                                override fun shouldOverrideUrlLoading(
-                                    view: WebView?,
-                                    request: WebResourceRequest
-                                ): Boolean {
-                                    val url = request.url.toString()
-                                    if (url.startsWith("http://") || url.startsWith("https://")) {
-                                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
-                                        context.startActivity(intent)
+                    Box(modifier = Modifier.fillMaxSize()) {
+                        AndroidView(factory = {
+                            WebView(it).apply {
+                                layoutParams = ViewGroup.LayoutParams(
+                                    ViewGroup.LayoutParams.MATCH_PARENT,
+                                    ViewGroup.LayoutParams.MATCH_PARENT
+                                )
+                                webViewClient = object : WebViewClient() {
+                                    override fun shouldOverrideUrlLoading(
+                                        view: WebView?,
+                                        request: WebResourceRequest
+                                    ): Boolean {
+                                        val url = request.url.toString()
+                                        if (url.startsWith("http://") || url.startsWith("https://")) {
+                                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                                            context.startActivity(intent)
+                                        }
+                                        return true
                                     }
-                                    return true
                                 }
-                            }
-                            isVerticalScrollBarEnabled = false
-                            isHorizontalScrollBarEnabled = false
-                            settings.setSupportZoom(true)
-                            settings.builtInZoomControls = true
-                            settings.displayZoomControls = false
-                            setBackgroundColor(Color.TRANSPARENT)
-                            settings.useWideViewPort = true
-                            settings.loadWithOverviewMode = false
-                            loadDataWithBaseURL(
-                                null,
-                                """
+                                isVerticalScrollBarEnabled = false
+                                isHorizontalScrollBarEnabled = false
+                                settings.setSupportZoom(true)
+                                settings.builtInZoomControls = true
+                                settings.displayZoomControls = false
+                                setPadding(0, 0, 0, 0)
+                                setBackgroundColor(Color.TRANSPARENT)
+                                loadDataWithBaseURL(
+                                    null,
+                                    """
+                                <!DOCTYPE html>
                                 <html><head>
-                                <style type="text/css">body{color: ${hexColor};}
-                                </style></head>
+                                <style type="text/css">
+                                body{color: ${hexColor}; padding: 0px; margin: 0px;}
+                                </style>
+                                </head>
                                 <body>
                                 $html
                                 </body></html>
                                 """.trimIndent(),
-                                "text/html",
-                                "UTF-8",
-                                null
-                            )
-                        }
-                    })
+                                    "text/html",
+                                    "UTF-8",
+                                    null
+                                )
+                            }
+                        })
+                    }
                 } else {
                     HighlightedClickableText(viewModel.textFieldState.text.toString())
                 }

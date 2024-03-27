@@ -13,11 +13,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.MenuOpen
 import androidx.compose.material.icons.automirrored.outlined.Sort
 import androidx.compose.material.icons.outlined.Clear
 import androidx.compose.material.icons.outlined.DeleteForever
 import androidx.compose.material.icons.outlined.History
+import androidx.compose.material.icons.outlined.Menu
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.DockedSearchBar
 import androidx.compose.material3.DrawerState
@@ -103,7 +103,7 @@ fun TopSearchbar(
                         }
                     }) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Outlined.MenuOpen,
+                            imageVector = Icons.Outlined.Menu,
                             contentDescription = "Open Menu"
                         )
                     }

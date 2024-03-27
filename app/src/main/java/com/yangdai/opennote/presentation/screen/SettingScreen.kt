@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalFoundationApi::class)
+
 package com.yangdai.opennote.presentation.screen
 
 import android.content.Context
@@ -8,6 +10,8 @@ import android.provider.Settings
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
@@ -416,25 +420,7 @@ fun SettingsScreen(
                     color = MaterialTheme.colorScheme.primary
                 )
             }
-            ListItem(
-                leadingContent = {
-                    Icon(
-                        imageVector = Icons.Outlined.Analytics,
-                        contentDescription = "Firebase"
-                    )
-                },
-                headlineContent = { Text(text = stringResource(R.string.firebase)) },
-                supportingContent = { Text(text = stringResource(R.string.firebase_description)) },
-                trailingContent = {
-                    Switch(
-                        checked = firebaseEnabled,
-                        onCheckedChange = {
-                            firebaseEnabled = it
-                            settingScreenViewModel.putBoolean(FIREBASE, it)
-                            FirebaseAnalytics.getInstance(context).setAnalyticsCollectionEnabled(it)
-                        }
-                    )
-                })
+
             ListItem(
                 leadingContent = {
                     Icon(
@@ -488,19 +474,25 @@ fun SettingsScreen(
                 )
             }
             ListItem(
-                modifier = Modifier.clickable {
-                    val intent = Intent(Intent.ACTION_VIEW)
-                    intent.data =
-                        Uri.parse("https://github.com/YangDai2003/OpenNote-Compose/blob/master/PRIVACY_POLICY.md")
-                    context.startActivity(intent)
-                },
-                leadingContent = {
-                    Icon(
-                        imageVector = Icons.Outlined.PrivacyTip,
-                        contentDescription = "Privacy Policy"
-                    )
-                },
-                headlineContent = { Text(text = stringResource(R.string.privacy_policy)) })
+                    leadingContent = {
+                        Icon(
+                            imageVector = Icons.Outlined.Analytics,
+                            contentDescription = "Firebase"
+                        )
+                    },
+            headlineContent = { Text(text = stringResource(R.string.firebase)) },
+            supportingContent = { Text(text = stringResource(R.string.firebase_description), maxLines = 1, modifier = Modifier.basicMarquee()) },
+            trailingContent = {
+                Switch(
+                    checked = firebaseEnabled,
+                    onCheckedChange = {
+                        firebaseEnabled = it
+                        settingScreenViewModel.putBoolean(FIREBASE, it)
+                        FirebaseAnalytics.getInstance(context).setAnalyticsCollectionEnabled(it)
+                    }
+                )
+            })
+
             ListItem(
                 modifier = Modifier.clickable {
                     showRatingDialog = true
@@ -579,14 +571,22 @@ fun SettingsScreen(
                         },
                         headlineContent = {
                             Text(text = stringResource(R.string.github))
-                        },
-                        trailingContent = {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Outlined.ArrowRight,
-                                contentDescription = "Arrow"
-                            )
                         }
                     )
+                    ListItem(
+                            modifier = Modifier.clickable {
+                                val intent = Intent(Intent.ACTION_VIEW)
+                                intent.data =
+                                    Uri.parse("https://github.com/YangDai2003/OpenNote-Compose/blob/master/PRIVACY_POLICY.md")
+                                context.startActivity(intent)
+                            },
+                    leadingContent = {
+                        Icon(
+                            imageVector = Icons.Outlined.PrivacyTip,
+                            contentDescription = "Privacy Policy"
+                        )
+                    },
+                    headlineContent = { Text(text = stringResource(R.string.privacy_policy)) })
                 }
             }
         }

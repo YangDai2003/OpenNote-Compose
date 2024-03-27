@@ -7,6 +7,9 @@ import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.util.Log
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.OptIn
 import androidx.camera.core.ExperimentalGetImage
 import androidx.camera.core.ImageCapture
@@ -14,24 +17,27 @@ import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.ImageProxy
 import androidx.camera.view.LifecycleCameraController
 import androidx.camera.view.PreviewView
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Camera
 import androidx.compose.material.icons.filled.CloseFullscreen
-import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.FlashAuto
 import androidx.compose.material.icons.filled.FlashOff
 import androidx.compose.material.icons.filled.FlashOn
+import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material.icons.filled.TextFields
+import androidx.compose.material.icons.outlined.Cancel
+import androidx.compose.material.icons.outlined.DoneOutline
 import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -39,8 +45,8 @@ import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SheetValue
-import androidx.compose.material3.Text
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.runtime.Composable
@@ -134,22 +140,83 @@ fun CameraXScreen(
         }
     }
 
-    var text by rememberSaveable {
-        mutableStateOf("")
-    }
-    var isLoading by remember { mutableStateOf(false) }
+    var text by rememberSaveable { mutableStateOf("") }
+
+    var isLoading by rememberSaveable { mutableStateOf(false) }
+
+    // Registers a photo picker activity launcher in single-select mode.
+    val pickMedia =
+        rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+            // Callback is invoked after the user selects a media item or closes the
+            // photo picker.
+            if (uri != null) {
+                isLoading = true
+                textRecognizer.process(InputImage.fromFilePath(context, uri))
+                    .addOnCompleteListener { task ->
+                        isLoading = false
+                        text =
+                            if (!task.isSuccessful) task.exception?.localizedMessage.toString()
+                            else {
+                                task.result.text
+                            }
+                        scope.launch {
+                            scaffoldState.bottomSheetState.expand()
+                        }
+                    }
+            } else {
+                Log.d("PhotoPicker", "No media selected")
+            }
+        }
 
     BottomSheetScaffold(
         scaffoldState = scaffoldState,
         sheetPeekHeight = 0.dp,
+        sheetDragHandle = {},
         sheetContent = {
             Column(
                 Modifier
                     .fillMaxWidth()
+                    .imePadding()
                     .padding(horizontal = 12.dp)
-                    .verticalScroll(rememberScrollState())
             ) {
-                Text(text = text)
+                if (text.isNotEmpty() && !isLoading) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        IconButton(onClick = {
+                            scope.launch {
+                                scaffoldState.bottomSheetState.hide()
+                            }
+                        }) {
+                            Icon(imageVector = Icons.Outlined.Cancel, contentDescription = "Cancel")
+                        }
+                        IconButton(onClick = {
+                            navController.previousBackStackEntry?.savedStateHandle?.set(
+                                "scannedText",
+                                text
+                            )
+                            navController.navigateUp()
+                        }) {
+                            Icon(
+                                imageVector = Icons.Outlined.DoneOutline,
+                                contentDescription = "Confirm"
+                            )
+                        }
+                    }
+                }
+
+                if (text.isNotEmpty()) {
+                    OutlinedTextField(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .navigationBarsPadding(),
+                        value = text,
+                        onValueChange = { text = it })
+                }
             }
         }
     ) { padding ->
@@ -179,32 +246,11 @@ fun CameraXScreen(
                 )
             }
 
-            if (text.isNotEmpty() && !isLoading) {
-                FilledTonalIconButton(
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .statusBarsPadding()
-                        .padding(end = 32.dp, top = 32.dp),
-                    onClick = {
-                        navController.previousBackStackEntry?.savedStateHandle?.set(
-                            "scannedText",
-                            text
-                        )
-                        navController.navigateUp()
-                    }
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Done,
-                        contentDescription = "Done"
-                    )
-                }
-            }
-
             FilledTonalIconButton(
                 modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .navigationBarsPadding()
-                    .padding(32.dp),
+                    .align(Alignment.TopEnd)
+                    .statusBarsPadding()
+                    .padding(end = 32.dp, top = 32.dp),
                 onClick = {
                     when (flashMode) {
                         ImageCapture.FLASH_MODE_OFF -> {
@@ -234,7 +280,7 @@ fun CameraXScreen(
 
             FilledTonalIconButton(
                 modifier = Modifier
-                    .align(Alignment.BottomStart)
+                    .align(Alignment.BottomEnd)
                     .navigationBarsPadding()
                     .padding(32.dp),
                 onClick = {
@@ -245,7 +291,22 @@ fun CameraXScreen(
             ) {
                 Icon(
                     imageVector = Icons.Default.TextFields,
-                    contentDescription = "Open Sheet"
+                    contentDescription = "Show Text"
+                )
+            }
+
+            FilledTonalIconButton(
+                modifier = Modifier
+                    .align(Alignment.BottomStart)
+                    .navigationBarsPadding()
+                    .padding(32.dp),
+                onClick = {
+                    pickMedia.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+                }
+            ) {
+                Icon(
+                    imageVector = Icons.Default.PhotoLibrary,
+                    contentDescription = "Open Photo Picker"
                 )
             }
 

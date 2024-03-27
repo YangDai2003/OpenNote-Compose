@@ -88,6 +88,10 @@ fun AnimatedNavHost(
             navDeepLink {
                 action = Intent.ACTION_SEND
                 mimeType = "text/*"
+            },
+            navDeepLink {
+                action = Intent.ACTION_VIEW
+                mimeType = "text/*"
             }
         ),
         enterTransition = {

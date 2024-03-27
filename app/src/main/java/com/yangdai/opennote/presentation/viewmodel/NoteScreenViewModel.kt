@@ -12,6 +12,7 @@ import com.yangdai.opennote.domain.usecase.Operations
 import com.yangdai.opennote.presentation.event.NoteEvent
 import com.yangdai.opennote.presentation.state.NoteState
 import com.yangdai.opennote.presentation.event.UiEvent
+import com.yangdai.opennote.presentation.util.Constants.MIME_TYPE_TEXT
 import com.yangdai.opennote.presentation.util.addLink
 import com.yangdai.opennote.presentation.util.addTask
 import com.yangdai.opennote.presentation.util.bold
@@ -39,8 +40,6 @@ import org.commonmark.parser.Parser
 import org.commonmark.renderer.html.HtmlRenderer
 import javax.inject.Inject
 
-const val MIME_TYPE_TEXT = "text/"
-
 @OptIn(ExperimentalFoundationApi::class)
 @HiltViewModel
 class NoteScreenViewModel @Inject constructor(
@@ -51,7 +50,7 @@ class NoteScreenViewModel @Inject constructor(
     var textFieldState: TextFieldState = TextFieldState("")
 
     private fun Intent.parseSharedContent(): String {
-        if (action != Intent.ACTION_SEND) return ""
+        if (action != Intent.ACTION_SEND && action != Intent.ACTION_VIEW) return ""
 
         return if (isTextMimeType()) {
             getStringExtra(Intent.EXTRA_TEXT) ?: ""
@@ -114,8 +113,10 @@ class NoteScreenViewModel @Inject constructor(
             }
         }
         savedStateHandle.get<Intent>(NavController.KEY_DEEP_LINK_INTENT)?.let {
-            val content = it.parseSharedContent()
-            textFieldState = TextFieldState(content)
+            val content = it.parseSharedContent().trim()
+            if (content.isNotEmpty()) {
+                textFieldState = TextFieldState(content)
+            }
         }
         getFolders()
     }
