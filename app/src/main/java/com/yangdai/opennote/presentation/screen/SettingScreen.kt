@@ -40,6 +40,7 @@ import androidx.compose.material.icons.outlined.Password
 import androidx.compose.material.icons.outlined.PermDeviceInformation
 import androidx.compose.material.icons.outlined.PrivacyTip
 import androidx.compose.material.icons.outlined.StarRate
+import androidx.compose.material.icons.outlined.TipsAndUpdates
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -554,6 +555,23 @@ fun SettingsScreen(
                                 context.packageManager.getPackageInfo(context.packageName, 0)
                             val version = packageInfo.versionName
                             Text(text = version)
+                        }
+                    )
+                    ListItem(
+                        modifier = Modifier.clickable {
+                            val intent = Intent(Intent.ACTION_VIEW)
+                            intent.data =
+                                Uri.parse("https://github.com/YangDai2003/OpenNote-Compose/blob/master/Guide.md")
+                            context.startActivity(intent)
+                        },
+                        leadingContent = {
+                            Icon(
+                                imageVector = Icons.Outlined.TipsAndUpdates,
+                                contentDescription = "Guide"
+                            )
+                        },
+                        headlineContent = {
+                            Text(text = stringResource(R.string.guide))
                         }
                     )
                     ListItem(

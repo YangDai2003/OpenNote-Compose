@@ -15,13 +15,10 @@ import androidx.compose.material.icons.filled.FormatStrikethrough
 import androidx.compose.material.icons.outlined.CheckBox
 import androidx.compose.material.icons.outlined.Code
 import androidx.compose.material.icons.outlined.DocumentScanner
-import androidx.compose.material.icons.outlined.EmojiEmotions
-import androidx.compose.material.icons.outlined.EmojiSymbols
 import androidx.compose.material.icons.outlined.FormatBold
 import androidx.compose.material.icons.outlined.FormatItalic
 import androidx.compose.material.icons.outlined.FormatPaint
 import androidx.compose.material.icons.outlined.FormatUnderlined
-import androidx.compose.material.icons.outlined.InsertEmoticon
 import androidx.compose.material.icons.outlined.Link
 import androidx.compose.material.icons.outlined.Title
 import androidx.compose.material3.HorizontalDivider
