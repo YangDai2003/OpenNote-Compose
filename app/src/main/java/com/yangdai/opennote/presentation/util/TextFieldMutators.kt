@@ -37,6 +37,8 @@ fun TextFieldBuffer.mark() = inlineWrap("<mark>", "</mark>")
 
 fun TextFieldBuffer.inlineCode() = inlineWrap("`")
 
+fun TextFieldBuffer.inlineFunction() = inlineWrap("$")
+
 fun TextFieldBuffer.quote() {
     val text = toString()
     val lineStart = text.take(selectionInChars.min)
@@ -59,12 +61,6 @@ fun TextFieldBuffer.quote() {
 fun TextFieldBuffer.add(str: String) {
     val initialSelection = selectionInChars
     replace(initialSelection.min, initialSelection.max, str)
-    selectCharsIn(
-        TextRange(
-            initialSelection.min,
-            initialSelection.min + str.length
-        )
-    )
 }
 
 fun TextFieldBuffer.addLink(link: String) = add(link)

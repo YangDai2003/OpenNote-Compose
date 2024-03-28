@@ -15,11 +15,15 @@ import androidx.compose.material.icons.filled.FormatStrikethrough
 import androidx.compose.material.icons.outlined.CheckBox
 import androidx.compose.material.icons.outlined.Code
 import androidx.compose.material.icons.outlined.DocumentScanner
+import androidx.compose.material.icons.outlined.EmojiEmotions
+import androidx.compose.material.icons.outlined.EmojiSymbols
 import androidx.compose.material.icons.outlined.FormatBold
 import androidx.compose.material.icons.outlined.FormatItalic
 import androidx.compose.material.icons.outlined.FormatPaint
 import androidx.compose.material.icons.outlined.FormatUnderlined
+import androidx.compose.material.icons.outlined.InsertEmoticon
 import androidx.compose.material.icons.outlined.Link
+import androidx.compose.material.icons.outlined.Title
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -27,8 +31,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.yangdai.opennote.R
 import com.yangdai.opennote.presentation.navigation.Route
 import com.yangdai.opennote.presentation.state.NoteState
 import com.yangdai.opennote.presentation.viewmodel.NoteScreenViewModel
@@ -83,6 +89,14 @@ fun NoteEditorRow(
                 }
 
                 if (noteState.isMarkdown) {
+
+                    IconButton(onClick = { viewModel.title() }) {
+                        Icon(
+                            imageVector = Icons.Outlined.Title,
+                            contentDescription = "Title"
+                        )
+                    }
+
                     IconButton(onClick = { viewModel.bold() }) {
                         Icon(
                             imageVector = Icons.Outlined.FormatBold,
@@ -122,6 +136,13 @@ fun NoteEditorRow(
                         Icon(
                             imageVector = Icons.Outlined.Code,
                             contentDescription = "Code"
+                        )
+                    }
+
+                    IconButton(onClick = { viewModel.inlineFunction() }) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.function),
+                            contentDescription = "Function"
                         )
                     }
 

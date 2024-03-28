@@ -265,6 +265,7 @@ fun NoteScreen(
                 })
         },
         bottomBar = {
+
             NoteEditorRow(
                 isReadMode = isReadMode,
                 noteState = state,
@@ -272,6 +273,7 @@ fun NoteScreen(
                 navController = navController,
                 onTaskButtonClick = { showTaskDialog = true },
                 onLinkButtonClick = { showLinkDialog = true })
+
         }
     ) { paddingValues ->
         Column(
@@ -373,6 +375,7 @@ fun NoteScreen(
                                         return true
                                     }
                                 }
+                                settings.javaScriptEnabled = true
                                 isVerticalScrollBarEnabled = false
                                 isHorizontalScrollBarEnabled = false
                                 settings.setSupportZoom(true)
@@ -384,14 +387,37 @@ fun NoteScreen(
                                     null,
                                     """
                                 <!DOCTYPE html>
-                                <html><head>
-                                <style type="text/css">
-                                body{color: ${hexColor}; padding: 0px; margin: 0px;}
-                                </style>
+                                <html>
+                                <head>
+                                      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" integrity="sha384-wcIxkf4k558AjM3Yz3BBFQUbk/zgIYC2R0QpeeYb+TwlBVMrlgLqwRjRtGZiK7ww" crossorigin="anonymous">
+                                      <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" integrity="sha384-hIoBPJpTUs74ddyc4bFZSM1TVlQDA60VBbJS0oA934VSz82sBx1X7kSx2ATBDIyd" crossorigin="anonymous"></script>
+                                      <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" integrity="sha384-43gviWU0YVjaDtb/GhzOouOXtZMP/7XUzwPTstBeZFe/+rCMvRwr4yROQP43s0Xk" crossorigin="anonymous"></script>
+                                      <script>
+                                          document.addEventListener("DOMContentLoaded", function() {
+                                              renderMathInElement(document.body, {
+                                                delimiters: 
+[
+  {left: "${'$'}${'$'}", right: "${'$'}${'$'}", display: true},
+  {left: "${'$'}", right: "${'$'}", display: false},
+  {left: "\\(", right: "\\)", display: false},
+  {left: "\\begin{equation}", right: "\\end{equation}", display: true},
+  {left: "\\begin{align}", right: "\\end{align}", display: true},
+  {left: "\\begin{alignat}", right: "\\end{alignat}", display: true},
+  {left: "\\begin{gather}", right: "\\end{gather}", display: true},
+  {left: "\\begin{CD}", right: "\\end{CD}", display: true},
+  {left: "\\[", right: "\\]", display: true}
+],
+                                                throwOnError : false
+                                              });
+                                          });
+                                      </script>
+                                      <style type="text/css"> body{color: ${hexColor}; padding: 0px; margin: 0px;}
+                                      </style>
                                 </head>
                                 <body>
                                 $html
-                                </body></html>
+                                </body>
+                                </html>
                                 """.trimIndent(),
                                     "text/html",
                                     "UTF-8",

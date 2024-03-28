@@ -13,10 +13,12 @@ import com.yangdai.opennote.presentation.event.NoteEvent
 import com.yangdai.opennote.presentation.state.NoteState
 import com.yangdai.opennote.presentation.event.UiEvent
 import com.yangdai.opennote.presentation.util.Constants.MIME_TYPE_TEXT
+import com.yangdai.opennote.presentation.util.add
 import com.yangdai.opennote.presentation.util.addLink
 import com.yangdai.opennote.presentation.util.addTask
 import com.yangdai.opennote.presentation.util.bold
 import com.yangdai.opennote.presentation.util.inlineCode
+import com.yangdai.opennote.presentation.util.inlineFunction
 import com.yangdai.opennote.presentation.util.italic
 import com.yangdai.opennote.presentation.util.mark
 import com.yangdai.opennote.presentation.util.quote
@@ -129,6 +131,10 @@ class NoteScreenViewModel @Inject constructor(
         textFieldState.undoState.redo()
     }
 
+    fun title() {
+        textFieldState.edit { add("#") }
+    }
+
     fun bold() {
         textFieldState.edit { bold() }
     }
@@ -151,6 +157,10 @@ class NoteScreenViewModel @Inject constructor(
 
     fun inlineCode() {
         textFieldState.edit { inlineCode() }
+    }
+
+    fun inlineFunction() {
+        textFieldState.edit { inlineFunction() }
     }
 
     fun quote() {
