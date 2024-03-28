@@ -14,6 +14,10 @@ OpenNote是一款完全使用Compose构建的现代化Android记事本应用程�
       <img alt="Get it on GitHub" src="https://raw.githubusercontent.com/deckerst/common/main/assets/get-it-on-github.png" height="100">
 </a>
 
+## 如何使用基于 Markdown 和 LaTeX 语法的 OpenNote？
+
+您可以在[指南](Guide.zh.md)中了解有关如何使用基于 Markdown 和 LaTeX 语法的 OpenNote 的更多信息。
+
 ## 注意
 
 此项目仍在前期建设中，功能可能会改变或增减。如果您有任何建议或问题，请随时告诉我。
@@ -71,6 +75,10 @@ OpenNote是一款完全使用Compose构建的现代化Android记事本应用程�
 - **Material Icons**：提供材质设计图标以实现一致的视觉元素。
 - **ML Kit**：用于 OCR 文本识别。
 - **CameraX**：用于自定义相机功能。
+
+## 隐私政策和所需权限
+
+您可以在[隐私政策](PRIVACY_POLICY.md)中找到隐私政策和所需权限。
 
 ## 安装
 

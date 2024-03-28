@@ -14,6 +14,10 @@ It is developed using Kotlin (Compose) and follows the MVVM (Model-View-ViewMode
       <img alt="Get it on GitHub" src="https://raw.githubusercontent.com/deckerst/common/main/assets/get-it-on-github.png" height="100">
 </a>
 
+## How to Use OpenNote with Markdown and LaTeX?
+
+You can know more about how to use OpenNote with Markdown and LaTeX in the [Guide](Guide.md).
+
 ## Notice
 
 This project is still in early stages of construction and features may change, be added or removed. If you have any suggestions or questions please feel free to let me know.
@@ -71,6 +75,10 @@ This project is still in early stages of construction and features may change, b
 - **Material Icons**: Provides Material Design icons for consistent visual elements.
 - **ML Kit**: Utilized for OCR text recognition.
 - **CameraX**: Used for custom camera functionality.
+
+## Privacy Policy and Required Permissions
+
+You can find the Privacy Policy and Required Permissions in the [Privacy Policy](PRIVACY_POLICY.md).
 
 ## Installation
 
