@@ -12,6 +12,7 @@ import com.yangdai.opennote.presentation.event.ListEvent
 import com.yangdai.opennote.presentation.state.ListState
 import com.yangdai.opennote.presentation.util.Constants
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -47,7 +48,7 @@ class MainScreenViewModel @Inject constructor(
             is ListEvent.Sort -> getNotes(event.noteOrder, event.trash, event.filterFolder, event.folderId)
 
             is ListEvent.DeleteNotesByIds -> {
-                viewModelScope.launch {
+                viewModelScope.launch(Dispatchers.IO) {
                     if (event.recycle) {
                         event.ids.forEach {
                             val note = operations.findNote(it)
@@ -73,7 +74,7 @@ class MainScreenViewModel @Inject constructor(
             }
 
             is ListEvent.RestoreNotes -> {
-                viewModelScope.launch {
+                viewModelScope.launch(Dispatchers.IO) {
                     event.ids.forEach {
                         val note = operations.findNote(it)
                         if (note != null)
@@ -99,7 +100,7 @@ class MainScreenViewModel @Inject constructor(
 
             is ListEvent.Search -> searchNotes(event.key)
             is ListEvent.MoveNotes -> {
-                viewModelScope.launch {
+                viewModelScope.launch(Dispatchers.IO) {
                     event.ids.forEach {
                         val note = operations.findNote(it)
                         if (note != null) {
@@ -119,7 +120,7 @@ class MainScreenViewModel @Inject constructor(
             }
 
             is ListEvent.DeleteNotesByFolderId -> {
-                viewModelScope.launch {
+                viewModelScope.launch(Dispatchers.IO) {
                     operations.deleteNotesByFolderId(event.folderId)
                 }
             }
@@ -129,23 +130,21 @@ class MainScreenViewModel @Inject constructor(
     fun onFolderEvent(event: FolderEvent) {
         when (event) {
             is FolderEvent.AddFolder -> {
-                viewModelScope.launch {
+                viewModelScope.launch(Dispatchers.IO) {
                     operations.addFolder(event.folder)
                 }
             }
 
             is FolderEvent.DeleteFolder -> {
-                viewModelScope.launch {
+                viewModelScope.launch(Dispatchers.IO) {
                     operations.deleteFolder(event.id)
                 }
-
             }
 
             is FolderEvent.UpdateFolder -> {
-                viewModelScope.launch {
+                viewModelScope.launch(Dispatchers.IO) {
                     operations.updateFolder(event.folder)
                 }
-
             }
         }
     }
@@ -193,7 +192,7 @@ class MainScreenViewModel @Inject constructor(
     }
 
     fun putHistoryStringSet(value: Set<String>) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             dataStoreRepository.putStringSet(Constants.HISTORY, value)
         }
     }

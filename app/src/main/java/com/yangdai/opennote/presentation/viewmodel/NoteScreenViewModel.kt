@@ -27,19 +27,19 @@ import com.yangdai.opennote.presentation.util.quote
 import com.yangdai.opennote.presentation.util.strikeThrough
 import com.yangdai.opennote.presentation.util.underline
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -59,7 +59,19 @@ class NoteScreenViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
-    var textFieldState: TextFieldState = TextFieldState("")
+
+    val textFieldState: TextFieldState = TextFieldState("")
+    val html = textFieldState.textAsFlow()
+        .debounce(100)
+        .mapLatest {
+            val document: Node = parser.parse(it.toString())
+            renderer.render(document) ?: ""
+        }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = ""
+        )
 
     private val extensions: List<Extension> = listOf(
         TablesExtension.create(),
@@ -68,41 +80,27 @@ class NoteScreenViewModel @Inject constructor(
     )
 
     private val parser: Parser by lazy { Parser.builder().extensions(extensions).build() }
-    private val renderer: HtmlRenderer by lazy { HtmlRenderer.builder().extensions(extensions).build() }
-
-    lateinit var html: StateFlow<String>
+    private val renderer: HtmlRenderer by lazy {
+        HtmlRenderer.builder().extensions(extensions).build()
+    }
 
     private val _state = MutableStateFlow(NoteState())
     val stateFlow = _state.asStateFlow()
 
-    private val _event = Channel<UiEvent>()
-    val event = _event.receiveAsFlow()
+    private val _event = MutableSharedFlow<UiEvent>()
+    val event = _event.asSharedFlow()
 
     private var queryFoldersJob: Job? = null
 
-    private fun sendEvent(event: UiEvent) {
-        viewModelScope.launch {
-            _event.send(event)
-        }
-    }
-
-    private var oTitle = ""
-    private var oContent = ""
-    private var oFolderId: Long? = null
-    private var oIsMarkdown = true
+    private var oNote: NoteEntity? = null
 
     init {
-        setHtmlFlow()
         savedStateHandle.get<String>("id")?.let {
             val id = it.toLong()
             viewModelScope.launch {
                 operations.findNote(id)?.let { note ->
-                    oTitle = note.title
-                    oContent = note.content
-                    oFolderId = note.folderId
-                    oIsMarkdown = note.isMarkdown
-                    textFieldState = TextFieldState(note.content)
-                    setHtmlFlow()
+                    oNote = note
+                    textFieldState.edit { append(note.content) }
                     _state.update { noteState ->
                         noteState.copy(
                             id = note.id,
@@ -119,25 +117,10 @@ class NoteScreenViewModel @Inject constructor(
         savedStateHandle.get<Intent>(NavController.KEY_DEEP_LINK_INTENT)?.let {
             val content = it.parseSharedContent().trim()
             if (content.isNotEmpty()) {
-                textFieldState = TextFieldState(content)
-                setHtmlFlow()
+                textFieldState.edit { append(content) }
             }
         }
         getFolders()
-    }
-
-    private fun setHtmlFlow() {
-        html = textFieldState.textAsFlow()
-            .debounce(100)
-            .mapLatest {
-                val document: Node = parser.parse(it.toString())
-                renderer.render(document) ?: ""
-            }
-            .stateIn(
-                scope = viewModelScope,
-                started = SharingStarted.WhileSubscribed(5_000),
-                initialValue = ""
-            )
     }
 
     fun addTask(task: String, checked: Boolean) {
@@ -181,7 +164,7 @@ class NoteScreenViewModel @Inject constructor(
             }
 
             is NoteEvent.NavigateBack -> {
-                viewModelScope.launch {
+                viewModelScope.launch(Dispatchers.IO) {
                     val noteState = stateFlow.value
                     val note = NoteEntity(
                         id = noteState.id,
@@ -196,15 +179,15 @@ class NoteScreenViewModel @Inject constructor(
                             operations.addNote(note)
                         }
                     } else {
-                        if (note.title != oTitle || note.content != oContent || note.folderId != oFolderId || note.isMarkdown != oIsMarkdown)
+                        if (note.title != oNote?.title || note.content != oNote?.content || note.isMarkdown != oNote?.isMarkdown || note.folderId != oNote?.folderId)
                             operations.updateNote(note)
                     }
-                    sendEvent(UiEvent.NavigateBack)
+                    _event.emit(UiEvent.NavigateBack)
                 }
             }
 
             NoteEvent.Delete -> {
-                viewModelScope.launch {
+                viewModelScope.launch(Dispatchers.IO) {
                     val note = stateFlow.value
                     note.id?.let {
                         operations.updateNote(
@@ -219,7 +202,7 @@ class NoteScreenViewModel @Inject constructor(
                             )
                         )
                     }
-                    sendEvent(UiEvent.NavigateBack)
+                    _event.emit(UiEvent.NavigateBack)
                 }
             }
 
