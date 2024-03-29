@@ -19,6 +19,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
@@ -38,7 +39,7 @@ class MainScreenViewModel @Inject constructor(
     private var queryFoldersJob: Job? = null
 
     init {
-        getNotes(NoteOrder.Date(OrderType.Descending))
+        getNotes()
         getFolders()
     }
 
@@ -150,13 +151,14 @@ class MainScreenViewModel @Inject constructor(
     }
 
     private fun getNotes(
-        noteOrder: NoteOrder,
+        noteOrder: NoteOrder = NoteOrder.Date(OrderType.Descending),
         trash: Boolean = false,
         filterFolder: Boolean = false,
         folderId: Long? = null,
     ) {
         queryNotesJob?.cancel()
         queryNotesJob = operations.getNotes(noteOrder, trash, filterFolder, folderId)
+            .flowOn(Dispatchers.IO)
             .onEach { notes ->
                 _state.value = stateFlow.value.copy(
                     notes = notes,
@@ -172,6 +174,7 @@ class MainScreenViewModel @Inject constructor(
     private fun getFolders() {
         queryFoldersJob?.cancel()
         queryFoldersJob = operations.getFolders()
+            .flowOn(Dispatchers.IO)
             .onEach { folders ->
                 _state.value = stateFlow.value.copy(
                     folders = folders
@@ -183,6 +186,7 @@ class MainScreenViewModel @Inject constructor(
     private fun searchNotes(keyWord: String) {
         queryNotesJob?.cancel()
         queryNotesJob = operations.searchNotes(keyWord)
+            .flowOn(Dispatchers.IO)
             .onEach { notes ->
                 _state.value = stateFlow.value.copy(
                     notes = notes
