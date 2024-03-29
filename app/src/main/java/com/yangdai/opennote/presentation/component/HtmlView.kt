@@ -28,6 +28,43 @@ fun HtmlView(html: String) {
     val hexCodeBackgroundColor = String.format("#%06X", 0xFFFFFF and codeBackgroundColor)
     val hexPreCodeBackgroundColor = String.format("#%06X", 0xFFFFFF and preCodeBackgroundColor)
 
+    val data = """
+        <!DOCTYPE html>
+        <html>
+        <head>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" integrity="sha384-wcIxkf4k558AjM3Yz3BBFQUbk/zgIYC2R0QpeeYb+TwlBVMrlgLqwRjRtGZiK7ww" crossorigin="anonymous">
+        <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" integrity="sha384-hIoBPJpTUs74ddyc4bFZSM1TVlQDA60VBbJS0oA934VSz82sBx1X7kSx2ATBDIyd" crossorigin="anonymous"></script>
+        <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" integrity="sha384-43gviWU0YVjaDtb/GhzOouOXtZMP/7XUzwPTstBeZFe/+rCMvRwr4yROQP43s0Xk" crossorigin="anonymous"></script>
+        <script>
+            document.addEventListener("DOMContentLoaded", function() {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: "${'$'}${'$'}", right: "${'$'}${'$'}", display: true},
+                        {left: "${'$'}", right: "${'$'}", display: false},
+                        {left: "\\(", right: "\\)", display: false},
+                        {left: "\\begin{equation}", right: "\\end{equation}", display: true},
+                        {left: "\\begin{align}", right: "\\end{align}", display: true},
+                        {left: "\\begin{alignat}", right: "\\end{alignat}", display: true},
+                        {left: "\\begin{gather}", right: "\\end{gather}", display: true},
+                        {left: "\\begin{CD}", right: "\\end{CD}", display: true},
+                        {left: "\\[", right: "\\]", display: true}
+                    ],
+                    throwOnError : false
+                });
+            });
+        </script>
+        <style type="text/css">
+            body{color: $hexTextColor; padding: 0px; margin: 0px;}
+            p > code { background-color: $hexCodeBackgroundColor; padding: 4px 4px 2px 4px; margin: 4px; border-radius: 4px; }
+            pre { background-color: $hexPreCodeBackgroundColor; padding: 16px;}
+        </style>
+        </head>
+        <body>
+        $html
+        </body>
+        </html>
+    """.trimIndent()
+
     Box(modifier = Modifier.fillMaxSize()) {
         AndroidView(factory = {
             WebView(it).apply {
@@ -49,6 +86,8 @@ fun HtmlView(html: String) {
                     }
                 }
                 settings.javaScriptEnabled = true
+                settings.loadsImagesAutomatically = true
+                settings.defaultTextEncodingName = "utf-8"
                 isVerticalScrollBarEnabled = false
                 isHorizontalScrollBarEnabled = false
                 settings.setSupportZoom(true)
@@ -60,43 +99,7 @@ fun HtmlView(html: String) {
                 setBackgroundColor(Color.TRANSPARENT)
                 loadDataWithBaseURL(
                     null,
-                    """
-                                <!DOCTYPE html>
-                                <html>
-                                <head>
-                                      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" integrity="sha384-wcIxkf4k558AjM3Yz3BBFQUbk/zgIYC2R0QpeeYb+TwlBVMrlgLqwRjRtGZiK7ww" crossorigin="anonymous">
-                                      <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" integrity="sha384-hIoBPJpTUs74ddyc4bFZSM1TVlQDA60VBbJS0oA934VSz82sBx1X7kSx2ATBDIyd" crossorigin="anonymous"></script>
-                                      <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" integrity="sha384-43gviWU0YVjaDtb/GhzOouOXtZMP/7XUzwPTstBeZFe/+rCMvRwr4yROQP43s0Xk" crossorigin="anonymous"></script>
-                                      <script>
-                                          document.addEventListener("DOMContentLoaded", function() {
-                                              renderMathInElement(document.body, {
-                                                delimiters: 
-[
-  {left: "${'$'}${'$'}", right: "${'$'}${'$'}", display: true},
-  {left: "${'$'}", right: "${'$'}", display: false},
-  {left: "\\(", right: "\\)", display: false},
-  {left: "\\begin{equation}", right: "\\end{equation}", display: true},
-  {left: "\\begin{align}", right: "\\end{align}", display: true},
-  {left: "\\begin{alignat}", right: "\\end{alignat}", display: true},
-  {left: "\\begin{gather}", right: "\\end{gather}", display: true},
-  {left: "\\begin{CD}", right: "\\end{CD}", display: true},
-  {left: "\\[", right: "\\]", display: true}
-],
-                                                throwOnError : false
-                                              });
-                                          });
-                                      </script>
-                                      <style type="text/css"> 
-                                      body{color: ${hexTextColor}; padding: 0px; margin: 0px;}
-                                      p > code { background-color: ${hexCodeBackgroundColor}; padding: 4px 4px 2px 4px; margin: 4px; border-radius: 4px; }
-                                      pre { background-color: ${hexPreCodeBackgroundColor}; padding: 16px;}
-                                      </style>
-                                </head>
-                                <body>
-                                $html
-                                </body>
-                                </html>
-                                """.trimIndent(),
+                    data,
                     "text/html",
                     "UTF-8",
                     null
@@ -105,43 +108,7 @@ fun HtmlView(html: String) {
         }, update = {
             it.loadDataWithBaseURL(
                 null,
-                """
-                                <!DOCTYPE html>
-                                <html>
-                                <head>
-                                      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" integrity="sha384-wcIxkf4k558AjM3Yz3BBFQUbk/zgIYC2R0QpeeYb+TwlBVMrlgLqwRjRtGZiK7ww" crossorigin="anonymous">
-                                      <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" integrity="sha384-hIoBPJpTUs74ddyc4bFZSM1TVlQDA60VBbJS0oA934VSz82sBx1X7kSx2ATBDIyd" crossorigin="anonymous"></script>
-                                      <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" integrity="sha384-43gviWU0YVjaDtb/GhzOouOXtZMP/7XUzwPTstBeZFe/+rCMvRwr4yROQP43s0Xk" crossorigin="anonymous"></script>
-                                      <script>
-                                          document.addEventListener("DOMContentLoaded", function() {
-                                              renderMathInElement(document.body, {
-                                                delimiters: 
-[
-  {left: "${'$'}${'$'}", right: "${'$'}${'$'}", display: true},
-  {left: "${'$'}", right: "${'$'}", display: false},
-  {left: "\\(", right: "\\)", display: false},
-  {left: "\\begin{equation}", right: "\\end{equation}", display: true},
-  {left: "\\begin{align}", right: "\\end{align}", display: true},
-  {left: "\\begin{alignat}", right: "\\end{alignat}", display: true},
-  {left: "\\begin{gather}", right: "\\end{gather}", display: true},
-  {left: "\\begin{CD}", right: "\\end{CD}", display: true},
-  {left: "\\[", right: "\\]", display: true}
-],
-                                                throwOnError : false
-                                              });
-                                          });
-                                      </script>
-                                      <style type="text/css"> 
-                                      body{color: ${hexTextColor}; padding: 0px; margin: 0px;}
-                                      p > code { background-color: ${hexCodeBackgroundColor}; padding: 4px 4px 2px 4px; margin: 4px; border-radius: 4px; }
-                                      pre { background-color: ${hexPreCodeBackgroundColor}; padding: 16px;}
-                                      </style>
-                                </head>
-                                <body>
-                                $html
-                                </body>
-                                </html>
-                                """.trimIndent(),
+                data,
                 "text/html",
                 "UTF-8",
                 null
