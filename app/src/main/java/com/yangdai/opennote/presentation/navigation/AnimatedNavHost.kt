@@ -11,16 +11,13 @@ import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.navDeepLink
 import com.yangdai.opennote.presentation.util.Constants.NAV_ANIMATION_TIME
-import com.yangdai.opennote.presentation.event.UiEvent
 import com.yangdai.opennote.presentation.screen.CameraXScreen
 import com.yangdai.opennote.presentation.screen.FolderScreen
 import com.yangdai.opennote.presentation.screen.MainScreen
@@ -28,7 +25,6 @@ import com.yangdai.opennote.presentation.screen.NoteScreen
 import com.yangdai.opennote.presentation.screen.SettingsScreen
 import com.yangdai.opennote.presentation.screen.sharedViewModel
 import com.yangdai.opennote.presentation.viewmodel.MainScreenViewModel
-import com.yangdai.opennote.presentation.viewmodel.NoteScreenViewModel
 
 @Composable
 fun AnimatedNavHost(
@@ -77,7 +73,9 @@ fun AnimatedNavHost(
         composable(Route.FOLDERS) {
             val viewModel =
                 it.sharedViewModel<MainScreenViewModel>(navController = navController)
-            FolderScreen(navController, viewModel)
+            FolderScreen(viewModel) {
+                navController.navigateUp()
+            }
         }
     }
 
@@ -112,20 +110,7 @@ fun AnimatedNavHost(
             )
         }
     ) {
-        val viewModel: NoteScreenViewModel = hiltViewModel()
-        LaunchedEffect(key1 = true) {
-            viewModel.event.collect { event ->
-                when (event) {
-                    is UiEvent.NavigateBack -> navController.navigateUp()
-                }
-            }
-        }
-        NoteScreen(
-            navController = navController,
-            viewModel = viewModel,
-            onEvent = viewModel::onEvent,
-            isLargeScreen = isLargeScreen
-        )
+        NoteScreen(navController = navController, isLargeScreen = isLargeScreen)
     }
 
     composable(
@@ -135,10 +120,13 @@ fun AnimatedNavHost(
         popExitTransition = { scaleOut(animationSpec = tween(NAV_ANIMATION_TIME)) },
         popEnterTransition = { EnterTransition.None }
     ) {
-        CameraXScreen(navController = navController)
+        CameraXScreen(onCloseClick = { navController.navigateUp() }) {
+            navController.previousBackStackEntry?.savedStateHandle?.set("scannedText", it)
+            navController.navigateUp()
+        }
     }
 
     composable(Route.SETTINGS) {
-        SettingsScreen(navController = navController)
+        SettingsScreen(navigateUp = { navController.navigateUp() })
     }
 }

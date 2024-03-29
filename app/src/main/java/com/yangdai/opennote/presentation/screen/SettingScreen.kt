@@ -75,7 +75,6 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavController
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.yangdai.opennote.R
 import com.yangdai.opennote.data.di.AppModule
@@ -101,7 +100,7 @@ import kotlinx.coroutines.withContext
 @Composable
 fun SettingsScreen(
     settingScreenViewModel: SettingScreenViewModel = hiltViewModel(),
-    navController: NavController
+    navigateUp: () -> Unit,
 ) {
     val context = LocalContext.current
 
@@ -178,7 +177,7 @@ fun SettingsScreen(
         topBar = {
             LargeTopAppBar(
                 navigationIcon = {
-                    IconButton(onClick = { navController.navigateUp() }) {
+                    IconButton(onClick = navigateUp) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
                             contentDescription = "Back"
@@ -475,24 +474,30 @@ fun SettingsScreen(
                 )
             }
             ListItem(
-                    leadingContent = {
-                        Icon(
-                            imageVector = Icons.Outlined.Analytics,
-                            contentDescription = "Firebase"
-                        )
-                    },
-            headlineContent = { Text(text = stringResource(R.string.firebase)) },
-            supportingContent = { Text(text = stringResource(R.string.firebase_description), maxLines = 1, modifier = Modifier.basicMarquee()) },
-            trailingContent = {
-                Switch(
-                    checked = firebaseEnabled,
-                    onCheckedChange = {
-                        firebaseEnabled = it
-                        settingScreenViewModel.putBoolean(FIREBASE, it)
-                        FirebaseAnalytics.getInstance(context).setAnalyticsCollectionEnabled(it)
-                    }
-                )
-            })
+                leadingContent = {
+                    Icon(
+                        imageVector = Icons.Outlined.Analytics,
+                        contentDescription = "Firebase"
+                    )
+                },
+                headlineContent = { Text(text = stringResource(R.string.firebase)) },
+                supportingContent = {
+                    Text(
+                        text = stringResource(R.string.firebase_description),
+                        maxLines = 1,
+                        modifier = Modifier.basicMarquee()
+                    )
+                },
+                trailingContent = {
+                    Switch(
+                        checked = firebaseEnabled,
+                        onCheckedChange = {
+                            firebaseEnabled = it
+                            settingScreenViewModel.putBoolean(FIREBASE, it)
+                            FirebaseAnalytics.getInstance(context).setAnalyticsCollectionEnabled(it)
+                        }
+                    )
+                })
 
             ListItem(
                 modifier = Modifier.clickable {
@@ -592,19 +597,19 @@ fun SettingsScreen(
                         }
                     )
                     ListItem(
-                            modifier = Modifier.clickable {
-                                val intent = Intent(Intent.ACTION_VIEW)
-                                intent.data =
-                                    Uri.parse("https://github.com/YangDai2003/OpenNote-Compose/blob/master/PRIVACY_POLICY.md")
-                                context.startActivity(intent)
-                            },
-                    leadingContent = {
-                        Icon(
-                            imageVector = Icons.Outlined.PrivacyTip,
-                            contentDescription = "Privacy Policy"
-                        )
-                    },
-                    headlineContent = { Text(text = stringResource(R.string.privacy_policy)) })
+                        modifier = Modifier.clickable {
+                            val intent = Intent(Intent.ACTION_VIEW)
+                            intent.data =
+                                Uri.parse("https://github.com/YangDai2003/OpenNote-Compose/blob/master/PRIVACY_POLICY.md")
+                            context.startActivity(intent)
+                        },
+                        leadingContent = {
+                            Icon(
+                                imageVector = Icons.Outlined.PrivacyTip,
+                                contentDescription = "Privacy Policy"
+                            )
+                        },
+                        headlineContent = { Text(text = stringResource(R.string.privacy_policy)) })
                 }
             }
         }

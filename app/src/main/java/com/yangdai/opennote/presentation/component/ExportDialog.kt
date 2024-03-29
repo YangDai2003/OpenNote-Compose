@@ -23,13 +23,11 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import com.yangdai.opennote.R
 import com.yangdai.opennote.presentation.util.exportNote
-import com.yangdai.opennote.presentation.viewmodel.NoteScreenViewModel
-import org.commonmark.node.Node
 
 @Composable
 fun ExportDialog(
     showExportDialog: Boolean,
-    viewModel: NoteScreenViewModel,
+    html: String,
     title: String,
     content: String,
     onDismissRequest: () -> Unit
@@ -86,10 +84,6 @@ fun ExportDialog(
                 TextButton(
                     onClick = {
                         if (selectedMode == "HTML") {
-
-                            val document: Node = viewModel.parser.parse(content)
-                            val html = viewModel.renderer.render(document)
-
                             exportNote(
                                 context.applicationContext,
                                 title,

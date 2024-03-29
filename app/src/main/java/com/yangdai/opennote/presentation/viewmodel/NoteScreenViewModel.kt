@@ -13,6 +13,7 @@ import com.yangdai.opennote.domain.usecase.Operations
 import com.yangdai.opennote.presentation.event.NoteEvent
 import com.yangdai.opennote.presentation.state.NoteState
 import com.yangdai.opennote.presentation.event.UiEvent
+import com.yangdai.opennote.presentation.util.Constants
 import com.yangdai.opennote.presentation.util.add
 import com.yangdai.opennote.presentation.util.addLink
 import com.yangdai.opennote.presentation.util.addTask
@@ -66,8 +67,8 @@ class NoteScreenViewModel @Inject constructor(
         TaskListItemsExtension.create()
     )
 
-    val parser: Parser by lazy { Parser.builder().extensions(extensions).build() }
-    val renderer: HtmlRenderer by lazy { HtmlRenderer.builder().extensions(extensions).build() }
+    private val parser: Parser by lazy { Parser.builder().extensions(extensions).build() }
+    private val renderer: HtmlRenderer by lazy { HtmlRenderer.builder().extensions(extensions).build() }
 
     lateinit var html: StateFlow<String>
 
@@ -137,50 +138,6 @@ class NoteScreenViewModel @Inject constructor(
                 started = SharingStarted.WhileSubscribed(5_000),
                 initialValue = ""
             )
-    }
-
-    fun undo() {
-        textFieldState.undoState.undo()
-    }
-
-    fun redo() {
-        textFieldState.undoState.redo()
-    }
-
-    fun title() {
-        textFieldState.edit { add("#") }
-    }
-
-    fun bold() {
-        textFieldState.edit { bold() }
-    }
-
-    fun italic() {
-        textFieldState.edit { italic() }
-    }
-
-    fun underline() {
-        textFieldState.edit { underline() }
-    }
-
-    fun strikethrough() {
-        textFieldState.edit { strikeThrough() }
-    }
-
-    fun mark() {
-        textFieldState.edit { mark() }
-    }
-
-    fun inlineCode() {
-        textFieldState.edit { inlineCode() }
-    }
-
-    fun inlineFunction() {
-        textFieldState.edit { inlineFunction() }
-    }
-
-    fun quote() {
-        textFieldState.edit { quote() }
     }
 
     fun addTask(task: String, checked: Boolean) {
@@ -279,6 +236,22 @@ class NoteScreenViewModel @Inject constructor(
                     it.copy(
                         isMarkdown = it.isMarkdown.not()
                     )
+                }
+            }
+
+            is NoteEvent.Edit -> {
+                when (event.value) {
+                    Constants.EDITOR_UNDO -> textFieldState.undoState.undo()
+                    Constants.EDITOR_REDO -> textFieldState.undoState.redo()
+                    Constants.EDITOR_TITLE -> textFieldState.edit { add("#") }
+                    Constants.EDITOR_BOLD -> textFieldState.edit { bold() }
+                    Constants.EDITOR_ITALIC -> textFieldState.edit { italic() }
+                    Constants.EDITOR_UNDERLINE -> textFieldState.edit { underline() }
+                    Constants.EDITOR_STRIKETHROUGH -> textFieldState.edit { strikeThrough() }
+                    Constants.EDITOR_MARK -> textFieldState.edit { mark() }
+                    Constants.EDITOR_INLINE_CODE -> textFieldState.edit { inlineCode() }
+                    Constants.EDITOR_INLINE_FUNC -> textFieldState.edit { inlineFunction() }
+                    Constants.EDITOR_QUOTE -> textFieldState.edit { quote() }
                 }
             }
         }

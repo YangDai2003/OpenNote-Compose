@@ -19,12 +19,13 @@ import com.yangdai.opennote.presentation.util.BiometricPromptManager
 import com.yangdai.opennote.presentation.viewmodel.BaseScreenViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
+@OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
 
     private val promptManager by lazy { BiometricPromptManager(this) }
     private val baseScreenViewModel: BaseScreenViewModel by viewModels()
-    @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         // Handle the splash screen transition.
         installSplashScreen().apply {

@@ -30,17 +30,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
 import com.yangdai.opennote.R
-import com.yangdai.opennote.presentation.navigation.Route
-import com.yangdai.opennote.presentation.state.NoteState
-import com.yangdai.opennote.presentation.viewmodel.NoteScreenViewModel
+import com.yangdai.opennote.presentation.util.Constants
 
 @Composable
 fun NoteEditorRow(
-    noteState: NoteState,
-    viewModel: NoteScreenViewModel,
-    navController: NavController,
+    isMarkdown: Boolean,
+    canUndo: Boolean,
+    canRedo: Boolean,
+    onEdit: (String) -> Unit,
+    onScanButtonClick: () -> Unit,
     onTaskButtonClick: () -> Unit,
     onLinkButtonClick: () -> Unit
 ) {
@@ -65,8 +64,8 @@ fun NoteEditorRow(
             verticalAlignment = Alignment.CenterVertically
         ) {
             IconButton(
-                onClick = { viewModel.undo() },
-                enabled = viewModel.canUndo()
+                onClick = { onEdit(Constants.EDITOR_UNDO) },
+                enabled = canUndo
             ) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Outlined.Undo,
@@ -75,8 +74,8 @@ fun NoteEditorRow(
             }
 
             IconButton(
-                onClick = { viewModel.redo() },
-                enabled = viewModel.canRedo()
+                onClick = { onEdit(Constants.EDITOR_REDO) },
+                enabled = canRedo
             ) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Outlined.Redo,
@@ -84,65 +83,65 @@ fun NoteEditorRow(
                 )
             }
 
-            if (noteState.isMarkdown) {
+            if (isMarkdown) {
 
-                IconButton(onClick = { viewModel.title() }) {
+                IconButton(onClick = { onEdit(Constants.EDITOR_TITLE) }) {
                     Icon(
                         imageVector = Icons.Outlined.Title,
                         contentDescription = "Title"
                     )
                 }
 
-                IconButton(onClick = { viewModel.bold() }) {
+                IconButton(onClick = { onEdit(Constants.EDITOR_BOLD) }) {
                     Icon(
                         imageVector = Icons.Outlined.FormatBold,
                         contentDescription = "Bold"
                     )
                 }
 
-                IconButton(onClick = { viewModel.italic() }) {
+                IconButton(onClick = { onEdit(Constants.EDITOR_ITALIC) }) {
                     Icon(
                         imageVector = Icons.Outlined.FormatItalic,
                         contentDescription = "Italic"
                     )
                 }
 
-                IconButton(onClick = { viewModel.underline() }) {
+                IconButton(onClick = { onEdit(Constants.EDITOR_UNDERLINE) }) {
                     Icon(
                         imageVector = Icons.Outlined.FormatUnderlined,
                         contentDescription = "Underline"
                     )
                 }
 
-                IconButton(onClick = { viewModel.strikethrough() }) {
+                IconButton(onClick = { onEdit(Constants.EDITOR_STRIKETHROUGH) }) {
                     Icon(
                         imageVector = Icons.Default.FormatStrikethrough,
                         contentDescription = "Strikethrough"
                     )
                 }
 
-                IconButton(onClick = { viewModel.mark() }) {
+                IconButton(onClick = { onEdit(Constants.EDITOR_MARK) }) {
                     Icon(
                         imageVector = Icons.Outlined.FormatPaint,
                         contentDescription = "Mark"
                     )
                 }
 
-                IconButton(onClick = { viewModel.inlineCode() }) {
+                IconButton(onClick = { onEdit(Constants.EDITOR_INLINE_CODE) }) {
                     Icon(
                         imageVector = Icons.Outlined.Code,
                         contentDescription = "Code"
                     )
                 }
 
-                IconButton(onClick = { viewModel.inlineFunction() }) {
+                IconButton(onClick = { onEdit(Constants.EDITOR_INLINE_FUNC) }) {
                     Icon(
                         painter = painterResource(id = R.drawable.function),
                         contentDescription = "Function"
                     )
                 }
 
-                IconButton(onClick = { viewModel.quote() }) {
+                IconButton(onClick = { onEdit(Constants.EDITOR_QUOTE) }) {
                     Icon(
                         imageVector = Icons.Default.FormatQuote,
                         contentDescription = "Quote"
@@ -164,9 +163,7 @@ fun NoteEditorRow(
                 )
             }
 
-            IconButton(onClick = {
-                navController.navigate(Route.CAMERAX)
-            }) {
+            IconButton(onClick = onScanButtonClick) {
                 Icon(
                     imageVector = Icons.Outlined.DocumentScanner,
                     contentDescription = "OCR"
@@ -174,5 +171,4 @@ fun NoteEditorRow(
             }
         }
     }
-
 }

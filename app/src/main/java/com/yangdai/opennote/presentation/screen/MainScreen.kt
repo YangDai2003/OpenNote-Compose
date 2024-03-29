@@ -87,6 +87,7 @@ import com.yangdai.opennote.presentation.component.FolderListSheet
 import com.yangdai.opennote.presentation.component.OrderSection
 import com.yangdai.opennote.presentation.component.TopSearchbar
 import com.yangdai.opennote.presentation.state.ListState
+import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -383,7 +384,7 @@ fun MainScreen(
             if (showBottomSheet) {
                 FolderListSheet(
                     oFolderId = selectedFolder.id,
-                    folders = listState.folders,
+                    folders = listState.folders.toImmutableList(),
                     sheetState = sheetState,
                     onDismissRequest = { showBottomSheet = false },
                     onCloseClick = {
@@ -489,9 +490,9 @@ fun MainScreen(
             drawerContent = {
                 ModalDrawerSheet {
                     DrawerContent(
-                        navController = navController,
                         listState = listState,
-                        selectedDrawer = selectedDrawer
+                        selectedDrawer = selectedDrawer,
+                        navigateTo = { navController.navigate(it) }
                     ) { position, folder ->
                         when (position) {
                             0 -> {
@@ -548,9 +549,9 @@ fun MainScreen(
             drawerContent = {
                 PermanentDrawerSheet {
                     DrawerContent(
-                        navController = navController,
                         listState = listState,
-                        selectedDrawer = selectedDrawer
+                        selectedDrawer = selectedDrawer,
+                        navigateTo = { navController.navigate(it) }
                     ) { position, folder ->
                         when (position) {
                             0 -> {
@@ -589,9 +590,9 @@ fun MainScreen(
 
 @Composable
 fun DrawerContent(
-    navController: NavController,
     listState: ListState,
     selectedDrawer: Int,
+    navigateTo: (String) -> Unit,
     onClick: (Int, FolderEntity) -> Unit
 ) {
     // Record whether the folder list is expanded
@@ -605,7 +606,7 @@ fun DrawerContent(
         ) {
             IconButton(
                 modifier = Modifier.padding(12.dp),
-                onClick = { navController.navigate(Route.SETTINGS) }
+                onClick = { navigateTo(Route.SETTINGS) }
             ) {
                 Icon(
                     imageVector = Icons.Outlined.Settings,
@@ -664,9 +665,7 @@ fun DrawerContent(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(12.dp),
-                onClick = {
-                    navController.navigate(Route.FOLDERS)
-                }) {
+                onClick = { navigateTo(Route.FOLDERS) }) {
                 Text(text = stringResource(R.string.manage_folders))
             }
         }

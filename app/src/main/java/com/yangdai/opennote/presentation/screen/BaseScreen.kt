@@ -208,7 +208,7 @@ fun BaseScreen(
 }
 
 @Composable
-fun <T> getPreferenceState(
+private fun <T> getPreferenceState(
     viewModel: BaseScreenViewModel,
     key: Preferences.Key<T>,
     defaultValue: T

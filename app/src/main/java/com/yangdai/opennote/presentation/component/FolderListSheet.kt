@@ -30,12 +30,13 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.yangdai.opennote.R
 import com.yangdai.opennote.data.local.entity.FolderEntity
+import kotlinx.collections.immutable.ImmutableList
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FolderListSheet(
     oFolderId: Long?,
-    folders: List<FolderEntity>,
+    folders: ImmutableList<FolderEntity>,
     sheetState: SheetState,
     onDismissRequest: () -> Unit,
     onCloseClick: () -> Unit,

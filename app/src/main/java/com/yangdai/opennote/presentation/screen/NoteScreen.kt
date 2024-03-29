@@ -67,6 +67,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import com.yangdai.opennote.R
@@ -78,17 +79,19 @@ import com.yangdai.opennote.presentation.component.LinkDialog
 import com.yangdai.opennote.presentation.component.NoteEditorRow
 import com.yangdai.opennote.presentation.component.TaskDialog
 import com.yangdai.opennote.presentation.event.NoteEvent
+import com.yangdai.opennote.presentation.event.UiEvent
+import com.yangdai.opennote.presentation.navigation.Route
 import com.yangdai.opennote.presentation.util.timestampToFormatLocalDateTime
 import com.yangdai.opennote.presentation.viewmodel.NoteScreenViewModel
+import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.launch
 
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun NoteScreen(
+    viewModel: NoteScreenViewModel = hiltViewModel(),
     navController: NavHostController,
-    viewModel: NoteScreenViewModel,
-    onEvent: (NoteEvent) -> Unit,
     isLargeScreen: Boolean
 ) {
     val context = LocalContext.current
@@ -126,7 +129,7 @@ fun NoteScreen(
     }
 
     BackHandler {
-        onEvent(NoteEvent.NavigateBack)
+        viewModel.onEvent(NoteEvent.NavigateBack)
     }
 
     // Folder name, default to "All Notes", or the name of the current folder the note is in
@@ -173,6 +176,14 @@ fun NoteScreen(
         }
     }
 
+    LaunchedEffect(key1 = true) {
+        viewModel.event.collect { event ->
+            when (event) {
+                is UiEvent.NavigateBack -> navController.navigateUp()
+            }
+        }
+    }
+
     Scaffold(
         modifier = Modifier
             .fillMaxSize()
@@ -192,7 +203,7 @@ fun NoteScreen(
                 },
                 navigationIcon = {
                     IconButton(onClick = {
-                        onEvent(NoteEvent.NavigateBack)
+                        viewModel.onEvent(NoteEvent.NavigateBack)
                     }) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
@@ -202,7 +213,7 @@ fun NoteScreen(
                 },
                 actions = {
 
-                    IconButton(onClick = { onEvent(NoteEvent.SwitchType) }) {
+                    IconButton(onClick = { viewModel.onEvent(NoteEvent.SwitchType) }) {
                         Icon(
                             imageVector = Icons.Outlined.SwapHoriz,
                             contentDescription = "Switch Note Type"
@@ -234,7 +245,7 @@ fun NoteScreen(
                                 )
                             },
                             text = { Text(text = stringResource(id = R.string.delete)) },
-                            onClick = { onEvent(NoteEvent.Delete) })
+                            onClick = { viewModel.onEvent(NoteEvent.Delete) })
 
                         DropdownMenuItem(
                             leadingIcon = {
@@ -291,9 +302,11 @@ fun NoteScreen(
                 enter = slideInVertically { fullHeight -> fullHeight },
                 exit = slideOutVertically { fullHeight -> fullHeight }) {
                 NoteEditorRow(
-                    noteState = state,
-                    viewModel = viewModel,
-                    navController = navController,
+                    isMarkdown = state.isMarkdown,
+                    canRedo = viewModel.canRedo(),
+                    canUndo = viewModel.canUndo(),
+                    onEdit = { viewModel.onEvent(NoteEvent.Edit(it)) },
+                    onScanButtonClick = { navController.navigate(Route.CAMERAX) },
                     onTaskButtonClick = { showTaskDialog = true },
                     onLinkButtonClick = { showLinkDialog = true })
             }
@@ -312,7 +325,7 @@ fun NoteScreen(
                 value = state.title,
                 readOnly = isReadMode,
                 onValueChange = {
-                    onEvent(NoteEvent.TitleChanged(it))
+                    viewModel.onEvent(NoteEvent.TitleChanged(it))
                 },
                 singleLine = true,
                 textStyle = MaterialTheme.typography.headlineLarge.copy(color = MaterialTheme.colorScheme.onSurface),
@@ -451,7 +464,7 @@ fun NoteScreen(
 
             ExportDialog(
                 showExportDialog = showExportDialog,
-                viewModel = viewModel,
+                html = html,
                 title = state.title,
                 content = viewModel.textFieldState.text.toString(),
                 onDismissRequest = { showExportDialog = false }
@@ -473,7 +486,7 @@ fun NoteScreen(
             if (showBottomSheet) {
                 FolderListSheet(
                     oFolderId = state.folderId,
-                    folders = state.folders,
+                    folders = state.folders.toImmutableList(),
                     sheetState = sheetState,
                     onDismissRequest = { showBottomSheet = false },
                     onCloseClick = {
@@ -483,7 +496,7 @@ fun NoteScreen(
                             }
                         }
                     }) {
-                    onEvent(NoteEvent.FolderChanged(it))
+                    viewModel.onEvent(NoteEvent.FolderChanged(it))
                 }
             }
         }

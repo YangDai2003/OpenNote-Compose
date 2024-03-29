@@ -27,7 +27,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavController
 import com.yangdai.opennote.R
 import com.yangdai.opennote.data.local.entity.FolderEntity
 import com.yangdai.opennote.presentation.event.FolderEvent
@@ -39,8 +38,8 @@ import com.yangdai.opennote.presentation.component.ModifyDialog
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FolderScreen(
-    navController: NavController,
-    viewModel: MainScreenViewModel
+    viewModel: MainScreenViewModel,
+    navigateUp: () -> Unit,
 ) {
 
     val listState by viewModel.stateFlow.collectAsStateWithLifecycle()
@@ -71,7 +70,7 @@ fun FolderScreen(
             LargeTopAppBar(
                 title = { Text(text = stringResource(id = R.string.folders)) },
                 navigationIcon = {
-                    IconButton(onClick = { navController.navigateUp() }) {
+                    IconButton(onClick = navigateUp) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
                             contentDescription = "Back"

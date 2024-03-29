@@ -60,6 +60,7 @@ android {
 }
 
 dependencies {
+    implementation(libs.kotlinx.collections.immutable)
 
     // CommonMark, for markdown rendering and parsing
     implementation(libs.commonmark.ext.task.list.items)

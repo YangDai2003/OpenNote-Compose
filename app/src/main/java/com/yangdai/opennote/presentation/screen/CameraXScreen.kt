@@ -65,7 +65,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.navigation.NavHostController
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.TextRecognizer
@@ -81,7 +80,8 @@ import java.util.concurrent.Executors
 @OptIn(ExperimentalGetImage::class)
 @Composable
 fun CameraXScreen(
-    navController: NavHostController
+    onCloseClick: () -> Unit,
+    onDoneClick: (String) -> Unit
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -194,13 +194,7 @@ fun CameraXScreen(
                         }) {
                             Icon(imageVector = Icons.Outlined.Cancel, contentDescription = "Cancel")
                         }
-                        IconButton(onClick = {
-                            navController.previousBackStackEntry?.savedStateHandle?.set(
-                                "scannedText",
-                                text
-                            )
-                            navController.navigateUp()
-                        }) {
+                        IconButton(onClick = { onDoneClick(text) }) {
                             Icon(
                                 imageVector = Icons.Outlined.DoneOutline,
                                 contentDescription = "Confirm"
@@ -236,9 +230,7 @@ fun CameraXScreen(
                     .align(Alignment.TopStart)
                     .statusBarsPadding()
                     .padding(start = 32.dp, top = 32.dp),
-                onClick = {
-                    navController.navigateUp()
-                }
+                onClick = onCloseClick
             ) {
                 Icon(
                     imageVector = Icons.Default.CloseFullscreen,
