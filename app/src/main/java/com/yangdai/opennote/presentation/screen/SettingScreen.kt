@@ -103,6 +103,7 @@ fun SettingsScreen(
     navigateUp: () -> Unit,
 ) {
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
 
     val scrollBehavior =
         TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
@@ -145,8 +146,6 @@ fun SettingsScreen(
     }
 
     var appInfoExpended by rememberSaveable { mutableStateOf(false) }
-
-    val scope = rememberCoroutineScope()
 
     val isAppInDarkTheme by settingScreenViewModel.getFlow()
         .map { preferences ->
