@@ -21,7 +21,6 @@ import androidx.compose.ui.unit.dp
 import com.yangdai.opennote.R
 import com.yangdai.opennote.presentation.state.TaskState
 
-
 @Composable
 fun TaskDialog(
     onDismissRequest: () -> Unit,
