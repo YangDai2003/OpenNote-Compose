@@ -49,6 +49,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -345,7 +346,11 @@ fun NoteScreen(
             HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
             val textColor = MaterialTheme.colorScheme.onSurface.toArgb()
-            val hexColor = String.format("#%06X", 0xFFFFFF and textColor)
+            val codeBackgroundColor = MaterialTheme.colorScheme.surfaceVariant.toArgb()
+            val preCodeBackgroundColor = MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp).toArgb()
+            val hexTextColor = String.format("#%06X", 0xFFFFFF and textColor)
+            val hexCodeBackgroundColor = String.format("#%06X", 0xFFFFFF and codeBackgroundColor)
+            val hexPreCodeBackgroundColor = String.format("#%06X", 0xFFFFFF and preCodeBackgroundColor)
 
             if (isReadMode) {
 
@@ -381,6 +386,8 @@ fun NoteScreen(
                                 settings.setSupportZoom(true)
                                 settings.builtInZoomControls = true
                                 settings.displayZoomControls = false
+                                settings.useWideViewPort = true
+                                settings.loadWithOverviewMode = false
                                 setPadding(0, 0, 0, 0)
                                 setBackgroundColor(Color.TRANSPARENT)
                                 loadDataWithBaseURL(
@@ -411,7 +418,10 @@ fun NoteScreen(
                                               });
                                           });
                                       </script>
-                                      <style type="text/css"> body{color: ${hexColor}; padding: 0px; margin: 0px;}
+                                      <style type="text/css"> 
+                                      body{color: ${hexTextColor}; padding: 0px; margin: 0px;}
+                                      p > code { background-color: ${hexCodeBackgroundColor}; padding: 4px 4px 2px 4px; margin: 4px; border-radius: 4px; }
+                                      pre { background-color: ${hexPreCodeBackgroundColor}; padding: 16px;}
                                       </style>
                                 </head>
                                 <body>
