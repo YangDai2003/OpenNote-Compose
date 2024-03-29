@@ -1,13 +1,7 @@
 package com.yangdai.opennote.presentation.screen
 
-import android.annotation.SuppressLint
 import android.content.Intent
-import android.graphics.Color
 import android.net.Uri
-import android.view.ViewGroup
-import android.webkit.WebResourceRequest
-import android.webkit.WebView
-import android.webkit.WebViewClient
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.basicMarquee
@@ -16,6 +10,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
@@ -49,7 +44,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberModalBottomSheetState
-import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -59,20 +53,22 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import com.yangdai.opennote.R
 import com.yangdai.opennote.presentation.component.ExportDialog
 import com.yangdai.opennote.presentation.component.FolderListSheet
 import com.yangdai.opennote.presentation.component.HighlightedClickableText
+import com.yangdai.opennote.presentation.component.HtmlView
 import com.yangdai.opennote.presentation.component.LinkDialog
 import com.yangdai.opennote.presentation.component.NoteEditorRow
 import com.yangdai.opennote.presentation.component.TaskDialog
@@ -80,19 +76,21 @@ import com.yangdai.opennote.presentation.event.NoteEvent
 import com.yangdai.opennote.presentation.util.timestampToFormatLocalDateTime
 import com.yangdai.opennote.presentation.viewmodel.NoteScreenViewModel
 import kotlinx.coroutines.launch
-import org.commonmark.node.Node
 
 
-@SuppressLint("SetJavaScriptEnabled")
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun NoteScreen(
     navController: NavHostController,
     viewModel: NoteScreenViewModel,
-    onEvent: (NoteEvent) -> Unit
+    onEvent: (NoteEvent) -> Unit,
+    isLargeScreen: Boolean
 ) {
     val context = LocalContext.current
     val state by viewModel.stateFlow.collectAsStateWithLifecycle()
+    val html by viewModel.html.collectAsStateWithLifecycle()
+    val keyboardController = LocalSoftwareKeyboardController.current
+    val focusManager = LocalFocusManager.current
 
     // Switch between read mode and edit mode
     var isReadMode by rememberSaveable {
@@ -150,6 +148,15 @@ fun NoteScreen(
             if (scannedText.isNotEmpty()) {
                 viewModel.addScannedText(scannedText)
             }
+        }
+    }
+
+    LaunchedEffect(isReadMode) {
+        if (isReadMode) {
+            keyboardController?.hide()
+            focusManager.clearFocus()
+        } else {
+            keyboardController?.show()
         }
     }
 
@@ -277,6 +284,7 @@ fun NoteScreen(
 
         }
     ) { paddingValues ->
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -345,120 +353,74 @@ fun NoteScreen(
 
             HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
-            val textColor = MaterialTheme.colorScheme.onSurface.toArgb()
-            val codeBackgroundColor = MaterialTheme.colorScheme.surfaceVariant.toArgb()
-            val preCodeBackgroundColor = MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp).toArgb()
-            val hexTextColor = String.format("#%06X", 0xFFFFFF and textColor)
-            val hexCodeBackgroundColor = String.format("#%06X", 0xFFFFFF and codeBackgroundColor)
-            val hexPreCodeBackgroundColor = String.format("#%06X", 0xFFFFFF and preCodeBackgroundColor)
-
-            if (isReadMode) {
-
-                if (state.isMarkdown) {
-
-                    val document: Node =
-                        viewModel.parser.parse(viewModel.textFieldState.text.toString())
-                    val html = viewModel.renderer.render(document)
-
-                    Box(modifier = Modifier.fillMaxSize()) {
-                        AndroidView(factory = {
-                            WebView(it).apply {
-                                layoutParams = ViewGroup.LayoutParams(
-                                    ViewGroup.LayoutParams.MATCH_PARENT,
-                                    ViewGroup.LayoutParams.MATCH_PARENT
-                                )
-                                webViewClient = object : WebViewClient() {
-                                    override fun shouldOverrideUrlLoading(
-                                        view: WebView?,
-                                        request: WebResourceRequest
-                                    ): Boolean {
-                                        val url = request.url.toString()
-                                        if (url.startsWith("http://") || url.startsWith("https://")) {
-                                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
-                                            context.startActivity(intent)
-                                        }
-                                        return true
-                                    }
-                                }
-                                settings.javaScriptEnabled = true
-                                isVerticalScrollBarEnabled = false
-                                isHorizontalScrollBarEnabled = false
-                                settings.setSupportZoom(true)
-                                settings.builtInZoomControls = true
-                                settings.displayZoomControls = false
-                                settings.useWideViewPort = true
-                                settings.loadWithOverviewMode = false
-                                setPadding(0, 0, 0, 0)
-                                setBackgroundColor(Color.TRANSPARENT)
-                                loadDataWithBaseURL(
-                                    null,
-                                    """
-                                <!DOCTYPE html>
-                                <html>
-                                <head>
-                                      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" integrity="sha384-wcIxkf4k558AjM3Yz3BBFQUbk/zgIYC2R0QpeeYb+TwlBVMrlgLqwRjRtGZiK7ww" crossorigin="anonymous">
-                                      <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" integrity="sha384-hIoBPJpTUs74ddyc4bFZSM1TVlQDA60VBbJS0oA934VSz82sBx1X7kSx2ATBDIyd" crossorigin="anonymous"></script>
-                                      <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" integrity="sha384-43gviWU0YVjaDtb/GhzOouOXtZMP/7XUzwPTstBeZFe/+rCMvRwr4yROQP43s0Xk" crossorigin="anonymous"></script>
-                                      <script>
-                                          document.addEventListener("DOMContentLoaded", function() {
-                                              renderMathInElement(document.body, {
-                                                delimiters: 
-[
-  {left: "${'$'}${'$'}", right: "${'$'}${'$'}", display: true},
-  {left: "${'$'}", right: "${'$'}", display: false},
-  {left: "\\(", right: "\\)", display: false},
-  {left: "\\begin{equation}", right: "\\end{equation}", display: true},
-  {left: "\\begin{align}", right: "\\end{align}", display: true},
-  {left: "\\begin{alignat}", right: "\\end{alignat}", display: true},
-  {left: "\\begin{gather}", right: "\\end{gather}", display: true},
-  {left: "\\begin{CD}", right: "\\end{CD}", display: true},
-  {left: "\\[", right: "\\]", display: true}
-],
-                                                throwOnError : false
-                                              });
-                                          });
-                                      </script>
-                                      <style type="text/css"> 
-                                      body{color: ${hexTextColor}; padding: 0px; margin: 0px;}
-                                      p > code { background-color: ${hexCodeBackgroundColor}; padding: 4px 4px 2px 4px; margin: 4px; border-radius: 4px; }
-                                      pre { background-color: ${hexPreCodeBackgroundColor}; padding: 16px;}
-                                      </style>
-                                </head>
-                                <body>
-                                $html
-                                </body>
-                                </html>
-                                """.trimIndent(),
-                                    "text/html",
-                                    "UTF-8",
-                                    null
-                                )
+            if (isLargeScreen) {
+                Row(Modifier.fillMaxSize()) {
+                    BasicTextField2(
+                        modifier = Modifier
+                            .fillMaxHeight()
+                            .onFocusChanged { focusState ->
+                                isReadMode = !focusState.isFocused
                             }
-                        })
+                            .weight(1f),
+                        state = viewModel.textFieldState,
+                        scrollState = textFieldScrollState,
+                        textStyle = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface),
+                        cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+                        decorator = { innerTextField ->
+                            Box {
+                                if (viewModel.textFieldState.text.isEmpty()) {
+                                    Text(
+                                        text = stringResource(id = R.string.content),
+                                        style = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                    )
+                                }
+                                innerTextField()
+                            }
+                        }
+                    )
+
+                    Box(
+                        Modifier
+                            .fillMaxHeight()
+                            .weight(1f)
+                    ) {
+                        if (state.isMarkdown) {
+                            HtmlView(html = html)
+                        } else {
+                            HighlightedClickableText(viewModel.textFieldState.text.toString())
+                        }
                     }
-                } else {
-                    HighlightedClickableText(viewModel.textFieldState.text.toString())
                 }
 
             } else {
-                BasicTextField2(
-                    modifier = Modifier.fillMaxSize(),
-                    state = viewModel.textFieldState,
-                    scrollState = textFieldScrollState,
-                    textStyle = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface),
-                    cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
-                    decorator = { innerTextField ->
-                        Box {
-                            if (viewModel.textFieldState.text.isEmpty()) {
-                                Text(
-                                    text = stringResource(id = R.string.content),
-                                    style = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
-                                )
-                            }
-                            innerTextField()
-                        }
+                if (isReadMode) {
+
+                    if (state.isMarkdown) {
+                        HtmlView(html = html)
+                    } else {
+                        HighlightedClickableText(viewModel.textFieldState.text.toString())
                     }
-                )
+
+                } else {
+                    BasicTextField2(
+                        modifier = Modifier.fillMaxSize(),
+                        state = viewModel.textFieldState,
+                        scrollState = textFieldScrollState,
+                        textStyle = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface),
+                        cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+                        decorator = { innerTextField ->
+                            Box {
+                                if (viewModel.textFieldState.text.isEmpty()) {
+                                    Text(
+                                        text = stringResource(id = R.string.content),
+                                        style = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                    )
+                                }
+                                innerTextField()
+                            }
+                        }
+                    )
+                }
             }
 
             ExportDialog(

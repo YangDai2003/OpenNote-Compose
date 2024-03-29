@@ -13,7 +13,6 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
@@ -56,7 +55,7 @@ import kotlinx.coroutines.flow.map
 fun BaseScreen(
     promptManager: BiometricPromptManager,
     baseScreenViewModel: BaseScreenViewModel,
-    windowSize: WindowSizeClass
+    isLargeScreen: Boolean
 ) {
 
     val settingsState by baseScreenViewModel.stateFlow.collectAsStateWithLifecycle()
@@ -198,7 +197,7 @@ fun BaseScreen(
             AnimatedNavHost(
                 modifier = if (!loggedIn) modifier else Modifier,
                 navController = rememberNavController(),
-                windowSize = windowSize
+                isLargeScreen = isLargeScreen
             )
 
             AnimatedVisibility(visible = !loggedIn, enter = fadeIn(), exit = fadeOut()) {

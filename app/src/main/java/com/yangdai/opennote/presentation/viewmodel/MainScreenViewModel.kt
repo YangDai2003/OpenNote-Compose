@@ -43,17 +43,8 @@ class MainScreenViewModel @Inject constructor(
 
     fun onListEvent(event: ListEvent) {
         when (event) {
-            is ListEvent.Sort -> {
-                if (stateFlow.value.noteOrder::class == event.noteOrder::class &&
-                    stateFlow.value.noteOrder.orderType == event.noteOrder.orderType &&
-                    stateFlow.value.trash == event.trash &&
-                    stateFlow.value.filterFolder == event.filterFolder &&
-                    stateFlow.value.folderId == event.folderId
-                ) {
-                    return
-                }
-                getNotes(event.noteOrder, event.trash, event.filterFolder, event.folderId)
-            }
+
+            is ListEvent.Sort -> getNotes(event.noteOrder, event.trash, event.filterFolder, event.folderId)
 
             is ListEvent.DeleteNotesByIds -> {
                 viewModelScope.launch {

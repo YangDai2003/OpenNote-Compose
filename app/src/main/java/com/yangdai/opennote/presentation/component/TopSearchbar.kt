@@ -81,7 +81,7 @@ fun TopSearchbar(
             viewModel.putHistoryStringSet(newSet)
             viewModel.onListEvent(ListEvent.Search(text))
         } else {
-            viewModel.onListEvent(ListEvent.Sort())
+            viewModel.onListEvent(ListEvent.Sort(viewModel.stateFlow.value.noteOrder, false, null, false))
         }
         active = false
     }

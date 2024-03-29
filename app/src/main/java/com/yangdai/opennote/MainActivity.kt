@@ -9,6 +9,8 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
+import androidx.compose.material3.windowsizeclass.WindowHeightSizeClass
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.core.animation.doOnEnd
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
@@ -55,7 +57,8 @@ class MainActivity : AppCompatActivity() {
 
         setContent {
             val windowSize = calculateWindowSizeClass(activity = this)
-            BaseScreen(promptManager = promptManager, baseScreenViewModel = baseScreenViewModel, windowSize = windowSize)
+            val isLargeScreen = windowSize.widthSizeClass == WindowWidthSizeClass.Expanded && windowSize.heightSizeClass > WindowHeightSizeClass.Compact
+            BaseScreen(promptManager = promptManager, baseScreenViewModel = baseScreenViewModel, isLargeScreen = isLargeScreen)
         }
     }
 }

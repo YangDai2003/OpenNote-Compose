@@ -3,6 +3,7 @@ package com.yangdai.opennote.presentation.viewmodel
 import android.content.Intent
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.text2.input.TextFieldState
+import androidx.compose.foundation.text2.input.textAsFlow
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -12,7 +13,6 @@ import com.yangdai.opennote.domain.usecase.Operations
 import com.yangdai.opennote.presentation.event.NoteEvent
 import com.yangdai.opennote.presentation.state.NoteState
 import com.yangdai.opennote.presentation.event.UiEvent
-import com.yangdai.opennote.presentation.util.Constants.MIME_TYPE_TEXT
 import com.yangdai.opennote.presentation.util.add
 import com.yangdai.opennote.presentation.util.addLink
 import com.yangdai.opennote.presentation.util.addTask
@@ -21,28 +21,37 @@ import com.yangdai.opennote.presentation.util.inlineCode
 import com.yangdai.opennote.presentation.util.inlineFunction
 import com.yangdai.opennote.presentation.util.italic
 import com.yangdai.opennote.presentation.util.mark
+import com.yangdai.opennote.presentation.util.parseSharedContent
 import com.yangdai.opennote.presentation.util.quote
 import com.yangdai.opennote.presentation.util.strikeThrough
 import com.yangdai.opennote.presentation.util.underline
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.commonmark.Extension
 import org.commonmark.ext.gfm.strikethrough.StrikethroughExtension
 import org.commonmark.ext.gfm.tables.TablesExtension
 import org.commonmark.ext.task.list.items.TaskListItemsExtension
+import org.commonmark.node.Node
 import org.commonmark.parser.Parser
 import org.commonmark.renderer.html.HtmlRenderer
 import javax.inject.Inject
 
-@OptIn(ExperimentalFoundationApi::class)
+@OptIn(ExperimentalFoundationApi::class, FlowPreview::class, ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class NoteScreenViewModel @Inject constructor(
     private val operations: Operations,
@@ -50,18 +59,6 @@ class NoteScreenViewModel @Inject constructor(
 ) : ViewModel() {
 
     var textFieldState: TextFieldState = TextFieldState("")
-
-    private fun Intent.parseSharedContent(): String {
-        if (action != Intent.ACTION_SEND && action != Intent.ACTION_VIEW) return ""
-
-        return if (isTextMimeType()) {
-            getStringExtra(Intent.EXTRA_TEXT) ?: ""
-        } else {
-            ""
-        }
-    }
-
-    private fun Intent.isTextMimeType() = type?.startsWith(MIME_TYPE_TEXT) == true
 
     private val extensions: List<Extension> = listOf(
         TablesExtension.create(),
@@ -71,6 +68,8 @@ class NoteScreenViewModel @Inject constructor(
 
     val parser: Parser by lazy { Parser.builder().extensions(extensions).build() }
     val renderer: HtmlRenderer by lazy { HtmlRenderer.builder().extensions(extensions).build() }
+
+    lateinit var html: StateFlow<String>
 
     private val _state = MutableStateFlow(NoteState())
     val stateFlow = _state.asStateFlow()
@@ -92,6 +91,7 @@ class NoteScreenViewModel @Inject constructor(
     private var oIsMarkdown = true
 
     init {
+        setHtmlFlow()
         savedStateHandle.get<String>("id")?.let {
             val id = it.toLong()
             viewModelScope.launch {
@@ -101,6 +101,7 @@ class NoteScreenViewModel @Inject constructor(
                     oFolderId = note.folderId
                     oIsMarkdown = note.isMarkdown
                     textFieldState = TextFieldState(note.content)
+                    setHtmlFlow()
                     _state.update { noteState ->
                         noteState.copy(
                             id = note.id,
@@ -118,9 +119,24 @@ class NoteScreenViewModel @Inject constructor(
             val content = it.parseSharedContent().trim()
             if (content.isNotEmpty()) {
                 textFieldState = TextFieldState(content)
+                setHtmlFlow()
             }
         }
         getFolders()
+    }
+
+    private fun setHtmlFlow() {
+        html = textFieldState.textAsFlow()
+            .debounce(100)
+            .mapLatest {
+                val document: Node = parser.parse(it.toString())
+                renderer.render(document) ?: ""
+            }
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5_000),
+                initialValue = ""
+            )
     }
 
     fun undo() {

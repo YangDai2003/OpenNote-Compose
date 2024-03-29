@@ -57,8 +57,6 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.material3.rememberModalBottomSheetState
-import androidx.compose.material3.windowsizeclass.WindowSizeClass
-import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
@@ -97,7 +95,7 @@ import kotlinx.coroutines.launch
 fun MainScreen(
     navController: NavController,
     viewModel: MainScreenViewModel,
-    windowSize: WindowSizeClass
+    isLargeScreen: Boolean
 ) {
     val scope = rememberCoroutineScope()
     val listState by viewModel.stateFlow.collectAsStateWithLifecycle()
@@ -177,8 +175,6 @@ fun MainScreen(
         }
     }
 
-    val smallScreen = windowSize.widthSizeClass < WindowWidthSizeClass.Expanded
-
     // Navigation drawer state, confirmStateChange is used to prevent drawer from closing when search bar is active
     val drawerState = rememberDrawerState(
         initialValue = DrawerValue.Closed,
@@ -194,7 +190,7 @@ fun MainScreen(
                             scope = scope,
                             drawerState = drawerState,
                             viewModel = viewModel,
-                            isSmallScreen = smallScreen,
+                            isSmallScreen = !isLargeScreen,
                             onActiveChange = { active ->
                                 initSelect()
                                 isSearchBarActive = active
@@ -215,7 +211,7 @@ fun MainScreen(
                                 )
                             },
                             navigationIcon = {
-                                if (smallScreen) {
+                                if (!isLargeScreen) {
                                     IconButton(onClick = {
                                         scope.launch {
                                             drawerState.apply {
@@ -488,7 +484,7 @@ fun MainScreen(
         }
     }
 
-    if (smallScreen) {
+    if (!isLargeScreen) {
 
         ModalNavigationDrawer(
             drawerState = drawerState,
