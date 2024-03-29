@@ -26,90 +26,87 @@ import com.yangdai.opennote.presentation.util.exportNote
 
 @Composable
 fun ExportDialog(
-    showExportDialog: Boolean,
     html: String,
     title: String,
     content: String,
     onDismissRequest: () -> Unit
 ) {
     val context = LocalContext.current
-    if (showExportDialog) {
-        val modeOptions = listOf(
-            "TXT",
-            "MARKDOWN",
-            "HTML"
+    val modeOptions = listOf(
+        "TXT",
+        "MARKDOWN",
+        "HTML"
+    )
+    val (selectedMode, onModeSelected) = rememberSaveable {
+        mutableStateOf(
+            modeOptions[0]
         )
-        val (selectedMode, onModeSelected) = rememberSaveable {
-            mutableStateOf(
-                modeOptions[0]
-            )
-        }
-        AlertDialog(
-            title = {
-                Text(text = stringResource(R.string.export))
-            },
-            text = {
-                Column(Modifier.selectableGroup()) {
-                    modeOptions.forEach { text ->
-                        Row(
-                            Modifier
-                                .fillMaxWidth()
-                                .height(56.dp)
-                                .selectable(
-                                    selected = (text == selectedMode),
-                                    onClick = {
-                                        onModeSelected(text)
-                                    },
-                                    role = Role.RadioButton
-                                ),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            RadioButton(
-                                selected = (text == selectedMode),
-                                onClick = null
-                            )
-                            Text(
-                                text = text,
-                                style = MaterialTheme.typography.bodyLarge,
-                                modifier = Modifier
-                                    .padding(start = 16.dp)
-
-                            )
-                        }
-                    }
-                }
-            },
-            onDismissRequest = onDismissRequest,
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        if (selectedMode == "HTML") {
-                            exportNote(
-                                context.applicationContext,
-                                title,
-                                html,
-                                selectedMode
-                            )
-                        } else {
-                            exportNote(
-                                context.applicationContext,
-                                title,
-                                content,
-                                selectedMode
-                            )
-                        }
-                        onDismissRequest()
-                    }
-                ) {
-                    Text(text = stringResource(android.R.string.ok))
-                }
-            },
-            dismissButton = {
-                TextButton(
-                    onClick = onDismissRequest
-                ) {
-                    Text(text = stringResource(android.R.string.cancel))
-                }
-            })
     }
+    AlertDialog(
+        title = {
+            Text(text = stringResource(R.string.export))
+        },
+        text = {
+            Column(Modifier.selectableGroup()) {
+                modeOptions.forEach { text ->
+                    Row(
+                        Modifier
+                            .fillMaxWidth()
+                            .height(56.dp)
+                            .selectable(
+                                selected = (text == selectedMode),
+                                onClick = {
+                                    onModeSelected(text)
+                                },
+                                role = Role.RadioButton
+                            ),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        RadioButton(
+                            selected = (text == selectedMode),
+                            onClick = null
+                        )
+                        Text(
+                            text = text,
+                            style = MaterialTheme.typography.bodyLarge,
+                            modifier = Modifier
+                                .padding(start = 16.dp)
+
+                        )
+                    }
+                }
+            }
+        },
+        onDismissRequest = onDismissRequest,
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    if (selectedMode == "HTML") {
+                        exportNote(
+                            context.applicationContext,
+                            title,
+                            html,
+                            selectedMode
+                        )
+                    } else {
+                        exportNote(
+                            context.applicationContext,
+                            title,
+                            content,
+                            selectedMode
+                        )
+                    }
+                    onDismissRequest()
+                }
+            ) {
+                Text(text = stringResource(android.R.string.ok))
+            }
+        },
+        dismissButton = {
+            TextButton(
+                onClick = onDismissRequest
+            ) {
+                Text(text = stringResource(android.R.string.cancel))
+            }
+        })
 }

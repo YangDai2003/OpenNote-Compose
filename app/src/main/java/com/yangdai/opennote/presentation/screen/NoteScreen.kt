@@ -137,11 +137,13 @@ fun NoteScreen(
         mutableStateOf("")
     }
 
-    folderName = if (state.folderId == null) {
-        stringResource(id = R.string.all_notes)
-    } else {
-        val matchingFolder = state.folders.find { it.id == state.folderId }
-        matchingFolder?.name ?: ""
+    LaunchedEffect(state.folderId) {
+        folderName = if (state.folderId == null) {
+            context.getString(R.string.all_notes)
+        } else {
+            val matchingFolder = state.folders.find { it.id == state.folderId }
+            matchingFolder?.name ?: ""
+        }
     }
 
     val sheetState = rememberModalBottomSheetState()
@@ -462,13 +464,14 @@ fun NoteScreen(
                 }
             }
 
-            ExportDialog(
-                showExportDialog = showExportDialog,
-                html = html,
-                title = state.title,
-                content = viewModel.textFieldState.text.toString(),
-                onDismissRequest = { showExportDialog = false }
-            )
+            if (showExportDialog) {
+                ExportDialog(
+                    html = html,
+                    title = state.title,
+                    content = viewModel.textFieldState.text.toString(),
+                    onDismissRequest = { showExportDialog = false }
+                )
+            }
 
             if (showTaskDialog) {
                 TaskDialog(onDismissRequest = { showTaskDialog = false }) {
