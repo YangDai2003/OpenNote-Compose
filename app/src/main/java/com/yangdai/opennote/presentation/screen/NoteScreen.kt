@@ -3,6 +3,9 @@ package com.yangdai.opennote.presentation.screen
 import android.content.Intent
 import android.net.Uri
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Arrangement
@@ -17,6 +20,8 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
@@ -87,10 +92,13 @@ fun NoteScreen(
     isLargeScreen: Boolean
 ) {
     val context = LocalContext.current
-    val state by viewModel.stateFlow.collectAsStateWithLifecycle()
-    val html by viewModel.html.collectAsStateWithLifecycle()
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current
+
+    val state by viewModel.stateFlow.collectAsStateWithLifecycle()
+    val html by viewModel.html.collectAsStateWithLifecycle()
+
+    val pagerState = rememberPagerState(pageCount = { 2 })
 
     // Switch between read mode and edit mode
     var isReadMode by rememberSaveable {
@@ -157,6 +165,11 @@ fun NoteScreen(
             focusManager.clearFocus()
         } else {
             keyboardController?.show()
+        }
+        if (!isLargeScreen) {
+            scope.launch {
+                pagerState.animateScrollToPage(if (isReadMode) 1 else 0)
+            }
         }
     }
 
@@ -273,15 +286,17 @@ fun NoteScreen(
                 })
         },
         bottomBar = {
-
-            NoteEditorRow(
-                isReadMode = isReadMode,
-                noteState = state,
-                viewModel = viewModel,
-                navController = navController,
-                onTaskButtonClick = { showTaskDialog = true },
-                onLinkButtonClick = { showLinkDialog = true })
-
+            AnimatedVisibility(
+                visible = !isReadMode,
+                enter = slideInVertically { fullHeight -> fullHeight },
+                exit = slideOutVertically { fullHeight -> fullHeight }) {
+                NoteEditorRow(
+                    noteState = state,
+                    viewModel = viewModel,
+                    navController = navController,
+                    onTaskButtonClick = { showTaskDialog = true },
+                    onLinkButtonClick = { showLinkDialog = true })
+            }
         }
     ) { paddingValues ->
 
@@ -393,33 +408,44 @@ fun NoteScreen(
                 }
 
             } else {
-                if (isReadMode) {
-
-                    if (state.isMarkdown) {
-                        HtmlView(html = html)
-                    } else {
-                        HighlightedClickableText(viewModel.textFieldState.text.toString())
-                    }
-
-                } else {
-                    BasicTextField2(
-                        modifier = Modifier.fillMaxSize(),
-                        state = viewModel.textFieldState,
-                        scrollState = textFieldScrollState,
-                        textStyle = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface),
-                        cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
-                        decorator = { innerTextField ->
-                            Box {
-                                if (viewModel.textFieldState.text.isEmpty()) {
-                                    Text(
-                                        text = stringResource(id = R.string.content),
-                                        style = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
-                                    )
+                HorizontalPager(
+                    state = pagerState,
+                    beyondBoundsPageCount = 1,
+                    userScrollEnabled = false,
+                    modifier = Modifier.fillMaxSize()
+                ) { page: Int ->
+                    when (page) {
+                        0 -> {
+                            BasicTextField2(
+                                modifier = Modifier.fillMaxSize(),
+                                state = viewModel.textFieldState,
+                                scrollState = textFieldScrollState,
+                                textStyle = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface),
+                                cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+                                decorator = { innerTextField ->
+                                    Box {
+                                        if (viewModel.textFieldState.text.isEmpty()) {
+                                            Text(
+                                                text = stringResource(id = R.string.content),
+                                                style = MaterialTheme.typography.bodyLarge.copy(
+                                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                                )
+                                            )
+                                        }
+                                        innerTextField()
+                                    }
                                 }
-                                innerTextField()
+                            )
+                        }
+
+                        1 -> {
+                            if (state.isMarkdown) {
+                                HtmlView(html = html)
+                            } else {
+                                HighlightedClickableText(viewModel.textFieldState.text.toString())
                             }
                         }
-                    )
+                    }
                 }
             }
 

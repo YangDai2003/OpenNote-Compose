@@ -70,7 +70,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -105,7 +104,6 @@ fun MainScreen(
 
     // Staggered grid state, used to control the scroll state of the note grid
     val gridState = rememberLazyStaggeredGridState()
-    val density = LocalDensity.current
 
     // Selected drawer item and folder, 0 for all, 1 for trash, others for folder index
     var selectedDrawer by rememberSaveable { mutableIntStateOf(0) }
@@ -373,8 +371,8 @@ fun MainScreen(
             floatingActionButton = {
                 AnimatedVisibility(
                     visible = showFloatingButton,
-                    enter = slideInHorizontally { with(density) { 100.dp.roundToPx() } },
-                    exit = slideOutHorizontally { with(density) { 100.dp.roundToPx() } }) {
+                    enter = slideInHorizontally { fullWidth -> fullWidth * 3 / 2 },
+                    exit = slideOutHorizontally { fullWidth -> fullWidth * 3 / 2 }) {
                     FloatingActionButton(onClick = { navController.navigate(Route.NOTE) }) {
                         Icon(imageVector = Icons.Outlined.Add, contentDescription = "Add")
                     }

@@ -38,142 +38,141 @@ import com.yangdai.opennote.presentation.viewmodel.NoteScreenViewModel
 
 @Composable
 fun NoteEditorRow(
-    isReadMode: Boolean,
     noteState: NoteState,
     viewModel: NoteScreenViewModel,
     navController: NavController,
     onTaskButtonClick: () -> Unit,
     onLinkButtonClick: () -> Unit
 ) {
-    if (!isReadMode) {
-        Column(
-            modifier = Modifier
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .navigationBarsPadding()
+    ) {
+
+        HorizontalDivider(
+            Modifier.fillMaxWidth(),
+            color = MaterialTheme.colorScheme.surfaceDim,
+            thickness = 2.dp
+        )
+
+        Row(
+            Modifier
                 .fillMaxWidth()
-                .navigationBarsPadding()
+                .height(40.dp)
+                .horizontalScroll(rememberScrollState()),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-
-            HorizontalDivider(
-                Modifier.fillMaxWidth(),
-                color = MaterialTheme.colorScheme.surfaceDim,
-                thickness = 2.dp
-            )
-
-            Row(
-                Modifier
-                    .fillMaxWidth()
-                    .height(40.dp)
-                    .horizontalScroll(rememberScrollState()),
-                verticalAlignment = Alignment.CenterVertically
+            IconButton(
+                onClick = { viewModel.undo() },
+                enabled = viewModel.canUndo()
             ) {
-                IconButton(
-                    onClick = { viewModel.undo() },
-                    enabled = viewModel.canUndo()
-                ) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Outlined.Undo,
+                    contentDescription = "Undo"
+                )
+            }
+
+            IconButton(
+                onClick = { viewModel.redo() },
+                enabled = viewModel.canRedo()
+            ) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Outlined.Redo,
+                    contentDescription = "Redo"
+                )
+            }
+
+            if (noteState.isMarkdown) {
+
+                IconButton(onClick = { viewModel.title() }) {
                     Icon(
-                        imageVector = Icons.AutoMirrored.Outlined.Undo,
-                        contentDescription = "Undo"
+                        imageVector = Icons.Outlined.Title,
+                        contentDescription = "Title"
                     )
                 }
 
-                IconButton(
-                    onClick = { viewModel.redo() },
-                    enabled = viewModel.canRedo()
-                ) {
+                IconButton(onClick = { viewModel.bold() }) {
                     Icon(
-                        imageVector = Icons.AutoMirrored.Outlined.Redo,
-                        contentDescription = "Redo"
+                        imageVector = Icons.Outlined.FormatBold,
+                        contentDescription = "Bold"
                     )
                 }
 
-                if (noteState.isMarkdown) {
-
-                    IconButton(onClick = { viewModel.title() }) {
-                        Icon(
-                            imageVector = Icons.Outlined.Title,
-                            contentDescription = "Title"
-                        )
-                    }
-
-                    IconButton(onClick = { viewModel.bold() }) {
-                        Icon(
-                            imageVector = Icons.Outlined.FormatBold,
-                            contentDescription = "Bold"
-                        )
-                    }
-
-                    IconButton(onClick = { viewModel.italic() }) {
-                        Icon(
-                            imageVector = Icons.Outlined.FormatItalic,
-                            contentDescription = "Italic"
-                        )
-                    }
-
-                    IconButton(onClick = { viewModel.underline() }) {
-                        Icon(
-                            imageVector = Icons.Outlined.FormatUnderlined,
-                            contentDescription = "Underline"
-                        )
-                    }
-
-                    IconButton(onClick = { viewModel.strikethrough() }) {
-                        Icon(
-                            imageVector = Icons.Default.FormatStrikethrough,
-                            contentDescription = "Strikethrough"
-                        )
-                    }
-
-                    IconButton(onClick = { viewModel.mark() }) {
-                        Icon(
-                            imageVector = Icons.Outlined.FormatPaint,
-                            contentDescription = "Mark"
-                        )
-                    }
-
-                    IconButton(onClick = { viewModel.inlineCode() }) {
-                        Icon(
-                            imageVector = Icons.Outlined.Code,
-                            contentDescription = "Code"
-                        )
-                    }
-
-                    IconButton(onClick = { viewModel.inlineFunction() }) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.function),
-                            contentDescription = "Function"
-                        )
-                    }
-
-                    IconButton(onClick = { viewModel.quote() }) {
-                        Icon(
-                            imageVector = Icons.Default.FormatQuote,
-                            contentDescription = "Quote"
-                        )
-                    }
-                }
-
-                IconButton(onClick = onTaskButtonClick) {
+                IconButton(onClick = { viewModel.italic() }) {
                     Icon(
-                        imageVector = Icons.Outlined.CheckBox,
-                        contentDescription = "Task"
+                        imageVector = Icons.Outlined.FormatItalic,
+                        contentDescription = "Italic"
                     )
                 }
 
-                IconButton(onClick = onLinkButtonClick) {
+                IconButton(onClick = { viewModel.underline() }) {
                     Icon(
-                        imageVector = Icons.Outlined.Link,
-                        contentDescription = "Link"
+                        imageVector = Icons.Outlined.FormatUnderlined,
+                        contentDescription = "Underline"
                     )
                 }
 
-                IconButton(onClick = {
-                    navController.navigate(Route.CAMERAX)
-                }) {
+                IconButton(onClick = { viewModel.strikethrough() }) {
                     Icon(
-                        imageVector = Icons.Outlined.DocumentScanner,
-                        contentDescription = "OCR"
+                        imageVector = Icons.Default.FormatStrikethrough,
+                        contentDescription = "Strikethrough"
+                    )
+                }
+
+                IconButton(onClick = { viewModel.mark() }) {
+                    Icon(
+                        imageVector = Icons.Outlined.FormatPaint,
+                        contentDescription = "Mark"
+                    )
+                }
+
+                IconButton(onClick = { viewModel.inlineCode() }) {
+                    Icon(
+                        imageVector = Icons.Outlined.Code,
+                        contentDescription = "Code"
+                    )
+                }
+
+                IconButton(onClick = { viewModel.inlineFunction() }) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.function),
+                        contentDescription = "Function"
+                    )
+                }
+
+                IconButton(onClick = { viewModel.quote() }) {
+                    Icon(
+                        imageVector = Icons.Default.FormatQuote,
+                        contentDescription = "Quote"
                     )
                 }
             }
+
+            IconButton(onClick = onTaskButtonClick) {
+                Icon(
+                    imageVector = Icons.Outlined.CheckBox,
+                    contentDescription = "Task"
+                )
+            }
+
+            IconButton(onClick = onLinkButtonClick) {
+                Icon(
+                    imageVector = Icons.Outlined.Link,
+                    contentDescription = "Link"
+                )
+            }
+
+            IconButton(onClick = {
+                navController.navigate(Route.CAMERAX)
+            }) {
+                Icon(
+                    imageVector = Icons.Outlined.DocumentScanner,
+                    contentDescription = "OCR"
+                )
+            }
         }
     }
+
 }
