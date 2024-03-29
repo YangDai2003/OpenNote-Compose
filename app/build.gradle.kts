@@ -37,6 +37,10 @@ android {
                 "proguard-rules.pro"
             )
         }
+        debug {
+            isMinifyEnabled = true
+            isShrinkResources = false
+        }
     }
 
     compileOptions {

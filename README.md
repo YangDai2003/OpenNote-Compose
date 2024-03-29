@@ -51,6 +51,7 @@ This project is still in early stages of construction and features may change, b
 <img src="https://github.com/YangDai2003/OpenNote-Compose/blob/master/screenshots/Screenshot_8.png" width="15%" alt=""/>
 <img src="https://github.com/YangDai2003/OpenNote-Compose/blob/master/screenshots/Screenshot_9.png" width="30%" alt=""/>
 <img src="https://github.com/YangDai2003/OpenNote-Compose/blob/master/screenshots/Screenshot_10.png" width="30%" alt=""/>
+<img src="https://github.com/YangDai2003/OpenNote-Compose/blob/master/screenshots/Screenshot_11.png" width="30%" alt=""/>
 
 </div>
 
