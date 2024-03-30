@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
@@ -72,6 +73,7 @@ import com.google.mlkit.vision.text.chinese.ChineseTextRecognizerOptions
 import com.google.mlkit.vision.text.japanese.JapaneseTextRecognizerOptions
 import com.google.mlkit.vision.text.korean.KoreanTextRecognizerOptions
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
+import com.yangdai.opennote.R
 import kotlinx.coroutines.launch
 import java.util.Locale
 import java.util.concurrent.Executors
@@ -155,9 +157,25 @@ fun CameraXScreen(
                     .addOnCompleteListener { task ->
                         isLoading = false
                         text =
-                            if (!task.isSuccessful) task.exception?.localizedMessage.toString()
-                            else {
-                                task.result.text
+                            if (!task.isSuccessful) {
+                                val msg =
+                                    task.exception?.localizedMessage.toString()
+                                Toast.makeText(
+                                    context,
+                                    msg,
+                                    Toast.LENGTH_LONG
+                                ).show()
+                                ""
+                            } else {
+                                val scannedText = task.result.text
+                                if (scannedText.isEmpty()) {
+                                    Toast.makeText(
+                                        context,
+                                        context.getString(R.string.no_text_found),
+                                        Toast.LENGTH_LONG
+                                    ).show()
+                                }
+                                scannedText
                             }
                         scope.launch {
                             scaffoldState.bottomSheetState.expand()
@@ -270,21 +288,23 @@ fun CameraXScreen(
                 )
             }
 
-            FilledTonalIconButton(
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .navigationBarsPadding()
-                    .padding(32.dp),
-                onClick = {
-                    scope.launch {
-                        scaffoldState.bottomSheetState.expand()
+            if (text.isNotEmpty()) {
+                FilledTonalIconButton(
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .navigationBarsPadding()
+                        .padding(32.dp),
+                    onClick = {
+                        scope.launch {
+                            scaffoldState.bottomSheetState.expand()
+                        }
                     }
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.TextFields,
+                        contentDescription = "Show Text"
+                    )
                 }
-            ) {
-                Icon(
-                    imageVector = Icons.Default.TextFields,
-                    contentDescription = "Show Text"
-                )
             }
 
             FilledTonalIconButton(
@@ -339,9 +359,25 @@ fun CameraXScreen(
                                             .addOnCompleteListener { task ->
                                                 isLoading = false
                                                 text =
-                                                    if (!task.isSuccessful) task.exception?.localizedMessage.toString()
-                                                    else {
-                                                        task.result.text
+                                                    if (!task.isSuccessful) {
+                                                        val msg =
+                                                            task.exception?.localizedMessage.toString()
+                                                        Toast.makeText(
+                                                            context,
+                                                            msg,
+                                                            Toast.LENGTH_LONG
+                                                        ).show()
+                                                        ""
+                                                    } else {
+                                                        val scannedText = task.result.text
+                                                        if (scannedText.isEmpty()) {
+                                                            Toast.makeText(
+                                                                context,
+                                                                context.getString(R.string.no_text_found),
+                                                                Toast.LENGTH_LONG
+                                                            ).show()
+                                                        }
+                                                        scannedText
                                                     }
                                                 scope.launch {
                                                     scaffoldState.bottomSheetState.expand()

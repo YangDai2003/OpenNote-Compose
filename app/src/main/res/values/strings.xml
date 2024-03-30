@@ -65,4 +65,6 @@
     <string name="firebase">Firebase Analytics</string>
     <string name="firebase_description">It is only used to improve the user experience and no personal information will be collected.</string>
     <string name="guide">User Guide</string>
+    <string name="no_text_found">No text found</string>
+    <string name="no_password_set">Please set the system lock screen password first</string>
 </resources>

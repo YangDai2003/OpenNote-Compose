@@ -63,4 +63,6 @@
     <string name="firebase">Firebase 数据分析</string>
     <string name="firebase_description">仅用于改善使用体验，不会收集个人信息。</string>
     <string name="guide">用户指南</string>
+    <string name="no_text_found">没有找到文字</string>
+    <string name="no_password_set">请先设置系统锁屏密码</string>
 </resources>

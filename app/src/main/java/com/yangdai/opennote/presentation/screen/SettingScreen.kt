@@ -1,7 +1,8 @@
-@file:OptIn(ExperimentalFoundationApi::class)
+@file:OptIn(ExperimentalFoundationApi::class, ExperimentalFoundationApi::class)
 
 package com.yangdai.opennote.presentation.screen
 
+import android.app.KeyguardManager
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -432,8 +433,18 @@ fun SettingsScreen(
                     Switch(
                         checked = passwordChecked,
                         onCheckedChange = {
-                            passwordChecked = it
-                            settingScreenViewModel.putBoolean(NEED_PASSWORD, it)
+                            val keyguardManager =
+                                context.getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager
+                            if (keyguardManager.isKeyguardSecure) {
+                                passwordChecked = it
+                                settingScreenViewModel.putBoolean(NEED_PASSWORD, it)
+                            } else {
+                                Toast.makeText(
+                                    context,
+                                    context.getString(R.string.no_password_set),
+                                    Toast.LENGTH_LONG
+                                ).show()
+                            }
                         }
                     )
                 })

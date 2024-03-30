@@ -2,6 +2,7 @@ package com.yangdai.opennote.presentation.component
 
 import android.content.Intent
 import android.net.Uri
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.foundation.text.selection.SelectionContainer
@@ -56,7 +57,7 @@ fun HighlightedClickableText(str: String) {
     val context = LocalContext.current
     SelectionContainer {
         ClickableText(
-            modifier = Modifier.verticalScroll(rememberScrollState()),
+            modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
             text = annotatedString,
             style = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface, lineBreak = LineBreak.Paragraph),
             onClick = { offset ->
