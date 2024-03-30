@@ -31,7 +31,7 @@ This project is still in early stages of construction and features may change, b
 - **Trash Bin**: Safely move notes to the trash for temporary storage before permanent deletion.
 - **OCR Text Recognition**: Utilizes ML Kit and CameraX for optical character recognition (OCR) directly from images.
 - **Markdown Support**: Supports both CommonMark and GitHub Flavored Markdown (GFM) syntax for versatile formatting options.
-- **Latex Math Support**: Supports Latex math syntax for mathematical equations.
+- **LaTeX Math Support**: Supports LaTeX math syntax for mathematical equations.
 - **Rich Text Mode**: Offers a simplified writing experience with basic rich text editing capabilities.
 - **Export Options**: Notes can be exported in various formats including TXT, MD (Markdown), and HTML for versatile sharing and usage.
 - **Material 3 Design**: Adheres to Material Design guidelines for a modern and cohesive user interface.
