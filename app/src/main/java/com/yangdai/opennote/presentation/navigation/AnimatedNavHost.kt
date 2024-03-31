@@ -9,7 +9,6 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
@@ -32,7 +31,7 @@ fun AnimatedNavHost(
     navController: NavHostController,
     isLargeScreen: Boolean
 ) = NavHost(
-    modifier = modifier.fillMaxSize(),
+    modifier = modifier,
     navController = navController,
     startDestination = Route.MAIN,
     enterTransition = {

@@ -18,6 +18,7 @@ import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.ImageProxy
 import androidx.camera.view.LifecycleCameraController
 import androidx.camera.view.PreviewView
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -330,18 +331,16 @@ fun CameraXScreen(
                 )
             } else {
                 val orientation = context.resources.configuration.orientation
+
                 val modifier = if (orientation == Configuration.ORIENTATION_PORTRAIT) {
-                    Modifier
-                        .align(Alignment.BottomCenter)
-                        .navigationBarsPadding()
+                    Modifier.padding(bottom = 24.dp).navigationBarsPadding().align(Alignment.BottomCenter)
                 } else {
-                    Modifier.align(Alignment.CenterEnd)
+                    Modifier.padding(end = 24.dp).align(Alignment.CenterEnd)
                 }
-                IconButton(
-                    modifier = modifier
-                        .padding(32.dp)
-                        .size(64.dp),
-                    onClick = {
+
+                // 由于IconButton被限制了大小，所以直接使用Icon
+                Icon(
+                    modifier = Modifier.then(modifier).size(64.dp).clickable {
                         controller.takePicture(
                             executor,
                             object : ImageCapture.OnImageCapturedCallback() {
@@ -392,15 +391,11 @@ fun CameraXScreen(
                                 }
                             }
                         )
-                    }
-                ) {
-                    Icon(
-                        modifier = Modifier.size(64.dp),
-                        imageVector = Icons.Default.Camera,
-                        tint = MaterialTheme.colorScheme.primary,
-                        contentDescription = "Capture"
-                    )
-                }
+                    },
+                    imageVector = Icons.Default.Camera,
+                    tint = MaterialTheme.colorScheme.primary,
+                    contentDescription = "Capture"
+                )
             }
         }
     }

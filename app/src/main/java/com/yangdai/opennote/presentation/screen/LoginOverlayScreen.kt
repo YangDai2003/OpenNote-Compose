@@ -1,5 +1,7 @@
 package com.yangdai.opennote.presentation.screen
 
+import android.os.Build
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -26,10 +28,19 @@ import com.yangdai.opennote.presentation.util.BiometricPromptManager
 fun LoginOverlayScreen(
     promptManager: BiometricPromptManager
 ) {
+
+    // 判断系统版本是否大于android 12
+    val modifier: Modifier = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        Modifier
+    } else {
+        Modifier.background(MaterialTheme.colorScheme.surface)
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .pointerInput(Unit) {},
+            .pointerInput(Unit) {}
+            .then(modifier),
         verticalArrangement = Arrangement.SpaceEvenly,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {

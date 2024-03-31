@@ -10,9 +10,8 @@ import androidx.biometric.BiometricManager
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
@@ -179,6 +178,7 @@ fun BaseScreen(
                 }
             }
         ) { maskActiveEvent ->
+
             LaunchedEffect(darkSwitchActive) {
                 if (!darkSwitchActive) return@LaunchedEffect
                 maskAnimWay = MaskAnimWay.DARK_SWITCH
@@ -188,14 +188,8 @@ fun BaseScreen(
                     maskActiveEvent(MaskAnimModel.EXPEND, maskClickX, maskClickY)
             }
 
-            val modifier: Modifier = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                Modifier.blur(16.dp)
-            } else {
-                Modifier.background(color = MaterialTheme.colorScheme.surface)
-            }
-
             AnimatedNavHost(
-                modifier = if (!loggedIn) modifier else Modifier,
+                modifier = Modifier.fillMaxSize().then(if (!loggedIn) Modifier.blur(16.dp) else Modifier),
                 navController = rememberNavController(),
                 isLargeScreen = isLargeScreen
             )
