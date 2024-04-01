@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -622,6 +623,8 @@ fun DrawerContent(
         ) {
             onClick(0, FolderEntity())
         }
+
+        Spacer(modifier = Modifier.padding(vertical = 2.dp))
 
         DrawerItem(
             icon = Icons.Outlined.Delete,

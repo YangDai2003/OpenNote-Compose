@@ -12,13 +12,11 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
@@ -33,7 +31,6 @@ import androidx.compose.material.icons.outlined.Alarm
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.EditNote
 import androidx.compose.material.icons.outlined.FileDownload
-import androidx.compose.material.icons.outlined.FolderOpen
 import androidx.compose.material.icons.outlined.IosShare
 import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material.icons.outlined.SwapHoriz
@@ -198,8 +195,6 @@ fun NoteScreen(
                         onClick = {
                             showBottomSheet = true
                         }) {
-                        Icon(imageVector = Icons.Outlined.FolderOpen, contentDescription = "Folder")
-                        Spacer(modifier = Modifier.size(6.dp))
                         Text(text = folderName, maxLines = 1, modifier = Modifier.basicMarquee())
                     }
                 },
@@ -415,7 +410,7 @@ fun NoteScreen(
                             .weight(1f)
                     ) {
                         if (state.isMarkdown) {
-                            HtmlView(html = html)
+                            HtmlView(html = html, isLargeScreen = true)
                         } else {
                             HighlightedClickableText(viewModel.textFieldState.text.toString())
                         }
@@ -455,7 +450,7 @@ fun NoteScreen(
 
                         1 -> {
                             if (state.isMarkdown) {
-                                HtmlView(html = html)
+                                HtmlView(html = html, isLargeScreen = false)
                             } else {
                                 HighlightedClickableText(viewModel.textFieldState.text.toString())
                             }

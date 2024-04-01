@@ -20,7 +20,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 
 @SuppressLint("SetJavaScriptEnabled")
 @Composable
-fun HtmlView(html: String) {
+fun HtmlView(html: String, isLargeScreen: Boolean) {
     val textColor = MaterialTheme.colorScheme.onSurface.toArgb()
     val codeBackgroundColor = MaterialTheme.colorScheme.surfaceVariant.toArgb()
     val preCodeBackgroundColor = MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp).toArgb()
@@ -94,7 +94,7 @@ fun HtmlView(html: String) {
                 settings.builtInZoomControls = true
                 settings.displayZoomControls = false
                 settings.useWideViewPort = true
-                settings.loadWithOverviewMode = true
+                settings.loadWithOverviewMode = isLargeScreen
                 setPadding(0, 0, 0, 0)
                 setBackgroundColor(Color.TRANSPARENT)
                 loadDataWithBaseURL(
