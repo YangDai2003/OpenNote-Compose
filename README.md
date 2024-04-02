@@ -18,10 +18,6 @@ It is developed using Kotlin (Compose) and follows the MVVM (Model-View-ViewMode
 
 You can know more about how to use OpenNote with Markdown and LaTeX in the [Guide](Guide.md).
 
-## Notice
-
-This project is still in early stages of construction and features may change, be added or removed. If you have any suggestions or questions please feel free to let me know.
-
 ## Features
 
 - **Create, Edit, and Delete Notes**: Users can create, edit, and delete notes effortlessly.
