@@ -10,14 +10,15 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Redo
 import androidx.compose.material.icons.automirrored.outlined.Undo
-import androidx.compose.material.icons.filled.FormatQuote
-import androidx.compose.material.icons.filled.FormatStrikethrough
+import androidx.compose.material.icons.outlined.AddChart
 import androidx.compose.material.icons.outlined.CheckBox
 import androidx.compose.material.icons.outlined.Code
 import androidx.compose.material.icons.outlined.DocumentScanner
 import androidx.compose.material.icons.outlined.FormatBold
 import androidx.compose.material.icons.outlined.FormatItalic
 import androidx.compose.material.icons.outlined.FormatPaint
+import androidx.compose.material.icons.outlined.FormatQuote
+import androidx.compose.material.icons.outlined.FormatStrikethrough
 import androidx.compose.material.icons.outlined.FormatUnderlined
 import androidx.compose.material.icons.outlined.Link
 import androidx.compose.material.icons.outlined.Title
@@ -115,7 +116,7 @@ fun NoteEditorRow(
 
                 IconButton(onClick = { onEdit(Constants.EDITOR_STRIKETHROUGH) }) {
                     Icon(
-                        imageVector = Icons.Default.FormatStrikethrough,
+                        imageVector = Icons.Outlined.FormatStrikethrough,
                         contentDescription = "Strikethrough"
                     )
                 }
@@ -143,8 +144,15 @@ fun NoteEditorRow(
 
                 IconButton(onClick = { onEdit(Constants.EDITOR_QUOTE) }) {
                     Icon(
-                        imageVector = Icons.Default.FormatQuote,
+                        imageVector = Icons.Outlined.FormatQuote,
                         contentDescription = "Quote"
+                    )
+                }
+
+                IconButton(onClick = { onEdit(Constants.EDITOR_DIAGRAM) }) {
+                    Icon(
+                        imageVector = Icons.Outlined.AddChart,
+                        contentDescription = "Diagram"
                     )
                 }
             }

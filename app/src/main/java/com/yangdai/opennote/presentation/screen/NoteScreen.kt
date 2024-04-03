@@ -410,7 +410,7 @@ fun NoteScreen(
                             .weight(1f)
                     ) {
                         if (state.isMarkdown) {
-                            HtmlView(html = html, isLargeScreen = true)
+                            HtmlView(html = html)
                         } else {
                             HighlightedClickableText(viewModel.textFieldState.text.toString())
                         }
@@ -450,7 +450,7 @@ fun NoteScreen(
 
                         1 -> {
                             if (state.isMarkdown) {
-                                HtmlView(html = html, isLargeScreen = false)
+                                HtmlView(html = html)
                             } else {
                                 HighlightedClickableText(viewModel.textFieldState.text.toString())
                             }

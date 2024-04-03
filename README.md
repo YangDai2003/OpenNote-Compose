@@ -14,9 +14,9 @@ It is developed using Kotlin (Compose) and follows the MVVM (Model-View-ViewMode
       <img alt="Get it on GitHub" src="https://raw.githubusercontent.com/deckerst/common/main/assets/get-it-on-github.png" height="100">
 </a>
 
-## How to Use OpenNote with Markdown and LaTeX?
+## How to Use OpenNote with Markdown, LaTeX Math, and Mermaid Diagrams?
 
-You can know more about how to use OpenNote with Markdown and LaTeX in the [Guide](Guide.md).
+You can know more about how to use OpenNote with Markdown, LaTeX Math, and Mermaid Diagrams in the [Guide](Guide.md).
 
 ## Features
 
@@ -28,6 +28,7 @@ You can know more about how to use OpenNote with Markdown and LaTeX in the [Guid
 - **OCR Text Recognition**: Utilizes ML Kit and CameraX for optical character recognition (OCR) directly from images.
 - **Markdown Support**: Supports both CommonMark and GitHub Flavored Markdown (GFM) syntax for versatile formatting options.
 - **LaTeX Math Support**: Supports LaTeX math syntax for mathematical equations.
+- **Mermaid Diagramming**: Supports Mermaid syntax for creating diagrams and flowcharts.
 - **Rich Text Mode**: Offers a simplified writing experience with basic rich text editing capabilities.
 - **Export Options**: Notes can be exported in various formats including TXT, MD (Markdown), and HTML for versatile sharing and usage.
 - **Material 3 Design**: Adheres to Material Design guidelines for a modern and cohesive user interface.

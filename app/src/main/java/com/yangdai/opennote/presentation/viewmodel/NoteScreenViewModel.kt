@@ -18,6 +18,7 @@ import com.yangdai.opennote.presentation.util.add
 import com.yangdai.opennote.presentation.util.addLink
 import com.yangdai.opennote.presentation.util.addTask
 import com.yangdai.opennote.presentation.util.bold
+import com.yangdai.opennote.presentation.util.diagram
 import com.yangdai.opennote.presentation.util.inlineCode
 import com.yangdai.opennote.presentation.util.inlineFunction
 import com.yangdai.opennote.presentation.util.italic
@@ -235,6 +236,7 @@ class NoteScreenViewModel @Inject constructor(
                     Constants.EDITOR_INLINE_CODE -> textFieldState.edit { inlineCode() }
                     Constants.EDITOR_INLINE_FUNC -> textFieldState.edit { inlineFunction() }
                     Constants.EDITOR_QUOTE -> textFieldState.edit { quote() }
+                    Constants.EDITOR_DIAGRAM -> textFieldState.edit { diagram() }
                 }
             }
         }

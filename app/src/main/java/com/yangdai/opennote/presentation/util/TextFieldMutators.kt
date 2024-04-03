@@ -35,6 +35,8 @@ fun TextFieldBuffer.strikeThrough() = inlineWrap("~~")
 
 fun TextFieldBuffer.mark() = inlineWrap("<mark>", "</mark>")
 
+fun TextFieldBuffer.diagram() = inlineWrap("<pre class=\"mermaid\">", "\n</pre>")
+
 fun TextFieldBuffer.inlineCode() = inlineWrap("`")
 
 fun TextFieldBuffer.inlineFunction() = inlineWrap("$")

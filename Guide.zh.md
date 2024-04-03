@@ -162,8 +162,9 @@ TXT、MD (Markdown) 和 HTML。
 
 # 参考
 
-你可以在以下链接中了解更多关于 Markdown、CommonMark、GitHub Flavored Markdown 和 LaTeX 的信息：
+你可以在以下链接中了解更多关于 Markdown、CommonMark、GitHub Flavored Markdown、LaTeX Math 和 Mermaid 的信息：
 
 - [CommonMark](https://commonmark.org/)
 - [GitHub Flavored Markdown](https://github.github.com/gfm/)
 - [LaTeX](https://www.latex-project.org/)
+- [Mermaid](https://mermaid.js.org/)

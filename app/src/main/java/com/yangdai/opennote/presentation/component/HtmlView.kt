@@ -20,18 +20,21 @@ import androidx.compose.ui.viewinterop.AndroidView
 
 @SuppressLint("SetJavaScriptEnabled")
 @Composable
-fun HtmlView(html: String, isLargeScreen: Boolean) {
+fun HtmlView(html: String) {
     val textColor = MaterialTheme.colorScheme.onSurface.toArgb()
     val codeBackgroundColor = MaterialTheme.colorScheme.surfaceVariant.toArgb()
     val preCodeBackgroundColor = MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp).toArgb()
+    val quoteBackgroundColor = MaterialTheme.colorScheme.surfaceDim.toArgb()
     val hexTextColor = String.format("#%06X", 0xFFFFFF and textColor)
     val hexCodeBackgroundColor = String.format("#%06X", 0xFFFFFF and codeBackgroundColor)
     val hexPreCodeBackgroundColor = String.format("#%06X", 0xFFFFFF and preCodeBackgroundColor)
+    val hexQuoteBackgroundColor = String.format("#%06X", 0xFFFFFF and quoteBackgroundColor)
 
     val data = """
         <!DOCTYPE html>
         <html>
         <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" integrity="sha384-wcIxkf4k558AjM3Yz3BBFQUbk/zgIYC2R0QpeeYb+TwlBVMrlgLqwRjRtGZiK7ww" crossorigin="anonymous">
         <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" integrity="sha384-hIoBPJpTUs74ddyc4bFZSM1TVlQDA60VBbJS0oA934VSz82sBx1X7kSx2ATBDIyd" crossorigin="anonymous"></script>
         <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" integrity="sha384-43gviWU0YVjaDtb/GhzOouOXtZMP/7XUzwPTstBeZFe/+rCMvRwr4yROQP43s0Xk" crossorigin="anonymous"></script>
@@ -53,10 +56,17 @@ fun HtmlView(html: String, isLargeScreen: Boolean) {
                 });
             });
         </script>
+        <script type="module">
+          import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+          mermaid.initialize({ startOnLoad: true });
+        </script>
         <style type="text/css">
             body{color: $hexTextColor; padding: 0px; margin: 0px;}
-            p > code { background-color: $hexCodeBackgroundColor; padding: 4px 4px 2px 4px; margin: 4px; border-radius: 4px; }
-            pre { background-color: $hexPreCodeBackgroundColor; padding: 16px;}
+            p code { background-color: $hexCodeBackgroundColor; padding: 4px 4px 2px 4px; margin: 4px; border-radius: 4px; }
+            pre { background-color: $hexPreCodeBackgroundColor; display: block; padding: 16px; overflow-x: auto;}
+            blockquote { border-left: 4px solid ${hexQuoteBackgroundColor}; padding-left: 0px; margin-left: 0px; padding-right: 0px; margin-right: 0px; }
+            blockquote > * { margin-left: 16px; padding: 0px; }
+            blockquote blockquote { margin: 16px; }
         </style>
         </head>
         <body>
@@ -93,8 +103,8 @@ fun HtmlView(html: String, isLargeScreen: Boolean) {
                 settings.setSupportZoom(true)
                 settings.builtInZoomControls = true
                 settings.displayZoomControls = false
-                settings.useWideViewPort = true
-                settings.loadWithOverviewMode = isLargeScreen
+                settings.useWideViewPort = false
+                settings.loadWithOverviewMode = false
                 setPadding(0, 0, 0, 0)
                 setBackgroundColor(Color.TRANSPARENT)
                 loadDataWithBaseURL(

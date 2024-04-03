@@ -160,8 +160,9 @@ This allows users to create richly formatted notes with support for headings, li
 
 # References
 
-You can find more information about Markdown, CommonMark, GitHub Flavored Markdown, and LaTeX at the following links:
+You can find more information about Markdown, CommonMark, GitHub Flavored Markdown, LaTeX Math, and Mermaid at the following links:
 
 - [CommonMark](https://commonmark.org/)
 - [GitHub Flavored Markdown](https://github.github.com/gfm/)
 - [LaTeX](https://www.latex-project.org/)
+- [Mermaid](https://mermaid.js.org/)

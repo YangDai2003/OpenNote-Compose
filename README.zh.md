@@ -14,9 +14,9 @@ OpenNote是一款完全使用Compose构建的现代化Android记事本应用程�
       <img alt="Get it on GitHub" src="https://raw.githubusercontent.com/deckerst/common/main/assets/get-it-on-github.png" height="100">
 </a>
 
-## 如何使用基于 Markdown 和 LaTeX 语法的 OpenNote？
+## 如何使用 Markdown, LaTeX Math 和 Mermaid 图表的语法在 OpenNote 中编写文档？
 
-您可以在[指南](Guide.zh.md)中了解有关如何使用基于 Markdown 和 LaTeX 语法的 OpenNote 的更多信息。
+您可以在[指南](Guide.zh.md)中了解有关如何使用 Markdown，LaTeX Math 和 Mermaid 图表的语法在 OpenNote 中编写文档的更多信息。
 
 ## 功能
 
@@ -28,6 +28,7 @@ OpenNote是一款完全使用Compose构建的现代化Android记事本应用程�
 - **OCR 文本识别**：利用 ML Kit 和 CameraX 直接从图像进行光学字符识别 (OCR)。
 - **Markdown 支持**：支持 CommonMark 和 GitHub Flavored Markdown (GFM) 语法，以实现多种格式选项。
 - **LaTeX Math 支持**：支持 LaTeX Math 语法，用于数学方程。
+- **Mermaid 图表**：支持 Mermaid 语法，用于创建图表和流程图。
 - **富文本模式**：通过基本的富文本编辑功能提供简化的书写体验。
 - **导出选项**：笔记可以以各种格式导出，包括 TXT、MD (Markdown) 和 HTML，以实现多种共享和使用。
 - **Material 3 Design**：遵循 Material Design 指南，打造现代且具有凝聚力的用户界面。
