@@ -47,6 +47,7 @@ OpenNote是一款完全使用Compose构建的现代化Android记事本应用程�
 <img src="https://github.com/YangDai2003/OpenNote-Compose/blob/master/screenshots/Screenshot_7.png" width="15%" alt=""/>
 <img src="https://github.com/YangDai2003/OpenNote-Compose/blob/master/screenshots/Screenshot_8.png" width="15%" alt=""/>
 <img src="https://github.com/YangDai2003/OpenNote-Compose/blob/master/screenshots/Screenshot_12.png" width="15%" alt=""/>
+<img src="https://github.com/YangDai2003/OpenNote-Compose/blob/master/screenshots/Screenshot_13.png" width="15%" alt=""/>
 <img src="https://github.com/YangDai2003/OpenNote-Compose/blob/master/screenshots/Screenshot_9.png" width="30%" alt=""/>
 <img src="https://github.com/YangDai2003/OpenNote-Compose/blob/master/screenshots/Screenshot_10.png" width="30%" alt=""/>
 <img src="https://github.com/YangDai2003/OpenNote-Compose/blob/master/screenshots/Screenshot_11.png" width="30%" alt=""/>
