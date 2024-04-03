@@ -28,7 +28,7 @@ You can know more about how to use OpenNote with Markdown, LaTeX Math, and Merma
 - **OCR Text Recognition**: Utilizes ML Kit and CameraX for optical character recognition (OCR) directly from images.
 - **Markdown Support**: Supports both CommonMark and GitHub Flavored Markdown (GFM) syntax for versatile formatting options.
 - **LaTeX Math Support**: Supports LaTeX math syntax for mathematical equations.
-- **Mermaid Diagramming**: Supports Mermaid syntax for creating diagrams and flowcharts.
+- **Mermaid Diagram Support**: Supports Mermaid syntax for creating diagrams and flowcharts.
 - **Rich Text Mode**: Offers a simplified writing experience with basic rich text editing capabilities.
 - **Export Options**: Notes can be exported in various formats including TXT, MD (Markdown), and HTML for versatile sharing and usage.
 - **Material 3 Design**: Adheres to Material Design guidelines for a modern and cohesive user interface.
@@ -46,6 +46,7 @@ You can know more about how to use OpenNote with Markdown, LaTeX Math, and Merma
 <img src="https://github.com/YangDai2003/OpenNote-Compose/blob/master/screenshots/Screenshot_6.png" width="15%" alt=""/>
 <img src="https://github.com/YangDai2003/OpenNote-Compose/blob/master/screenshots/Screenshot_7.png" width="15%" alt=""/>
 <img src="https://github.com/YangDai2003/OpenNote-Compose/blob/master/screenshots/Screenshot_8.png" width="15%" alt=""/>
+<img src="https://github.com/YangDai2003/OpenNote-Compose/blob/master/screenshots/Screenshot_12.png" width="15%" alt=""/>
 <img src="https://github.com/YangDai2003/OpenNote-Compose/blob/master/screenshots/Screenshot_9.png" width="30%" alt=""/>
 <img src="https://github.com/YangDai2003/OpenNote-Compose/blob/master/screenshots/Screenshot_10.png" width="30%" alt=""/>
 <img src="https://github.com/YangDai2003/OpenNote-Compose/blob/master/screenshots/Screenshot_11.png" width="30%" alt=""/>

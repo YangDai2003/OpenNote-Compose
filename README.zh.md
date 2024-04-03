@@ -28,7 +28,7 @@ OpenNote是一款完全使用Compose构建的现代化Android记事本应用程�
 - **OCR 文本识别**：利用 ML Kit 和 CameraX 直接从图像进行光学字符识别 (OCR)。
 - **Markdown 支持**：支持 CommonMark 和 GitHub Flavored Markdown (GFM) 语法，以实现多种格式选项。
 - **LaTeX Math 支持**：支持 LaTeX Math 语法，用于数学方程。
-- **Mermaid 图表**：支持 Mermaid 语法，用于创建图表和流程图。
+- **Mermaid 支持**：支持 Mermaid 语法，用于创建图表和流程图。
 - **富文本模式**：通过基本的富文本编辑功能提供简化的书写体验。
 - **导出选项**：笔记可以以各种格式导出，包括 TXT、MD (Markdown) 和 HTML，以实现多种共享和使用。
 - **Material 3 Design**：遵循 Material Design 指南，打造现代且具有凝聚力的用户界面。
@@ -46,6 +46,7 @@ OpenNote是一款完全使用Compose构建的现代化Android记事本应用程�
 <img src="https://github.com/YangDai2003/OpenNote-Compose/blob/master/screenshots/Screenshot_6.png" width="15%" alt=""/>
 <img src="https://github.com/YangDai2003/OpenNote-Compose/blob/master/screenshots/Screenshot_7.png" width="15%" alt=""/>
 <img src="https://github.com/YangDai2003/OpenNote-Compose/blob/master/screenshots/Screenshot_8.png" width="15%" alt=""/>
+<img src="https://github.com/YangDai2003/OpenNote-Compose/blob/master/screenshots/Screenshot_12.png" width="15%" alt=""/>
 <img src="https://github.com/YangDai2003/OpenNote-Compose/blob/master/screenshots/Screenshot_9.png" width="30%" alt=""/>
 <img src="https://github.com/YangDai2003/OpenNote-Compose/blob/master/screenshots/Screenshot_10.png" width="30%" alt=""/>
 <img src="https://github.com/YangDai2003/OpenNote-Compose/blob/master/screenshots/Screenshot_11.png" width="30%" alt=""/>
