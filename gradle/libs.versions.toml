@@ -20,7 +20,6 @@ navVersion = "2.7.7"
 appcompat = "1.6.1"
 hilt = "2.51.1"
 hiltNav = "1.2.0"
-playServicesMlkit = "16.0.0"
 room = "2.6.1"
 ksp = "1.9.23-1.0.19"
 lifecycleRuntimeCompose = "2.7.0"
@@ -78,9 +77,6 @@ androidx-lifecycle-runtime-compose = { group = "androidx.lifecycle", name = "lif
 
 kotlinx-collections-immutable = { module = "org.jetbrains.kotlinx:kotlinx-collections-immutable", version.ref = "kotlinxCollectionsImmutable" }
 material = { module = "com.google.android.material:material", version.ref = "material" }
-play-services-mlkit-text-recognition-devanagari = { module = "com.google.android.gms:play-services-mlkit-text-recognition-devanagari", version.ref = "playServicesMlkit" }
-play-services-mlkit-text-recognition-japanese = { module = "com.google.android.gms:play-services-mlkit-text-recognition-japanese", version.ref = "playServicesMlkit" }
-play-services-mlkit-text-recognition-korean = { module = "com.google.android.gms:play-services-mlkit-text-recognition-korean", version.ref = "playServicesMlkit" }
 text-recognition = { module = "com.google.mlkit:text-recognition", version.ref = "textRecognition" }
 text-recognition-chinese = { module = "com.google.mlkit:text-recognition-chinese", version.ref = "textRecognition" }
 

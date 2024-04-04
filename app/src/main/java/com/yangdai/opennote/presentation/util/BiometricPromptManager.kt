@@ -17,7 +17,8 @@ class BiometricPromptManager(
     val promptResult = resultChannel.receiveAsFlow()
     fun showBiometricPrompt(
         title: String,
-        subtitle: String
+        subtitle: String,
+        negativeButtonText: String
     ) {
         val manager = BiometricManager.from(activity)
         val authenticators = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R)
@@ -29,6 +30,11 @@ class BiometricPromptManager(
             .setTitle(title)
             .setSubtitle(subtitle)
             .setAllowedAuthenticators(authenticators)
+
+        // Only set negative button text if device credential authentication is not allowed
+        if (authenticators and DEVICE_CREDENTIAL == 0) {
+            promptInfo.setNegativeButtonText(negativeButtonText)
+        }
 
         when (manager.canAuthenticate(authenticators)) {
             BiometricManager.BIOMETRIC_SUCCESS -> {

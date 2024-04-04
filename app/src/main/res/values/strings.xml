@@ -67,4 +67,5 @@
     <string name="guide">User Guide</string>
     <string name="no_text_found">No text found</string>
     <string name="no_password_set">Please set the system lock screen password first</string>
+    <string name="no_calendar_app_found">No calendar app found</string>
 </resources>

@@ -2,6 +2,7 @@ package com.yangdai.opennote.presentation.screen
 
 import android.content.Intent
 import android.net.Uri
+import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.slideInVertically
@@ -20,7 +21,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text2.BasicTextField2
@@ -147,8 +147,6 @@ fun NoteScreen(
     val scope = rememberCoroutineScope()
     var showBottomSheet by rememberSaveable { mutableStateOf(false) }
 
-    val textFieldScrollState = rememberScrollState()
-
     // Get the scanned text from the camerax screen
     val scannedText =
         navController.currentBackStackEntry?.savedStateHandle?.get<String>("scannedText")
@@ -257,7 +255,16 @@ fun NoteScreen(
                                     .setData(Uri.parse("content://com.android.calendar/events"))
                                     .putExtra("title", state.title)
                                     .putExtra("description", state.content)
-                                context.startActivity(intent)
+                                try {
+                                    context.startActivity(intent)
+                                } catch (e: Exception) {
+                                    e.printStackTrace()
+                                    Toast.makeText(
+                                        context,
+                                        context.getString(R.string.no_calendar_app_found),
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                }
                             })
 
                         DropdownMenuItem(
@@ -388,7 +395,6 @@ fun NoteScreen(
                             }
                             .weight(1f),
                         state = viewModel.textFieldState,
-                        scrollState = textFieldScrollState,
                         textStyle = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface),
                         cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
                         decorator = { innerTextField ->
@@ -429,7 +435,6 @@ fun NoteScreen(
                             BasicTextField2(
                                 modifier = Modifier.fillMaxSize(),
                                 state = viewModel.textFieldState,
-                                scrollState = textFieldScrollState,
                                 textStyle = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface),
                                 cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
                                 decorator = { innerTextField ->

@@ -71,8 +71,6 @@ import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.TextRecognizer
 import com.google.mlkit.vision.text.chinese.ChineseTextRecognizerOptions
-import com.google.mlkit.vision.text.japanese.JapaneseTextRecognizerOptions
-import com.google.mlkit.vision.text.korean.KoreanTextRecognizerOptions
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 import com.yangdai.opennote.R
 import kotlinx.coroutines.launch
@@ -123,24 +121,11 @@ fun CameraXScreen(
         TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
     }
 
-    val locale = context.resources.configuration.locales[0].language
+    val language = context.resources.configuration.locales[0].language
 
-    // Set the text recognizer based on the locale
-    when (locale) {
-        Locale.CHINESE.language -> {
-            textRecognizer =
-                TextRecognition.getClient(ChineseTextRecognizerOptions.Builder().build())
-        }
-
-        Locale.KOREAN.language -> {
-            textRecognizer =
-                TextRecognition.getClient(KoreanTextRecognizerOptions.Builder().build())
-        }
-
-        Locale.JAPANESE.language -> {
-            textRecognizer =
-                TextRecognition.getClient(JapaneseTextRecognizerOptions.Builder().build())
-        }
+    if (language == Locale.CHINESE.language) {
+        textRecognizer =
+            TextRecognition.getClient(ChineseTextRecognizerOptions.Builder().build())
     }
 
     var text by rememberSaveable { mutableStateOf("") }

@@ -15,8 +15,8 @@ android {
         applicationId = "com.yangdai.opennote"
         minSdk = 29
         targetSdk = 34
-        versionCode = 109
-        versionName = "1.0.9"
+        versionCode = 110
+        versionName = "1.1.0"
         resourceConfigurations += listOf("en", "zh")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -76,21 +76,10 @@ dependencies {
     implementation (libs.androidx.camera.lifecycle)
     implementation (libs.androidx.camera.view)
 
-    /*
-    拉丁语为广泛使用的语言，因此将其作为默认语言，且捆绑在应用中。
-    由于中国无法使用 Google Play服务，因此中文也捆绑在应用中。
-    其它语言则通过 Google Play服务下载。
-    */
     // To recognize Latin script
     implementation (libs.text.recognition)
     // To recognize Chinese script
     implementation (libs.text.recognition.chinese)
-    // To recognize Devanagari script
-    implementation (libs.play.services.mlkit.text.recognition.devanagari)
-    // To recognize Japanese script
-    implementation (libs.play.services.mlkit.text.recognition.japanese)
-    // To recognize Korean script
-    implementation (libs.play.services.mlkit.text.recognition.korean)
 
     // Firebase, if u don't have google-services.json, remove this block
     implementation(platform(libs.firebase.bom))

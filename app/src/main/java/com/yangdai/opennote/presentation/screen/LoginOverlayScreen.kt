@@ -63,11 +63,13 @@ fun LoginOverlayScreen(
 
         val title = stringResource(R.string.biometric_login)
         val subtitle = stringResource(R.string.log_in_using_your_biometric_credential)
+        val negativeButtonText = stringResource(android.R.string.cancel)
 
         OutlinedButton(onClick = {
             promptManager.showBiometricPrompt(
                 title = title,
-                subtitle = subtitle
+                subtitle = subtitle,
+                negativeButtonText = negativeButtonText
             )
         }) {
             Text(text = stringResource(R.string.login))

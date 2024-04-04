@@ -65,4 +65,5 @@
     <string name="guide">用户指南</string>
     <string name="no_text_found">没有找到文字</string>
     <string name="no_password_set">请先设置系统锁屏密码</string>
+    <string name="no_calendar_app_found">无可用的日历应用</string>
 </resources>
