@@ -1,7 +1,7 @@
 package com.yangdai.opennote.presentation.component
 
-import android.content.Intent
 import android.net.Uri
+import androidx.browser.customtabs.CustomTabsIntent
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.ClickableText
@@ -19,6 +19,10 @@ import androidx.compose.ui.text.withStyle
 
 @Composable
 fun HighlightedClickableText(str: String) {
+
+    val customTabsIntent = CustomTabsIntent.Builder()
+        .setShowTitle(true)
+        .build()
 
     val text = str.replace("- [ ]", "◎").replace("- [x]", "◉")
 
@@ -64,8 +68,8 @@ fun HighlightedClickableText(str: String) {
                 try {
                     annotatedString.getStringAnnotations(tag = "URL", start = offset, end = offset)
                         .firstOrNull()?.let { annotation ->
-                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(annotation.item))
-                            context.startActivity(intent)
+                            if (annotation.item.startsWith("http://") || annotation.item.startsWith("https://"))
+                                customTabsIntent.launchUrl(context, Uri.parse(annotation.item))
                         }
                 } catch (e: Exception) {
                     e.printStackTrace()
@@ -76,11 +80,7 @@ fun HighlightedClickableText(str: String) {
                             end = offset
                         )
                             .firstOrNull()?.let { annotation ->
-                                val intent = Intent(
-                                    Intent.ACTION_VIEW,
-                                    Uri.parse("https://" + annotation.item)
-                                )
-                                context.startActivity(intent)
+                                customTabsIntent.launchUrl(context, Uri.parse("https://" + annotation.item))
                             }
                     } catch (e: Exception) {
                         e.printStackTrace()

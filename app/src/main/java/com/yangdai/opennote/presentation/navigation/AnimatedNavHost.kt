@@ -114,9 +114,9 @@ fun AnimatedNavHost(
 
     composable(
         route = Route.CAMERAX,
-        enterTransition = { scaleIn(animationSpec = tween(NAV_ANIMATION_TIME)) },
+        enterTransition = { scaleIn(animationSpec = tween(NAV_ANIMATION_TIME)) + fadeIn()},
         exitTransition = { ExitTransition.None },
-        popExitTransition = { scaleOut(animationSpec = tween(NAV_ANIMATION_TIME)) },
+        popExitTransition = { scaleOut(animationSpec = tween(NAV_ANIMATION_TIME)) + fadeOut()},
         popEnterTransition = { EnterTransition.None }
     ) {
         CameraXScreen(onCloseClick = { navController.navigateUp() }) {

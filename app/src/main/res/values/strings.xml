@@ -49,7 +49,6 @@
     <string name="restore">Restore</string>
     <string name="app_info">Info</string>
     <string name="version">Version</string>
-    <string name="github" translatable="false">Github</string>
     <string name="failed">Failed</string>
     <string name="saved_download">File saved to download folder.</string>
     <string name="export">Export</string>

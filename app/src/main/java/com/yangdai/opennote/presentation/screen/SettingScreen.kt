@@ -1,5 +1,3 @@
-@file:OptIn(ExperimentalFoundationApi::class, ExperimentalFoundationApi::class)
-
 package com.yangdai.opennote.presentation.screen
 
 import android.app.KeyguardManager
@@ -10,8 +8,8 @@ import android.os.Build
 import android.provider.Settings
 import android.util.Log
 import android.widget.Toast
+import androidx.browser.customtabs.CustomTabsIntent
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -68,7 +66,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
@@ -105,6 +102,9 @@ fun SettingsScreen(
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+    val customTabsIntent = CustomTabsIntent.Builder()
+        .setShowTitle(true)
+        .build()
 
     val scrollBehavior =
         TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
@@ -574,10 +574,10 @@ fun SettingsScreen(
                     )
                     ListItem(
                         modifier = Modifier.clickable {
-                            val intent = Intent(Intent.ACTION_VIEW)
-                            intent.data =
+                            customTabsIntent.launchUrl(
+                                context,
                                 Uri.parse("https://github.com/YangDai2003/OpenNote-Compose/blob/master/Guide.md")
-                            context.startActivity(intent)
+                            )
                         },
                         leadingContent = {
                             Icon(
@@ -591,27 +591,10 @@ fun SettingsScreen(
                     )
                     ListItem(
                         modifier = Modifier.clickable {
-                            val intent = Intent(Intent.ACTION_VIEW)
-                            intent.data =
-                                Uri.parse("https://github.com/YangDai2003/OpenNote-Compose")
-                            context.startActivity(intent)
-                        },
-                        leadingContent = {
-                            Icon(
-                                painter = painterResource(id = R.drawable.github),
-                                contentDescription = "GitHub"
-                            )
-                        },
-                        headlineContent = {
-                            Text(text = stringResource(R.string.github))
-                        }
-                    )
-                    ListItem(
-                        modifier = Modifier.clickable {
-                            val intent = Intent(Intent.ACTION_VIEW)
-                            intent.data =
+                            customTabsIntent.launchUrl(
+                                context,
                                 Uri.parse("https://github.com/YangDai2003/OpenNote-Compose/blob/master/PRIVACY_POLICY.md")
-                            context.startActivity(intent)
+                            )
                         },
                         leadingContent = {
                             Icon(
@@ -627,10 +610,10 @@ fun SettingsScreen(
             showDialog = showRatingDialog,
             onDismissRequest = { showRatingDialog = false }) {
             if (it > 3) {
-                val intent = Intent(Intent.ACTION_VIEW)
-                intent.data =
+                customTabsIntent.launchUrl(
+                    context,
                     Uri.parse("https://play.google.com/store/apps/details?id=com.yangdai.opennote")
-                context.startActivity(intent)
+                )
             } else {
                 // 获取当前应用的版本号
                 val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
@@ -638,14 +621,15 @@ fun SettingsScreen(
                 val deviceModel = Build.MODEL
                 val systemVersion = Build.VERSION.SDK_INT
 
-                val emailIntent = Intent(Intent.ACTION_SENDTO)
-                emailIntent.setData(Uri.parse("mailto:"))
-                emailIntent.putExtra(Intent.EXTRA_EMAIL, arrayOf("dy15800837435@gmail.com"))
-                emailIntent.putExtra(Intent.EXTRA_SUBJECT, "Feedback - Open Note")
-                emailIntent.putExtra(
-                    Intent.EXTRA_TEXT,
-                    "Version: $appVersion\nDevice: $deviceModel\nSystem: $systemVersion\n"
-                )
+                val emailIntent = Intent(Intent.ACTION_SENDTO).apply {
+                    data = Uri.parse("mailto:")
+                    putExtra(Intent.EXTRA_EMAIL, arrayOf("dy15800837435@gmail.com"))
+                    putExtra(Intent.EXTRA_SUBJECT, "Feedback - Open Note")
+                    putExtra(
+                        Intent.EXTRA_TEXT,
+                        "Version: $appVersion\nDevice: $deviceModel\nSystem: $systemVersion\n"
+                    )
+                }
                 context.startActivity(Intent.createChooser(emailIntent, "Feedback (E-mail)"))
             }
         }

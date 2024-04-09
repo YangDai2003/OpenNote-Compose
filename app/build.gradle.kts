@@ -15,8 +15,8 @@ android {
         applicationId = "com.yangdai.opennote"
         minSdk = 29
         targetSdk = 34
-        versionCode = 110
-        versionName = "1.1.0"
+        versionCode = 111
+        versionName = "1.1.1"
         resourceConfigurations += listOf("en", "zh")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -60,6 +60,8 @@ android {
 }
 
 dependencies {
+    implementation(libs.androidx.browser)
+    implementation(libs.androidx.compose.foundation)
     implementation(libs.kotlinx.collections.immutable)
 
     // CommonMark, for markdown rendering and parsing
@@ -71,15 +73,15 @@ dependencies {
     implementation(libs.commonmark)
 
     // CameraX
-    implementation (libs.androidx.camera.core)
-    implementation (libs.androidx.camera.camera2)
-    implementation (libs.androidx.camera.lifecycle)
-    implementation (libs.androidx.camera.view)
+    implementation(libs.androidx.camera.core)
+    implementation(libs.androidx.camera.camera2)
+    implementation(libs.androidx.camera.lifecycle)
+    implementation(libs.androidx.camera.view)
 
     // To recognize Latin script
-    implementation (libs.text.recognition)
+    implementation(libs.text.recognition)
     // To recognize Chinese script
-    implementation (libs.text.recognition.chinese)
+    implementation(libs.text.recognition.chinese)
 
     // Firebase, if u don't have google-services.json, remove this block
     implementation(platform(libs.firebase.bom))
@@ -101,9 +103,8 @@ dependencies {
     implementation(libs.androidx.material3.window.size)
     implementation(libs.androidx.navigation)
     implementation(libs.androidx.material.icons)
-    implementation(libs.material)
     implementation(libs.androidx.core.splashscreen)
-    implementation (libs.androidx.biometric)
+    implementation(libs.androidx.biometric)
     implementation(libs.androidx.datastore.preferences)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)

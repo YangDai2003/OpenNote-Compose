@@ -2,8 +2,9 @@ package com.yangdai.opennote.presentation.viewmodel
 
 import android.content.Intent
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.text2.input.TextFieldState
-import androidx.compose.foundation.text2.input.textAsFlow
+import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
+import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -53,7 +54,7 @@ import org.commonmark.parser.Parser
 import org.commonmark.renderer.html.HtmlRenderer
 import javax.inject.Inject
 
-@OptIn(ExperimentalFoundationApi::class, FlowPreview::class, ExperimentalCoroutinesApi::class)
+@OptIn(ExperimentalFoundationApi::class)
 @HiltViewModel
 class NoteScreenViewModel @Inject constructor(
     private val operations: Operations,
@@ -62,7 +63,8 @@ class NoteScreenViewModel @Inject constructor(
 
 
     val textFieldState: TextFieldState = TextFieldState("")
-    val html = textFieldState.textAsFlow()
+    @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
+    val html = snapshotFlow { textFieldState.text }
         .debounce(100)
         .mapLatest {
             val document: Node = parser.parse(it.toString())
@@ -101,7 +103,7 @@ class NoteScreenViewModel @Inject constructor(
             viewModelScope.launch {
                 operations.findNote(id)?.let { note ->
                     oNote = note
-                    textFieldState.edit { append(note.content) }
+                    textFieldState.setTextAndPlaceCursorAtEnd(note.content)
                     _state.update { noteState ->
                         noteState.copy(
                             id = note.id,
@@ -118,7 +120,7 @@ class NoteScreenViewModel @Inject constructor(
         savedStateHandle.get<Intent>(NavController.KEY_DEEP_LINK_INTENT)?.let {
             val content = it.parseSharedContent().trim()
             if (content.isNotEmpty()) {
-                textFieldState.edit { append(content) }
+                textFieldState.setTextAndPlaceCursorAtEnd(content)
             }
         }
         getFolders()

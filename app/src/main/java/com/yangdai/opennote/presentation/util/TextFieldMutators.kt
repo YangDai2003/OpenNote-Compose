@@ -3,25 +3,23 @@
 package com.yangdai.opennote.presentation.util
 
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.text2.input.TextFieldBuffer
+import androidx.compose.foundation.text.input.TextFieldBuffer
 import androidx.compose.ui.text.TextRange
 
 fun TextFieldBuffer.inlineWrap(
     startWrappedString: String,
     endWrappedString: String = startWrappedString
 ) {
-    val initialSelection = selectionInChars
+    val initialSelection = selection
     replace(initialSelection.min, initialSelection.min, startWrappedString)
     replace(
         initialSelection.max + startWrappedString.length,
         initialSelection.max + startWrappedString.length,
         endWrappedString
     )
-    selectCharsIn(
-        TextRange(
-            initialSelection.min,
-            initialSelection.max + startWrappedString.length + endWrappedString.length
-        )
+    selection = TextRange(
+        initialSelection.min,
+        initialSelection.max + startWrappedString.length + endWrappedString.length
     )
 }
 
@@ -43,25 +41,23 @@ fun TextFieldBuffer.inlineFunction() = inlineWrap("$")
 
 fun TextFieldBuffer.quote() {
     val text = toString()
-    val lineStart = text.take(selectionInChars.min)
+    val lineStart = text.take(selection.min)
         .lastIndexOf('\n')
         .takeIf { it != -1 }
         ?.let { it + 1 }
         ?: 0
 
-    val initialSelection = selectionInChars
+    val initialSelection = selection
 
     replace(lineStart, lineStart, "> ")
-    selectCharsIn(
-        TextRange(
-            initialSelection.min + 2,
-            initialSelection.max + 2
-        )
+    selection = TextRange(
+        initialSelection.min + 2,
+        initialSelection.max + 2
     )
 }
 
 fun TextFieldBuffer.add(str: String) {
-    val initialSelection = selectionInChars
+    val initialSelection = selection
     replace(initialSelection.min, initialSelection.max, str)
 }
 

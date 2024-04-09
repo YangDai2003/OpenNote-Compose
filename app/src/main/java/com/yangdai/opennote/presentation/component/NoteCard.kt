@@ -22,13 +22,14 @@ import com.yangdai.opennote.data.local.entity.NoteEntity
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun NoteCard(
+    modifier: Modifier = Modifier,
     note: NoteEntity,
     isEnabled: Boolean,
     isSelected: Boolean,
     onNoteClick: (NoteEntity) -> Unit,
     onEnableChange: (Boolean) -> Unit
 ) =
-    ElevatedCard(modifier = Modifier
+    ElevatedCard(modifier = modifier
         .sizeIn(minHeight = 80.dp, maxHeight = 360.dp)
         .combinedClickable(
             onLongClick = {

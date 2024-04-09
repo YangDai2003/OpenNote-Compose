@@ -12,6 +12,9 @@ import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSiz
 import androidx.compose.material3.windowsizeclass.WindowHeightSizeClass
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.core.animation.doOnEnd
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.yangdai.opennote.presentation.screen.BaseScreen
@@ -58,8 +61,14 @@ class MainActivity : AppCompatActivity() {
 
         setContent {
             val windowSize = calculateWindowSizeClass(activity = this)
-            val isLargeScreen = windowSize.widthSizeClass == WindowWidthSizeClass.Expanded && windowSize.heightSizeClass > WindowHeightSizeClass.Compact
-            BaseScreen(promptManager = promptManager, baseScreenViewModel = baseScreenViewModel, isLargeScreen = isLargeScreen)
+            val isLargeScreen by remember {
+                derivedStateOf { windowSize.widthSizeClass == WindowWidthSizeClass.Expanded && windowSize.heightSizeClass > WindowHeightSizeClass.Compact }
+            }
+            BaseScreen(
+                promptManager = promptManager,
+                baseScreenViewModel = baseScreenViewModel,
+                isLargeScreen = isLargeScreen
+            )
         }
     }
 }

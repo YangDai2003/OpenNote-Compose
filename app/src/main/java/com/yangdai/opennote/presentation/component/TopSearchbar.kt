@@ -55,6 +55,7 @@ fun TopSearchbar(
     drawerState: DrawerState,
     viewModel: MainScreenViewModel,
     isSmallScreen: Boolean,
+    enabled: Boolean,
     onActiveChange: (Boolean) -> Unit
 ) {
 
@@ -81,7 +82,14 @@ fun TopSearchbar(
             viewModel.putHistoryStringSet(newSet)
             viewModel.onListEvent(ListEvent.Search(text))
         } else {
-            viewModel.onListEvent(ListEvent.Sort(viewModel.stateFlow.value.noteOrder, false, null, false))
+            viewModel.onListEvent(
+                ListEvent.Sort(
+                    viewModel.stateFlow.value.noteOrder,
+                    false,
+                    null,
+                    false
+                )
+            )
         }
         active = false
     }
@@ -95,13 +103,15 @@ fun TopSearchbar(
                         Icon(imageVector = Icons.Outlined.Search, contentDescription = "Search")
                     }
                 } else {
-                    IconButton(onClick = {
-                        scope.launch {
-                            drawerState.apply {
-                                if (isClosed) open() else close()
+                    IconButton(
+                        enabled = enabled,
+                        onClick = {
+                            scope.launch {
+                                drawerState.apply {
+                                    if (isClosed) open() else close()
+                                }
                             }
-                        }
-                    }) {
+                        }) {
                         Icon(
                             imageVector = Icons.Outlined.Menu,
                             contentDescription = "Open Menu"
@@ -131,7 +141,9 @@ fun TopSearchbar(
                     )
                 }
             } else {
-                IconButton(onClick = { viewModel.onListEvent(ListEvent.ToggleOrderSection) }) {
+                IconButton(
+                    enabled = enabled,
+                    onClick = { viewModel.onListEvent(ListEvent.ToggleOrderSection) }) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Outlined.Sort,
                         contentDescription = "Sort"
@@ -188,7 +200,8 @@ fun TopSearchbar(
     if (orientation == Configuration.ORIENTATION_PORTRAIT && isSmallScreen) {
 
         // Animate search bar padding when active state changes
-        val searchBarPadding by animateDpAsState(targetValue = if (active) 0.dp else 16.dp,
+        val searchBarPadding by animateDpAsState(
+            targetValue = if (active) 0.dp else 16.dp,
             label = "searchBarPadding"
         )
 
@@ -202,6 +215,7 @@ fun TopSearchbar(
                 query = inputText,
                 onQueryChange = { inputText = it },
                 onSearch = { search(it) },
+                enabled = enabled,
                 active = active,
                 onActiveChange = { active = it },
                 placeholder = { Text(text = stringResource(R.string.search)) },
@@ -225,6 +239,7 @@ fun TopSearchbar(
                 onQueryChange = { inputText = it },
                 onSearch = { search(it) },
                 active = active,
+                enabled = enabled,
                 onActiveChange = { active = it },
                 placeholder = { Text(text = stringResource(R.string.search)) },
                 leadingIcon = { LeadingIcon() },

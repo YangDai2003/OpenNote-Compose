@@ -162,23 +162,22 @@ fun MainScreen(
     LaunchedEffect(selectedDrawer) { initSelect() }
 
     // Back logic for better user experience
-    BackHandler(isEnabled || selectedDrawer != 0) {
+    BackHandler(isEnabled) {
         if (isEnabled) {
             initSelect()
-            return@BackHandler
-        }
-
-        if (selectedDrawer != 0) {
-            selectedDrawer = 0
-            viewModel.onListEvent(ListEvent.Sort(trash = false))
-            return@BackHandler
         }
     }
 
     // Navigation drawer state, confirmStateChange is used to prevent drawer from closing when search bar is active
-    val drawerState = rememberDrawerState(
-        initialValue = DrawerValue.Closed,
-        confirmStateChange = { !isSearchBarActive })
+    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+
+    BackHandler(!isLargeScreen && drawerState.isOpen) {
+        scope.launch {
+            drawerState.apply {
+                close()
+            }
+        }
+    }
 
     @Composable
     fun MainContent() {
@@ -190,6 +189,7 @@ fun MainScreen(
                             scope = scope,
                             drawerState = drawerState,
                             viewModel = viewModel,
+                            enabled = !isEnabled,
                             isSmallScreen = !isLargeScreen,
                             onActiveChange = { active ->
                                 initSelect()
@@ -212,13 +212,15 @@ fun MainScreen(
                             },
                             navigationIcon = {
                                 if (!isLargeScreen) {
-                                    IconButton(onClick = {
-                                        scope.launch {
-                                            drawerState.apply {
-                                                if (isClosed) open() else close()
+                                    IconButton(
+                                        enabled = !isEnabled,
+                                        onClick = {
+                                            scope.launch {
+                                                drawerState.apply {
+                                                    if (isClosed) open() else close()
+                                                }
                                             }
-                                        }
-                                    }) {
+                                        }) {
                                         Icon(
                                             imageVector = Icons.Outlined.Menu,
                                             contentDescription = "Open Menu"
@@ -297,7 +299,6 @@ fun MainScreen(
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-
 
                             Row(
                                 modifier = Modifier.fillMaxHeight(),
@@ -453,6 +454,7 @@ fun MainScreen(
                 content = {
                     items(listState.notes, key = { item: NoteEntity -> item.id!! }) { note ->
                         NoteCard(
+//                            modifier = Modifier.animateItemPlacement(), // Add animation to the item
                             note = note,
                             isEnabled = isEnabled,
                             isSelected = selectedItems.contains(note.id),
@@ -487,6 +489,7 @@ fun MainScreen(
     if (!isLargeScreen) {
 
         ModalNavigationDrawer(
+            gesturesEnabled = !isEnabled && !isSearchBarActive,
             drawerState = drawerState,
             drawerContent = {
                 ModalDrawerSheet {

@@ -3,14 +3,18 @@ package com.yangdai.opennote.presentation.component
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.exclude
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Cancel
 import androidx.compose.material.icons.outlined.DoneOutline
 import androidx.compose.material.icons.outlined.FolderOpen
+import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -44,6 +48,7 @@ fun FolderListSheet(
     onCloseClick: () -> Unit,
     onSelect: (Long?) -> Unit
 ) = ModalBottomSheet(
+    windowInsets = BottomSheetDefaults.windowInsets.exclude(WindowInsets.statusBars),
     onDismissRequest = onDismissRequest,
     sheetState = sheetState,
     dragHandle = {}) {

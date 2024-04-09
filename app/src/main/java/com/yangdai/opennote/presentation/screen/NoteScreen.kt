@@ -1,13 +1,12 @@
 package com.yangdai.opennote.presentation.screen
 
 import android.content.Intent
-import android.net.Uri
 import android.widget.Toast
+import android.provider.CalendarContract.Events
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -23,7 +22,6 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.text2.BasicTextField2
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.automirrored.outlined.MenuBook
@@ -55,7 +53,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
@@ -84,7 +81,7 @@ import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.launch
 
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NoteScreen(
     viewModel: NoteScreenViewModel = hiltViewModel(),
@@ -143,8 +140,8 @@ fun NoteScreen(
         }
     }
 
-    val sheetState = rememberModalBottomSheetState()
     val scope = rememberCoroutineScope()
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var showBottomSheet by rememberSaveable { mutableStateOf(false) }
 
     // Get the scanned text from the camerax screen
@@ -251,14 +248,14 @@ fun NoteScreen(
                             },
                             text = { Text(text = stringResource(id = R.string.remind)) },
                             onClick = {
-                                val intent: Intent = Intent(Intent.ACTION_INSERT)
-                                    .setData(Uri.parse("content://com.android.calendar/events"))
-                                    .putExtra("title", state.title)
-                                    .putExtra("description", state.content)
-                                try {
+                                val intent = Intent(Intent.ACTION_INSERT).apply {
+                                    data = Events.CONTENT_URI
+                                    putExtra(Events.TITLE, state.title)
+                                    putExtra(Events.DESCRIPTION, state.content)
+                                }
+                                if (intent.resolveActivity(context.packageManager) != null) {
                                     context.startActivity(intent)
-                                } catch (e: Exception) {
-                                    e.printStackTrace()
+                                } else {
                                     Toast.makeText(
                                         context,
                                         context.getString(R.string.no_calendar_app_found),
@@ -387,13 +384,11 @@ fun NoteScreen(
 
             if (isLargeScreen) {
                 Row(Modifier.fillMaxSize()) {
-                    BasicTextField2(
+                    BasicTextField(
                         modifier = Modifier
                             .fillMaxHeight()
-                            .onFocusChanged { focusState ->
-                                isReadMode = !focusState.isFocused
-                            }
                             .weight(1f),
+                        readOnly = isReadMode,
                         state = viewModel.textFieldState,
                         textStyle = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface),
                         cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
@@ -426,13 +421,13 @@ fun NoteScreen(
             } else {
                 HorizontalPager(
                     state = pagerState,
-                    beyondBoundsPageCount = 1,
+                    beyondViewportPageCount = 1,
                     userScrollEnabled = false,
                     modifier = Modifier.fillMaxSize()
                 ) { page: Int ->
                     when (page) {
                         0 -> {
-                            BasicTextField2(
+                            BasicTextField(
                                 modifier = Modifier.fillMaxSize(),
                                 state = viewModel.textFieldState,
                                 textStyle = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface),
@@ -463,45 +458,45 @@ fun NoteScreen(
                     }
                 }
             }
+        }
+    }
 
-            if (showExportDialog) {
-                ExportDialog(
-                    html = html,
-                    title = state.title,
-                    content = viewModel.textFieldState.text.toString(),
-                    onDismissRequest = { showExportDialog = false }
-                )
-            }
+    if (showExportDialog) {
+        ExportDialog(
+            html = html,
+            title = state.title,
+            content = viewModel.textFieldState.text.toString(),
+            onDismissRequest = { showExportDialog = false }
+        )
+    }
 
-            if (showTaskDialog) {
-                TaskDialog(onDismissRequest = { showTaskDialog = false }) {
-                    viewModel.addTask(it.task, it.checked)
+    if (showTaskDialog) {
+        TaskDialog(onDismissRequest = { showTaskDialog = false }) {
+            viewModel.addTask(it.task, it.checked)
+        }
+    }
+
+    if (showLinkDialog) {
+        LinkDialog(onDismissRequest = { showLinkDialog = false }) {
+            val insertText = "[${it.title}](${it.uri})"
+            viewModel.addLink(insertText)
+        }
+    }
+
+    if (showBottomSheet) {
+        FolderListSheet(
+            oFolderId = state.folderId,
+            folders = state.folders.toImmutableList(),
+            sheetState = sheetState,
+            onDismissRequest = { showBottomSheet = false },
+            onCloseClick = {
+                scope.launch { sheetState.hide() }.invokeOnCompletion {
+                    if (!sheetState.isVisible) {
+                        showBottomSheet = false
+                    }
                 }
-            }
-
-            if (showLinkDialog) {
-                LinkDialog(onDismissRequest = { showLinkDialog = false }) {
-                    val insertText = "[${it.title}](${it.uri})"
-                    viewModel.addLink(insertText)
-                }
-            }
-
-            if (showBottomSheet) {
-                FolderListSheet(
-                    oFolderId = state.folderId,
-                    folders = state.folders.toImmutableList(),
-                    sheetState = sheetState,
-                    onDismissRequest = { showBottomSheet = false },
-                    onCloseClick = {
-                        scope.launch { sheetState.hide() }.invokeOnCompletion {
-                            if (!sheetState.isVisible) {
-                                showBottomSheet = false
-                            }
-                        }
-                    }) {
-                    viewModel.onEvent(NoteEvent.FolderChanged(it))
-                }
-            }
+            }) {
+            viewModel.onEvent(NoteEvent.FolderChanged(it))
         }
     }
 }
