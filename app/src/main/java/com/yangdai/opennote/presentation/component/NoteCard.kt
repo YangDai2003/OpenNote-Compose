@@ -8,10 +8,12 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.sizeIn
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -29,14 +31,16 @@ fun NoteCard(
     onNoteClick: (NoteEntity) -> Unit,
     onEnableChange: (Boolean) -> Unit
 ) =
-    ElevatedCard(modifier = modifier
-        .sizeIn(minHeight = 80.dp, maxHeight = 360.dp)
-        .combinedClickable(
-            onLongClick = {
-                onEnableChange(true)
-            },
-            onClick = { onNoteClick(note) }
-        )
+    ElevatedCard(
+        modifier = modifier
+            .sizeIn(minHeight = 80.dp, maxHeight = 360.dp)
+            .combinedClickable(
+                onLongClick = {
+                    onEnableChange(true)
+                },
+                onClick = { onNoteClick(note) }
+            ),
+        colors = CardDefaults.elevatedCardColors(containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp))
     ) {
         Box(modifier = Modifier.fillMaxWidth()) {
             if (isEnabled)

@@ -11,7 +11,7 @@ object Constants {
     const val FIREBASE = "FIREBASE"
     const val IS_APP_IN_DARK_MODE = "IS_APP_IN_DARK_MODE"
     const val SHOULD_FOLLOW_SYSTEM = "SHOULD_FOLLOW_SYSTEM"
-    const val IS_DARK_SWITCH_ACTIVE = "IS_DARK_SWITCH_ACTIVE"
+    const val IS_SWITCH_ACTIVE = "IS_DARK_SWITCH_ACTIVE"
     const val MASK_CLICK_X = "MASK_CLICK_X"
     const val MASK_CLICK_Y = "MASK_CLICK_Y"
 

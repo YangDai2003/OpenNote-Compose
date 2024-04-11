@@ -37,16 +37,12 @@ enum class MaskAnimModel {
     SHRINK,
 }
 
-enum class MaskAnimWay {
-    DARK_SWITCH
-}
-
 typealias MaskAnimActive = (MaskAnimModel, Float, Float) -> Unit
 
 @SuppressLint("Recycle")
 @Composable
 fun MaskBox(
-    animTime: Long = 800,
+    animTime: Long = 650,
     maskComplete: (MaskAnimModel) -> Unit,
     animFinish: () -> Unit,
     content: @Composable (MaskAnimActive) -> Unit,

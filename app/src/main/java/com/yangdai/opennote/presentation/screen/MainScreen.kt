@@ -7,6 +7,7 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -58,6 +59,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
@@ -91,7 +93,7 @@ import com.yangdai.opennote.presentation.state.ListState
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun MainScreen(
     navController: NavController,
@@ -158,9 +160,6 @@ fun MainScreen(
             selectedItems.minus(listState.notes.mapNotNull { noteEntity -> noteEntity.id }.toSet())
     }
 
-    // Initialize the selected drawer item, triggered by the drawer item
-    LaunchedEffect(selectedDrawer) { initSelect() }
-
     // Back logic for better user experience
     BackHandler(isEnabled) {
         if (isEnabled) {
@@ -171,12 +170,16 @@ fun MainScreen(
     // Navigation drawer state, confirmStateChange is used to prevent drawer from closing when search bar is active
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
 
-    BackHandler(!isLargeScreen && drawerState.isOpen) {
+    fun closeDrawer() {
         scope.launch {
             drawerState.apply {
                 close()
             }
         }
+    }
+
+    BackHandler(!isLargeScreen && drawerState.isOpen) {
+        closeDrawer()
     }
 
     @Composable
@@ -192,7 +195,6 @@ fun MainScreen(
                             enabled = !isEnabled,
                             isSmallScreen = !isLargeScreen,
                             onActiveChange = { active ->
-                                initSelect()
                                 isSearchBarActive = active
                             }
                         )
@@ -291,7 +293,9 @@ fun MainScreen(
                     enter = slideInVertically { fullHeight -> fullHeight },
                     exit = slideOutVertically { fullHeight -> fullHeight }
                 ) {
-                    BottomAppBar {
+                    BottomAppBar(
+                        containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(4.dp)
+                    ) {
                         Row(
                             modifier = Modifier
                                 .fillMaxSize()
@@ -439,7 +443,7 @@ fun MainScreen(
                     .fillMaxSize()
                     .statusBarsPadding()
                     // The top padding is used to prevent the top of the grid from being blocked by the search bar(56.dp)
-                    .padding(top = 72.dp),
+                    .padding(top = 74.dp),
                 state = gridState,
                 // The staggered grid layout is adaptive, with a minimum column width of 160dp(mdpi)
                 columns = StaggeredGridCells.Adaptive(160.dp),
@@ -454,7 +458,7 @@ fun MainScreen(
                 content = {
                     items(listState.notes, key = { item: NoteEntity -> item.id!! }) { note ->
                         NoteCard(
-//                            modifier = Modifier.animateItemPlacement(), // Add animation to the item
+                            modifier = Modifier.animateItemPlacement(), // Add animation to the item
                             note = note,
                             isEnabled = isEnabled,
                             isSelected = selectedItems.contains(note.id),
@@ -492,7 +496,10 @@ fun MainScreen(
             gesturesEnabled = !isEnabled && !isSearchBarActive,
             drawerState = drawerState,
             drawerContent = {
-                ModalDrawerSheet {
+                ModalDrawerSheet(
+                    drawerState = drawerState,
+                    drawerContainerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(2.dp),
+                ) {
                     DrawerContent(
                         listState = listState,
                         selectedDrawer = selectedDrawer,
@@ -504,23 +511,14 @@ fun MainScreen(
                                     selectedFolder = folder
                                     viewModel.onListEvent(ListEvent.Sort(trash = false))
                                 }
-
-                                scope.launch {
-                                    drawerState.apply {
-                                        close()
-                                    }
-                                }
+                                closeDrawer()
                             }
 
                             1 -> {
                                 selectDrawer(position) {
                                     viewModel.onListEvent(ListEvent.Sort(trash = true))
                                 }
-                                scope.launch {
-                                    drawerState.apply {
-                                        close()
-                                    }
-                                }
+                                closeDrawer()
                             }
 
                             else -> {
@@ -533,12 +531,7 @@ fun MainScreen(
                                         )
                                     )
                                 }
-
-                                scope.launch {
-                                    drawerState.apply {
-                                        close()
-                                    }
-                                }
+                                closeDrawer()
                             }
                         }
                     }
@@ -614,7 +607,8 @@ fun DrawerContent(
             ) {
                 Icon(
                     imageVector = Icons.Outlined.Settings,
-                    contentDescription = "Open Settings"
+                    contentDescription = "Open Settings",
+                    tint = MaterialTheme.colorScheme.onSurface
                 )
             }
         }

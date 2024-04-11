@@ -10,6 +10,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -34,6 +35,7 @@ fun AnimatedNavHost(
     modifier = modifier,
     navController = navController,
     startDestination = Route.MAIN,
+    contentAlignment = Alignment.Center,
     enterTransition = {
         slideIntoContainer(
             animationSpec = tween(NAV_ANIMATION_TIME),

@@ -53,7 +53,7 @@ fun NoteEditorRow(
 
         HorizontalDivider(
             Modifier.fillMaxWidth(),
-            color = MaterialTheme.colorScheme.surfaceDim,
+            color = MaterialTheme.colorScheme.surfaceVariant,
             thickness = 2.dp
         )
 

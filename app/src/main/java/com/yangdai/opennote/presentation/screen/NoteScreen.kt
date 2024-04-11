@@ -3,7 +3,6 @@ package com.yangdai.opennote.presentation.screen
 import android.content.Intent
 import android.widget.Toast
 import android.provider.CalendarContract.Events
-import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
@@ -44,7 +43,9 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -62,6 +63,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import com.yangdai.opennote.R
@@ -70,6 +72,7 @@ import com.yangdai.opennote.presentation.component.FolderListSheet
 import com.yangdai.opennote.presentation.component.HighlightedClickableText
 import com.yangdai.opennote.presentation.component.HtmlView
 import com.yangdai.opennote.presentation.component.LinkDialog
+import com.yangdai.opennote.presentation.component.NoteEditTextField
 import com.yangdai.opennote.presentation.component.NoteEditorRow
 import com.yangdai.opennote.presentation.component.TaskDialog
 import com.yangdai.opennote.presentation.event.NoteEvent
@@ -89,6 +92,7 @@ fun NoteScreen(
     isLargeScreen: Boolean
 ) {
     val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current
 
@@ -120,10 +124,6 @@ fun NoteScreen(
     // Whether to show the overflow menu
     var showMenu by rememberSaveable {
         mutableStateOf(false)
-    }
-
-    BackHandler {
-        viewModel.onEvent(NoteEvent.NavigateBack)
     }
 
     // Folder name, default to "All Notes", or the name of the current folder the note is in
@@ -160,8 +160,6 @@ fun NoteScreen(
         if (isReadMode) {
             keyboardController?.hide()
             focusManager.clearFocus()
-        } else {
-            keyboardController?.show()
         }
         if (!isLargeScreen) {
             scope.launch {
@@ -176,6 +174,19 @@ fun NoteScreen(
                 is UiEvent.NavigateBack -> navController.navigateUp()
             }
         }
+    }
+
+    // Save the note when the lifecycle owner is destroyed
+    DisposableEffect(key1 = lifecycleOwner) {
+
+        onDispose {
+            viewModel.onEvent(NoteEvent.NavigateBack)
+        }
+    }
+
+    val time by lazy {
+        if (state.timestamp == null) timestampToFormatLocalDateTime(System.currentTimeMillis())
+        else timestampToFormatLocalDateTime(state.timestamp!!)
     }
 
     Scaffold(
@@ -195,7 +206,7 @@ fun NoteScreen(
                 },
                 navigationIcon = {
                     IconButton(onClick = {
-                        viewModel.onEvent(NoteEvent.NavigateBack)
+                        navController.navigateUp()
                     }) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
@@ -227,7 +238,11 @@ fun NoteScreen(
                         )
                     }
 
-                    DropdownMenu(expanded = showMenu, onDismissRequest = { showMenu = false }) {
+                    DropdownMenu(
+                        containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp),
+                        expanded = showMenu,
+                        onDismissRequest = { showMenu = false }
+                    ) {
 
                         DropdownMenuItem(
                             leadingIcon = {
@@ -345,9 +360,7 @@ fun NoteScreen(
                 }
             )
 
-            val time =
-                if (state.timestamp == null) timestampToFormatLocalDateTime(System.currentTimeMillis())
-                else timestampToFormatLocalDateTime(state.timestamp!!)
+
 
             Row(
                 modifier = Modifier
@@ -384,25 +397,12 @@ fun NoteScreen(
 
             if (isLargeScreen) {
                 Row(Modifier.fillMaxSize()) {
-                    BasicTextField(
+                    NoteEditTextField(
                         modifier = Modifier
                             .fillMaxHeight()
                             .weight(1f),
-                        readOnly = isReadMode,
                         state = viewModel.textFieldState,
-                        textStyle = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface),
-                        cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
-                        decorator = { innerTextField ->
-                            Box {
-                                if (viewModel.textFieldState.text.isEmpty()) {
-                                    Text(
-                                        text = stringResource(id = R.string.content),
-                                        style = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
-                                    )
-                                }
-                                innerTextField()
-                            }
-                        }
+                        readMode = isReadMode
                     )
 
                     Box(
@@ -427,24 +427,10 @@ fun NoteScreen(
                 ) { page: Int ->
                     when (page) {
                         0 -> {
-                            BasicTextField(
+                            NoteEditTextField(
                                 modifier = Modifier.fillMaxSize(),
                                 state = viewModel.textFieldState,
-                                textStyle = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface),
-                                cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
-                                decorator = { innerTextField ->
-                                    Box {
-                                        if (viewModel.textFieldState.text.isEmpty()) {
-                                            Text(
-                                                text = stringResource(id = R.string.content),
-                                                style = MaterialTheme.typography.bodyLarge.copy(
-                                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                                )
-                                            )
-                                        }
-                                        innerTextField()
-                                    }
-                                }
+                                readMode = isReadMode
                             )
                         }
 

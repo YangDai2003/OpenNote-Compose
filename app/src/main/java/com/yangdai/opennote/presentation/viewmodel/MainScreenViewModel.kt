@@ -60,6 +60,7 @@ class MainScreenViewModel @Inject constructor(
                                         title = note.title,
                                         content = note.content,
                                         folderId = note.folderId,
+                                        isMarkdown = note.isMarkdown,
                                         isDeleted = true,
                                         timestamp = note.timestamp
                                     )
@@ -85,6 +86,7 @@ class MainScreenViewModel @Inject constructor(
                                     title = note.title,
                                     content = note.content,
                                     folderId = note.folderId,
+                                    isMarkdown = note.isMarkdown,
                                     isDeleted = false,
                                     timestamp = note.timestamp
                                 )
@@ -111,6 +113,7 @@ class MainScreenViewModel @Inject constructor(
                                     title = note.title,
                                     content = note.content,
                                     folderId = event.folderId,
+                                    isMarkdown = note.isMarkdown,
                                     isDeleted = false,
                                     timestamp = note.timestamp
                                 )

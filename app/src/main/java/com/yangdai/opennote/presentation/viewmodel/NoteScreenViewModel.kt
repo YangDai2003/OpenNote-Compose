@@ -45,6 +45,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.commonmark.Extension
 import org.commonmark.ext.gfm.strikethrough.StrikethroughExtension
 import org.commonmark.ext.gfm.tables.TablesExtension
@@ -98,25 +99,32 @@ class NoteScreenViewModel @Inject constructor(
     private var oNote: NoteEntity? = null
 
     init {
-        savedStateHandle.get<String>("id")?.let {
-            val id = it.toLong()
-            viewModelScope.launch {
-                operations.findNote(id)?.let { note ->
-                    oNote = note
-                    textFieldState.setTextAndPlaceCursorAtEnd(note.content)
-                    _state.update { noteState ->
-                        noteState.copy(
-                            id = note.id,
-                            title = note.title,
-                            content = note.content,
-                            folderId = note.folderId,
-                            isMarkdown = note.isMarkdown,
-                            timestamp = note.timestamp
-                        )
+        try {
+            checkNotNull(savedStateHandle["id"]).let {
+                    val id = it.toString().toLong()
+                    viewModelScope.launch(Dispatchers.IO) {
+                        operations.findNote(id)?.let { note ->
+                            withContext(Dispatchers.Main){
+                                oNote = note
+                                textFieldState.setTextAndPlaceCursorAtEnd(note.content)
+                                _state.update { noteState ->
+                                    noteState.copy(
+                                        id = note.id,
+                                        title = note.title,
+                                        content = note.content,
+                                        folderId = note.folderId,
+                                        isMarkdown = note.isMarkdown,
+                                        timestamp = note.timestamp
+                                    )
+                                }
+                            }
+                        }
                     }
                 }
-            }
+        } catch (_: Exception) {
+
         }
+
         savedStateHandle.get<Intent>(NavController.KEY_DEEP_LINK_INTENT)?.let {
             val content = it.parseSharedContent().trim()
             if (content.isNotEmpty()) {
@@ -185,7 +193,6 @@ class NoteScreenViewModel @Inject constructor(
                         if (note.title != oNote?.title || note.content != oNote?.content || note.isMarkdown != oNote?.isMarkdown || note.folderId != oNote?.folderId)
                             operations.updateNote(note)
                     }
-                    _event.emit(UiEvent.NavigateBack)
                 }
             }
 

@@ -82,7 +82,7 @@ import com.yangdai.opennote.presentation.util.Constants.APP_COLOR
 import com.yangdai.opennote.presentation.util.Constants.APP_THEME
 import com.yangdai.opennote.presentation.util.Constants.FIREBASE
 import com.yangdai.opennote.presentation.util.Constants.IS_APP_IN_DARK_MODE
-import com.yangdai.opennote.presentation.util.Constants.IS_DARK_SWITCH_ACTIVE
+import com.yangdai.opennote.presentation.util.Constants.IS_SWITCH_ACTIVE
 import com.yangdai.opennote.presentation.util.Constants.MASK_CLICK_X
 import com.yangdai.opennote.presentation.util.Constants.MASK_CLICK_Y
 import com.yangdai.opennote.presentation.util.Constants.NEED_PASSWORD
@@ -154,14 +154,14 @@ fun SettingsScreen(
         }
         .collectAsState(initial = false)
 
-    fun switchDarkTheme() {
+    fun switchTheme() {
         scope.launch {
             settingScreenViewModel
                 .getDataStore()
                 .edit {
                     it[floatPreferencesKey(MASK_CLICK_X)] = 0f
                     it[floatPreferencesKey(MASK_CLICK_Y)] = 0f
-                    it[booleanPreferencesKey(IS_DARK_SWITCH_ACTIVE)] = true
+                    it[booleanPreferencesKey(IS_SWITCH_ACTIVE)] = true
                 }
         }
     }
@@ -258,7 +258,7 @@ fun SettingsScreen(
                                             when (index) {
                                                 0 -> {
                                                     if (isSystemDarkTheme != isAppInDarkTheme) {
-                                                        switchDarkTheme()
+                                                        switchTheme()
                                                     } else {
                                                         settingScreenViewModel.putInt(APP_THEME, 0)
                                                     }
@@ -269,7 +269,7 @@ fun SettingsScreen(
 
                                                 1 -> {
                                                     if (isAppInDarkTheme) {
-                                                        switchDarkTheme()
+                                                        switchTheme()
                                                     }
                                                     settingScreenViewModel.putBoolean(
                                                         SHOULD_FOLLOW_SYSTEM,
@@ -280,7 +280,7 @@ fun SettingsScreen(
 
                                                 2 -> {
                                                     if (!isAppInDarkTheme) {
-                                                        switchDarkTheme()
+                                                        switchTheme()
                                                     }
                                                     settingScreenViewModel.putBoolean(
                                                         SHOULD_FOLLOW_SYSTEM,
@@ -637,13 +637,13 @@ fun SettingsScreen(
             showDialog = showWarningDialog,
             message = stringResource(R.string.reset_database_warning),
             onDismissRequest = { showWarningDialog = false }) {
-            clear(context.applicationContext)
+            scope.clear(context.applicationContext)
         }
     }
 }
 
-private fun clear(context: Context) {
-    CoroutineScope(Dispatchers.IO).launch {
+private fun CoroutineScope.clear(context: Context) {
+    launch(Dispatchers.IO) {
         try {
             AppModule.provideNoteDatabase(context).clearAllTables()
             withContext(Dispatchers.Main) {

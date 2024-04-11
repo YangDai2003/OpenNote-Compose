@@ -23,6 +23,7 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
+import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -48,6 +49,8 @@ fun FolderListSheet(
     onCloseClick: () -> Unit,
     onSelect: (Long?) -> Unit
 ) = ModalBottomSheet(
+    containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(4.dp),
+    contentColor = MaterialTheme.colorScheme.onSurface,
     windowInsets = BottomSheetDefaults.windowInsets.exclude(WindowInsets.statusBars),
     onDismissRequest = onDismissRequest,
     sheetState = sheetState,

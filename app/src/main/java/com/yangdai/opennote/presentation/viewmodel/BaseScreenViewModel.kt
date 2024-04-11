@@ -53,8 +53,8 @@ class BaseScreenViewModel @Inject constructor(
             dataStoreRepository.intFlow(APP_THEME),
             dataStoreRepository.intFlow(APP_COLOR),
             dataStoreRepository.booleanFlow(NEED_PASSWORD),
-        ) { mode, color, needPassword ->
-            SettingsState(mode = mode, color = color, needPassword = needPassword)
+        ) { theme, color, needPassword ->
+            SettingsState(theme = theme, color = color, needPassword = needPassword)
         }.collect {
             emit(it)
         }

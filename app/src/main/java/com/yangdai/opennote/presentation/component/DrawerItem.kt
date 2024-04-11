@@ -5,6 +5,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationDrawerItem
+import androidx.compose.material3.NavigationDrawerItemDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -23,7 +24,7 @@ fun DrawerItem(
     isSelected: Boolean,
     onClick: () -> Unit
 ) = NavigationDrawerItem(
-    modifier = Modifier.padding(horizontal = 8.dp),
+    modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding),
     icon = {
         Icon(
             modifier = Modifier.padding(horizontal = 12.dp),

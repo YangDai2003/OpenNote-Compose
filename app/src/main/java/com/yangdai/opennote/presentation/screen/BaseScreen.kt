@@ -37,13 +37,12 @@ import androidx.navigation.compose.rememberNavController
 import com.yangdai.opennote.presentation.util.BiometricPromptManager
 import com.yangdai.opennote.presentation.util.Constants.APP_THEME
 import com.yangdai.opennote.presentation.util.Constants.IS_APP_IN_DARK_MODE
-import com.yangdai.opennote.presentation.util.Constants.IS_DARK_SWITCH_ACTIVE
+import com.yangdai.opennote.presentation.util.Constants.IS_SWITCH_ACTIVE
 import com.yangdai.opennote.presentation.util.Constants.MASK_CLICK_X
 import com.yangdai.opennote.presentation.util.Constants.MASK_CLICK_Y
 import com.yangdai.opennote.presentation.util.Constants.SHOULD_FOLLOW_SYSTEM
 import com.yangdai.opennote.presentation.viewmodel.BaseScreenViewModel
 import com.yangdai.opennote.presentation.component.MaskAnimModel
-import com.yangdai.opennote.presentation.component.MaskAnimWay
 import com.yangdai.opennote.presentation.component.MaskBox
 import com.yangdai.opennote.presentation.navigation.AnimatedNavHost
 import com.yangdai.opennote.presentation.theme.OpenNoteTheme
@@ -118,14 +117,14 @@ fun BaseScreen(
         booleanPreferencesKey(IS_APP_IN_DARK_MODE),
         false
     )
-    val followSystem by getPreferenceState(
+    val shouldFollowSystem by getPreferenceState(
         baseScreenViewModel,
         booleanPreferencesKey(SHOULD_FOLLOW_SYSTEM),
         false
     )
-    val darkSwitchActive by getPreferenceState(
+    val switchActive by getPreferenceState(
         baseScreenViewModel,
-        booleanPreferencesKey(IS_DARK_SWITCH_ACTIVE),
+        booleanPreferencesKey(IS_SWITCH_ACTIVE),
         false
     )
     val maskClickX by getPreferenceState(
@@ -139,49 +138,35 @@ fun BaseScreen(
         0f
     )
 
-    var maskAnimWay by remember {
-        mutableStateOf(MaskAnimWay.DARK_SWITCH)
-    }
-
     val isSystemInDarkTheme = isSystemInDarkTheme()
 
-    LaunchedEffect(isSystemInDarkTheme) {
-        if (settingsState.mode == 0) {
+    LaunchedEffect(settingsState.theme) {
+        if (settingsState.theme == 0) {
             baseScreenViewModel.putBoolean(IS_APP_IN_DARK_MODE, isSystemInDarkTheme)
         }
     }
 
     OpenNoteTheme(
         color = settingsState.color,
-        darkMode = shouldUseDarkTheme(settingsState.mode, isAppInDarkTheme)
+        darkMode = isAppInDarkTheme
     ) {
 
         // MaskBox is a custom composable that animates a mask over the screen
         MaskBox(
             maskComplete = {
-                when (maskAnimWay) {
-                    MaskAnimWay.DARK_SWITCH ->
-                        baseScreenViewModel.putBoolean(IS_APP_IN_DARK_MODE, !isAppInDarkTheme)
-                }
+                baseScreenViewModel.putBoolean(IS_APP_IN_DARK_MODE, !isAppInDarkTheme)
             },
             animFinish = {
-                when (maskAnimWay) {
-                    MaskAnimWay.DARK_SWITCH -> {
-                        baseScreenViewModel.putBoolean(
-                            IS_DARK_SWITCH_ACTIVE,
-                            false
-                        )
-                        if (followSystem) {
-                            baseScreenViewModel.putInt(APP_THEME, 0)
-                        }
-                    }
+                baseScreenViewModel.putBoolean(IS_SWITCH_ACTIVE, false)
+                if (shouldFollowSystem) {
+                    baseScreenViewModel.putInt(APP_THEME, 0)
                 }
             }
         ) { maskActiveEvent ->
 
-            LaunchedEffect(darkSwitchActive) {
-                if (!darkSwitchActive) return@LaunchedEffect
-                maskAnimWay = MaskAnimWay.DARK_SWITCH
+            LaunchedEffect(switchActive) {
+                if (!switchActive) return@LaunchedEffect
+
                 if (isAppInDarkTheme)
                     maskActiveEvent(MaskAnimModel.SHRINK, maskClickX, maskClickY)
                 else
@@ -189,7 +174,9 @@ fun BaseScreen(
             }
 
             AnimatedNavHost(
-                modifier = Modifier.fillMaxSize().then(if (!loggedIn) Modifier.blur(16.dp) else Modifier),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .then(if (!loggedIn) Modifier.blur(16.dp) else Modifier),
                 navController = rememberNavController(),
                 isLargeScreen = isLargeScreen
             )
@@ -219,13 +206,4 @@ inline fun <reified T : ViewModel> NavBackStackEntry.sharedViewModel(navControll
         navController.getBackStackEntry(navGraphRoute)
     }
     return hiltViewModel(parentEntry)
-}
-
-@Composable
-private fun shouldUseDarkTheme(
-    mode: Int,
-    isDarkTheme: Boolean
-): Boolean = when (mode) {
-    0 -> isSystemInDarkTheme()
-    else -> isDarkTheme
 }

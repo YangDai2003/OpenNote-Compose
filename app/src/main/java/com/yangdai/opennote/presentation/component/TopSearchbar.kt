@@ -25,9 +25,13 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SearchBar
+import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.Text
+import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -100,7 +104,10 @@ fun TopSearchbar(
             AnimatedContent(targetState = active, label = "leading") {
                 if (it) {
                     IconButton(onClick = { search(inputText) }) {
-                        Icon(imageVector = Icons.Outlined.Search, contentDescription = "Search")
+                        Icon(
+                            imageVector = Icons.Outlined.Search,
+                            contentDescription = "Search"
+                        )
                     }
                 } else {
                     IconButton(
@@ -120,7 +127,10 @@ fun TopSearchbar(
                 }
             }
         } else {
-            Icon(imageVector = Icons.Outlined.Search, contentDescription = "Search")
+            Icon(
+                imageVector = Icons.Outlined.Search,
+                contentDescription = "Search"
+            )
         }
     }
 
@@ -157,6 +167,7 @@ fun TopSearchbar(
     fun History() {
 
         ListItem(
+            colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(4.dp)),
             leadingContent = {
                 Icon(
                     imageVector = Icons.Outlined.History,
@@ -218,6 +229,7 @@ fun TopSearchbar(
                 enabled = enabled,
                 active = active,
                 onActiveChange = { active = it },
+                colors = SearchBarDefaults.colors(containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(4.dp)),
                 placeholder = { Text(text = stringResource(R.string.search)) },
                 leadingIcon = { LeadingIcon() },
                 trailingIcon = { TrailingIcon() }
@@ -241,6 +253,7 @@ fun TopSearchbar(
                 active = active,
                 enabled = enabled,
                 onActiveChange = { active = it },
+                colors = SearchBarDefaults.colors(containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(4.dp)),
                 placeholder = { Text(text = stringResource(R.string.search)) },
                 leadingIcon = { LeadingIcon() },
                 trailingIcon = { TrailingIcon() }
