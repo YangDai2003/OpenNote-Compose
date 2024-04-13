@@ -61,7 +61,9 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.app.ActivityCompat
@@ -84,6 +86,7 @@ fun CameraXScreen(
     onCloseClick: () -> Unit,
     onDoneClick: (String) -> Unit
 ) {
+    val haptic = LocalHapticFeedback.current
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val scope = rememberCoroutineScope()
@@ -107,13 +110,15 @@ fun CameraXScreen(
         mutableIntStateOf(ImageCapture.FLASH_MODE_OFF)
     }
 
-    val controller = remember { LifecycleCameraController(context) }
-    controller.bindToLifecycle(lifecycleOwner)
-    controller.imageCaptureFlashMode = flashMode
+    val controller = remember { LifecycleCameraController(context).apply {
+        this.bindToLifecycle(lifecycleOwner)
+        this.imageCaptureFlashMode = flashMode
+    } }
 
-    val previewView = remember { PreviewView(context) }
-    previewView.controller = controller
-    previewView.scaleType = PreviewView.ScaleType.FIT_CENTER
+    val previewView = remember { PreviewView(context).apply {
+        this.controller = controller
+        this.scaleType = PreviewView.ScaleType.FIT_CENTER
+    } }
 
     val executor = remember { Executors.newSingleThreadExecutor() }
 
@@ -234,7 +239,10 @@ fun CameraXScreen(
                     .align(Alignment.TopStart)
                     .statusBarsPadding()
                     .padding(start = 32.dp, top = 32.dp),
-                onClick = onCloseClick
+                onClick = {
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    onCloseClick()
+                }
             ) {
                 Icon(
                     imageVector = Icons.Default.CloseFullscreen,

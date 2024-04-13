@@ -26,12 +26,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SearchBar
-import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.Text
-import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -40,6 +37,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -48,7 +46,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.yangdai.opennote.R
 import com.yangdai.opennote.presentation.event.ListEvent
-import com.yangdai.opennote.presentation.viewmodel.MainScreenViewModel
+import com.yangdai.opennote.presentation.viewmodel.MainRouteScreenViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
@@ -57,7 +55,7 @@ import kotlinx.coroutines.launch
 fun TopSearchbar(
     scope: CoroutineScope,
     drawerState: DrawerState,
-    viewModel: MainScreenViewModel,
+    viewModel: MainRouteScreenViewModel,
     isSmallScreen: Boolean,
     enabled: Boolean,
     onActiveChange: (Boolean) -> Unit
@@ -88,7 +86,7 @@ fun TopSearchbar(
         } else {
             viewModel.onListEvent(
                 ListEvent.Sort(
-                    viewModel.stateFlow.value.noteOrder,
+                    viewModel.listStateFlow.value.noteOrder,
                     false,
                     null,
                     false
@@ -167,7 +165,7 @@ fun TopSearchbar(
     fun History() {
 
         ListItem(
-            colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(4.dp)),
+            colors = ListItemDefaults.colors(containerColor = Color.Transparent),
             leadingContent = {
                 Icon(
                     imageVector = Icons.Outlined.History,
@@ -229,7 +227,6 @@ fun TopSearchbar(
                 enabled = enabled,
                 active = active,
                 onActiveChange = { active = it },
-                colors = SearchBarDefaults.colors(containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(4.dp)),
                 placeholder = { Text(text = stringResource(R.string.search)) },
                 leadingIcon = { LeadingIcon() },
                 trailingIcon = { TrailingIcon() }
@@ -253,7 +250,6 @@ fun TopSearchbar(
                 active = active,
                 enabled = enabled,
                 onActiveChange = { active = it },
-                colors = SearchBarDefaults.colors(containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(4.dp)),
                 placeholder = { Text(text = stringResource(R.string.search)) },
                 leadingIcon = { LeadingIcon() },
                 trailingIcon = { TrailingIcon() }

@@ -28,11 +28,7 @@ import androidx.compose.ui.unit.dp
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.floatPreferencesKey
-import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavBackStackEntry
-import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.yangdai.opennote.presentation.util.BiometricPromptManager
 import com.yangdai.opennote.presentation.util.Constants.APP_THEME
@@ -197,13 +193,4 @@ private fun <T> getPreferenceState(
     return viewModel.getFlow()
         .map { preferences -> preferences[key] ?: defaultValue }
         .collectAsStateWithLifecycle(initialValue = defaultValue)
-}
-
-@Composable
-inline fun <reified T : ViewModel> NavBackStackEntry.sharedViewModel(navController: NavController): T {
-    val navGraphRoute = destination.parent?.route ?: return hiltViewModel()
-    val parentEntry = remember(this) {
-        navController.getBackStackEntry(navGraphRoute)
-    }
-    return hiltViewModel(parentEntry)
 }

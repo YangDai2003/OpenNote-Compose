@@ -3,6 +3,7 @@ package com.yangdai.opennote.presentation.screen
 import android.content.Intent
 import android.widget.Toast
 import android.provider.CalendarContract.Events
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
@@ -21,6 +22,7 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.automirrored.outlined.MenuBook
@@ -38,12 +40,12 @@ import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberModalBottomSheetState
-import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -54,18 +56,19 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavHostController
 import com.yangdai.opennote.R
 import com.yangdai.opennote.presentation.component.ExportDialog
 import com.yangdai.opennote.presentation.component.FolderListSheet
@@ -77,9 +80,8 @@ import com.yangdai.opennote.presentation.component.NoteEditorRow
 import com.yangdai.opennote.presentation.component.TaskDialog
 import com.yangdai.opennote.presentation.event.NoteEvent
 import com.yangdai.opennote.presentation.event.UiEvent
-import com.yangdai.opennote.presentation.navigation.Route
 import com.yangdai.opennote.presentation.util.timestampToFormatLocalDateTime
-import com.yangdai.opennote.presentation.viewmodel.NoteScreenViewModel
+import com.yangdai.opennote.presentation.viewmodel.MainRouteScreenViewModel
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.launch
 
@@ -87,17 +89,33 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NoteScreen(
-    viewModel: NoteScreenViewModel = hiltViewModel(),
-    navController: NavHostController,
-    isLargeScreen: Boolean
+    viewModel: MainRouteScreenViewModel,
+    isLargeScreen: Boolean,
+    id: String?,
+    scannedText: String?,
+    navigateUp: () -> Unit,
+    onScanTextClick: () -> Unit
 ) {
+
+    LaunchedEffect(id) {
+        viewModel.setLoading(true)
+        if (id == null) viewModel.setLoading(false)
+        else {
+            if (id.isNotEmpty()) viewModel.getNoteById(id.toLong())
+            else viewModel.setLoading(false)
+        }
+    }
+
+    val haptic = LocalHapticFeedback.current
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current
 
-    val state by viewModel.stateFlow.collectAsStateWithLifecycle()
+    val noteState by viewModel.noteStateFlow.collectAsStateWithLifecycle()
+    val listState by viewModel.listStateFlow.collectAsStateWithLifecycle()
     val html by viewModel.html.collectAsStateWithLifecycle()
+    val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
 
     val pagerState = rememberPagerState(pageCount = { 2 })
 
@@ -131,11 +149,11 @@ fun NoteScreen(
         mutableStateOf("")
     }
 
-    LaunchedEffect(state.folderId) {
-        folderName = if (state.folderId == null) {
+    LaunchedEffect(noteState.folderId) {
+        folderName = if (noteState.folderId == null) {
             context.getString(R.string.all_notes)
         } else {
-            val matchingFolder = state.folders.find { it.id == state.folderId }
+            val matchingFolder = listState.folders.find { it.id == noteState.folderId }
             matchingFolder?.name ?: ""
         }
     }
@@ -143,10 +161,6 @@ fun NoteScreen(
     val scope = rememberCoroutineScope()
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var showBottomSheet by rememberSaveable { mutableStateOf(false) }
-
-    // Get the scanned text from the camerax screen
-    val scannedText =
-        navController.currentBackStackEntry?.savedStateHandle?.get<String>("scannedText")
 
     LaunchedEffect(scannedText) {
         if (scannedText != null) {
@@ -171,22 +185,38 @@ fun NoteScreen(
     LaunchedEffect(key1 = true) {
         viewModel.event.collect { event ->
             when (event) {
-                is UiEvent.NavigateBack -> navController.navigateUp()
+                is UiEvent.NavigateBack -> navigateUp()
             }
         }
     }
 
-    // Save the note when the lifecycle owner is destroyed
-    DisposableEffect(key1 = lifecycleOwner) {
-
+    DisposableEffect(lifecycleOwner) {
         onDispose {
-            viewModel.onEvent(NoteEvent.NavigateBack)
+            viewModel.onNoteEvent(NoteEvent.NavigateBack)
         }
     }
 
-    val time by lazy {
-        if (state.timestamp == null) timestampToFormatLocalDateTime(System.currentTimeMillis())
-        else timestampToFormatLocalDateTime(state.timestamp!!)
+    var time by rememberSaveable { mutableStateOf("") }
+
+    LaunchedEffect(noteState.timestamp) {
+        time =
+            if (noteState.timestamp == null) timestampToFormatLocalDateTime(System.currentTimeMillis())
+            else timestampToFormatLocalDateTime(noteState.timestamp!!)
+    }
+
+    var isTitleFocused by rememberSaveable { mutableStateOf(false) }
+    var isContentFocused by rememberSaveable { mutableStateOf(false) }
+
+    BackHandler(enabled = isTitleFocused || isContentFocused) {
+        focusManager.clearFocus()
+        keyboardController?.hide()
+    }
+
+    BackHandler(isReadMode) {
+        if (isReadMode) {
+            focusManager.clearFocus()
+            isReadMode = false
+        }
     }
 
     Scaffold(
@@ -206,7 +236,8 @@ fun NoteScreen(
                 },
                 navigationIcon = {
                     IconButton(onClick = {
-                        navController.navigateUp()
+                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                        navigateUp()
                     }) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
@@ -216,7 +247,7 @@ fun NoteScreen(
                 },
                 actions = {
 
-                    IconButton(onClick = { viewModel.onEvent(NoteEvent.SwitchType) }) {
+                    IconButton(onClick = { viewModel.onNoteEvent(NoteEvent.SwitchType) }) {
                         Icon(
                             imageVector = Icons.Outlined.SwapHoriz,
                             contentDescription = "Switch Note Type"
@@ -239,7 +270,6 @@ fun NoteScreen(
                     }
 
                     DropdownMenu(
-                        containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp),
                         expanded = showMenu,
                         onDismissRequest = { showMenu = false }
                     ) {
@@ -252,7 +282,7 @@ fun NoteScreen(
                                 )
                             },
                             text = { Text(text = stringResource(id = R.string.delete)) },
-                            onClick = { viewModel.onEvent(NoteEvent.Delete) })
+                            onClick = { viewModel.onNoteEvent(NoteEvent.Delete) })
 
                         DropdownMenuItem(
                             leadingIcon = {
@@ -265,8 +295,11 @@ fun NoteScreen(
                             onClick = {
                                 val intent = Intent(Intent.ACTION_INSERT).apply {
                                     data = Events.CONTENT_URI
-                                    putExtra(Events.TITLE, state.title)
-                                    putExtra(Events.DESCRIPTION, state.content)
+                                    putExtra(Events.TITLE, viewModel.titleState.text.toString())
+                                    putExtra(
+                                        Events.DESCRIPTION,
+                                        viewModel.contentState.text.toString()
+                                    )
                                 }
                                 if (intent.resolveActivity(context.packageManager) != null) {
                                     context.startActivity(intent)
@@ -302,8 +335,14 @@ fun NoteScreen(
                             onClick = {
                                 val sendIntent: Intent = Intent().apply {
                                     action = Intent.ACTION_SEND
-                                    putExtra(Intent.EXTRA_TITLE, state.title)
-                                    putExtra(Intent.EXTRA_TEXT, state.content)
+                                    putExtra(
+                                        Intent.EXTRA_TITLE,
+                                        viewModel.titleState.text.toString()
+                                    )
+                                    putExtra(
+                                        Intent.EXTRA_TEXT,
+                                        viewModel.contentState.text.toString()
+                                    )
                                     type = "text/plain"
                                 }
                                 val shareIntent = Intent.createChooser(sendIntent, null)
@@ -318,127 +357,141 @@ fun NoteScreen(
                 enter = slideInVertically { fullHeight -> fullHeight },
                 exit = slideOutVertically { fullHeight -> fullHeight }) {
                 NoteEditorRow(
-                    isMarkdown = state.isMarkdown,
+                    isMarkdown = noteState.isMarkdown,
                     canRedo = viewModel.canRedo(),
                     canUndo = viewModel.canUndo(),
-                    onEdit = { viewModel.onEvent(NoteEvent.Edit(it)) },
-                    onScanButtonClick = { navController.navigate(Route.CAMERAX) },
+                    onEdit = { viewModel.onNoteEvent(NoteEvent.Edit(it)) },
+                    onScanButtonClick = onScanTextClick,
                     onTaskButtonClick = { showTaskDialog = true },
                     onLinkButtonClick = { showLinkDialog = true })
             }
         }
     ) { paddingValues ->
 
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .padding(horizontal = 16.dp)
-        ) {
-
-            BasicTextField(
-                modifier = Modifier.fillMaxWidth(),
-                value = state.title,
-                readOnly = isReadMode,
-                onValueChange = {
-                    viewModel.onEvent(NoteEvent.TitleChanged(it))
-                },
-                singleLine = true,
-                textStyle = MaterialTheme.typography.headlineLarge.copy(color = MaterialTheme.colorScheme.onSurface),
-                cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
-                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-                decorationBox = { innerTextField ->
-                    Box {
-                        if (state.title.isEmpty()) {
-                            Text(
-                                text = stringResource(id = R.string.title),
-                                style = MaterialTheme.typography.headlineLarge.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
-                            )
-                        }
-                        innerTextField()
-                    }
-                }
-            )
-
-
-
-            Row(
+        if (isLoading) {
+            Box(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 4.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                    .fillMaxSize()
+                    .padding(paddingValues),
+                contentAlignment = Alignment.TopCenter
+            ) {
+                LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+            }
+        } else {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+                    .padding(horizontal = 16.dp)
             ) {
 
-                Text(
-                    text = """${stringResource(R.string.edited)}$time""",
-                    style = MaterialTheme.typography.titleSmall.copy(
-                        lineHeightStyle = LineHeightStyle(
-                            trim = LineHeightStyle.Trim.None,
-                            alignment = LineHeightStyle.Alignment.Proportional
-                        )
-                    ),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-
-                Text(
-                    text = if (state.isMarkdown) "MARKDOWN" else stringResource(R.string.rich_text),
-                    style = MaterialTheme.typography.titleSmall.copy(
-                        lineHeightStyle = LineHeightStyle(
-                            trim = LineHeightStyle.Trim.None,
-                            alignment = LineHeightStyle.Alignment.Proportional
-                        )
-                    ),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-
-            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
-
-            if (isLargeScreen) {
-                Row(Modifier.fillMaxSize()) {
-                    NoteEditTextField(
-                        modifier = Modifier
-                            .fillMaxHeight()
-                            .weight(1f),
-                        state = viewModel.textFieldState,
-                        readMode = isReadMode
-                    )
-
-                    Box(
-                        Modifier
-                            .fillMaxHeight()
-                            .weight(1f)
-                    ) {
-                        if (state.isMarkdown) {
-                            HtmlView(html = html)
-                        } else {
-                            HighlightedClickableText(viewModel.textFieldState.text.toString())
+                BasicTextField(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .onFocusChanged {
+                            isTitleFocused = it.isFocused
+                        },
+                    state = viewModel.titleState,
+                    readOnly = isReadMode,
+                    lineLimits = TextFieldLineLimits.SingleLine,
+                    textStyle = MaterialTheme.typography.headlineLarge.copy(color = MaterialTheme.colorScheme.onSurface),
+                    cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                    decorator = { innerTextField ->
+                        Box {
+                            if (viewModel.titleState.text.isEmpty()) {
+                                Text(
+                                    text = stringResource(id = R.string.title),
+                                    style = MaterialTheme.typography.headlineLarge.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                )
+                            }
+                            innerTextField()
                         }
                     }
+                )
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+
+                    Text(
+                        text = """${stringResource(R.string.edited)}$time""",
+                        style = MaterialTheme.typography.titleSmall.copy(
+                            lineHeightStyle = LineHeightStyle(
+                                trim = LineHeightStyle.Trim.None,
+                                alignment = LineHeightStyle.Alignment.Proportional
+                            )
+                        ),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+
+                    Text(
+                        text = if (noteState.isMarkdown) "MARKDOWN" else stringResource(R.string.rich_text),
+                        style = MaterialTheme.typography.titleSmall.copy(
+                            lineHeightStyle = LineHeightStyle(
+                                trim = LineHeightStyle.Trim.None,
+                                alignment = LineHeightStyle.Alignment.Proportional
+                            )
+                        ),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
                 }
 
-            } else {
-                HorizontalPager(
-                    state = pagerState,
-                    beyondViewportPageCount = 1,
-                    userScrollEnabled = false,
-                    modifier = Modifier.fillMaxSize()
-                ) { page: Int ->
-                    when (page) {
-                        0 -> {
-                            NoteEditTextField(
-                                modifier = Modifier.fillMaxSize(),
-                                state = viewModel.textFieldState,
-                                readMode = isReadMode
-                            )
+                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+
+                if (isLargeScreen) {
+                    Row(Modifier.fillMaxSize()) {
+                        NoteEditTextField(
+                            modifier = Modifier
+                                .fillMaxHeight()
+                                .weight(1f),
+                            state = viewModel.contentState,
+                            readMode = isReadMode
+                        ) {
+                            isContentFocused = it
                         }
 
-                        1 -> {
-                            if (state.isMarkdown) {
+                        Box(
+                            Modifier
+                                .fillMaxHeight()
+                                .weight(1f)
+                        ) {
+                            if (noteState.isMarkdown) {
                                 HtmlView(html = html)
                             } else {
-                                HighlightedClickableText(viewModel.textFieldState.text.toString())
+                                HighlightedClickableText(viewModel.contentState.text.toString())
+                            }
+                        }
+                    }
+
+                } else {
+                    HorizontalPager(
+                        state = pagerState,
+                        beyondViewportPageCount = 1,
+                        userScrollEnabled = false,
+                        modifier = Modifier.fillMaxSize()
+                    ) { page: Int ->
+                        when (page) {
+                            0 -> {
+                                NoteEditTextField(
+                                    modifier = Modifier.fillMaxSize(),
+                                    state = viewModel.contentState,
+                                    readMode = isReadMode
+                                ) {
+                                    isContentFocused = it
+                                }
+                            }
+
+                            1 -> {
+                                if (noteState.isMarkdown) {
+                                    HtmlView(html = html)
+                                } else {
+                                    HighlightedClickableText(viewModel.contentState.text.toString())
+                                }
                             }
                         }
                     }
@@ -446,12 +499,11 @@ fun NoteScreen(
             }
         }
     }
-
     if (showExportDialog) {
         ExportDialog(
             html = html,
-            title = state.title,
-            content = viewModel.textFieldState.text.toString(),
+            title = viewModel.titleState.text.toString(),
+            content = viewModel.contentState.text.toString(),
             onDismissRequest = { showExportDialog = false }
         )
     }
@@ -471,8 +523,8 @@ fun NoteScreen(
 
     if (showBottomSheet) {
         FolderListSheet(
-            oFolderId = state.folderId,
-            folders = state.folders.toImmutableList(),
+            oFolderId = noteState.folderId,
+            folders = listState.folders.toImmutableList(),
             sheetState = sheetState,
             onDismissRequest = { showBottomSheet = false },
             onCloseClick = {
@@ -482,7 +534,8 @@ fun NoteScreen(
                     }
                 }
             }) {
-            viewModel.onEvent(NoteEvent.FolderChanged(it))
+            viewModel.onNoteEvent(NoteEvent.FolderChanged(it))
         }
     }
+
 }

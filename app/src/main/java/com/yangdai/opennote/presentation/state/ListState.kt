@@ -10,7 +10,7 @@ import com.yangdai.opennote.domain.usecase.OrderType
 data class ListState(
     val notes: List<NoteEntity> = emptyList(),
     val folders: List<FolderEntity> = emptyList(),
-    val trash: Boolean = false,
+    val filterTrash: Boolean = false,
     val noteOrder: NoteOrder = NoteOrder.Date(OrderType.Descending),
     val isOrderSectionVisible: Boolean = false,
     val filterFolder: Boolean = false,

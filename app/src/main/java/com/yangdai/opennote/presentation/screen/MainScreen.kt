@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridState
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.items
@@ -40,6 +41,7 @@ import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -54,12 +56,12 @@ import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.PermanentDrawerSheet
 import androidx.compose.material3.PermanentNavigationDrawer
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.material3.rememberModalBottomSheetState
-import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
@@ -77,31 +79,31 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavController
 import com.yangdai.opennote.R
 import com.yangdai.opennote.presentation.navigation.Route
 import com.yangdai.opennote.data.local.entity.FolderEntity
 import com.yangdai.opennote.data.local.entity.NoteEntity
 import com.yangdai.opennote.presentation.event.ListEvent
 import com.yangdai.opennote.presentation.component.NoteCard
-import com.yangdai.opennote.presentation.viewmodel.MainScreenViewModel
+import com.yangdai.opennote.presentation.viewmodel.MainRouteScreenViewModel
 import com.yangdai.opennote.presentation.component.DrawerItem
 import com.yangdai.opennote.presentation.component.FolderListSheet
 import com.yangdai.opennote.presentation.component.OrderSection
 import com.yangdai.opennote.presentation.component.TopSearchbar
 import com.yangdai.opennote.presentation.state.ListState
 import kotlinx.collections.immutable.toImmutableList
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(
-    navController: NavController,
-    viewModel: MainScreenViewModel,
-    isLargeScreen: Boolean
+    viewModel: MainRouteScreenViewModel,
+    isLargeScreen: Boolean,
+    navigateTo: (String) -> Unit
 ) {
     val scope = rememberCoroutineScope()
-    val listState by viewModel.stateFlow.collectAsStateWithLifecycle()
+    val listState by viewModel.listStateFlow.collectAsStateWithLifecycle()
 
     // Search bar state
     var isSearchBarActive by remember { mutableStateOf(false) }
@@ -144,9 +146,9 @@ fun MainScreen(
     }
 
     // Operation caused by selecting the drawer item
-    fun selectDrawer(num: Int, onSelect: () -> Unit) {
-        if (selectedDrawer != num) {
-            selectedDrawer = num
+    fun selectDrawer(position: Int, onSelect: () -> Unit) {
+        if (selectedDrawer != position) {
+            selectedDrawer = position
             initSelect()
             onSelect()
         }
@@ -183,311 +185,57 @@ fun MainScreen(
     }
 
     @Composable
-    fun MainContent() {
-        Scaffold(
-            topBar = {
-                AnimatedContent(targetState = selectedDrawer == 0, label = "") {
-                    if (it) {
-                        TopSearchbar(
-                            scope = scope,
-                            drawerState = drawerState,
-                            viewModel = viewModel,
-                            enabled = !isEnabled,
-                            isSmallScreen = !isLargeScreen,
-                            onActiveChange = { active ->
-                                isSearchBarActive = active
-                            }
+    fun mainContent() {
+        MainContent(
+            scope = scope,
+            selectedDrawer = selectedDrawer,
+            drawerState = drawerState,
+            viewModel = viewModel,
+            isEnabled = isEnabled,
+            isLargeScreen = isLargeScreen,
+            folderName = folderName,
+            listState = listState,
+            selectAll = selectAll,
+            selectedItems = selectedItems,
+            showFloatingButton = showFloatingButton,
+            showBottomSheet = showBottomSheet,
+            sheetState = sheetState,
+            gridState = gridState,
+            selectedFolder = selectedFolder,
+            navigateTo = navigateTo,
+            initSelect = { initSelect() },
+            onActiveChange = { isSearchBarActive = it },
+            onCheckedChange = { selectAll = it },
+            onShowBottomSheet = { showBottomSheet = true },
+            onDismissRequest = { showBottomSheet = false },
+            onCloseClick = {
+                scope.launch { sheetState.hide() }.invokeOnCompletion {
+                    if (!sheetState.isVisible) {
+                        showBottomSheet = false
+                    }
+                }
+            },
+            onEnableChange = { isEnabled = it },
+            onNoteClick = {
+                if (isEnabled) {
+                    val id = it.id!!
+                    selectedItems =
+                        if (selectedItems.contains(id)) selectedItems.minus(id)
+                        else selectedItems.plus(id)
+                } else {
+                    if (selectedDrawer != 1) {
+                        navigateTo(
+                            Route.NOTE.replace(
+                                "{id}",
+                                it.id.toString()
+                            )
                         )
                     } else {
-                        var showMenu by remember {
-                            mutableStateOf(false)
-                        }
-
-                        TopAppBar(
-                            title = {
-                                Text(
-                                    text = if (selectedDrawer == 1) stringResource(id = R.string.trash)
-                                    else folderName,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
-                                )
-                            },
-                            navigationIcon = {
-                                if (!isLargeScreen) {
-                                    IconButton(
-                                        enabled = !isEnabled,
-                                        onClick = {
-                                            scope.launch {
-                                                drawerState.apply {
-                                                    if (isClosed) open() else close()
-                                                }
-                                            }
-                                        }) {
-                                        Icon(
-                                            imageVector = Icons.Outlined.Menu,
-                                            contentDescription = "Open Menu"
-                                        )
-                                    }
-                                }
-                            },
-                            actions = {
-                                IconButton(onClick = { viewModel.onListEvent(ListEvent.ToggleOrderSection) }) {
-                                    Icon(
-                                        imageVector = Icons.AutoMirrored.Outlined.Sort,
-                                        contentDescription = "Sort"
-                                    )
-                                }
-                                if (selectedDrawer == 1) {
-                                    IconButton(onClick = { showMenu = !showMenu }) {
-                                        Icon(
-                                            imageVector = Icons.Outlined.MoreVert,
-                                            contentDescription = "More"
-                                        )
-                                    }
-
-                                    DropdownMenu(
-                                        expanded = showMenu,
-                                        onDismissRequest = { showMenu = false }) {
-                                        DropdownMenuItem(
-                                            leadingIcon = {
-                                                Icon(
-                                                    imageVector = Icons.Outlined.RestartAlt,
-                                                    contentDescription = "Restore"
-                                                )
-                                            },
-                                            text = { Text(text = stringResource(id = R.string.restore_all)) },
-                                            onClick = {
-                                                val ids =
-                                                    listState.notes.mapNotNull { noteEntity -> noteEntity.id }
-                                                viewModel.onListEvent(ListEvent.RestoreNotes(ids))
-                                            })
-
-                                        DropdownMenuItem(
-                                            leadingIcon = {
-                                                Icon(
-                                                    imageVector = Icons.Outlined.Delete,
-                                                    contentDescription = "Delete"
-                                                )
-                                            },
-                                            text = { Text(text = stringResource(id = R.string.delete_all)) },
-                                            onClick = {
-                                                val ids =
-                                                    listState.notes.mapNotNull { noteEntity -> noteEntity.id }
-                                                viewModel.onListEvent(
-                                                    ListEvent.DeleteNotesByIds(
-                                                        ids,
-                                                        false
-                                                    )
-                                                )
-                                            })
-                                    }
-
-                                }
-                            })
+                        Unit
                     }
-                }
-            },
-            bottomBar = {
-                AnimatedVisibility(
-                    visible = isEnabled,
-                    enter = slideInVertically { fullHeight -> fullHeight },
-                    exit = slideOutVertically { fullHeight -> fullHeight }
-                ) {
-                    BottomAppBar(
-                        containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(4.dp)
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(horizontal = 16.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-
-                            Row(
-                                modifier = Modifier.fillMaxHeight(),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-
-                                Checkbox(
-                                    checked = selectAll,
-                                    onCheckedChange = { selectAll = it })
-
-                                Text(text = stringResource(R.string.checked))
-
-                                Text(text = selectedItems.size.toString())
-                            }
-
-                            Row(
-                                modifier = Modifier.fillMaxHeight(),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-
-                                if (selectedDrawer == 1) {
-                                    TextButton(onClick = {
-                                        viewModel.onListEvent(
-                                            ListEvent.RestoreNotes(selectedItems.toList())
-                                        )
-                                        initSelect()
-                                    }) {
-                                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                            Icon(
-                                                imageVector = Icons.Outlined.RestartAlt,
-                                                contentDescription = "Restore"
-                                            )
-                                            Text(text = stringResource(id = R.string.restore))
-                                        }
-                                    }
-                                } else {
-                                    TextButton(onClick = {
-                                        showBottomSheet = true
-                                    }) {
-                                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                            Icon(
-                                                imageVector = Icons.AutoMirrored.Outlined.DriveFileMove,
-                                                contentDescription = "Move"
-                                            )
-                                            Text(text = stringResource(id = R.string.move))
-                                        }
-                                    }
-                                }
-
-
-                                TextButton(onClick = {
-                                    viewModel.onListEvent(
-                                        ListEvent.DeleteNotesByIds(
-                                            selectedItems.toList(),
-                                            selectedDrawer != 1
-                                        )
-                                    )
-                                    initSelect()
-                                }) {
-                                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                        Icon(
-                                            imageVector = Icons.Outlined.Delete,
-                                            contentDescription = "Delete"
-                                        )
-                                        Text(text = stringResource(id = R.string.delete))
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            floatingActionButton = {
-                AnimatedVisibility(
-                    visible = showFloatingButton,
-                    enter = slideInHorizontally { fullWidth -> fullWidth * 3 / 2 },
-                    exit = slideOutHorizontally { fullWidth -> fullWidth * 3 / 2 }) {
-                    FloatingActionButton(onClick = { navController.navigate(Route.NOTE) }) {
-                        Icon(imageVector = Icons.Outlined.Add, contentDescription = "Add")
-                    }
-                }
-
-            }) { innerPadding ->
-
-            if (showBottomSheet) {
-                FolderListSheet(
-                    oFolderId = selectedFolder.id,
-                    folders = listState.folders.toImmutableList(),
-                    sheetState = sheetState,
-                    onDismissRequest = { showBottomSheet = false },
-                    onCloseClick = {
-                        scope.launch { sheetState.hide() }.invokeOnCompletion {
-                            if (!sheetState.isVisible) {
-                                showBottomSheet = false
-                            }
-                        }
-                    }) {
-                    viewModel.onListEvent(ListEvent.MoveNotes(selectedItems.toList(), it))
-                    initSelect()
                 }
             }
-
-            if (listState.isOrderSectionVisible) {
-                AlertDialog(
-                    title = { Text(text = stringResource(R.string.sort_by)) },
-                    text = {
-                        OrderSection(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(top = 12.dp),
-                            noteOrder = listState.noteOrder,
-                            onOrderChange = {
-                                viewModel.onListEvent(
-                                    ListEvent.Sort(
-                                        noteOrder = it,
-                                        trash = selectedDrawer == 1,
-                                        filterFolder = selectedDrawer != 0 && selectedDrawer != 1,
-                                        folderId = selectedFolder.id
-                                    )
-                                )
-                            }
-                        )
-                    },
-                    onDismissRequest = { viewModel.onListEvent(ListEvent.ToggleOrderSection) },
-                    confirmButton = {
-                        TextButton(
-                            onClick = {
-                                viewModel.onListEvent(ListEvent.ToggleOrderSection)
-                            }
-                        ) {
-                            Text(stringResource(id = android.R.string.ok))
-                        }
-                    })
-            }
-
-            LazyVerticalStaggeredGrid(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .statusBarsPadding()
-                    // The top padding is used to prevent the top of the grid from being blocked by the search bar(56.dp)
-                    .padding(top = 74.dp),
-                state = gridState,
-                // The staggered grid layout is adaptive, with a minimum column width of 160dp(mdpi)
-                columns = StaggeredGridCells.Adaptive(160.dp),
-                verticalItemSpacing = 8.dp,
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                // for better edgeToEdge experience
-                contentPadding = PaddingValues(
-                    start = 16.dp,
-                    end = 16.dp,
-                    bottom = innerPadding.calculateBottomPadding()
-                ),
-                content = {
-                    items(listState.notes, key = { item: NoteEntity -> item.id!! }) { note ->
-                        NoteCard(
-                            modifier = Modifier.animateItemPlacement(), // Add animation to the item
-                            note = note,
-                            isEnabled = isEnabled,
-                            isSelected = selectedItems.contains(note.id),
-                            onEnableChange = { value ->
-                                isEnabled = value
-                            },
-                            onNoteClick = {
-                                if (isEnabled) {
-                                    val id = note.id!!
-                                    selectedItems =
-                                        if (selectedItems.contains(id)) selectedItems.minus(id)
-                                        else selectedItems.plus(id)
-                                } else {
-                                    if (selectedDrawer != 1) {
-                                        navController.navigate(
-                                            Route.NOTE.replace(
-                                                "{id}",
-                                                note.id.toString()
-                                            )
-                                        )
-                                    } else {
-                                        Unit
-                                    }
-                                }
-                            })
-                    }
-                }
-            )
-        }
+        )
     }
 
     if (!isLargeScreen) {
@@ -496,14 +244,11 @@ fun MainScreen(
             gesturesEnabled = !isEnabled && !isSearchBarActive,
             drawerState = drawerState,
             drawerContent = {
-                ModalDrawerSheet(
-                    drawerState = drawerState,
-                    drawerContainerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(2.dp),
-                ) {
+                ModalDrawerSheet(drawerState = drawerState) {
                     DrawerContent(
                         listState = listState,
                         selectedDrawer = selectedDrawer,
-                        navigateTo = { navController.navigate(it) }
+                        navigateTo = { navigateTo(it) }
                     ) { position, folder ->
                         when (position) {
                             0 -> {
@@ -538,7 +283,7 @@ fun MainScreen(
                 }
             }
         ) {
-            MainContent()
+            mainContent()
         }
 
     } else {
@@ -548,7 +293,7 @@ fun MainScreen(
                     DrawerContent(
                         listState = listState,
                         selectedDrawer = selectedDrawer,
-                        navigateTo = { navController.navigate(it) }
+                        navigateTo = { navigateTo(it) }
                     ) { position, folder ->
                         when (position) {
                             0 -> {
@@ -580,8 +325,319 @@ fun MainScreen(
                 }
             }
         ) {
-            MainContent()
+            mainContent()
         }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
+@Composable
+fun MainContent(
+    scope: CoroutineScope,
+    selectedDrawer: Int,
+    drawerState: DrawerState,
+    viewModel: MainRouteScreenViewModel,
+    isEnabled: Boolean,
+    isLargeScreen: Boolean,
+    folderName: String,
+    listState: ListState,
+    selectAll: Boolean,
+    selectedItems: Set<Long>,
+    showFloatingButton: Boolean,
+    showBottomSheet: Boolean,
+    sheetState: SheetState,
+    gridState: LazyStaggeredGridState,
+    selectedFolder: FolderEntity,
+    navigateTo: (String) -> Unit,
+    initSelect: () -> Unit,
+    onActiveChange: (Boolean) -> Unit,
+    onCheckedChange: (Boolean) -> Unit,
+    onShowBottomSheet: () -> Unit,
+    onDismissRequest: () -> Unit,
+    onCloseClick: () -> Unit,
+    onEnableChange: (Boolean) -> Unit,
+    onNoteClick: (NoteEntity) -> Unit
+) {
+    Scaffold(
+        topBar = {
+            AnimatedContent(targetState = selectedDrawer == 0, label = "") {
+                if (it) {
+                    TopSearchbar(
+                        scope = scope,
+                        drawerState = drawerState,
+                        viewModel = viewModel,
+                        enabled = !isEnabled,
+                        isSmallScreen = !isLargeScreen,
+                        onActiveChange = onActiveChange
+                    )
+                } else {
+                    var showMenu by remember {
+                        mutableStateOf(false)
+                    }
+
+                    TopAppBar(
+                        title = {
+                            Text(
+                                text = if (selectedDrawer == 1) stringResource(id = R.string.trash)
+                                else folderName,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        },
+                        navigationIcon = {
+                            if (!isLargeScreen) {
+                                IconButton(
+                                    enabled = !isEnabled,
+                                    onClick = {
+                                        scope.launch {
+                                            drawerState.apply {
+                                                if (isClosed) open() else close()
+                                            }
+                                        }
+                                    }) {
+                                    Icon(
+                                        imageVector = Icons.Outlined.Menu,
+                                        contentDescription = "Open Menu"
+                                    )
+                                }
+                            }
+                        },
+                        actions = {
+                            IconButton(onClick = { viewModel.onListEvent(ListEvent.ToggleOrderSection) }) {
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Outlined.Sort,
+                                    contentDescription = "Sort"
+                                )
+                            }
+                            if (selectedDrawer == 1) {
+                                IconButton(onClick = { showMenu = !showMenu }) {
+                                    Icon(
+                                        imageVector = Icons.Outlined.MoreVert,
+                                        contentDescription = "More"
+                                    )
+                                }
+
+                                DropdownMenu(
+                                    expanded = showMenu,
+                                    onDismissRequest = { showMenu = false }) {
+                                    DropdownMenuItem(
+                                        leadingIcon = {
+                                            Icon(
+                                                imageVector = Icons.Outlined.RestartAlt,
+                                                contentDescription = "Restore"
+                                            )
+                                        },
+                                        text = { Text(text = stringResource(id = R.string.restore_all)) },
+                                        onClick = {
+                                            val ids =
+                                                listState.notes.mapNotNull { noteEntity -> noteEntity.id }
+                                            viewModel.onListEvent(ListEvent.RestoreNotes(ids))
+                                        })
+
+                                    DropdownMenuItem(
+                                        leadingIcon = {
+                                            Icon(
+                                                imageVector = Icons.Outlined.Delete,
+                                                contentDescription = "Delete"
+                                            )
+                                        },
+                                        text = { Text(text = stringResource(id = R.string.delete_all)) },
+                                        onClick = {
+                                            val ids =
+                                                listState.notes.mapNotNull { noteEntity -> noteEntity.id }
+                                            viewModel.onListEvent(
+                                                ListEvent.DeleteNotesByIds(
+                                                    ids,
+                                                    false
+                                                )
+                                            )
+                                        })
+                                }
+
+                            }
+                        })
+                }
+            }
+        },
+        bottomBar = {
+            AnimatedVisibility(
+                visible = isEnabled,
+                enter = slideInVertically { fullHeight -> fullHeight },
+                exit = slideOutVertically { fullHeight -> fullHeight }
+            ) {
+                BottomAppBar {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(horizontal = 16.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+
+                        Row(
+                            modifier = Modifier.fillMaxHeight(),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+
+                            Checkbox(
+                                checked = selectAll,
+                                onCheckedChange = onCheckedChange
+                            )
+
+                            Text(text = stringResource(R.string.checked))
+
+                            Text(text = selectedItems.size.toString())
+                        }
+
+                        Row(
+                            modifier = Modifier.fillMaxHeight(),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+
+                            if (selectedDrawer == 1) {
+                                TextButton(onClick = {
+                                    viewModel.onListEvent(
+                                        ListEvent.RestoreNotes(selectedItems.toList())
+                                    )
+                                    initSelect()
+                                }) {
+                                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                        Icon(
+                                            imageVector = Icons.Outlined.RestartAlt,
+                                            contentDescription = "Restore"
+                                        )
+                                        Text(text = stringResource(id = R.string.restore))
+                                    }
+                                }
+                            } else {
+                                TextButton(onClick = onShowBottomSheet) {
+                                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                        Icon(
+                                            imageVector = Icons.AutoMirrored.Outlined.DriveFileMove,
+                                            contentDescription = "Move"
+                                        )
+                                        Text(text = stringResource(id = R.string.move))
+                                    }
+                                }
+                            }
+
+
+                            TextButton(onClick = {
+                                viewModel.onListEvent(
+                                    ListEvent.DeleteNotesByIds(
+                                        selectedItems.toList(),
+                                        selectedDrawer != 1
+                                    )
+                                )
+                                initSelect()
+                            }) {
+                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                    Icon(
+                                        imageVector = Icons.Outlined.Delete,
+                                        contentDescription = "Delete"
+                                    )
+                                    Text(text = stringResource(id = R.string.delete))
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        floatingActionButton = {
+            AnimatedVisibility(
+                visible = showFloatingButton,
+                enter = slideInHorizontally { fullWidth -> fullWidth * 3 / 2 },
+                exit = slideOutHorizontally { fullWidth -> fullWidth * 3 / 2 }) {
+                FloatingActionButton(onClick = {
+                    navigateTo(
+                        Route.NOTE.replace(
+                            "id",
+                            ""
+                        )
+                    )
+                }) {
+                    Icon(imageVector = Icons.Outlined.Add, contentDescription = "Add")
+                }
+            }
+
+        }) { innerPadding ->
+
+        if (showBottomSheet) {
+            FolderListSheet(
+                oFolderId = selectedFolder.id,
+                folders = listState.folders.toImmutableList(),
+                sheetState = sheetState,
+                onDismissRequest = onDismissRequest,
+                onCloseClick = onCloseClick
+            ) {
+                viewModel.onListEvent(ListEvent.MoveNotes(selectedItems.toList(), it))
+                initSelect()
+            }
+        }
+
+        if (listState.isOrderSectionVisible) {
+            AlertDialog(
+                title = { Text(text = stringResource(R.string.sort_by)) },
+                text = {
+                    OrderSection(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 12.dp),
+                        noteOrder = listState.noteOrder,
+                        onOrderChange = {
+                            viewModel.onListEvent(
+                                ListEvent.Sort(
+                                    noteOrder = it,
+                                    trash = selectedDrawer == 1,
+                                    filterFolder = selectedDrawer != 0 && selectedDrawer != 1,
+                                    folderId = selectedFolder.id
+                                )
+                            )
+                        }
+                    )
+                },
+                onDismissRequest = { viewModel.onListEvent(ListEvent.ToggleOrderSection) },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            viewModel.onListEvent(ListEvent.ToggleOrderSection)
+                        }
+                    ) {
+                        Text(stringResource(id = android.R.string.ok))
+                    }
+                })
+        }
+
+        LazyVerticalStaggeredGrid(
+            modifier = Modifier
+                .fillMaxSize()
+                .statusBarsPadding()
+                // The top padding is used to prevent the top of the grid from being blocked by the search bar(56.dp)
+                .padding(top = 74.dp),
+            state = gridState,
+            // The staggered grid layout is adaptive, with a minimum column width of 160dp(mdpi)
+            columns = StaggeredGridCells.Adaptive(160.dp),
+            verticalItemSpacing = 8.dp,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            // for better edgeToEdge experience
+            contentPadding = PaddingValues(
+                start = 16.dp,
+                end = 16.dp,
+                bottom = innerPadding.calculateBottomPadding()
+            ),
+            content = {
+                items(listState.notes, key = { item: NoteEntity -> item.id!! }) { note ->
+                    NoteCard(
+                        modifier = Modifier.animateItemPlacement(), // Add animation to the item
+                        note = note,
+                        isEnabled = isEnabled,
+                        isSelected = selectedItems.contains(note.id),
+                        onEnableChange = onEnableChange,
+                        onNoteClick = { onNoteClick(it) })
+                }
+            }
+        )
     }
 }
 

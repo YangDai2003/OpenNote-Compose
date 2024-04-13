@@ -1,6 +1,0 @@
-Elevation:
-SearchBar 4.dp
-BottomAppbar 4.dp
-Card 1.dp
-Drawer 2.dp
-DropdownMenu 1.dp

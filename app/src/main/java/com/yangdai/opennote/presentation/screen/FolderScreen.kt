@@ -12,10 +12,8 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeTopAppBar
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarColors
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
@@ -24,25 +22,27 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.yangdai.opennote.R
 import com.yangdai.opennote.data.local.entity.FolderEntity
 import com.yangdai.opennote.presentation.event.FolderEvent
 import com.yangdai.opennote.presentation.event.ListEvent
-import com.yangdai.opennote.presentation.viewmodel.MainScreenViewModel
+import com.yangdai.opennote.presentation.viewmodel.MainRouteScreenViewModel
 import com.yangdai.opennote.presentation.component.FolderItem
 import com.yangdai.opennote.presentation.component.ModifyDialog
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FolderScreen(
-    viewModel: MainScreenViewModel,
-    navigateUp: () -> Unit,
+    viewModel: MainRouteScreenViewModel,
+    navigateUp: () -> Unit
 ) {
-
-    val listState by viewModel.stateFlow.collectAsStateWithLifecycle()
+    val haptic = LocalHapticFeedback.current
+    val listState by viewModel.listStateFlow.collectAsStateWithLifecycle()
 
     var showAddFolderDialog by rememberSaveable {
         mutableStateOf(false)
@@ -70,20 +70,16 @@ fun FolderScreen(
             LargeTopAppBar(
                 title = { Text(text = stringResource(id = R.string.folders)) },
                 navigationIcon = {
-                    IconButton(onClick = navigateUp) {
+                    IconButton(onClick = {
+                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                        navigateUp()
+                    }) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
                             contentDescription = "Back"
                         )
                     }
                 },
-                colors = TopAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    scrolledContainerColor = MaterialTheme.colorScheme.surface,
-                    navigationIconContentColor = TopAppBarDefaults.largeTopAppBarColors().navigationIconContentColor,
-                    titleContentColor = TopAppBarDefaults.largeTopAppBarColors().titleContentColor,
-                    actionIconContentColor = TopAppBarDefaults.largeTopAppBarColors().actionIconContentColor
-                ),
                 actions = {
                     IconButton(onClick = { showAddFolderDialog = true }) {
                         Icon(

@@ -5,7 +5,9 @@ import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.material3.CardDefaults
@@ -30,44 +32,56 @@ fun NoteCard(
     isSelected: Boolean,
     onNoteClick: (NoteEntity) -> Unit,
     onEnableChange: (Boolean) -> Unit
-) =
-    ElevatedCard(
-        modifier = modifier
-            .sizeIn(minHeight = 80.dp, maxHeight = 360.dp)
-            .combinedClickable(
-                onLongClick = {
-                    onEnableChange(true)
-                },
-                onClick = { onNoteClick(note) }
-            ),
-        colors = CardDefaults.elevatedCardColors(containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp))
-    ) {
-        Box(modifier = Modifier.fillMaxWidth()) {
-            if (isEnabled)
-                Checkbox(
-                    checked = isSelected, onCheckedChange = null, modifier = Modifier
-                        .padding(10.dp)
-                        .align(Alignment.TopEnd)
-                )
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 8.dp, horizontal = 10.dp)
-            ) {
+) = ElevatedCard(
+    modifier = modifier
+        .sizeIn(minHeight = 80.dp, maxHeight = 360.dp)
+        .combinedClickable(
+            onLongClick = {
+                onEnableChange(true)
+            },
+            onClick = { onNoteClick(note) }
+        ),
+    colors = CardDefaults.elevatedCardColors(
+        containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(
+            1.dp
+        )
+    )
+) {
+
+    val title = note.title
+    val content = note.content
+
+    Box(modifier = Modifier.fillMaxWidth()) {
+        if (isEnabled)
+            Checkbox(
+                checked = isSelected, onCheckedChange = null, modifier = Modifier
+                    .padding(10.dp)
+                    .align(Alignment.TopEnd)
+            )
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp, horizontal = 10.dp)
+        ) {
+
+            if (title.isNotEmpty())
                 Text(
-                    modifier = Modifier
-                        .basicMarquee()
-                        .padding(bottom = 12.dp),
-                    text = note.title,
+                    modifier = Modifier.basicMarquee(),
+                    text = title,
                     style = MaterialTheme.typography.titleMedium,
                     maxLines = 1
                 )
+
+            if (title.isNotEmpty() && content.isNotEmpty())
+                Spacer(modifier = Modifier.height(8.dp))
+
+            if (content.isNotEmpty())
                 Text(
-                    text = note.content,
+                    text = content,
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     overflow = TextOverflow.Ellipsis
                 )
-            }
         }
     }
+}

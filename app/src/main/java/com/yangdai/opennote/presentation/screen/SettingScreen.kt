@@ -12,6 +12,7 @@ import androidx.browser.customtabs.CustomTabsIntent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -28,7 +29,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.automirrored.outlined.ArrowRight
 import androidx.compose.material.icons.outlined.Analytics
-import androidx.compose.material.icons.outlined.ArrowDropDown
 import androidx.compose.material.icons.outlined.CleaningServices
 import androidx.compose.material.icons.outlined.DarkMode
 import androidx.compose.material.icons.outlined.IosShare
@@ -52,20 +52,23 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBarColors
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
@@ -76,8 +79,14 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.yangdai.opennote.R
 import com.yangdai.opennote.data.di.AppModule
+import com.yangdai.opennote.presentation.component.AnimatedArrowIcon
 import com.yangdai.opennote.presentation.component.RatingDialog
+import com.yangdai.opennote.presentation.component.SelectableColorPlatte
 import com.yangdai.opennote.presentation.component.WarningDialog
+import com.yangdai.opennote.presentation.theme.DarkBlueColors
+import com.yangdai.opennote.presentation.theme.DarkGreenColors
+import com.yangdai.opennote.presentation.theme.DarkOrangeColors
+import com.yangdai.opennote.presentation.theme.DarkPurpleColors
 import com.yangdai.opennote.presentation.util.Constants.APP_COLOR
 import com.yangdai.opennote.presentation.util.Constants.APP_THEME
 import com.yangdai.opennote.presentation.util.Constants.FIREBASE
@@ -100,6 +109,7 @@ fun SettingsScreen(
     settingScreenViewModel: SettingScreenViewModel = hiltViewModel(),
     navigateUp: () -> Unit,
 ) {
+    val haptic = LocalHapticFeedback.current
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val customTabsIntent = CustomTabsIntent.Builder()
@@ -122,18 +132,17 @@ fun SettingsScreen(
         )
     }
 
-    val colorOptions = listOf(
-        stringResource(R.string.dynamic_only_android_12),
-        stringResource(R.string.purple),
-        stringResource(R.string.blue),
-        stringResource(R.string.green)
-    )
     var colorExpended by rememberSaveable { mutableStateOf(false) }
     val initColorSelect = settingScreenViewModel.getInt(APP_COLOR) ?: 0
-    val (selectedColor, onColorSelected) = rememberSaveable {
-        mutableStateOf(
-            colorOptions[initColorSelect]
-        )
+    var selectedScheme by rememberSaveable { mutableIntStateOf(initColorSelect) }
+    val colorSchemes = listOf(
+        Pair(1, DarkPurpleColors),
+        Pair(2, DarkBlueColors),
+        Pair(3, DarkGreenColors),
+        Pair(4, DarkOrangeColors)
+    )
+    LaunchedEffect(selectedScheme) {
+        settingScreenViewModel.putInt(APP_COLOR, selectedScheme)
     }
 
     val initPasswordSelect = settingScreenViewModel.getBoolean(NEED_PASSWORD) ?: false
@@ -172,12 +181,14 @@ fun SettingsScreen(
     var showWarningDialog by rememberSaveable { mutableStateOf(false) }
 
     Scaffold(
-        modifier = Modifier
-            .nestedScroll(scrollBehavior.nestedScrollConnection),
+        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             LargeTopAppBar(
                 navigationIcon = {
-                    IconButton(onClick = navigateUp) {
+                    IconButton(onClick = {
+                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                        navigateUp()
+                    }) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
                             contentDescription = "Back"
@@ -185,13 +196,6 @@ fun SettingsScreen(
                     }
                 },
                 title = { Text(text = stringResource(R.string.settings)) },
-                colors = TopAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    scrolledContainerColor = MaterialTheme.colorScheme.surface,
-                    navigationIconContentColor = TopAppBarDefaults.largeTopAppBarColors().navigationIconContentColor,
-                    titleContentColor = TopAppBarDefaults.largeTopAppBarColors().titleContentColor,
-                    actionIconContentColor = TopAppBarDefaults.largeTopAppBarColors().actionIconContentColor
-                ),
                 scrollBehavior = scrollBehavior
             )
         }
@@ -233,10 +237,7 @@ fun SettingsScreen(
                     )
                 },
                 trailingContent = {
-                    Icon(
-                        imageVector = if (!modeExpended) Icons.AutoMirrored.Outlined.ArrowRight else Icons.Outlined.ArrowDropDown,
-                        contentDescription = "Arrow"
-                    )
+                    AnimatedArrowIcon(expended = modeExpended)
                 })
 
             AnimatedVisibility(visible = modeExpended) {
@@ -298,7 +299,7 @@ fun SettingsScreen(
                         ) {
                             RadioButton(
                                 selected = (text == selectedMode),
-                                onClick = null // null recommended for accessibility with screenreaders
+                                onClick = null
                             )
                             Text(
                                 text = text,
@@ -326,40 +327,39 @@ fun SettingsScreen(
                     Text(text = stringResource(R.string.color))
                 },
                 trailingContent = {
-                    Icon(
-                        imageVector = if (!colorExpended) Icons.AutoMirrored.Outlined.ArrowRight else Icons.Outlined.ArrowDropDown,
-                        contentDescription = "Arrow"
-                    )
+                    AnimatedArrowIcon(expended = colorExpended)
                 })
 
             AnimatedVisibility(visible = colorExpended) {
-
-                Column(Modifier.selectableGroup()) {
-                    colorOptions.forEachIndexed { index, text ->
-                        Row(
-                            Modifier
-                                .fillMaxWidth()
-                                .height(56.dp)
-                                .selectable(
-                                    selected = (text == selectedColor),
-                                    onClick = {
-                                        onColorSelected(text)
-                                        settingScreenViewModel.putInt(APP_COLOR, index)
-                                    },
-                                    role = Role.RadioButton
-                                )
-                                .padding(start = 32.dp, end = 16.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            RadioButton(
-                                selected = (text == selectedColor),
-                                onClick = null // null recommended for accessibility with screenreaders
-                            )
-                            Text(
-                                text = text,
-                                style = MaterialTheme.typography.bodyLarge,
-                                modifier = Modifier.padding(start = 16.dp)
-                            )
+                Column(Modifier.fillMaxWidth().padding(horizontal = 32.dp)) {
+                    Row(
+                        Modifier
+                            .fillMaxWidth()
+                            .height(56.dp)
+                            .clickable { selectedScheme = 0 },
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        RadioButton(
+                            selected = selectedScheme == 0,
+                            onClick = null
+                        )
+                        Text(
+                            text = stringResource(R.string.dynamic_only_android_12),
+                            style = MaterialTheme.typography.bodyLarge,
+                            modifier = Modifier.padding(start = 16.dp)
+                        )
+                    }
+                    Row(
+                        modifier = Modifier.horizontalScroll(rememberScrollState()),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.Start)
+                    ) {
+                        colorSchemes.forEach { colorSchemePair ->
+                            SelectableColorPlatte(
+                                selected = selectedScheme == colorSchemePair.first,
+                                colorScheme = colorSchemePair.second
+                            ) {
+                                selectedScheme = colorSchemePair.first
+                            }
                         }
                     }
                 }
@@ -546,10 +546,7 @@ fun SettingsScreen(
                 },
                 headlineContent = { Text(text = stringResource(R.string.app_info)) },
                 trailingContent = {
-                    Icon(
-                        imageVector = if (!appInfoExpended) Icons.AutoMirrored.Outlined.ArrowRight else Icons.Outlined.ArrowDropDown,
-                        contentDescription = "Arrow"
-                    )
+                    AnimatedArrowIcon(expended = appInfoExpended)
                 })
 
             AnimatedVisibility(visible = appInfoExpended) {

@@ -23,9 +23,6 @@
     <string name="light">浅色</string>
     <string name="dark">深色</string>
     <string name="dynamic_only_android_12">动态（仅 Android 12+）</string>
-    <string name="purple">紫色</string>
-    <string name="blue">蓝色</string>
-    <string name="green">绿色</string>
     <string name="edited">最后编辑时间：</string>
     <string name="search_history">搜索历史</string>
     <string name="sort_by">排序方式</string>

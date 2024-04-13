@@ -23,9 +23,6 @@
     <string name="light">Light</string>
     <string name="dark">Dark</string>
     <string name="dynamic_only_android_12">Dynamic (Only Android 12+)</string>
-    <string name="purple">Purple</string>
-    <string name="blue">Blue</string>
-    <string name="green">Green</string>
     <string name="edited">"Edited: "</string>
     <string name="search_history">Search History</string>
     <string name="sort_by">Sort by</string>

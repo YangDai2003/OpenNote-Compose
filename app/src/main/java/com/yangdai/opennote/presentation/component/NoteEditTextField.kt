@@ -13,6 +13,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.res.stringResource
 import com.yangdai.opennote.R
@@ -21,9 +22,10 @@ import com.yangdai.opennote.presentation.util.add
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun NoteEditTextField(
-    modifier: Modifier = Modifier,
+    modifier: Modifier,
     state: TextFieldState,
-    readMode: Boolean
+    readMode: Boolean,
+    onFocusChanged: (Boolean) -> Unit
 ) = BasicTextField(
     // The contentReceiver modifier is used to receive text content from the clipboard or drag-and-drop operations.
     modifier = modifier.contentReceiver { transferableContent ->
@@ -37,6 +39,8 @@ fun NoteEditTextField(
             }
         }
         null
+    }.onFocusChanged {
+        onFocusChanged(it.isFocused)
     },
     readOnly = readMode,
     state = state,
