@@ -17,7 +17,6 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -29,13 +28,13 @@ class BaseScreenViewModel @Inject constructor(
 ) : ViewModel() {
 
     //isLoading 状态，初始值为 true
-    private  val _isLoading = MutableStateFlow( true )
+    private val _isLoading = MutableStateFlow(true)
     val isLoading = _isLoading.asStateFlow()
 
     init {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             //延迟模拟一些后台处理，如获取数据
-            delay( 500 )
+            delay(500)
             //任务完成后将 isLoading 设置为 false 以隐藏启动屏幕
             _isLoading.value = false
         }
@@ -48,16 +47,12 @@ class BaseScreenViewModel @Inject constructor(
             initialValue = SettingsState()
         )
 
-    private fun getData(): Flow<SettingsState> = flow {
-        combine(
-            dataStoreRepository.intFlow(APP_THEME),
-            dataStoreRepository.intFlow(APP_COLOR),
-            dataStoreRepository.booleanFlow(NEED_PASSWORD),
-        ) { theme, color, needPassword ->
-            SettingsState(theme = theme, color = color, needPassword = needPassword)
-        }.collect {
-            emit(it)
-        }
+    private fun getData(): Flow<SettingsState> = combine(
+        dataStoreRepository.intFlow(APP_THEME),
+        dataStoreRepository.intFlow(APP_COLOR),
+        dataStoreRepository.booleanFlow(NEED_PASSWORD),
+    ) { theme, color, needPassword ->
+        SettingsState(theme = theme, color = color, needPassword = needPassword)
     }.flowOn(Dispatchers.IO)
 
     fun getFlow(): Flow<Preferences> {
@@ -65,12 +60,13 @@ class BaseScreenViewModel @Inject constructor(
     }
 
     fun putInt(key: String, value: Int) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             dataStoreRepository.putInt(key, value)
         }
     }
+
     fun putBoolean(key: String, value: Boolean) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             dataStoreRepository.putBoolean(key, value)
         }
     }
