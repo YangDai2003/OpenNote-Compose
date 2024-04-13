@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.yangdai.opennote.domain.repository.DataStoreRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -16,7 +17,7 @@ class SettingScreenViewModel @Inject constructor(
 ) : ViewModel() {
 
     fun putInt(key: String, value: Int) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             dataStoreRepository.putInt(key, value)
         }
     }
@@ -26,7 +27,7 @@ class SettingScreenViewModel @Inject constructor(
     }
 
     fun putBoolean(key: String, value: Boolean) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             dataStoreRepository.putBoolean(key, value)
         }
     }
