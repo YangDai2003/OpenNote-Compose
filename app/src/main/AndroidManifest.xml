@@ -9,7 +9,8 @@
         android:required="false" />
 
     <uses-permission android:name="android.permission.CAMERA" />
-
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
     <uses-permission android:name="com.google.android.gms.permission.AD_ID"/>
 
     <queries>
@@ -27,7 +28,7 @@
         android:name=".NoteApp"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
-        android:enableOnBackInvokedCallback="true"
+        android:enableOnBackInvokedCallback="false"
         android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"

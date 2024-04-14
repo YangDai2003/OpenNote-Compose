@@ -75,22 +75,25 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.yangdai.opennote.MainActivity
 import com.yangdai.opennote.R
 import com.yangdai.opennote.presentation.navigation.Route
 import com.yangdai.opennote.data.local.entity.FolderEntity
 import com.yangdai.opennote.data.local.entity.NoteEntity
 import com.yangdai.opennote.presentation.event.ListEvent
 import com.yangdai.opennote.presentation.component.NoteCard
-import com.yangdai.opennote.presentation.viewmodel.MainRouteScreenViewModel
 import com.yangdai.opennote.presentation.component.DrawerItem
 import com.yangdai.opennote.presentation.component.FolderListSheet
 import com.yangdai.opennote.presentation.component.OrderSection
 import com.yangdai.opennote.presentation.component.TopSearchbar
 import com.yangdai.opennote.presentation.state.ListState
+import com.yangdai.opennote.presentation.viewmodel.SharedViewModel
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -98,12 +101,12 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(
-    viewModel: MainRouteScreenViewModel,
+    sharedViewModel: SharedViewModel = hiltViewModel(LocalContext.current as MainActivity),
     isLargeScreen: Boolean,
     navigateTo: (String) -> Unit
 ) {
     val scope = rememberCoroutineScope()
-    val listState by viewModel.listStateFlow.collectAsStateWithLifecycle()
+    val listState by sharedViewModel.listStateFlow.collectAsStateWithLifecycle()
 
     // Search bar state
     var isSearchBarActive by remember { mutableStateOf(false) }
@@ -155,7 +158,7 @@ fun MainScreen(
     }
 
     // select all and deselect all, triggered by the checkbox in the bottom bar
-    LaunchedEffect(key1 = selectAll) {
+    LaunchedEffect(selectAll) {
         selectedItems = if (selectAll)
             selectedItems.plus(listState.notes.mapNotNull { noteEntity -> noteEntity.id })
         else
@@ -190,7 +193,7 @@ fun MainScreen(
             scope = scope,
             selectedDrawer = selectedDrawer,
             drawerState = drawerState,
-            viewModel = viewModel,
+            viewModel = sharedViewModel,
             isEnabled = isEnabled,
             isLargeScreen = isLargeScreen,
             folderName = folderName,
@@ -224,12 +227,8 @@ fun MainScreen(
                         else selectedItems.plus(id)
                 } else {
                     if (selectedDrawer != 1) {
-                        navigateTo(
-                            Route.NOTE.replace(
-                                "{id}",
-                                it.id.toString()
-                            )
-                        )
+                        sharedViewModel.onListEvent(ListEvent.ClickNote(it))
+                        navigateTo(Route.NOTE)
                     } else {
                         Unit
                     }
@@ -254,14 +253,14 @@ fun MainScreen(
                             0 -> {
                                 selectDrawer(position) {
                                     selectedFolder = folder
-                                    viewModel.onListEvent(ListEvent.Sort(trash = false))
+                                    sharedViewModel.onListEvent(ListEvent.Sort(trash = false))
                                 }
                                 closeDrawer()
                             }
 
                             1 -> {
                                 selectDrawer(position) {
-                                    viewModel.onListEvent(ListEvent.Sort(trash = true))
+                                    sharedViewModel.onListEvent(ListEvent.Sort(trash = true))
                                 }
                                 closeDrawer()
                             }
@@ -269,7 +268,7 @@ fun MainScreen(
                             else -> {
                                 selectDrawer(position) {
                                     selectedFolder = folder
-                                    viewModel.onListEvent(
+                                    sharedViewModel.onListEvent(
                                         ListEvent.Sort(
                                             filterFolder = true,
                                             folderId = folder.id
@@ -299,20 +298,20 @@ fun MainScreen(
                             0 -> {
                                 selectDrawer(position) {
                                     selectedFolder = folder
-                                    viewModel.onListEvent(ListEvent.Sort(trash = false))
+                                    sharedViewModel.onListEvent(ListEvent.Sort(trash = false))
                                 }
                             }
 
                             1 -> {
                                 selectDrawer(position) {
-                                    viewModel.onListEvent(ListEvent.Sort(trash = true))
+                                    sharedViewModel.onListEvent(ListEvent.Sort(trash = true))
                                 }
                             }
 
                             else -> {
                                 selectDrawer(position) {
                                     selectedFolder = folder
-                                    viewModel.onListEvent(
+                                    sharedViewModel.onListEvent(
                                         ListEvent.Sort(
                                             filterFolder = true,
                                             folderId = folder.id
@@ -336,7 +335,7 @@ fun MainContent(
     scope: CoroutineScope,
     selectedDrawer: Int,
     drawerState: DrawerState,
-    viewModel: MainRouteScreenViewModel,
+    viewModel: SharedViewModel,
     isEnabled: Boolean,
     isLargeScreen: Boolean,
     folderName: String,
@@ -549,14 +548,7 @@ fun MainContent(
                 visible = showFloatingButton,
                 enter = slideInHorizontally { fullWidth -> fullWidth * 3 / 2 },
                 exit = slideOutHorizontally { fullWidth -> fullWidth * 3 / 2 }) {
-                FloatingActionButton(onClick = {
-                    navigateTo(
-                        Route.NOTE.replace(
-                            "id",
-                            ""
-                        )
-                    )
-                }) {
+                FloatingActionButton(onClick = { navigateTo(Route.NOTE) }) {
                     Icon(imageVector = Icons.Outlined.Add, contentDescription = "Add")
                 }
             }
@@ -565,6 +557,7 @@ fun MainContent(
 
         if (showBottomSheet) {
             FolderListSheet(
+                hint = stringResource(R.string.select_destination_folder),
                 oFolderId = selectedFolder.id,
                 folders = listState.folders.toImmutableList(),
                 sheetState = sheetState,
@@ -634,7 +627,7 @@ fun MainContent(
                         isEnabled = isEnabled,
                         isSelected = selectedItems.contains(note.id),
                         onEnableChange = onEnableChange,
-                        onNoteClick = { onNoteClick(it) })
+                        onNoteClick = onNoteClick)
                 }
             }
         )

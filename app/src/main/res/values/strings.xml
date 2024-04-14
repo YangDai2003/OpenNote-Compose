@@ -22,7 +22,7 @@
     <string name="system_default">System Default</string>
     <string name="light">Light</string>
     <string name="dark">Dark</string>
-    <string name="dynamic_only_android_12">Dynamic (Only Android 12+)</string>
+    <string name="dynamic_only_android_12">Dynamic Color</string>
     <string name="edited">"Edited: "</string>
     <string name="search_history">Search History</string>
     <string name="sort_by">Sort by</string>
@@ -64,4 +64,10 @@
     <string name="no_text_found">No text found</string>
     <string name="no_password_set">Please set the system lock screen password first</string>
     <string name="no_calendar_app_found">No calendar app found</string>
+    <string name="ImportExport">Import and export</string>
+    <string name="progress">Progress</string>
+    <string name="coming_soon">Coming soon</string>
+    <string name="import_files">Import text files</string>
+    <string name="export_files">Export text files</string>
+    <string name="select_destination_folder">Select destination folder</string>
 </resources>

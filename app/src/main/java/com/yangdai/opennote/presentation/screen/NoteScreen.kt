@@ -40,7 +40,6 @@ import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -67,8 +66,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.yangdai.opennote.MainActivity
 import com.yangdai.opennote.R
 import com.yangdai.opennote.presentation.component.ExportDialog
 import com.yangdai.opennote.presentation.component.FolderListSheet
@@ -81,7 +82,7 @@ import com.yangdai.opennote.presentation.component.TaskDialog
 import com.yangdai.opennote.presentation.event.NoteEvent
 import com.yangdai.opennote.presentation.event.UiEvent
 import com.yangdai.opennote.presentation.util.timestampToFormatLocalDateTime
-import com.yangdai.opennote.presentation.viewmodel.MainRouteScreenViewModel
+import com.yangdai.opennote.presentation.viewmodel.SharedViewModel
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.launch
 
@@ -89,22 +90,12 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NoteScreen(
-    viewModel: MainRouteScreenViewModel,
+    sharedViewModel: SharedViewModel = hiltViewModel(LocalContext.current as MainActivity),
     isLargeScreen: Boolean,
-    id: String?,
     scannedText: String?,
     navigateUp: () -> Unit,
     onScanTextClick: () -> Unit
 ) {
-
-    LaunchedEffect(id) {
-        viewModel.setLoading(true)
-        if (id == null) viewModel.setLoading(false)
-        else {
-            if (id.isNotEmpty()) viewModel.getNoteById(id.toLong())
-            else viewModel.setLoading(false)
-        }
-    }
 
     val haptic = LocalHapticFeedback.current
     val context = LocalContext.current
@@ -112,12 +103,15 @@ fun NoteScreen(
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current
 
-    val noteState by viewModel.noteStateFlow.collectAsStateWithLifecycle()
-    val listState by viewModel.listStateFlow.collectAsStateWithLifecycle()
-    val html by viewModel.html.collectAsStateWithLifecycle()
-    val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
+    val noteState by sharedViewModel.noteStateFlow.collectAsStateWithLifecycle()
+    val listState by sharedViewModel.listStateFlow.collectAsStateWithLifecycle()
+    val html by sharedViewModel.html.collectAsStateWithLifecycle()
 
     val pagerState = rememberPagerState(pageCount = { 2 })
+
+    val scope = rememberCoroutineScope()
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    var showBottomSheet by rememberSaveable { mutableStateOf(false) }
 
     // Switch between read mode and edit mode
     var isReadMode by rememberSaveable {
@@ -145,27 +139,25 @@ fun NoteScreen(
     }
 
     // Folder name, default to "All Notes", or the name of the current folder the note is in
-    var folderName by rememberSaveable {
-        mutableStateOf("")
-    }
+    var folderName by rememberSaveable { mutableStateOf("") }
+    var timestamp by rememberSaveable { mutableStateOf("") }
 
-    LaunchedEffect(noteState.folderId) {
+    LaunchedEffect(noteState) {
         folderName = if (noteState.folderId == null) {
             context.getString(R.string.all_notes)
         } else {
             val matchingFolder = listState.folders.find { it.id == noteState.folderId }
             matchingFolder?.name ?: ""
         }
+        timestamp =
+            if (noteState.timestamp == null) timestampToFormatLocalDateTime(System.currentTimeMillis())
+            else timestampToFormatLocalDateTime(noteState.timestamp!!)
     }
-
-    val scope = rememberCoroutineScope()
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-    var showBottomSheet by rememberSaveable { mutableStateOf(false) }
 
     LaunchedEffect(scannedText) {
         if (scannedText != null) {
             if (scannedText.isNotEmpty()) {
-                viewModel.addScannedText(scannedText)
+                sharedViewModel.addScannedText(scannedText)
             }
         }
     }
@@ -182,8 +174,15 @@ fun NoteScreen(
         }
     }
 
-    LaunchedEffect(key1 = true) {
-        viewModel.event.collect { event ->
+    BackHandler(isReadMode) {
+        if (isReadMode) {
+            focusManager.clearFocus()
+            isReadMode = false
+        }
+    }
+
+    LaunchedEffect(true) {
+        sharedViewModel.event.collect { event ->
             when (event) {
                 is UiEvent.NavigateBack -> navigateUp()
             }
@@ -192,31 +191,16 @@ fun NoteScreen(
 
     DisposableEffect(lifecycleOwner) {
         onDispose {
-            viewModel.onNoteEvent(NoteEvent.NavigateBack)
+            sharedViewModel.onNoteEvent(NoteEvent.NavigateBack)
         }
-    }
-
-    var time by rememberSaveable { mutableStateOf("") }
-
-    LaunchedEffect(noteState.timestamp) {
-        time =
-            if (noteState.timestamp == null) timestampToFormatLocalDateTime(System.currentTimeMillis())
-            else timestampToFormatLocalDateTime(noteState.timestamp!!)
     }
 
     var isTitleFocused by rememberSaveable { mutableStateOf(false) }
     var isContentFocused by rememberSaveable { mutableStateOf(false) }
 
-    BackHandler(enabled = isTitleFocused || isContentFocused) {
+    BackHandler(isTitleFocused || isContentFocused) {
         focusManager.clearFocus()
         keyboardController?.hide()
-    }
-
-    BackHandler(isReadMode) {
-        if (isReadMode) {
-            focusManager.clearFocus()
-            isReadMode = false
-        }
     }
 
     Scaffold(
@@ -247,7 +231,7 @@ fun NoteScreen(
                 },
                 actions = {
 
-                    IconButton(onClick = { viewModel.onNoteEvent(NoteEvent.SwitchType) }) {
+                    IconButton(onClick = { sharedViewModel.onNoteEvent(NoteEvent.SwitchType) }) {
                         Icon(
                             imageVector = Icons.Outlined.SwapHoriz,
                             contentDescription = "Switch Note Type"
@@ -282,7 +266,7 @@ fun NoteScreen(
                                 )
                             },
                             text = { Text(text = stringResource(id = R.string.delete)) },
-                            onClick = { viewModel.onNoteEvent(NoteEvent.Delete) })
+                            onClick = { sharedViewModel.onNoteEvent(NoteEvent.Delete) })
 
                         DropdownMenuItem(
                             leadingIcon = {
@@ -295,10 +279,13 @@ fun NoteScreen(
                             onClick = {
                                 val intent = Intent(Intent.ACTION_INSERT).apply {
                                     data = Events.CONTENT_URI
-                                    putExtra(Events.TITLE, viewModel.titleState.text.toString())
+                                    putExtra(
+                                        Events.TITLE,
+                                        sharedViewModel.titleState.text.toString()
+                                    )
                                     putExtra(
                                         Events.DESCRIPTION,
-                                        viewModel.contentState.text.toString()
+                                        sharedViewModel.contentState.text.toString()
                                     )
                                 }
                                 if (intent.resolveActivity(context.packageManager) != null) {
@@ -337,11 +324,11 @@ fun NoteScreen(
                                     action = Intent.ACTION_SEND
                                     putExtra(
                                         Intent.EXTRA_TITLE,
-                                        viewModel.titleState.text.toString()
+                                        sharedViewModel.titleState.text.toString()
                                     )
                                     putExtra(
                                         Intent.EXTRA_TEXT,
-                                        viewModel.contentState.text.toString()
+                                        sharedViewModel.contentState.text.toString()
                                     )
                                     type = "text/plain"
                                 }
@@ -358,140 +345,128 @@ fun NoteScreen(
                 exit = slideOutVertically { fullHeight -> fullHeight }) {
                 NoteEditorRow(
                     isMarkdown = noteState.isMarkdown,
-                    canRedo = viewModel.canRedo(),
-                    canUndo = viewModel.canUndo(),
-                    onEdit = { viewModel.onNoteEvent(NoteEvent.Edit(it)) },
+                    canRedo = sharedViewModel.canRedo(),
+                    canUndo = sharedViewModel.canUndo(),
+                    onEdit = { sharedViewModel.onNoteEvent(NoteEvent.Edit(it)) },
                     onScanButtonClick = onScanTextClick,
                     onTaskButtonClick = { showTaskDialog = true },
                     onLinkButtonClick = { showLinkDialog = true })
             }
         }
     ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .padding(horizontal = 16.dp)
+        ) {
 
-        if (isLoading) {
-            Box(
+            BasicTextField(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues),
-                contentAlignment = Alignment.TopCenter
-            ) {
-                LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
-            }
-        } else {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-                    .padding(horizontal = 16.dp)
-            ) {
-
-                BasicTextField(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .onFocusChanged {
-                            isTitleFocused = it.isFocused
-                        },
-                    state = viewModel.titleState,
-                    readOnly = isReadMode,
-                    lineLimits = TextFieldLineLimits.SingleLine,
-                    textStyle = MaterialTheme.typography.headlineLarge.copy(color = MaterialTheme.colorScheme.onSurface),
-                    cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
-                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-                    decorator = { innerTextField ->
-                        Box {
-                            if (viewModel.titleState.text.isEmpty()) {
-                                Text(
-                                    text = stringResource(id = R.string.title),
-                                    style = MaterialTheme.typography.headlineLarge.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
-                                )
-                            }
-                            innerTextField()
+                    .fillMaxWidth()
+                    .onFocusChanged {
+                        isTitleFocused = it.isFocused
+                    },
+                state = sharedViewModel.titleState,
+                readOnly = isReadMode,
+                lineLimits = TextFieldLineLimits.SingleLine,
+                textStyle = MaterialTheme.typography.headlineLarge.copy(color = MaterialTheme.colorScheme.onSurface),
+                cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                decorator = { innerTextField ->
+                    Box {
+                        if (sharedViewModel.titleState.text.isEmpty()) {
+                            Text(
+                                text = stringResource(id = R.string.title),
+                                style = MaterialTheme.typography.headlineLarge.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            )
                         }
+                        innerTextField()
                     }
+                }
+            )
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 4.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+
+                Text(
+                    text = """${stringResource(R.string.edited)}$timestamp""",
+                    style = MaterialTheme.typography.titleSmall.copy(
+                        lineHeightStyle = LineHeightStyle(
+                            trim = LineHeightStyle.Trim.None,
+                            alignment = LineHeightStyle.Alignment.Proportional
+                        )
+                    ),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
 
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 4.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
+                Text(
+                    text = if (noteState.isMarkdown) "MARKDOWN" else stringResource(R.string.rich_text),
+                    style = MaterialTheme.typography.titleSmall.copy(
+                        lineHeightStyle = LineHeightStyle(
+                            trim = LineHeightStyle.Trim.None,
+                            alignment = LineHeightStyle.Alignment.Proportional
+                        )
+                    ),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
 
-                    Text(
-                        text = """${stringResource(R.string.edited)}$time""",
-                        style = MaterialTheme.typography.titleSmall.copy(
-                            lineHeightStyle = LineHeightStyle(
-                                trim = LineHeightStyle.Trim.None,
-                                alignment = LineHeightStyle.Alignment.Proportional
-                            )
-                        ),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
+            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
-                    Text(
-                        text = if (noteState.isMarkdown) "MARKDOWN" else stringResource(R.string.rich_text),
-                        style = MaterialTheme.typography.titleSmall.copy(
-                            lineHeightStyle = LineHeightStyle(
-                                trim = LineHeightStyle.Trim.None,
-                                alignment = LineHeightStyle.Alignment.Proportional
-                            )
-                        ),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
+            if (isLargeScreen) {
+                Row(Modifier.fillMaxSize()) {
+                    NoteEditTextField(
+                        modifier = Modifier
+                            .fillMaxHeight()
+                            .weight(1f),
+                        state = sharedViewModel.contentState,
+                        readMode = isReadMode
+                    ) {
+                        isContentFocused = it
+                    }
+
+                    Box(
+                        Modifier
+                            .fillMaxHeight()
+                            .weight(1f)
+                    ) {
+                        if (noteState.isMarkdown) {
+                            HtmlView(html = html)
+                        } else {
+                            HighlightedClickableText(sharedViewModel.contentState.text.toString())
+                        }
+                    }
                 }
 
-                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
-
-                if (isLargeScreen) {
-                    Row(Modifier.fillMaxSize()) {
-                        NoteEditTextField(
-                            modifier = Modifier
-                                .fillMaxHeight()
-                                .weight(1f),
-                            state = viewModel.contentState,
-                            readMode = isReadMode
-                        ) {
-                            isContentFocused = it
+            } else {
+                HorizontalPager(
+                    state = pagerState,
+                    beyondViewportPageCount = 1,
+                    userScrollEnabled = false,
+                    modifier = Modifier.fillMaxSize()
+                ) { page: Int ->
+                    when (page) {
+                        0 -> {
+                            NoteEditTextField(
+                                modifier = Modifier.fillMaxSize(),
+                                state = sharedViewModel.contentState,
+                                readMode = isReadMode
+                            ) {
+                                isContentFocused = it
+                            }
                         }
 
-                        Box(
-                            Modifier
-                                .fillMaxHeight()
-                                .weight(1f)
-                        ) {
+                        1 -> {
                             if (noteState.isMarkdown) {
                                 HtmlView(html = html)
                             } else {
-                                HighlightedClickableText(viewModel.contentState.text.toString())
-                            }
-                        }
-                    }
-
-                } else {
-                    HorizontalPager(
-                        state = pagerState,
-                        beyondViewportPageCount = 1,
-                        userScrollEnabled = false,
-                        modifier = Modifier.fillMaxSize()
-                    ) { page: Int ->
-                        when (page) {
-                            0 -> {
-                                NoteEditTextField(
-                                    modifier = Modifier.fillMaxSize(),
-                                    state = viewModel.contentState,
-                                    readMode = isReadMode
-                                ) {
-                                    isContentFocused = it
-                                }
-                            }
-
-                            1 -> {
-                                if (noteState.isMarkdown) {
-                                    HtmlView(html = html)
-                                } else {
-                                    HighlightedClickableText(viewModel.contentState.text.toString())
-                                }
+                                HighlightedClickableText(sharedViewModel.contentState.text.toString())
                             }
                         }
                     }
@@ -502,27 +477,28 @@ fun NoteScreen(
     if (showExportDialog) {
         ExportDialog(
             html = html,
-            title = viewModel.titleState.text.toString(),
-            content = viewModel.contentState.text.toString(),
+            title = sharedViewModel.titleState.text.toString(),
+            content = sharedViewModel.contentState.text.toString(),
             onDismissRequest = { showExportDialog = false }
         )
     }
 
     if (showTaskDialog) {
         TaskDialog(onDismissRequest = { showTaskDialog = false }) {
-            viewModel.addTask(it.task, it.checked)
+            sharedViewModel.addTask(it.task, it.checked)
         }
     }
 
     if (showLinkDialog) {
         LinkDialog(onDismissRequest = { showLinkDialog = false }) {
             val insertText = "[${it.title}](${it.uri})"
-            viewModel.addLink(insertText)
+            sharedViewModel.addLink(insertText)
         }
     }
 
     if (showBottomSheet) {
         FolderListSheet(
+            hint = stringResource(R.string.select_destination_folder),
             oFolderId = noteState.folderId,
             folders = listState.folders.toImmutableList(),
             sheetState = sheetState,
@@ -534,8 +510,7 @@ fun NoteScreen(
                     }
                 }
             }) {
-            viewModel.onNoteEvent(NoteEvent.FolderChanged(it))
+            sharedViewModel.onNoteEvent(NoteEvent.FolderChanged(it))
         }
     }
-
 }

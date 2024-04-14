@@ -15,8 +15,8 @@ android {
         applicationId = "com.yangdai.opennote"
         minSdk = 29
         targetSdk = 34
-        versionCode = 113
-        versionName = "1.1.3"
+        versionCode = 114
+        versionName = "1.1.4"
         resourceConfigurations += listOf("en", "zh")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -60,8 +60,7 @@ android {
 }
 
 dependencies {
-    implementation(libs.androidx.browser)
-    implementation(libs.androidx.compose.foundation)
+
     implementation(libs.kotlinx.collections.immutable)
 
     // CommonMark, for markdown rendering and parsing
@@ -100,27 +99,33 @@ dependencies {
     ksp(libs.google.hilt.compiler)
     implementation(libs.google.hilt)
 
-    implementation(libs.androidx.material3.window.size)
-    implementation(libs.androidx.navigation)
-    implementation(libs.androidx.material.icons)
+    // Compose
+    implementation(libs.androidx.compose.ui)
+    implementation(libs.androidx.compose.ui.graphics)
+    implementation(libs.androidx.compose.ui.tooling.preview)
+    implementation(libs.androidx.compose.material3)
+    implementation(libs.androidx.compose.material3.window.size)
+    implementation(libs.androidx.compose.material.icons)
+    implementation(libs.androidx.navigation.compose)
+    implementation(libs.androidx.lifecycle.runtime.compose)
+    implementation(libs.androidx.activity.compose)
+    implementation(platform(libs.androidx.compose.bom))
+    implementation(libs.androidx.compose.foundation)
+
+    // AndroidX
+    implementation(libs.androidx.browser)
     implementation(libs.androidx.core.splashscreen)
     implementation(libs.androidx.biometric)
     implementation(libs.androidx.datastore.preferences)
     implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.lifecycle.runtime.ktx)
-    implementation(libs.androidx.lifecycle.runtime.compose)
-    implementation(libs.androidx.activity.compose)
-    implementation(platform(libs.androidx.compose.bom))
-    implementation(libs.androidx.ui)
-    implementation(libs.androidx.ui.graphics)
-    implementation(libs.androidx.ui.tooling.preview)
-    implementation(libs.androidx.material3)
     implementation(libs.androidx.appcompat)
+
+    // Test
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
-    androidTestImplementation(libs.androidx.ui.test.junit4)
-    debugImplementation(libs.androidx.ui.tooling)
-    debugImplementation(libs.androidx.ui.test.manifest)
+    androidTestImplementation(libs.androidx.compose.ui.test.junit4)
+    debugImplementation(libs.androidx.compose.ui.tooling)
+    debugImplementation(libs.androidx.compose.ui.test.manifest)
 }

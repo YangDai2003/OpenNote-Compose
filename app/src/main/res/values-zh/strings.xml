@@ -22,7 +22,7 @@
     <string name="system_default">跟随系统</string>
     <string name="light">浅色</string>
     <string name="dark">深色</string>
-    <string name="dynamic_only_android_12">动态（仅 Android 12+）</string>
+    <string name="dynamic_only_android_12">动态颜色</string>
     <string name="edited">最后编辑时间：</string>
     <string name="search_history">搜索历史</string>
     <string name="sort_by">排序方式</string>
@@ -63,4 +63,10 @@
     <string name="no_text_found">没有找到文字</string>
     <string name="no_password_set">请先设置系统锁屏密码</string>
     <string name="no_calendar_app_found">无可用的日历应用</string>
+    <string name="ImportExport">导入与导出</string>
+    <string name="progress">进度</string>
+    <string name="coming_soon">敬请期待</string>
+    <string name="import_files">导入文本文件</string>
+    <string name="export_files">导出文本文件</string>
+    <string name="select_destination_folder">选择目标文件夹</string>
 </resources>

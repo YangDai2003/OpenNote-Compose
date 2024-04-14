@@ -19,7 +19,7 @@ import androidx.core.animation.doOnEnd
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.yangdai.opennote.presentation.screen.BaseScreen
 import com.yangdai.opennote.presentation.util.BiometricPromptManager
-import com.yangdai.opennote.presentation.viewmodel.BaseScreenViewModel
+import com.yangdai.opennote.presentation.viewmodel.SharedViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
@@ -27,13 +27,13 @@ import dagger.hilt.android.AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
 
     private val promptManager by lazy { BiometricPromptManager(this) }
-    private val baseScreenViewModel: BaseScreenViewModel by viewModels()
+    private val sharedViewModel: SharedViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         // Handle the splash screen transition.
         installSplashScreen().apply {
             setKeepOnScreenCondition {
-                baseScreenViewModel.isLoading.value
+                sharedViewModel.isLoadingDate.value
             }
             setOnExitAnimationListener { splashScreenView ->
                 val view = splashScreenView.view
@@ -60,13 +60,12 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         setContent {
-            val windowSize = calculateWindowSizeClass(activity = this)
+            val windowSize = calculateWindowSizeClass(this)
             val isLargeScreen by remember {
                 derivedStateOf { windowSize.widthSizeClass == WindowWidthSizeClass.Expanded && windowSize.heightSizeClass > WindowHeightSizeClass.Compact }
             }
             BaseScreen(
                 promptManager = promptManager,
-                baseScreenViewModel = baseScreenViewModel,
                 isLargeScreen = isLargeScreen
             )
         }

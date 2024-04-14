@@ -46,7 +46,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.yangdai.opennote.R
 import com.yangdai.opennote.presentation.event.ListEvent
-import com.yangdai.opennote.presentation.viewmodel.MainRouteScreenViewModel
+import com.yangdai.opennote.presentation.viewmodel.SharedViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
@@ -55,7 +55,7 @@ import kotlinx.coroutines.launch
 fun TopSearchbar(
     scope: CoroutineScope,
     drawerState: DrawerState,
-    viewModel: MainRouteScreenViewModel,
+    viewModel: SharedViewModel,
     isSmallScreen: Boolean,
     enabled: Boolean,
     onActiveChange: (Boolean) -> Unit

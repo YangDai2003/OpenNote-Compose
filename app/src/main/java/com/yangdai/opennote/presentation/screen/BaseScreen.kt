@@ -28,8 +28,9 @@ import androidx.compose.ui.unit.dp
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.floatPreferencesKey
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.compose.rememberNavController
+import com.yangdai.opennote.MainActivity
 import com.yangdai.opennote.presentation.util.BiometricPromptManager
 import com.yangdai.opennote.presentation.util.Constants.APP_THEME
 import com.yangdai.opennote.presentation.util.Constants.IS_APP_IN_DARK_MODE
@@ -37,7 +38,7 @@ import com.yangdai.opennote.presentation.util.Constants.IS_SWITCH_ACTIVE
 import com.yangdai.opennote.presentation.util.Constants.MASK_CLICK_X
 import com.yangdai.opennote.presentation.util.Constants.MASK_CLICK_Y
 import com.yangdai.opennote.presentation.util.Constants.SHOULD_FOLLOW_SYSTEM
-import com.yangdai.opennote.presentation.viewmodel.BaseScreenViewModel
+import com.yangdai.opennote.presentation.viewmodel.SharedViewModel
 import com.yangdai.opennote.presentation.component.MaskAnimModel
 import com.yangdai.opennote.presentation.component.MaskBox
 import com.yangdai.opennote.presentation.navigation.AnimatedNavHost
@@ -47,12 +48,12 @@ import kotlinx.coroutines.flow.map
 
 @Composable
 fun BaseScreen(
+    sharedViewModel: SharedViewModel = hiltViewModel(LocalContext.current as MainActivity),
     promptManager: BiometricPromptManager,
-    baseScreenViewModel: BaseScreenViewModel,
     isLargeScreen: Boolean
 ) {
 
-    val settingsState by baseScreenViewModel.stateFlow.collectAsStateWithLifecycle()
+    val settingsState by sharedViewModel.settingsStateFlow.collectAsStateWithLifecycle()
 
     // Biometric authentication
     var authenticated by rememberSaveable {
@@ -103,33 +104,33 @@ fun BaseScreen(
                 }
                 enrollLauncher.launch(enrollIntent)
             } else {
-                baseScreenViewModel.putBoolean(Constants.NEED_PASSWORD, false)
+                sharedViewModel.putPreferenceValue(Constants.NEED_PASSWORD, false)
             }
         }
     }
 
     val isAppInDarkTheme by getPreferenceState(
-        baseScreenViewModel,
+        sharedViewModel,
         booleanPreferencesKey(IS_APP_IN_DARK_MODE),
         false
     )
     val shouldFollowSystem by getPreferenceState(
-        baseScreenViewModel,
+        sharedViewModel,
         booleanPreferencesKey(SHOULD_FOLLOW_SYSTEM),
         false
     )
     val switchActive by getPreferenceState(
-        baseScreenViewModel,
+        sharedViewModel,
         booleanPreferencesKey(IS_SWITCH_ACTIVE),
         false
     )
     val maskClickX by getPreferenceState(
-        baseScreenViewModel,
+        sharedViewModel,
         floatPreferencesKey(MASK_CLICK_X),
         0f
     )
     val maskClickY by getPreferenceState(
-        baseScreenViewModel,
+        sharedViewModel,
         floatPreferencesKey(MASK_CLICK_Y),
         0f
     )
@@ -138,7 +139,7 @@ fun BaseScreen(
 
     LaunchedEffect(settingsState.theme) {
         if (settingsState.theme == 0) {
-            baseScreenViewModel.putBoolean(IS_APP_IN_DARK_MODE, isSystemInDarkTheme)
+            sharedViewModel.putPreferenceValue(IS_APP_IN_DARK_MODE, isSystemInDarkTheme)
         }
     }
 
@@ -150,12 +151,12 @@ fun BaseScreen(
         // MaskBox is a custom composable that animates a mask over the screen
         MaskBox(
             maskComplete = {
-                baseScreenViewModel.putBoolean(IS_APP_IN_DARK_MODE, !isAppInDarkTheme)
+                sharedViewModel.putPreferenceValue(IS_APP_IN_DARK_MODE, !isAppInDarkTheme)
             },
             animFinish = {
-                baseScreenViewModel.putBoolean(IS_SWITCH_ACTIVE, false)
+                sharedViewModel.putPreferenceValue(IS_SWITCH_ACTIVE, false)
                 if (shouldFollowSystem) {
-                    baseScreenViewModel.putInt(APP_THEME, 0)
+                    sharedViewModel.putPreferenceValue(APP_THEME, 0)
                 }
             }
         ) { maskActiveEvent ->
@@ -173,7 +174,6 @@ fun BaseScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .then(if (!loggedIn) Modifier.blur(16.dp) else Modifier),
-                navController = rememberNavController(),
                 isLargeScreen = isLargeScreen
             )
 
@@ -186,11 +186,11 @@ fun BaseScreen(
 
 @Composable
 private fun <T> getPreferenceState(
-    viewModel: BaseScreenViewModel,
+    viewModel: SharedViewModel,
     key: Preferences.Key<T>,
     defaultValue: T
 ): State<T> {
-    return viewModel.getFlow()
+    return viewModel.preferencesFlow()
         .map { preferences -> preferences[key] ?: defaultValue }
         .collectAsStateWithLifecycle(initialValue = defaultValue)
 }

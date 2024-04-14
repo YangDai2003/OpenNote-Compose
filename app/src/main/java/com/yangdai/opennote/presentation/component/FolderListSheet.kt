@@ -11,8 +11,8 @@ import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Cancel
-import androidx.compose.material.icons.outlined.DoneOutline
+import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.outlined.Done
 import androidx.compose.material.icons.outlined.FolderOpen
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -32,6 +32,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.yangdai.opennote.R
@@ -41,6 +42,7 @@ import kotlinx.collections.immutable.ImmutableList
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FolderListSheet(
+    hint: String = "",
     oFolderId: Long?,
     folders: ImmutableList<FolderEntity>,
     sheetState: SheetState,
@@ -50,10 +52,19 @@ fun FolderListSheet(
 ) = ModalBottomSheet(
     windowInsets = BottomSheetDefaults.windowInsets.exclude(WindowInsets.statusBars),
     onDismissRequest = onDismissRequest,
-    sheetState = sheetState,
-    dragHandle = {}) {
+    sheetState = sheetState
+) {
 
     var selectedFolderId by remember { mutableStateOf(oFolderId) }
+
+    if (hint.isNotEmpty()) {
+        Text(
+            modifier = Modifier.fillMaxWidth(),
+            textAlign = TextAlign.Center,
+            maxLines = 1,
+            text = hint
+        )
+    }
 
     Row(
         modifier = Modifier
@@ -64,13 +75,13 @@ fun FolderListSheet(
         verticalAlignment = Alignment.CenterVertically
     ) {
         IconButton(onClick = onCloseClick) {
-            Icon(imageVector = Icons.Outlined.Cancel, contentDescription = "Cancel")
+            Icon(imageVector = Icons.Outlined.Close, contentDescription = "Cancel")
         }
         IconButton(onClick = {
             onSelect(selectedFolderId)
             onCloseClick()
         }) {
-            Icon(imageVector = Icons.Outlined.DoneOutline, contentDescription = "Confirm")
+            Icon(imageVector = Icons.Outlined.Done, contentDescription = "Confirm")
         }
     }
 

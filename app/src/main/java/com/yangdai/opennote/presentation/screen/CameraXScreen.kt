@@ -31,8 +31,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Camera
-import androidx.compose.material.icons.filled.CloseFullscreen
 import androidx.compose.material.icons.filled.FlashAuto
 import androidx.compose.material.icons.filled.FlashOff
 import androidx.compose.material.icons.filled.FlashOn
@@ -68,21 +68,20 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.google.mlkit.vision.common.InputImage
-import com.google.mlkit.vision.text.TextRecognition
-import com.google.mlkit.vision.text.TextRecognizer
-import com.google.mlkit.vision.text.chinese.ChineseTextRecognizerOptions
-import com.google.mlkit.vision.text.latin.TextRecognizerOptions
+import com.yangdai.opennote.MainActivity
 import com.yangdai.opennote.R
+import com.yangdai.opennote.presentation.viewmodel.SharedViewModel
 import kotlinx.coroutines.launch
-import java.util.Locale
 import java.util.concurrent.Executors
 
 @kotlin.OptIn(ExperimentalMaterial3Api::class)
 @OptIn(ExperimentalGetImage::class)
 @Composable
 fun CameraXScreen(
+    sharedViewModel: SharedViewModel = hiltViewModel(LocalContext.current as MainActivity),
     onCloseClick: () -> Unit,
     onDoneClick: (String) -> Unit
 ) {
@@ -110,32 +109,57 @@ fun CameraXScreen(
         mutableIntStateOf(ImageCapture.FLASH_MODE_OFF)
     }
 
-    val controller = remember { LifecycleCameraController(context).apply {
-        this.bindToLifecycle(lifecycleOwner)
-        this.imageCaptureFlashMode = flashMode
-    } }
+    val controller = remember {
+        LifecycleCameraController(context).apply {
+            this.bindToLifecycle(lifecycleOwner)
+            this.imageCaptureFlashMode = flashMode
+        }
+    }
 
-    val previewView = remember { PreviewView(context).apply {
-        this.controller = controller
-        this.scaleType = PreviewView.ScaleType.FIT_CENTER
-    } }
+    val previewView = remember {
+        PreviewView(context).apply {
+            this.controller = controller
+            this.scaleType = PreviewView.ScaleType.FIT_CENTER
+        }
+    }
 
     val executor = remember { Executors.newSingleThreadExecutor() }
-
-    var textRecognizer: TextRecognizer = remember {
-        TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
-    }
-
-    val language = context.resources.configuration.locales[0].language
-
-    if (language == Locale.CHINESE.language) {
-        textRecognizer =
-            TextRecognition.getClient(ChineseTextRecognizerOptions.Builder().build())
-    }
 
     var text by rememberSaveable { mutableStateOf("") }
 
     var isLoading by rememberSaveable { mutableStateOf(false) }
+
+    fun processImage(image: InputImage) {
+        isLoading = true
+        sharedViewModel.textRecognizer.process(image)
+            .addOnCompleteListener { task ->
+                isLoading = false
+                text =
+                    if (!task.isSuccessful) {
+                        val msg =
+                            task.exception?.localizedMessage.toString()
+                        Toast.makeText(
+                            context,
+                            msg,
+                            Toast.LENGTH_LONG
+                        ).show()
+                        ""
+                    } else {
+                        val scannedText = task.result.text
+                        if (scannedText.isEmpty()) {
+                            Toast.makeText(
+                                context,
+                                context.getString(R.string.no_text_found),
+                                Toast.LENGTH_LONG
+                            ).show()
+                        }
+                        scannedText
+                    }
+                scope.launch {
+                    scaffoldState.bottomSheetState.expand()
+                }
+            }
+    }
 
     // Registers a photo picker activity launcher in single-select mode.
     val pickMedia =
@@ -144,34 +168,7 @@ fun CameraXScreen(
             // photo picker.
             if (uri != null) {
                 isLoading = true
-                textRecognizer.process(InputImage.fromFilePath(context, uri))
-                    .addOnCompleteListener { task ->
-                        isLoading = false
-                        text =
-                            if (!task.isSuccessful) {
-                                val msg =
-                                    task.exception?.localizedMessage.toString()
-                                Toast.makeText(
-                                    context,
-                                    msg,
-                                    Toast.LENGTH_LONG
-                                ).show()
-                                ""
-                            } else {
-                                val scannedText = task.result.text
-                                if (scannedText.isEmpty()) {
-                                    Toast.makeText(
-                                        context,
-                                        context.getString(R.string.no_text_found),
-                                        Toast.LENGTH_LONG
-                                    ).show()
-                                }
-                                scannedText
-                            }
-                        scope.launch {
-                            scaffoldState.bottomSheetState.expand()
-                        }
-                    }
+                processImage(InputImage.fromFilePath(context, uri))
             } else {
                 Log.d("PhotoPicker", "No media selected")
             }
@@ -245,7 +242,7 @@ fun CameraXScreen(
                 }
             ) {
                 Icon(
-                    imageVector = Icons.Default.CloseFullscreen,
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                     contentDescription = "Close"
                 )
             }
@@ -326,65 +323,47 @@ fun CameraXScreen(
                 val orientation = context.resources.configuration.orientation
 
                 val modifier = if (orientation == Configuration.ORIENTATION_PORTRAIT) {
-                    Modifier.padding(bottom = 24.dp).navigationBarsPadding().align(Alignment.BottomCenter)
+                    Modifier
+                        .padding(bottom = 24.dp)
+                        .navigationBarsPadding()
+                        .align(Alignment.BottomCenter)
                 } else {
-                    Modifier.padding(end = 24.dp).align(Alignment.CenterEnd)
+                    Modifier
+                        .padding(end = 24.dp)
+                        .align(Alignment.CenterEnd)
                 }
 
                 // 由于IconButton被限制了大小，所以直接使用Icon
                 Icon(
-                    modifier = Modifier.then(modifier).size(64.dp).clickable {
-                        controller.takePicture(
-                            executor,
-                            object : ImageCapture.OnImageCapturedCallback() {
-                                override fun onCaptureSuccess(imageProxy: ImageProxy) {
-                                    super.onCaptureSuccess(imageProxy)
+                    modifier = Modifier
+                        .then(modifier)
+                        .size(64.dp)
+                        .clickable {
+                            controller.takePicture(
+                                executor,
+                                object : ImageCapture.OnImageCapturedCallback() {
+                                    override fun onCaptureSuccess(imageProxy: ImageProxy) {
+                                        super.onCaptureSuccess(imageProxy)
 
-                                    isLoading = true
+                                        isLoading = true
 
-                                    imageProxy.image?.let { image ->
-                                        val inputImage = InputImage.fromMediaImage(
-                                            image,
-                                            imageProxy.imageInfo.rotationDegrees
-                                        )
-                                        textRecognizer.process(inputImage)
-                                            .addOnCompleteListener { task ->
-                                                isLoading = false
-                                                text =
-                                                    if (!task.isSuccessful) {
-                                                        val msg =
-                                                            task.exception?.localizedMessage.toString()
-                                                        Toast.makeText(
-                                                            context,
-                                                            msg,
-                                                            Toast.LENGTH_LONG
-                                                        ).show()
-                                                        ""
-                                                    } else {
-                                                        val scannedText = task.result.text
-                                                        if (scannedText.isEmpty()) {
-                                                            Toast.makeText(
-                                                                context,
-                                                                context.getString(R.string.no_text_found),
-                                                                Toast.LENGTH_LONG
-                                                            ).show()
-                                                        }
-                                                        scannedText
-                                                    }
-                                                scope.launch {
-                                                    scaffoldState.bottomSheetState.expand()
-                                                }
-                                            }
+                                        imageProxy.image?.let { image ->
+                                            processImage(
+                                                InputImage.fromMediaImage(
+                                                    image,
+                                                    imageProxy.imageInfo.rotationDegrees
+                                                )
+                                            )
+                                        }
+                                    }
+
+                                    override fun onError(exception: ImageCaptureException) {
+                                        super.onError(exception)
+                                        Log.e("Camera", "Couldn't take photo: ", exception)
                                     }
                                 }
-
-                                override fun onError(exception: ImageCaptureException) {
-                                    super.onError(exception)
-                                    Log.e("Camera", "Couldn't take photo: ", exception)
-                                }
-                            }
-                        )
-                    },
+                            )
+                        },
                     imageVector = Icons.Default.Camera,
                     tint = MaterialTheme.colorScheme.primary,
                     contentDescription = "Capture"

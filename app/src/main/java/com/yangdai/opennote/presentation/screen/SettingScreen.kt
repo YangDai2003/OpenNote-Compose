@@ -1,13 +1,18 @@
 package com.yangdai.opennote.presentation.screen
 
+import android.Manifest
+import android.app.Activity
 import android.app.KeyguardManager
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.provider.Settings
 import android.util.Log
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.basicMarquee
@@ -31,6 +36,9 @@ import androidx.compose.material.icons.automirrored.outlined.ArrowRight
 import androidx.compose.material.icons.outlined.Analytics
 import androidx.compose.material.icons.outlined.CleaningServices
 import androidx.compose.material.icons.outlined.DarkMode
+import androidx.compose.material.icons.outlined.FileDownload
+import androidx.compose.material.icons.outlined.FileUpload
+import androidx.compose.material.icons.outlined.ImportExport
 import androidx.compose.material.icons.outlined.IosShare
 import androidx.compose.material.icons.outlined.Language
 import androidx.compose.material.icons.outlined.Numbers
@@ -53,7 +61,7 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.rememberTopAppBarState
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -72,16 +80,23 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.google.firebase.analytics.FirebaseAnalytics
+import com.yangdai.opennote.MainActivity
 import com.yangdai.opennote.R
 import com.yangdai.opennote.data.di.AppModule
 import com.yangdai.opennote.presentation.component.AnimatedArrowIcon
+import com.yangdai.opennote.presentation.component.FolderListSheet
+import com.yangdai.opennote.presentation.component.ProgressDialog
 import com.yangdai.opennote.presentation.component.RatingDialog
 import com.yangdai.opennote.presentation.component.SelectableColorPlatte
+import com.yangdai.opennote.presentation.component.SettingsHeader
 import com.yangdai.opennote.presentation.component.WarningDialog
 import com.yangdai.opennote.presentation.theme.DarkBlueColors
 import com.yangdai.opennote.presentation.theme.DarkGreenColors
@@ -96,7 +111,8 @@ import com.yangdai.opennote.presentation.util.Constants.MASK_CLICK_X
 import com.yangdai.opennote.presentation.util.Constants.MASK_CLICK_Y
 import com.yangdai.opennote.presentation.util.Constants.NEED_PASSWORD
 import com.yangdai.opennote.presentation.util.Constants.SHOULD_FOLLOW_SYSTEM
-import com.yangdai.opennote.presentation.viewmodel.SettingScreenViewModel
+import com.yangdai.opennote.presentation.viewmodel.SharedViewModel
+import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.map
@@ -106,7 +122,7 @@ import kotlinx.coroutines.withContext
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
-    settingScreenViewModel: SettingScreenViewModel = hiltViewModel(),
+    sharedViewModel: SharedViewModel = hiltViewModel(LocalContext.current as MainActivity),
     navigateUp: () -> Unit,
 ) {
     val haptic = LocalHapticFeedback.current
@@ -116,16 +132,13 @@ fun SettingsScreen(
         .setShowTitle(true)
         .build()
 
-    val scrollBehavior =
-        TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
-
     val modeOptions = listOf(
         stringResource(R.string.system_default),
         stringResource(R.string.light),
         stringResource(R.string.dark)
     )
     var modeExpended by rememberSaveable { mutableStateOf(false) }
-    val initModeSelect = settingScreenViewModel.getInt(APP_THEME) ?: 0
+    val initModeSelect = sharedViewModel.getInt(APP_THEME) ?: 0
     val (selectedMode, onModeSelected) = rememberSaveable {
         mutableStateOf(
             modeOptions[initModeSelect]
@@ -133,7 +146,7 @@ fun SettingsScreen(
     }
 
     var colorExpended by rememberSaveable { mutableStateOf(false) }
-    val initColorSelect = settingScreenViewModel.getInt(APP_COLOR) ?: 0
+    val initColorSelect = sharedViewModel.getInt(APP_COLOR) ?: 0
     var selectedScheme by rememberSaveable { mutableIntStateOf(initColorSelect) }
     val colorSchemes = listOf(
         Pair(1, DarkPurpleColors),
@@ -142,22 +155,22 @@ fun SettingsScreen(
         Pair(4, DarkOrangeColors)
     )
     LaunchedEffect(selectedScheme) {
-        settingScreenViewModel.putInt(APP_COLOR, selectedScheme)
+        sharedViewModel.putPreferenceValue(APP_COLOR, selectedScheme)
     }
 
-    val initPasswordSelect = settingScreenViewModel.getBoolean(NEED_PASSWORD) ?: false
+    val initPasswordSelect = sharedViewModel.getBoolean(NEED_PASSWORD) ?: false
     var passwordChecked by rememberSaveable {
         mutableStateOf(initPasswordSelect)
     }
 
-    val initFirebaseSelect = settingScreenViewModel.getBoolean(FIREBASE) ?: false
+    val initFirebaseSelect = sharedViewModel.getBoolean(FIREBASE) ?: false
     var firebaseEnabled by rememberSaveable {
         mutableStateOf(initFirebaseSelect)
     }
 
     var appInfoExpended by rememberSaveable { mutableStateOf(false) }
 
-    val isAppInDarkTheme by settingScreenViewModel.getFlow()
+    val isAppInDarkTheme by sharedViewModel.preferencesFlow()
         .map { preferences ->
             preferences[booleanPreferencesKey(IS_APP_IN_DARK_MODE)] ?: false
         }
@@ -165,7 +178,7 @@ fun SettingsScreen(
 
     fun switchTheme() {
         scope.launch {
-            settingScreenViewModel
+            sharedViewModel
                 .getDataStore()
                 .edit {
                     it[floatPreferencesKey(MASK_CLICK_X)] = 0f
@@ -179,7 +192,22 @@ fun SettingsScreen(
 
     var showRatingDialog by rememberSaveable { mutableStateOf(false) }
     var showWarningDialog by rememberSaveable { mutableStateOf(false) }
+    var dataActionExpended by rememberSaveable { mutableStateOf(false) }
+    var showBottomSheet by rememberSaveable { mutableStateOf(false) }
+    val sheetState = rememberModalBottomSheetState()
+    val listState by sharedViewModel.listStateFlow.collectAsStateWithLifecycle()
+    val actionState by sharedViewModel.dataActionState.collectAsStateWithLifecycle()
+    var folderId: Long? = null
+    val importLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenMultipleDocuments()
+    ) { uriList ->
+        if (uriList.isNotEmpty()) {
+            val contentResolver = context.contentResolver
+            sharedViewModel.addNotes(folderId, uriList, contentResolver)
+        }
+    }
 
+    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
@@ -208,18 +236,7 @@ fun SettingsScreen(
                 .verticalScroll(rememberScrollState())
         ) {
 
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 16.dp, top = 16.dp, bottom = 8.dp),
-                horizontalArrangement = Arrangement.Start
-            ) {
-                Text(
-                    text = stringResource(R.string.style),
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.primary
-                )
-            }
+            SettingsHeader(text = stringResource(R.string.style))
 
             ListItem(
                 modifier = Modifier.clickable {
@@ -253,7 +270,7 @@ fun SettingsScreen(
                                     onClick = {
                                         onModeSelected(text)
 
-                                        val mode = settingScreenViewModel.getInt(APP_THEME)
+                                        val mode = sharedViewModel.getInt(APP_THEME)
 
                                         if (mode != index) {
                                             when (index) {
@@ -261,9 +278,12 @@ fun SettingsScreen(
                                                     if (isSystemDarkTheme != isAppInDarkTheme) {
                                                         switchTheme()
                                                     } else {
-                                                        settingScreenViewModel.putInt(APP_THEME, 0)
+                                                        sharedViewModel.putPreferenceValue(
+                                                            APP_THEME,
+                                                            0
+                                                        )
                                                     }
-                                                    settingScreenViewModel.putBoolean(
+                                                    sharedViewModel.putPreferenceValue(
                                                         SHOULD_FOLLOW_SYSTEM, true
                                                     )
                                                 }
@@ -272,22 +292,22 @@ fun SettingsScreen(
                                                     if (isAppInDarkTheme) {
                                                         switchTheme()
                                                     }
-                                                    settingScreenViewModel.putBoolean(
+                                                    sharedViewModel.putPreferenceValue(
                                                         SHOULD_FOLLOW_SYSTEM,
                                                         false
                                                     )
-                                                    settingScreenViewModel.putInt(APP_THEME, 1)
+                                                    sharedViewModel.putPreferenceValue(APP_THEME, 1)
                                                 }
 
                                                 2 -> {
                                                     if (!isAppInDarkTheme) {
                                                         switchTheme()
                                                     }
-                                                    settingScreenViewModel.putBoolean(
+                                                    sharedViewModel.putPreferenceValue(
                                                         SHOULD_FOLLOW_SYSTEM,
                                                         false
                                                     )
-                                                    settingScreenViewModel.putInt(APP_THEME, 2)
+                                                    sharedViewModel.putPreferenceValue(APP_THEME, 2)
                                                 }
                                             }
                                         }
@@ -331,23 +351,29 @@ fun SettingsScreen(
                 })
 
             AnimatedVisibility(visible = colorExpended) {
-                Column(Modifier.fillMaxWidth().padding(horizontal = 32.dp)) {
-                    Row(
-                        Modifier
-                            .fillMaxWidth()
-                            .height(56.dp)
-                            .clickable { selectedScheme = 0 },
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        RadioButton(
-                            selected = selectedScheme == 0,
-                            onClick = null
-                        )
-                        Text(
-                            text = stringResource(R.string.dynamic_only_android_12),
-                            style = MaterialTheme.typography.bodyLarge,
-                            modifier = Modifier.padding(start = 16.dp)
-                        )
+                Column(
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 32.dp)
+                ) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                        Row(
+                            Modifier
+                                .fillMaxWidth()
+                                .height(56.dp)
+                                .clickable { selectedScheme = 0 },
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            RadioButton(
+                                selected = selectedScheme == 0,
+                                onClick = null
+                            )
+                            Text(
+                                text = stringResource(R.string.dynamic_only_android_12),
+                                style = MaterialTheme.typography.bodyLarge,
+                                modifier = Modifier.padding(start = 16.dp)
+                            )
+                        }
                     }
                     Row(
                         modifier = Modifier.horizontalScroll(rememberScrollState()),
@@ -408,19 +434,65 @@ fun SettingsScreen(
                     })
             }
 
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 16.dp, top = 16.dp, bottom = 8.dp),
-                horizontalArrangement = Arrangement.Start
-            ) {
-                Text(
-                    text = stringResource(R.string.data),
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.primary
-                )
-            }
+            SettingsHeader(text = stringResource(R.string.data))
 
+            ListItem(
+                modifier = Modifier.clickable {
+                    dataActionExpended = !dataActionExpended
+                },
+                leadingContent = {
+                    Icon(
+                        imageVector = Icons.Outlined.ImportExport,
+                        contentDescription = "ImportExport"
+                    )
+                },
+                headlineContent = { Text(text = stringResource(R.string.ImportExport)) },
+                trailingContent = {
+                    AnimatedArrowIcon(expended = dataActionExpended)
+                }
+            )
+            AnimatedVisibility(visible = dataActionExpended) {
+                Column(
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp)
+                ) {
+                    ListItem(
+                        modifier = Modifier.clickable {
+                            if (!hasStoragePermissions(context)) {
+                                ActivityCompat.requestPermissions(
+                                    context as Activity, STORAGE_PERMISSIONS, 0
+                                )
+                            } else {
+                                showBottomSheet = true
+                            }
+                        },
+                        leadingContent = {
+                            Icon(
+                                imageVector = Icons.Outlined.FileDownload,
+                                contentDescription = "Import"
+                            )
+                        },
+                        headlineContent = { Text(text = stringResource(R.string.import_files)) }
+                    )
+                    ListItem(
+                        modifier = Modifier.clickable {
+                            Toast.makeText(
+                                context,
+                                context.getString(R.string.coming_soon),
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        },
+                        leadingContent = {
+                            Icon(
+                                imageVector = Icons.Outlined.FileUpload,
+                                contentDescription = "Export"
+                            )
+                        },
+                        headlineContent = { Text(text = stringResource(R.string.export_files)) }
+                    )
+                }
+            }
             ListItem(
                 leadingContent = {
                     Icon(
@@ -437,7 +509,7 @@ fun SettingsScreen(
                                 context.getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager
                             if (keyguardManager.isKeyguardSecure) {
                                 passwordChecked = it
-                                settingScreenViewModel.putBoolean(NEED_PASSWORD, it)
+                                sharedViewModel.putPreferenceValue(NEED_PASSWORD, it)
                             } else {
                                 Toast.makeText(
                                     context,
@@ -471,18 +543,8 @@ fun SettingsScreen(
                 })
 
 
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 16.dp, top = 16.dp, bottom = 8.dp),
-                horizontalArrangement = Arrangement.Start
-            ) {
-                Text(
-                    text = stringResource(R.string.other),
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.primary
-                )
-            }
+            SettingsHeader(text = stringResource(R.string.other))
+
             ListItem(
                 leadingContent = {
                     Icon(
@@ -503,7 +565,7 @@ fun SettingsScreen(
                         checked = firebaseEnabled,
                         onCheckedChange = {
                             firebaseEnabled = it
-                            settingScreenViewModel.putBoolean(FIREBASE, it)
+                            sharedViewModel.putPreferenceValue(FIREBASE, it)
                             FirebaseAnalytics.getInstance(context).setAnalyticsCollectionEnabled(it)
                         }
                     )
@@ -636,8 +698,45 @@ fun SettingsScreen(
             onDismissRequest = { showWarningDialog = false }) {
             scope.clear(context.applicationContext)
         }
+        ProgressDialog(isLoading = actionState.loading, progress = actionState.progress) {
+            sharedViewModel.cancelAddNotes()
+
+        }
+        if (showBottomSheet) {
+            FolderListSheet(
+                hint = stringResource(R.string.select_destination_folder),
+                oFolderId = folderId,
+                folders = listState.folders.toImmutableList(),
+                sheetState = sheetState,
+                onDismissRequest = { showBottomSheet = false },
+                onCloseClick = {
+                    scope.launch { sheetState.hide() }.invokeOnCompletion {
+                        if (!sheetState.isVisible) {
+                            showBottomSheet = false
+                        }
+                    }
+                }) {
+                folderId = it
+                importLauncher.launch(arrayOf("text/*"))
+            }
+        }
     }
 }
+
+fun hasStoragePermissions(
+    context: Context
+): Boolean {
+    if (Build.VERSION.SDK_INT > Build.VERSION_CODES.S) {
+        return true
+    }
+    return STORAGE_PERMISSIONS.all {
+        ContextCompat.checkSelfPermission(context, it) == PackageManager.PERMISSION_GRANTED
+    }
+}
+
+val STORAGE_PERMISSIONS = arrayOf(
+    Manifest.permission.READ_EXTERNAL_STORAGE
+)
 
 private fun CoroutineScope.clear(context: Context) {
     launch(Dispatchers.IO) {

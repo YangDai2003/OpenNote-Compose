@@ -1,9 +1,12 @@
 package com.yangdai.opennote.presentation.event
 
+import com.yangdai.opennote.data.local.entity.NoteEntity
 import com.yangdai.opennote.domain.usecase.NoteOrder
 import com.yangdai.opennote.domain.usecase.OrderType
 
 sealed interface ListEvent {
+
+    data class ClickNote(val noteEntity: NoteEntity) : ListEvent
     data class Search(val key: String) : ListEvent
 
     data class Sort(
@@ -22,4 +25,5 @@ sealed interface ListEvent {
     data class RestoreNotes(val ids: List<Long>) : ListEvent
 
     data object ToggleOrderSection : ListEvent
+    data object AddNote : ListEvent
 }
