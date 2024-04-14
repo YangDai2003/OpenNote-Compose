@@ -10,9 +10,8 @@ import com.yangdai.opennote.domain.usecase.AddFolder
 import com.yangdai.opennote.domain.repository.NoteRepository
 import com.yangdai.opennote.domain.usecase.AddNote
 import com.yangdai.opennote.domain.usecase.DeleteFolder
-import com.yangdai.opennote.domain.usecase.DeleteNoteById
+import com.yangdai.opennote.domain.usecase.DeleteNote
 import com.yangdai.opennote.domain.usecase.DeleteNotesByFolderId
-import com.yangdai.opennote.domain.usecase.FindNote
 import com.yangdai.opennote.domain.usecase.GetFolders
 import com.yangdai.opennote.domain.usecase.GetNotes
 import com.yangdai.opennote.domain.usecase.Operations
@@ -65,9 +64,8 @@ object AppModule {
     ): Operations {
         return Operations(
             getNotes = GetNotes(noteRepository),
-            deleteNoteById = DeleteNoteById(noteRepository),
+            deleteNote = DeleteNote(noteRepository),
             addNote = AddNote(noteRepository),
-            findNote = FindNote(noteRepository),
             searchNotes = SearchNotes(noteRepository),
             updateNote = UpdateNote(noteRepository),
             deleteNotesByFolderId = DeleteNotesByFolderId(noteRepository),

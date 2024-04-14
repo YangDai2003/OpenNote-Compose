@@ -15,13 +15,13 @@ class GetNotes(
         filterFolder: Boolean = false,
         folderId: Long? = null,
     ): Flow<List<NoteEntity>> {
+
         val flow: Flow<List<NoteEntity>> = if (!trash) {
             if (filterFolder) {
                 repository.getNotesByFolderId(folderId)
             } else{
                 repository.getAllNotes()
             }
-
         } else {
             repository.getAllDeletedNotes()
         }
@@ -39,7 +39,7 @@ class GetNotes(
                 is OrderType.Descending -> {
                     when (noteOrder) {
                         is NoteOrder.Title -> notes.sortedByDescending { it.title.lowercase() }
-                        is NoteOrder.Date -> notes.sortedByDescending { it.timestamp }
+                        is NoteOrder.Date -> notes
                     }
                 }
             }

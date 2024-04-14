@@ -6,4 +6,5 @@ plugins {
     alias(libs.plugins.googleKsp) apply false
     alias(libs.plugins.googleGms) apply false
     alias(libs.plugins.googleCrashlytics) apply false
+    alias(libs.plugins.room) apply false
 }

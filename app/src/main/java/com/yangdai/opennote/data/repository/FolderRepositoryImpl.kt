@@ -13,16 +13,16 @@ class FolderRepositoryImpl(
         return dao.getAllFolders()
     }
 
-    override suspend fun insertFolder(folder: FolderEntity) {
-        dao.insertFolder(folder)
+    override suspend fun insertFolder(folderEntity: FolderEntity) {
+        dao.insertFolder(folderEntity)
     }
 
-    override suspend fun deleteFolder(id: Long) {
-        dao.deleteFolder(id)
+    override suspend fun deleteFolder(folderEntity: FolderEntity) {
+        dao.deleteFolder(folderEntity)
     }
 
-    override suspend fun updateFolder(folder: FolderEntity) {
-        dao.updateFolder(folder)
+    override suspend fun updateFolder(folderEntity: FolderEntity) {
+        dao.updateFolder(folderEntity)
     }
 
 }

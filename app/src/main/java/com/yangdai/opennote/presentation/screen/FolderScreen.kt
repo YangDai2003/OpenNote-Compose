@@ -31,7 +31,6 @@ import com.yangdai.opennote.MainActivity
 import com.yangdai.opennote.R
 import com.yangdai.opennote.data.local.entity.FolderEntity
 import com.yangdai.opennote.presentation.event.FolderEvent
-import com.yangdai.opennote.presentation.event.ListEvent
 import com.yangdai.opennote.presentation.component.FolderItem
 import com.yangdai.opennote.presentation.component.ModifyDialog
 import com.yangdai.opennote.presentation.viewmodel.SharedViewModel
@@ -108,8 +107,7 @@ fun FolderScreen(
                     }) {
 
                     if (folder.id != null) {
-                        sharedViewModel.onListEvent(ListEvent.DeleteNotesByFolderId(folder.id))
-                        sharedViewModel.onFolderEvent(FolderEvent.DeleteFolder(folder.id))
+                        sharedViewModel.onFolderEvent(FolderEvent.DeleteFolder(folder))
                     }
                 }
             }

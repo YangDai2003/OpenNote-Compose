@@ -1,6 +1,7 @@
 package com.yangdai.opennote.data.local.dao
 
 import androidx.room.Dao
+import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
@@ -17,8 +18,8 @@ interface FolderDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertFolder(folderEntity: FolderEntity)
 
-    @Query("DELETE FROM FolderEntity WHERE id = :id")
-    suspend fun deleteFolder(id: Long)
+    @Delete
+    suspend fun deleteFolder(folderEntity: FolderEntity)
 
     @Update
     suspend fun updateFolder(folderEntity: FolderEntity)

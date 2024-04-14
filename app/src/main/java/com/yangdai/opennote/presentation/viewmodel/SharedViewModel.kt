@@ -140,9 +140,9 @@ class SharedViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             // 延迟显示主屏幕，等待数据加载完成
             extensions = listOf(
-            TablesExtension.create(),
-            StrikethroughExtension.create(),
-            TaskListItemsExtension.create()
+                TablesExtension.create(),
+                StrikethroughExtension.create(),
+                TaskListItemsExtension.create()
             )
             parser = Parser.builder().extensions(extensions).build()
             renderer = HtmlRenderer.builder().extensions(extensions).build()
@@ -244,28 +244,25 @@ class SharedViewModel @Inject constructor(
                 event.folderId
             )
 
-            is ListEvent.DeleteNotesByIds -> {
+            is ListEvent.DeleteNotes -> {
                 viewModelScope.launch(Dispatchers.IO) {
                     if (event.recycle) {
-                        event.ids.forEach {
-                            val note = operations.findNote(it)
-                            if (note != null) {
-                                operations.updateNote(
-                                    NoteEntity(
-                                        id = note.id,
-                                        title = note.title,
-                                        content = note.content,
-                                        folderId = note.folderId,
-                                        isMarkdown = note.isMarkdown,
-                                        isDeleted = true,
-                                        timestamp = note.timestamp
-                                    )
+                        event.noteEntities.forEach {
+                            operations.updateNote(
+                                NoteEntity(
+                                    id = it.id,
+                                    title = it.title,
+                                    content = it.content,
+                                    folderId = it.folderId,
+                                    isMarkdown = it.isMarkdown,
+                                    isDeleted = true,
+                                    timestamp = it.timestamp
                                 )
-                            }
+                            )
                         }
                     } else {
-                        event.ids.forEach {
-                            operations.deleteNoteById(it)
+                        event.noteEntities.forEach {
+                            operations.deleteNote(it)
                         }
                     }
                 }
@@ -273,20 +270,18 @@ class SharedViewModel @Inject constructor(
 
             is ListEvent.RestoreNotes -> {
                 viewModelScope.launch(Dispatchers.IO) {
-                    event.ids.forEach {
-                        val note = operations.findNote(it)
-                        if (note != null)
-                            operations.updateNote(
-                                NoteEntity(
-                                    id = note.id,
-                                    title = note.title,
-                                    content = note.content,
-                                    folderId = note.folderId,
-                                    isMarkdown = note.isMarkdown,
-                                    isDeleted = false,
-                                    timestamp = note.timestamp
-                                )
+                    event.noteEntities.forEach {
+                        operations.updateNote(
+                            NoteEntity(
+                                id = it.id,
+                                title = it.title,
+                                content = it.content,
+                                folderId = it.folderId,
+                                isMarkdown = it.isMarkdown,
+                                isDeleted = false,
+                                timestamp = it.timestamp
                             )
+                        )
                     }
                 }
             }
@@ -302,28 +297,20 @@ class SharedViewModel @Inject constructor(
             is ListEvent.Search -> searchNotes(event.key)
             is ListEvent.MoveNotes -> {
                 viewModelScope.launch(Dispatchers.IO) {
-                    event.ids.forEach {
-                        val note = operations.findNote(it)
-                        if (note != null) {
-                            operations.updateNote(
-                                NoteEntity(
-                                    id = note.id,
-                                    title = note.title,
-                                    content = note.content,
-                                    folderId = event.folderId,
-                                    isMarkdown = note.isMarkdown,
-                                    isDeleted = false,
-                                    timestamp = note.timestamp
-                                )
+                    val folderId = event.folderId
+                    event.noteEntities.forEach {
+                        operations.updateNote(
+                            NoteEntity(
+                                id = it.id,
+                                title = it.title,
+                                content = it.content,
+                                folderId = folderId,
+                                isMarkdown = it.isMarkdown,
+                                isDeleted = false,
+                                timestamp = it.timestamp
                             )
-                        }
+                        )
                     }
-                }
-            }
-
-            is ListEvent.DeleteNotesByFolderId -> {
-                viewModelScope.launch(Dispatchers.IO) {
-                    operations.deleteNotesByFolderId(event.folderId)
                 }
             }
 
@@ -361,7 +348,8 @@ class SharedViewModel @Inject constructor(
 
             is FolderEvent.DeleteFolder -> {
                 viewModelScope.launch(Dispatchers.IO) {
-                    operations.deleteFolder(event.id)
+                    operations.deleteNotesByFolderId(event.folder.id)
+                    operations.deleteFolder(event.folder)
                 }
             }
 

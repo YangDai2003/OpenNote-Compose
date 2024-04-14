@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.googleKsp)
     alias(libs.plugins.googleGms)
     alias(libs.plugins.googleCrashlytics)
+    alias(libs.plugins.room)
 }
 
 android {
@@ -23,9 +24,10 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
-        ksp {
-            arg("room.schemaLocation", "$projectDir/schemas")
-        }
+    }
+
+    room {
+        schemaDirectory("$projectDir/schemas")
     }
 
     buildTypes {
@@ -92,6 +94,7 @@ dependencies {
     annotationProcessor(libs.androidx.room.compiler)
     ksp(libs.androidx.room.compiler)
     implementation(libs.androidx.room.ktx)
+    implementation(libs.androidx.room.paging)
     testImplementation(libs.androidx.room.testing)
 
     // Hilt, for dependency injection

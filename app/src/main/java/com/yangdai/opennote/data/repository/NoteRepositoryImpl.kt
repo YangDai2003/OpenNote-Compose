@@ -9,7 +9,7 @@ class NoteRepositoryImpl(
     private val dao: NoteDao
 ) : NoteRepository {
 
-    override fun getAllNotes(): Flow<List<NoteEntity>> {
+    override fun getAllNotes(): Flow<List<NoteEntity>>  {
         return dao.getAllNotes()
     }
 
@@ -29,8 +29,8 @@ class NoteRepositoryImpl(
         dao.insertNote(note)
     }
 
-    override suspend fun deleteNoteById(id: Long) {
-        dao.deleteNoteById(id)
+    override suspend fun deleteNote(noteEntity: NoteEntity) {
+        dao.deleteNote(noteEntity)
     }
 
     override suspend fun deleteNotesByFolderId(folderId: Long?) {
@@ -41,7 +41,7 @@ class NoteRepositoryImpl(
         dao.updateNote(note)
     }
 
-    override fun searchNote(keyWord: String): Flow<List<NoteEntity>> {
+    override fun getNotesByKeyWord(keyWord: String): Flow<List<NoteEntity>> {
         return dao.getNotesByKeyWord(keyWord)
     }
 }

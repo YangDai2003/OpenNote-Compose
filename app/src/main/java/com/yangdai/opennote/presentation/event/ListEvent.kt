@@ -16,13 +16,11 @@ sealed interface ListEvent {
         val trash: Boolean = false
     ) : ListEvent
 
-    data class DeleteNotesByIds(val ids: List<Long>, val recycle: Boolean) : ListEvent
+    data class DeleteNotes(val noteEntities: List<NoteEntity>, val recycle: Boolean) : ListEvent
 
-    data class DeleteNotesByFolderId(val folderId: Long?) : ListEvent
+    data class MoveNotes(val noteEntities: List<NoteEntity>, val folderId: Long?) : ListEvent
 
-    data class MoveNotes(val ids: List<Long>, val folderId: Long?) : ListEvent
-
-    data class RestoreNotes(val ids: List<Long>) : ListEvent
+    data class RestoreNotes(val noteEntities: List<NoteEntity>) : ListEvent
 
     data object ToggleOrderSection : ListEvent
     data object AddNote : ListEvent

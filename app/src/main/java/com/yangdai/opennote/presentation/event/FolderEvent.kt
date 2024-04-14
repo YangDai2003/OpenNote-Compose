@@ -8,5 +8,5 @@ sealed interface FolderEvent {
 
     data class UpdateFolder(val folder: FolderEntity) : FolderEvent
 
-    data class DeleteFolder(val id: Long) : FolderEvent
+    data class DeleteFolder(val folder: FolderEntity) : FolderEvent
 }

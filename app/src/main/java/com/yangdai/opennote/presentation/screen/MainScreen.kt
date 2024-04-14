@@ -127,7 +127,7 @@ fun MainScreen(
 
     // Record whether multi-select mode has been enabled, selected items and whether all items have been selected
     var isEnabled by remember { mutableStateOf(false) }
-    var selectedItems by remember { mutableStateOf<Set<Long>>(emptySet()) }
+    var selectedItems by remember { mutableStateOf<Set<NoteEntity>>(emptySet()) }
     var selectAll by remember { mutableStateOf(false) }
 
     // Whether to show the floating button, determined by the scroll state of the grid, the selected drawer, the search bar, and whether multi-select mode is enabled
@@ -159,10 +159,8 @@ fun MainScreen(
 
     // select all and deselect all, triggered by the checkbox in the bottom bar
     LaunchedEffect(selectAll) {
-        selectedItems = if (selectAll)
-            selectedItems.plus(listState.notes.mapNotNull { noteEntity -> noteEntity.id })
-        else
-            selectedItems.minus(listState.notes.mapNotNull { noteEntity -> noteEntity.id }.toSet())
+        selectedItems = if (selectAll) selectedItems.plus(listState.notes)
+        else selectedItems.minus(listState.notes.toSet())
     }
 
     // Back logic for better user experience
@@ -221,10 +219,9 @@ fun MainScreen(
             onEnableChange = { isEnabled = it },
             onNoteClick = {
                 if (isEnabled) {
-                    val id = it.id!!
                     selectedItems =
-                        if (selectedItems.contains(id)) selectedItems.minus(id)
-                        else selectedItems.plus(id)
+                        if (selectedItems.contains(it)) selectedItems.minus(it)
+                        else selectedItems.plus(it)
                 } else {
                     if (selectedDrawer != 1) {
                         sharedViewModel.onListEvent(ListEvent.ClickNote(it))
@@ -341,7 +338,7 @@ fun MainContent(
     folderName: String,
     listState: ListState,
     selectAll: Boolean,
-    selectedItems: Set<Long>,
+    selectedItems: Set<NoteEntity>,
     showFloatingButton: Boolean,
     showBottomSheet: Boolean,
     sheetState: SheetState,
@@ -428,9 +425,7 @@ fun MainContent(
                                         },
                                         text = { Text(text = stringResource(id = R.string.restore_all)) },
                                         onClick = {
-                                            val ids =
-                                                listState.notes.mapNotNull { noteEntity -> noteEntity.id }
-                                            viewModel.onListEvent(ListEvent.RestoreNotes(ids))
+                                            viewModel.onListEvent(ListEvent.RestoreNotes(listState.notes))
                                         })
 
                                     DropdownMenuItem(
@@ -442,11 +437,9 @@ fun MainContent(
                                         },
                                         text = { Text(text = stringResource(id = R.string.delete_all)) },
                                         onClick = {
-                                            val ids =
-                                                listState.notes.mapNotNull { noteEntity -> noteEntity.id }
                                             viewModel.onListEvent(
-                                                ListEvent.DeleteNotesByIds(
-                                                    ids,
+                                                ListEvent.DeleteNotes(
+                                                    listState.notes,
                                                     false
                                                 )
                                             )
@@ -523,7 +516,7 @@ fun MainContent(
 
                             TextButton(onClick = {
                                 viewModel.onListEvent(
-                                    ListEvent.DeleteNotesByIds(
+                                    ListEvent.DeleteNotes(
                                         selectedItems.toList(),
                                         selectedDrawer != 1
                                     )
@@ -548,7 +541,10 @@ fun MainContent(
                 visible = showFloatingButton,
                 enter = slideInHorizontally { fullWidth -> fullWidth * 3 / 2 },
                 exit = slideOutHorizontally { fullWidth -> fullWidth * 3 / 2 }) {
-                FloatingActionButton(onClick = { navigateTo(Route.NOTE) }) {
+                FloatingActionButton(onClick = {
+                    viewModel.onListEvent(ListEvent.AddNote)
+                    navigateTo(Route.NOTE)
+                }) {
                     Icon(imageVector = Icons.Outlined.Add, contentDescription = "Add")
                 }
             }
@@ -625,9 +621,10 @@ fun MainContent(
                         modifier = Modifier.animateItemPlacement(), // Add animation to the item
                         note = note,
                         isEnabled = isEnabled,
-                        isSelected = selectedItems.contains(note.id),
+                        isSelected = selectedItems.contains(note),
                         onEnableChange = onEnableChange,
-                        onNoteClick = onNoteClick)
+                        onNoteClick = onNoteClick
+                    )
                 }
             }
         )

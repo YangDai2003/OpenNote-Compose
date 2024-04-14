@@ -1,6 +1,7 @@
 package com.yangdai.opennote.data.local.dao
 
 import androidx.room.Dao
+import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
@@ -11,14 +12,17 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface NoteDao {
 
-    @Query("SELECT * FROM NOTEENTITY WHERE isDeleted = 0")
+    @Query("SELECT * FROM NOTEENTITY WHERE isDeleted = 0 ORDER BY timestamp DESC")
     fun getAllNotes(): Flow<List<NoteEntity>>
 
-    @Query("SELECT * FROM NOTEENTITY WHERE isDeleted = 1")
+    @Query("SELECT * FROM NOTEENTITY WHERE isDeleted = 1 ORDER BY timestamp DESC")
     fun getAllDeletedNotes(): Flow<List<NoteEntity>>
 
-    @Query("SELECT * FROM NOTEENTITY WHERE folderId = :folderId AND isDeleted = 0")
+    @Query("SELECT * FROM NOTEENTITY WHERE folderId = :folderId AND isDeleted = 0 ORDER BY timestamp DESC")
     fun getNotesByFolderId(folderId: Long?): Flow<List<NoteEntity>>
+
+    @Query("SELECT * FROM NOTEENTITY WHERE isDeleted = 0 AND (title LIKE '%' || :keyword || '%' OR content LIKE '%' || :keyword || '%') ORDER BY timestamp DESC")
+    fun getNotesByKeyWord(keyword: String): Flow<List<NoteEntity>>
 
     @Query(
         """
@@ -31,8 +35,8 @@ interface NoteDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertNote(noteEntity: NoteEntity)
 
-    @Query("DELETE FROM NOTEENTITY WHERE id = :id")
-    suspend fun deleteNoteById(id: Long)
+    @Delete
+    suspend fun deleteNote(noteEntity: NoteEntity)
 
     @Query("DELETE FROM NOTEENTITY WHERE folderId = :folderId")
     suspend fun deleteNotesByFolderId(folderId: Long?)
@@ -40,6 +44,4 @@ interface NoteDao {
     @Update
     suspend fun updateNote(noteEntity: NoteEntity)
 
-    @Query("SELECT * FROM NOTEENTITY WHERE isDeleted = 0 AND (title LIKE '%' || :keyword || '%' OR content LIKE '%' || :keyword || '%')")
-    fun getNotesByKeyWord(keyword: String): Flow<List<NoteEntity>>
 }
