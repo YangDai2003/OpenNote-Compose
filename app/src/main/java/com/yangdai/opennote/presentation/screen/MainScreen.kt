@@ -31,6 +31,7 @@ import com.yangdai.opennote.presentation.component.MainContent
 import com.yangdai.opennote.presentation.component.ModalNavigationScreen
 import com.yangdai.opennote.presentation.component.PermanentNavigationScreen
 import com.yangdai.opennote.presentation.viewmodel.SharedViewModel
+import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -140,12 +141,12 @@ fun MainScreen(
             MainContent(
                 selectedDrawerIndex = selectedDrawerIndex,
                 selectedFolder = selectedFolder,
-                selectedNotes = selectedNotes,
+                selectedNotes = selectedNotes.toImmutableList(),
                 allNotesSelected = allNotesSelected,
                 isMultiSelectionModeEnabled = isMultiSelectionModeEnabled,
                 isLargeScreen = isLargeScreen,
                 dataState = dataState,
-                folderList = folderList,
+                folderList = folderList.toImmutableList(),
                 isFloatingButtonVisible = isFloatingButtonVisible,
                 isFolderSheetVisible = isFolderSheetVisible,
                 sheetState = sheetState,
@@ -194,7 +195,7 @@ fun MainScreen(
         ModalNavigationScreen(
             drawerState = drawerState,
             gesturesEnabled = !isMultiSelectionModeEnabled && !isSearchBarActivated,
-            folderList = folderList,
+            folderList = folderList.toImmutableList(),
             selectedDrawerIndex = selectedDrawerIndex,
             content = movableContent,
             navigateTo = navigateTo
@@ -204,7 +205,7 @@ fun MainScreen(
         }
     } else {
         PermanentNavigationScreen(
-            folderList = folderList,
+            folderList = folderList.toImmutableList(),
             selectedDrawerIndex = selectedDrawerIndex,
             content = movableContent,
             navigateTo = navigateTo

@@ -7,12 +7,13 @@ import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.yangdai.opennote.data.local.entity.FolderEntity
+import kotlinx.collections.immutable.ImmutableList
 
 @Composable
 fun ModalNavigationScreen(
     drawerState: DrawerState,
     gesturesEnabled: Boolean,
-    folderList: List<FolderEntity>,
+    folderList: ImmutableList<FolderEntity>,
     selectedDrawerIndex: Int,
     content: @Composable () -> Unit,
     navigateTo: (String) -> Unit,

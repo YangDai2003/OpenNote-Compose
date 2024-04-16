@@ -63,6 +63,7 @@ import com.yangdai.opennote.data.local.entity.NoteEntity
 import com.yangdai.opennote.presentation.event.ListEvent
 import com.yangdai.opennote.presentation.navigation.Route
 import com.yangdai.opennote.presentation.state.DataState
+import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
@@ -73,11 +74,11 @@ fun MainContent(
     selectedFolder: FolderEntity,
     selectedDrawerIndex: Int,
     allNotesSelected: Boolean,
-    selectedNotes: Set<NoteEntity>,
+    selectedNotes: ImmutableList<NoteEntity>,
     isMultiSelectionModeEnabled: Boolean,
     isLargeScreen: Boolean,
     dataState: DataState,
-    folderList: List<FolderEntity>,
+    folderList: ImmutableList<FolderEntity>,
     sheetState: SheetState,
     staggeredGridState: LazyStaggeredGridState,
     navigateTo: (String) -> Unit,
@@ -170,7 +171,7 @@ fun MainContent(
                                         },
                                         text = { Text(text = stringResource(id = R.string.restore_all)) },
                                         onClick = {
-                                            onListEvent(ListEvent.RestoreNotes(dataState.notes))
+                                            onListEvent(ListEvent.RestoreNotes(dataState.notes.toImmutableList()))
                                         })
 
                                     DropdownMenuItem(
@@ -184,7 +185,7 @@ fun MainContent(
                                         onClick = {
                                             onListEvent(
                                                 ListEvent.DeleteNotes(
-                                                    dataState.notes,
+                                                    dataState.notes.toImmutableList(),
                                                     false
                                                 )
                                             )
@@ -233,7 +234,7 @@ fun MainContent(
 
                             if (selectedDrawerIndex == 1) {
                                 TextButton(onClick = {
-                                    onListEvent(ListEvent.RestoreNotes(selectedNotes.toList()))
+                                    onListEvent(ListEvent.RestoreNotes(selectedNotes))
                                     initializeNoteSelection()
                                 }) {
                                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -275,7 +276,7 @@ fun MainContent(
                             TextButton(onClick = {
                                 onListEvent(
                                     ListEvent.DeleteNotes(
-                                        selectedNotes.toList(),
+                                        selectedNotes,
                                         selectedDrawerIndex != 1
                                     )
                                 )
@@ -313,12 +314,12 @@ fun MainContent(
             FolderListSheet(
                 hint = stringResource(R.string.select_destination_folder),
                 oFolderId = selectedFolder.id,
-                folders = folderList.toImmutableList(),
+                folders = folderList,
                 sheetState = sheetState,
                 onDismissRequest = onFolderSheetDismissRequest,
                 onCloseClick = onFolderSheetCloseClick
             ) {
-                onListEvent(ListEvent.MoveNotes(selectedNotes.toList(), it))
+                onListEvent(ListEvent.MoveNotes(selectedNotes, it))
                 initializeNoteSelection()
             }
         }

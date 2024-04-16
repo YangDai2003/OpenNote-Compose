@@ -4,7 +4,6 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
@@ -34,10 +33,11 @@ import androidx.compose.ui.unit.dp
 import com.yangdai.opennote.R
 import com.yangdai.opennote.data.local.entity.FolderEntity
 import com.yangdai.opennote.presentation.navigation.Route
+import kotlinx.collections.immutable.ImmutableList
 
 @Composable
 fun DrawerContent(
-    folderList: List<FolderEntity>,
+    folderList: ImmutableList<FolderEntity>,
     selectedDrawerIndex: Int,
     navigateTo: (String) -> Unit,
     onClick: (Int, FolderEntity) -> Unit
@@ -70,8 +70,6 @@ fun DrawerContent(
         ) {
             onClick(0, FolderEntity())
         }
-
-        Spacer(modifier = Modifier.padding(vertical = 2.dp))
 
         DrawerItem(
             icon = Icons.Outlined.Delete,

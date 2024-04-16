@@ -15,9 +15,24 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.isCtrlPressed
+import androidx.compose.ui.input.key.isShiftPressed
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.res.stringResource
 import com.yangdai.opennote.R
 import com.yangdai.opennote.presentation.util.add
+import com.yangdai.opennote.presentation.util.bold
+import com.yangdai.opennote.presentation.util.inlineCode
+import com.yangdai.opennote.presentation.util.inlineFunction
+import com.yangdai.opennote.presentation.util.italic
+import com.yangdai.opennote.presentation.util.mark
+import com.yangdai.opennote.presentation.util.quote
+import com.yangdai.opennote.presentation.util.strikeThrough
+import com.yangdai.opennote.presentation.util.underline
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -28,20 +43,82 @@ fun NoteEditTextField(
     onFocusChanged: (Boolean) -> Unit
 ) = BasicTextField(
     // The contentReceiver modifier is used to receive text content from the clipboard or drag-and-drop operations.
-    modifier = modifier.contentReceiver { transferableContent ->
-        if (transferableContent.hasMediaType(MediaType.Text)) {
-            transferableContent.consume { item: ClipData.Item ->
-                val hasText = item.text.isNotEmpty()
-                if (hasText) {
-                    state.edit { add(item.text.toString()) }
+    modifier = modifier
+        .contentReceiver { transferableContent ->
+            if (transferableContent.hasMediaType(MediaType.Text)) {
+                transferableContent.consume { item: ClipData.Item ->
+                    val hasText = item.text.isNotEmpty()
+                    if (hasText) {
+                        state.edit { add(item.text.toString()) }
+                    }
+                    hasText
                 }
-                hasText
             }
+            null
         }
-        null
-    }.onFocusChanged {
-        onFocusChanged(it.isFocused)
-    },
+        .onFocusChanged {
+            onFocusChanged(it.isFocused)
+        }
+        .onPreviewKeyEvent { keyEvent ->
+            if (keyEvent.type == KeyEventType.KeyDown) {
+                if (keyEvent.isCtrlPressed) {
+                    if (keyEvent.isShiftPressed) {
+                        when (keyEvent.key) {
+                            Key.K -> {
+                                state.edit { inlineCode() }
+                                true
+                            }
+
+                            Key.M -> {
+                                state.edit { inlineFunction() }
+                                true
+                            }
+
+                            Key.Q -> {
+                                state.edit { quote() }
+                                true
+                            }
+
+                            else -> false
+                        }
+                    } else {
+                        when (keyEvent.key) {
+                            Key.B -> {
+                                state.edit { bold() }
+                                true
+                            }
+
+                            Key.D -> {
+                                state.edit { strikeThrough() }
+                                true
+                            }
+
+                            Key.I -> {
+                                state.edit { italic() }
+                                true
+                            }
+
+                            Key.M -> {
+                                state.edit { mark() }
+                                true
+                            }
+
+                            Key.U -> {
+                                state.edit { underline() }
+                                true
+                            }
+
+                            else -> false
+                        }
+                    }
+
+                } else {
+                    false
+                }
+            } else {
+                false
+            }
+        },
     readOnly = readMode,
     state = state,
     textStyle = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface),

@@ -3,6 +3,7 @@ package com.yangdai.opennote.presentation.event
 import com.yangdai.opennote.data.local.entity.NoteEntity
 import com.yangdai.opennote.domain.usecase.NoteOrder
 import com.yangdai.opennote.domain.usecase.OrderType
+import kotlinx.collections.immutable.ImmutableList
 
 sealed interface ListEvent {
 
@@ -16,11 +17,9 @@ sealed interface ListEvent {
         val trash: Boolean = false
     ) : ListEvent
 
-    data class DeleteNotes(val noteEntities: List<NoteEntity>, val recycle: Boolean) : ListEvent
-
-    data class MoveNotes(val noteEntities: List<NoteEntity>, val folderId: Long?) : ListEvent
-
-    data class RestoreNotes(val noteEntities: List<NoteEntity>) : ListEvent
+    data class DeleteNotes(val noteEntities: ImmutableList<NoteEntity>, val recycle: Boolean) : ListEvent
+    data class MoveNotes(val noteEntities: ImmutableList<NoteEntity>, val folderId: Long?) : ListEvent
+    data class RestoreNotes(val noteEntities: ImmutableList<NoteEntity>) : ListEvent
 
     data object ToggleOrderSection : ListEvent
     data object AddNote : ListEvent
