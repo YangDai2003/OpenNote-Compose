@@ -6,7 +6,7 @@ import com.yangdai.opennote.domain.usecase.OrderType
 
 sealed interface ListEvent {
 
-    data class ClickNote(val noteEntity: NoteEntity) : ListEvent
+    data class OpenNote(val noteEntity: NoteEntity) : ListEvent
     data class Search(val key: String) : ListEvent
 
     data class Sort(

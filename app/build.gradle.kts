@@ -16,8 +16,8 @@ android {
         applicationId = "com.yangdai.opennote"
         minSdk = 29
         targetSdk = 34
-        versionCode = 115
-        versionName = "1.1.5"
+        versionCode = 116
+        versionName = "1.1.6"
         resourceConfigurations += listOf("en", "zh")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -62,6 +62,10 @@ android {
 }
 
 dependencies {
+    // For Glance support
+    implementation(libs.androidx.glance)
+    // For AppWidgets support
+    implementation(libs.androidx.glance.appwidget)
 
     implementation(libs.kotlinx.collections.immutable)
 

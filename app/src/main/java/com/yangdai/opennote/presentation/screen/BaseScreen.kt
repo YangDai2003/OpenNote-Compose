@@ -28,9 +28,7 @@ import androidx.compose.ui.unit.dp
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.floatPreferencesKey
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.yangdai.opennote.MainActivity
 import com.yangdai.opennote.presentation.util.BiometricPromptManager
 import com.yangdai.opennote.presentation.util.Constants.APP_THEME
 import com.yangdai.opennote.presentation.util.Constants.IS_APP_IN_DARK_MODE
@@ -48,7 +46,7 @@ import kotlinx.coroutines.flow.map
 
 @Composable
 fun BaseScreen(
-    sharedViewModel: SharedViewModel = hiltViewModel(LocalContext.current as MainActivity),
+    sharedViewModel: SharedViewModel,
     promptManager: BiometricPromptManager,
     isLargeScreen: Boolean
 ) {

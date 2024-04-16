@@ -37,8 +37,6 @@ import androidx.compose.material.icons.outlined.Analytics
 import androidx.compose.material.icons.outlined.CleaningServices
 import androidx.compose.material.icons.outlined.DarkMode
 import androidx.compose.material.icons.outlined.FileDownload
-import androidx.compose.material.icons.outlined.FileUpload
-import androidx.compose.material.icons.outlined.ImportExport
 import androidx.compose.material.icons.outlined.IosShare
 import androidx.compose.material.icons.outlined.Language
 import androidx.compose.material.icons.outlined.Numbers
@@ -192,10 +190,9 @@ fun SettingsScreen(
 
     var showRatingDialog by rememberSaveable { mutableStateOf(false) }
     var showWarningDialog by rememberSaveable { mutableStateOf(false) }
-    var dataActionExpended by rememberSaveable { mutableStateOf(false) }
     var showBottomSheet by rememberSaveable { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState()
-    val listState by sharedViewModel.listStateFlow.collectAsStateWithLifecycle()
+    val folderEntities by sharedViewModel.foldersStateFlow.collectAsStateWithLifecycle()
     val actionState by sharedViewModel.dataActionState.collectAsStateWithLifecycle()
     var folderId: Long? = null
     val importLauncher = rememberLauncherForActivityResult(
@@ -209,7 +206,7 @@ fun SettingsScreen(
 
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     Scaffold(
-        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+        modifier = Modifier.fillMaxSize().nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             LargeTopAppBar(
                 navigationIcon = {
@@ -438,61 +435,23 @@ fun SettingsScreen(
 
             ListItem(
                 modifier = Modifier.clickable {
-                    dataActionExpended = !dataActionExpended
+                    if (!hasStoragePermissions(context)) {
+                        ActivityCompat.requestPermissions(
+                            context as Activity, STORAGE_PERMISSIONS, 0
+                        )
+                    } else {
+                        showBottomSheet = true
+                    }
                 },
                 leadingContent = {
                     Icon(
-                        imageVector = Icons.Outlined.ImportExport,
-                        contentDescription = "ImportExport"
+                        imageVector = Icons.Outlined.FileDownload,
+                        contentDescription = "Import"
                     )
                 },
-                headlineContent = { Text(text = stringResource(R.string.ImportExport)) },
-                trailingContent = {
-                    AnimatedArrowIcon(expended = dataActionExpended)
-                }
+                headlineContent = { Text(text = stringResource(R.string.import_files)) }
             )
-            AnimatedVisibility(visible = dataActionExpended) {
-                Column(
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp)
-                ) {
-                    ListItem(
-                        modifier = Modifier.clickable {
-                            if (!hasStoragePermissions(context)) {
-                                ActivityCompat.requestPermissions(
-                                    context as Activity, STORAGE_PERMISSIONS, 0
-                                )
-                            } else {
-                                showBottomSheet = true
-                            }
-                        },
-                        leadingContent = {
-                            Icon(
-                                imageVector = Icons.Outlined.FileDownload,
-                                contentDescription = "Import"
-                            )
-                        },
-                        headlineContent = { Text(text = stringResource(R.string.import_files)) }
-                    )
-                    ListItem(
-                        modifier = Modifier.clickable {
-                            Toast.makeText(
-                                context,
-                                context.getString(R.string.coming_soon),
-                                Toast.LENGTH_SHORT
-                            ).show()
-                        },
-                        leadingContent = {
-                            Icon(
-                                imageVector = Icons.Outlined.FileUpload,
-                                contentDescription = "Export"
-                            )
-                        },
-                        headlineContent = { Text(text = stringResource(R.string.export_files)) }
-                    )
-                }
-            }
+
             ListItem(
                 leadingContent = {
                     Icon(
@@ -706,7 +665,7 @@ fun SettingsScreen(
             FolderListSheet(
                 hint = stringResource(R.string.select_destination_folder),
                 oFolderId = folderId,
-                folders = listState.folders.toImmutableList(),
+                folders = folderEntities.toImmutableList(),
                 sheetState = sheetState,
                 onDismissRequest = { showBottomSheet = false },
                 onCloseClick = {

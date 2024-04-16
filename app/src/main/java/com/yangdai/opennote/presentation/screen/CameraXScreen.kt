@@ -38,8 +38,8 @@ import androidx.compose.material.icons.filled.FlashOff
 import androidx.compose.material.icons.filled.FlashOn
 import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material.icons.filled.TextFields
-import androidx.compose.material.icons.outlined.Cancel
-import androidx.compose.material.icons.outlined.DoneOutline
+import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.outlined.Done
 import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -64,6 +64,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.app.ActivityCompat
@@ -88,10 +89,11 @@ fun CameraXScreen(
     val haptic = LocalHapticFeedback.current
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
+    val keyboardController = LocalSoftwareKeyboardController.current
     val scope = rememberCoroutineScope()
     val bottomSheetState =
         rememberStandardBottomSheetState(initialValue = SheetValue.Hidden, skipHiddenState = false)
-    val scaffoldState = rememberBottomSheetScaffoldState(bottomSheetState)
+    val bottomSheetScaffoldState = rememberBottomSheetScaffoldState(bottomSheetState)
 
     if (!hasRequiredPermissions(context)) {
         ActivityCompat.requestPermissions(
@@ -99,9 +101,9 @@ fun CameraXScreen(
         )
     }
 
-    BackHandler(scaffoldState.bottomSheetState.isVisible) {
+    BackHandler(bottomSheetScaffoldState.bottomSheetState.currentValue == SheetValue.Expanded) {
         scope.launch {
-            scaffoldState.bottomSheetState.hide()
+            bottomSheetScaffoldState.bottomSheetState.hide()
         }
     }
 
@@ -109,7 +111,7 @@ fun CameraXScreen(
         mutableIntStateOf(ImageCapture.FLASH_MODE_OFF)
     }
 
-    val controller = remember {
+    val cameraController = remember {
         LifecycleCameraController(context).apply {
             this.bindToLifecycle(lifecycleOwner)
             this.imageCaptureFlashMode = flashMode
@@ -118,14 +120,14 @@ fun CameraXScreen(
 
     val previewView = remember {
         PreviewView(context).apply {
-            this.controller = controller
+            this.controller = cameraController
             this.scaleType = PreviewView.ScaleType.FIT_CENTER
         }
     }
 
     val executor = remember { Executors.newSingleThreadExecutor() }
 
-    var text by rememberSaveable { mutableStateOf("") }
+    var scannedText by rememberSaveable { mutableStateOf("") }
 
     var isLoading by rememberSaveable { mutableStateOf(false) }
 
@@ -134,7 +136,7 @@ fun CameraXScreen(
         sharedViewModel.textRecognizer.process(image)
             .addOnCompleteListener { task ->
                 isLoading = false
-                text =
+                scannedText =
                     if (!task.isSuccessful) {
                         val msg =
                             task.exception?.localizedMessage.toString()
@@ -145,18 +147,18 @@ fun CameraXScreen(
                         ).show()
                         ""
                     } else {
-                        val scannedText = task.result.text
-                        if (scannedText.isEmpty()) {
+                        val text = task.result.text
+                        if (text.isEmpty()) {
                             Toast.makeText(
                                 context,
                                 context.getString(R.string.no_text_found),
                                 Toast.LENGTH_LONG
                             ).show()
                         }
-                        scannedText
+                        text
                     }
                 scope.launch {
-                    scaffoldState.bottomSheetState.expand()
+                    bottomSheetScaffoldState.bottomSheetState.expand()
                 }
             }
     }
@@ -175,47 +177,50 @@ fun CameraXScreen(
         }
 
     BottomSheetScaffold(
-        scaffoldState = scaffoldState,
+        scaffoldState = bottomSheetScaffoldState,
         sheetPeekHeight = 0.dp,
+        sheetSwipeEnabled = false,
         sheetDragHandle = {},
         sheetContent = {
             Column(
                 Modifier
                     .fillMaxWidth()
+                    .statusBarsPadding()
                     .imePadding()
                     .padding(horizontal = 12.dp)
             ) {
-                if (text.isNotEmpty() && !isLoading) {
+                if (scannedText.isNotEmpty() && !isLoading) {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                            .padding(bottom = 8.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         IconButton(onClick = {
                             scope.launch {
-                                scaffoldState.bottomSheetState.hide()
+                                keyboardController?.hide()
+                                bottomSheetScaffoldState.bottomSheetState.hide()
                             }
                         }) {
-                            Icon(imageVector = Icons.Outlined.Cancel, contentDescription = "Cancel")
+                            Icon(imageVector = Icons.Outlined.Close, contentDescription = "Cancel")
                         }
-                        IconButton(onClick = { onDoneClick(text) }) {
+                        IconButton(onClick = { onDoneClick(scannedText) }) {
                             Icon(
-                                imageVector = Icons.Outlined.DoneOutline,
+                                imageVector = Icons.Outlined.Done,
                                 contentDescription = "Confirm"
                             )
                         }
                     }
                 }
 
-                if (text.isNotEmpty()) {
+                if (scannedText.isNotEmpty()) {
                     OutlinedTextField(
                         modifier = Modifier
                             .fillMaxSize()
                             .navigationBarsPadding(),
-                        value = text,
-                        onValueChange = { text = it })
+                        value = scannedText,
+                        onValueChange = { scannedText = it })
                 }
             }
         }
@@ -243,7 +248,7 @@ fun CameraXScreen(
             ) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "Close"
+                    contentDescription = "Back"
                 )
             }
 
@@ -279,7 +284,7 @@ fun CameraXScreen(
                 )
             }
 
-            if (text.isNotEmpty()) {
+            if (scannedText.isNotEmpty()) {
                 FilledTonalIconButton(
                     modifier = Modifier
                         .align(Alignment.BottomEnd)
@@ -287,7 +292,7 @@ fun CameraXScreen(
                         .padding(32.dp),
                     onClick = {
                         scope.launch {
-                            scaffoldState.bottomSheetState.expand()
+                            bottomSheetScaffoldState.bottomSheetState.expand()
                         }
                     }
                 ) {
@@ -339,7 +344,7 @@ fun CameraXScreen(
                         .then(modifier)
                         .size(64.dp)
                         .clickable {
-                            controller.takePicture(
+                            cameraController.takePicture(
                                 executor,
                                 object : ImageCapture.OnImageCapturedCallback() {
                                     override fun onCaptureSuccess(imageProxy: ImageProxy) {

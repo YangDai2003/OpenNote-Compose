@@ -6,8 +6,8 @@ import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -19,6 +19,8 @@ import com.yangdai.opennote.presentation.screen.MainScreen
 import com.yangdai.opennote.presentation.screen.NoteScreen
 import com.yangdai.opennote.presentation.screen.SettingsScreen
 import com.yangdai.opennote.presentation.util.Constants.NAV_ANIMATION_TIME
+import com.yangdai.opennote.presentation.util.parseSharedContent
+
 @Composable
 fun AnimatedNavHost(
     modifier: Modifier,
@@ -28,7 +30,6 @@ fun AnimatedNavHost(
     modifier = modifier,
     navController = navController,
     startDestination = Route.MAIN,
-    contentAlignment = Alignment.Center,
     enterTransition = {
         EnterTransition.None
     },
@@ -95,10 +96,6 @@ fun AnimatedNavHost(
             navDeepLink {
                 action = Intent.ACTION_SEND
                 mimeType = "text/*"
-            },
-            navDeepLink {
-                action = Intent.ACTION_VIEW
-                mimeType = "text/*"
             }
         ),
         enterTransition = {
@@ -128,9 +125,13 @@ fun AnimatedNavHost(
             )
         }
     ) {
+        val sharedText = it.arguments?.getParcelable<Intent>(NavController.KEY_DEEP_LINK_INTENT)?.parseSharedContent()?.trim()
+        val scannedText =
+            navController.currentBackStackEntry?.savedStateHandle?.get<String>("scannedText")?.trim()
         NoteScreen(
             isLargeScreen = isLargeScreen,
-            scannedText = navController.currentBackStackEntry?.savedStateHandle?.get<String>("scannedText"),
+            sharedText = sharedText,
+            scannedText = scannedText,
             navigateUp = { navController.navigateUp() }
         ) { navController.navigate(Route.CAMERAX) }
     }

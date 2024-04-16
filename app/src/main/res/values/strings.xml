@@ -64,10 +64,8 @@
     <string name="no_text_found">No text found</string>
     <string name="no_password_set">Please set the system lock screen password first</string>
     <string name="no_calendar_app_found">No calendar app found</string>
-    <string name="ImportExport">Import and export</string>
     <string name="progress">Progress</string>
     <string name="coming_soon">Coming soon</string>
     <string name="import_files">Import text files</string>
-    <string name="export_files">Export text files</string>
     <string name="select_destination_folder">Select destination folder</string>
 </resources>

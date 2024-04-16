@@ -2,7 +2,6 @@ package com.yangdai.opennote.presentation.viewmodel
 
 import android.annotation.SuppressLint
 import android.content.ContentResolver
-import android.content.Intent
 import android.net.Uri
 import android.provider.OpenableColumns
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -11,10 +10,8 @@ import androidx.compose.foundation.text.input.clearText
 import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.runtime.snapshotFlow
 import androidx.datastore.preferences.core.Preferences
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.navigation.NavController
 import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.TextRecognizer
 import com.google.mlkit.vision.text.chinese.ChineseTextRecognizerOptions
@@ -33,7 +30,7 @@ import com.yangdai.opennote.presentation.event.ListEvent
 import com.yangdai.opennote.presentation.event.NoteEvent
 import com.yangdai.opennote.presentation.event.UiEvent
 import com.yangdai.opennote.presentation.state.DataActionState
-import com.yangdai.opennote.presentation.state.ListState
+import com.yangdai.opennote.presentation.state.DataState
 import com.yangdai.opennote.presentation.state.NoteState
 import com.yangdai.opennote.presentation.util.Constants
 import com.yangdai.opennote.presentation.util.add
@@ -45,7 +42,6 @@ import com.yangdai.opennote.presentation.util.inlineCode
 import com.yangdai.opennote.presentation.util.inlineFunction
 import com.yangdai.opennote.presentation.util.italic
 import com.yangdai.opennote.presentation.util.mark
-import com.yangdai.opennote.presentation.util.parseSharedContent
 import com.yangdai.opennote.presentation.util.quote
 import com.yangdai.opennote.presentation.util.strikeThrough
 import com.yangdai.opennote.presentation.util.underline
@@ -86,8 +82,7 @@ import javax.inject.Inject
 @HiltViewModel
 class SharedViewModel @Inject constructor(
     private val dataStoreRepository: DataStoreRepository,
-    private val operations: Operations,
-    savedStateHandle: SavedStateHandle
+    private val operations: Operations
 ) : ViewModel() {
 
     // 起始页加载状态，初始值为 true
@@ -95,12 +90,16 @@ class SharedViewModel @Inject constructor(
     val isLoadingDate = _isLoadingData.asStateFlow()
 
     // 列表状态, 包含笔记列表、文件夹列表、排序方式等
-    private val _listState = MutableStateFlow(ListState())
-    val listStateFlow = _listState.asStateFlow()
+    private val _dataState = MutableStateFlow(DataState())
+    val dataStateFlow = _dataState.asStateFlow()
 
     // 笔记状态, 包含笔记的 id、文件夹 id、是否为 Markdown 笔记、时间戳等
     private val _noteState = MutableStateFlow(NoteState())
     val noteStateFlow = _noteState.asStateFlow()
+
+    val foldersStateFlow = operations.getFolders()
+        .flowOn(Dispatchers.IO)
+        .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
     // UI 事件
     private val _event = MutableSharedFlow<UiEvent>()
@@ -155,24 +154,7 @@ class SharedViewModel @Inject constructor(
             //任务完成后将 isLoading 设置为 false 以隐藏启动屏幕
             _isLoadingData.value = false
         }
-
-        savedStateHandle.get<Intent>(NavController.KEY_DEEP_LINK_INTENT)?.let {
-            val content = it.parseSharedContent().trim()
-            if (content.isNotEmpty()) {
-                contentState.setTextAndPlaceCursorAtEnd(content)
-            }
-        }
-
         getNotes()
-
-        operations.getFolders()
-            .flowOn(Dispatchers.IO)
-            .onEach { folders ->
-                _listState.update {
-                    it.copy(folders = folders)
-                }
-            }
-            .launchIn(viewModelScope)
     }
 
     // Setting Section
@@ -287,7 +269,7 @@ class SharedViewModel @Inject constructor(
             }
 
             is ListEvent.ToggleOrderSection -> {
-                _listState.update {
+                _dataState.update {
                     it.copy(
                         isOrderSectionVisible = !it.isOrderSectionVisible
                     )
@@ -314,7 +296,7 @@ class SharedViewModel @Inject constructor(
                 }
             }
 
-            is ListEvent.ClickNote -> {
+            is ListEvent.OpenNote -> {
                 val note = event.noteEntity
                 oNote = note
                 _noteState.update { noteState ->
@@ -332,8 +314,8 @@ class SharedViewModel @Inject constructor(
             ListEvent.AddNote -> {
                 titleState.clearText()
                 contentState.clearText()
-                oNote = null
                 _noteState.value = NoteState()
+                oNote = null
             }
         }
     }
@@ -371,7 +353,7 @@ class SharedViewModel @Inject constructor(
         queryNotesJob = operations.getNotes(noteOrder, trash, filterFolder, folderId)
             .flowOn(Dispatchers.IO)
             .onEach { notes ->
-                _listState.update {
+                _dataState.update {
                     it.copy(
                         notes = notes,
                         noteOrder = noteOrder,
@@ -449,7 +431,7 @@ class SharedViewModel @Inject constructor(
         queryNotesJob = operations.searchNotes(keyWord)
             .flowOn(Dispatchers.IO)
             .onEach { notes ->
-                _listState.update {
+                _dataState.update {
                     it.copy(
                         notes = notes
                     )
@@ -467,7 +449,7 @@ class SharedViewModel @Inject constructor(
         contentState.edit { addLink(link) }
     }
 
-    fun addScannedText(text: String) {
+    fun addText(text: String) {
         contentState.edit { add(text) }
     }
 

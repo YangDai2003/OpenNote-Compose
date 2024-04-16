@@ -42,7 +42,8 @@ fun FolderScreen(
     navigateUp: () -> Unit
 ) {
     val haptic = LocalHapticFeedback.current
-    val listState by sharedViewModel.listStateFlow.collectAsStateWithLifecycle()
+
+    val folderList by sharedViewModel.foldersStateFlow.collectAsStateWithLifecycle()
 
     var showAddFolderDialog by rememberSaveable {
         mutableStateOf(false)
@@ -51,8 +52,7 @@ fun FolderScreen(
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
 
     Scaffold(
-        modifier = Modifier
-            .nestedScroll(scrollBehavior.nestedScrollConnection),
+        modifier = Modifier.fillMaxSize().nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             LargeTopAppBar(
                 title = { Text(text = stringResource(id = R.string.folders)) },
@@ -80,6 +80,24 @@ fun FolderScreen(
         }
     ) { paddingValues ->
 
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+        ) {
+            items(folderList) {
+                FolderItem(
+                    folder = it,
+                    onModify = { folderEntity ->
+                        sharedViewModel.onFolderEvent(
+                            FolderEvent.UpdateFolder(folderEntity)
+                        )
+                    }) {
+                    sharedViewModel.onFolderEvent(FolderEvent.DeleteFolder(it))
+                }
+            }
+        }
+
         if (showAddFolderDialog) {
             ModifyDialog(
                 folder = FolderEntity(null, "", null),
@@ -90,27 +108,6 @@ fun FolderScreen(
                     )
                 }
             )
-        }
-
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-        ) {
-            items(listState.folders) { folder ->
-                FolderItem(
-                    folder = folder,
-                    onModify = { folderEntity ->
-                        sharedViewModel.onFolderEvent(
-                            FolderEvent.UpdateFolder(folderEntity)
-                        )
-                    }) {
-
-                    if (folder.id != null) {
-                        sharedViewModel.onFolderEvent(FolderEvent.DeleteFolder(folder))
-                    }
-                }
-            }
         }
     }
 }

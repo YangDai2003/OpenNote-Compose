@@ -65,6 +65,7 @@ class MainActivity : AppCompatActivity() {
                 derivedStateOf { windowSize.widthSizeClass == WindowWidthSizeClass.Expanded && windowSize.heightSizeClass > WindowHeightSizeClass.Compact }
             }
             BaseScreen(
+                sharedViewModel = sharedViewModel,
                 promptManager = promptManager,
                 isLargeScreen = isLargeScreen
             )

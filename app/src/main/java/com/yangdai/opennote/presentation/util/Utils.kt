@@ -19,7 +19,7 @@ import java.util.Date
 fun Intent.isTextMimeType() = type?.startsWith(Constants.MIME_TYPE_TEXT) == true
 
 fun Intent.parseSharedContent(): String {
-    if (action != Intent.ACTION_SEND && action != Intent.ACTION_VIEW) return ""
+    if (action != Intent.ACTION_SEND) return ""
 
     return if (isTextMimeType()) {
         getStringExtra(Intent.EXTRA_TEXT) ?: ""

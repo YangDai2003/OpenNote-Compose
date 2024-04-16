@@ -29,10 +29,10 @@ import androidx.compose.material.icons.automirrored.outlined.MenuBook
 import androidx.compose.material.icons.outlined.Alarm
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.EditNote
-import androidx.compose.material.icons.outlined.FileDownload
-import androidx.compose.material.icons.outlined.IosShare
 import androidx.compose.material.icons.outlined.MoreVert
+import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material.icons.outlined.SwapHoriz
+import androidx.compose.material.icons.outlined.Upload
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -92,6 +92,7 @@ import kotlinx.coroutines.launch
 fun NoteScreen(
     sharedViewModel: SharedViewModel = hiltViewModel(LocalContext.current as MainActivity),
     isLargeScreen: Boolean,
+    sharedText: String?,
     scannedText: String?,
     navigateUp: () -> Unit,
     onScanTextClick: () -> Unit
@@ -104,12 +105,12 @@ fun NoteScreen(
     val focusManager = LocalFocusManager.current
 
     val noteState by sharedViewModel.noteStateFlow.collectAsStateWithLifecycle()
-    val listState by sharedViewModel.listStateFlow.collectAsStateWithLifecycle()
+    val folderList by sharedViewModel.foldersStateFlow.collectAsStateWithLifecycle()
     val html by sharedViewModel.html.collectAsStateWithLifecycle()
 
     val pagerState = rememberPagerState(pageCount = { 2 })
 
-    val scope = rememberCoroutineScope()
+    val coroutineScope = rememberCoroutineScope()
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var showBottomSheet by rememberSaveable { mutableStateOf(false) }
 
@@ -146,7 +147,7 @@ fun NoteScreen(
         folderName = if (noteState.folderId == null) {
             context.getString(R.string.all_notes)
         } else {
-            val matchingFolder = listState.folders.find { it.id == noteState.folderId }
+            val matchingFolder = folderList.find { it.id == noteState.folderId }
             matchingFolder?.name ?: ""
         }
         timestamp =
@@ -154,11 +155,15 @@ fun NoteScreen(
             else timestampToFormatLocalDateTime(noteState.timestamp!!)
     }
 
+    LaunchedEffect(sharedText) {
+        if (!sharedText.isNullOrEmpty()) {
+            sharedViewModel.addText(sharedText)
+        }
+    }
+
     LaunchedEffect(scannedText) {
-        if (scannedText != null) {
-            if (scannedText.isNotEmpty()) {
-                sharedViewModel.addScannedText(scannedText)
-            }
+        if (!scannedText.isNullOrEmpty()) {
+            sharedViewModel.addText(scannedText)
         }
     }
 
@@ -168,7 +173,7 @@ fun NoteScreen(
             focusManager.clearFocus()
         }
         if (!isLargeScreen) {
-            scope.launch {
+            coroutineScope.launch {
                 pagerState.animateScrollToPage(if (isReadMode) 1 else 0)
             }
         }
@@ -302,7 +307,7 @@ fun NoteScreen(
                         DropdownMenuItem(
                             leadingIcon = {
                                 Icon(
-                                    imageVector = Icons.Outlined.FileDownload,
+                                    imageVector = Icons.Outlined.Upload,
                                     contentDescription = "Export"
                                 )
                             },
@@ -314,7 +319,7 @@ fun NoteScreen(
                         DropdownMenuItem(
                             leadingIcon = {
                                 Icon(
-                                    imageVector = Icons.Outlined.IosShare,
+                                    imageVector = Icons.Outlined.Share,
                                     contentDescription = "Share"
                                 )
                             },
@@ -500,11 +505,11 @@ fun NoteScreen(
         FolderListSheet(
             hint = stringResource(R.string.select_destination_folder),
             oFolderId = noteState.folderId,
-            folders = listState.folders.toImmutableList(),
+            folders = folderList.toImmutableList(),
             sheetState = sheetState,
             onDismissRequest = { showBottomSheet = false },
             onCloseClick = {
-                scope.launch { sheetState.hide() }.invokeOnCompletion {
+                coroutineScope.launch { sheetState.hide() }.invokeOnCompletion {
                     if (!sheetState.isVisible) {
                         showBottomSheet = false
                     }

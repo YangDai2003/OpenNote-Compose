@@ -20,7 +20,6 @@ import androidx.compose.material.icons.outlined.History
 import androidx.compose.material.icons.outlined.Menu
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.DockedSearchBar
-import androidx.compose.material3.DrawerState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -39,26 +38,26 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.yangdai.opennote.MainActivity
 import com.yangdai.opennote.R
 import com.yangdai.opennote.presentation.event.ListEvent
 import com.yangdai.opennote.presentation.viewmodel.SharedViewModel
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun TopSearchbar(
-    scope: CoroutineScope,
-    drawerState: DrawerState,
-    viewModel: SharedViewModel,
-    isSmallScreen: Boolean,
+    viewModel: SharedViewModel = hiltViewModel(LocalContext.current as MainActivity),
+    isLargeScreen: Boolean,
     enabled: Boolean,
-    onActiveChange: (Boolean) -> Unit
+    onSearchBarActivationChange: (Boolean) -> Unit,
+    onDrawerStateChange: () -> Unit
 ) {
 
     val historySet by viewModel.historyStateFlow.collectAsStateWithLifecycle()
@@ -71,7 +70,7 @@ fun TopSearchbar(
     }
 
     LaunchedEffect(active) {
-        onActiveChange(active)
+        onSearchBarActivationChange(active)
     }
 
     val configuration = LocalConfiguration.current
@@ -86,7 +85,7 @@ fun TopSearchbar(
         } else {
             viewModel.onListEvent(
                 ListEvent.Sort(
-                    viewModel.listStateFlow.value.noteOrder,
+                    viewModel.dataStateFlow.value.noteOrder,
                     false,
                     null,
                     false
@@ -98,7 +97,7 @@ fun TopSearchbar(
 
     @Composable
     fun LeadingIcon() {
-        if (isSmallScreen) {
+        if (!isLargeScreen) {
             AnimatedContent(targetState = active, label = "leading") {
                 if (it) {
                     IconButton(onClick = { search(inputText) }) {
@@ -110,13 +109,7 @@ fun TopSearchbar(
                 } else {
                     IconButton(
                         enabled = enabled,
-                        onClick = {
-                            scope.launch {
-                                drawerState.apply {
-                                    if (isClosed) open() else close()
-                                }
-                            }
-                        }) {
+                        onClick = onDrawerStateChange) {
                         Icon(
                             imageVector = Icons.Outlined.Menu,
                             contentDescription = "Open Menu"
@@ -206,7 +199,7 @@ fun TopSearchbar(
     }
 
     // Search bar layout, switch between docked and expanded search bar based on window size and orientation
-    if (orientation == Configuration.ORIENTATION_PORTRAIT && isSmallScreen) {
+    if (orientation == Configuration.ORIENTATION_PORTRAIT && !isLargeScreen) {
 
         // Animate search bar padding when active state changes
         val searchBarPadding by animateDpAsState(
