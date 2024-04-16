@@ -158,6 +158,19 @@ This allows users to create richly formatted notes with support for headings, li
 |     Ψ     |   `\Psi`   |     ψ     |   `\psi`   |
 |     Ω     |  `\Omega`  |     ω     |  `\omega`  |
 
+# Keyboard Shortcuts
+
+|    Element    |    Shortcut    |
+|:-------------:|:--------------:|
+|     Bold      |    `Ctrl+B`    |
+|    Italic     |    `Ctrl+I`    |
+|   Underline   |    `Ctrl+U`    |
+| Strikethrough |    `Ctrl+D`    |
+|     Mark      |    `Ctrl+M`    |
+|     Code      | `Ctrl+Shift+K` |
+|     Quote     | `Ctrl+Shift+Q` |
+|     Math      | `Ctrl+Shift+M` |
+
 # References
 
 You can find more information about Markdown, CommonMark, GitHub Flavored Markdown, LaTeX Math, and Mermaid at the following links:

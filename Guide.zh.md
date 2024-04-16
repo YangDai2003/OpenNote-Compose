@@ -160,9 +160,23 @@ TXT、MD (Markdown) 和 HTML。
 | Ψ  |   `\Psi`   | ψ  |   `\psi`   |
 | Ω  |  `\Omega`  | ω  |  `\omega`  |
 
+# 键盘快捷键
+
+| 元素  |       键位       |
+|:---:|:--------------:|
+| 粗体  |    `Ctrl+B`    |
+| 斜体  |    `Ctrl+I`    |
+| 下划线 |    `Ctrl+U`    |
+| 删除线 |    `Ctrl+D`    |
+| 标记  |    `Ctrl+M`    |
+| 代码  | `Ctrl+Shift+K` |
+| 引用  | `Ctrl+Shift+Q` |
+| 数学  | `Ctrl+Shift+M` |
+
 # 参考
 
-你可以在以下链接中了解更多关于 Markdown、CommonMark、GitHub Flavored Markdown、LaTeX Math 和 Mermaid 的信息：
+你可以在以下链接中了解更多关于 Markdown、CommonMark、GitHub Flavored Markdown、LaTeX Math 和 Mermaid
+的信息：
 
 - [CommonMark](https://commonmark.org/)
 - [GitHub Flavored Markdown](https://github.github.com/gfm/)
