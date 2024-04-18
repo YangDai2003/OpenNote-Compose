@@ -67,5 +67,5 @@
     <string name="progress">Progress</string>
     <string name="coming_soon">Coming soon</string>
     <string name="import_files">Import text files</string>
-    <string name="select_destination_folder">Select destination folder</string>
+    <string name="destination_folder">Destination folder</string>
 </resources>

@@ -3,9 +3,7 @@ package com.yangdai.opennote.presentation.screen
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
 import androidx.compose.material3.DrawerValue
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.rememberDrawerState
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
@@ -34,7 +32,6 @@ import com.yangdai.opennote.presentation.viewmodel.SharedViewModel
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(
     sharedViewModel: SharedViewModel = hiltViewModel(LocalContext.current as MainActivity),
@@ -44,14 +41,12 @@ fun MainScreen(
     val coroutineScope = rememberCoroutineScope()
     // Staggered grid state, used to control the scroll state of the note grid
     val staggeredGridState = rememberLazyStaggeredGridState()
-    // Bottom sheet pop-up status for moving notes
-    val sheetState = rememberModalBottomSheetState()
 
     val dataState by sharedViewModel.dataStateFlow.collectAsStateWithLifecycle()
     val folderList by sharedViewModel.foldersStateFlow.collectAsStateWithLifecycle()
 
     // Bottom sheet visibility, reset when configuration changes, no need to use rememberSaveable
-    var isFolderSheetVisible by remember { mutableStateOf(false) }
+    var isFolderDialogVisible by remember { mutableStateOf(false) }
     // Search bar state, reset when configuration changes, no need to use rememberSaveable
     var isSearchBarActivated by remember { mutableStateOf(false) }
 
@@ -148,22 +143,14 @@ fun MainScreen(
                 dataState = dataState,
                 folderList = folderList.toImmutableList(),
                 isFloatingButtonVisible = isFloatingButtonVisible,
-                isFolderSheetVisible = isFolderSheetVisible,
-                sheetState = sheetState,
+                isFolderDialogVisible = isFolderDialogVisible,
                 staggeredGridState = staggeredGridState,
                 navigateTo = navigateTo,
                 initializeNoteSelection = { initializeNoteSelection() },
                 onSearchBarActivationChange = { isSearchBarActivated = it },
                 onAllNotesSelectionChange = { allNotesSelected = it },
-                onFolderSheetVisibilityChange = { isFolderSheetVisible = true },
-                onFolderSheetDismissRequest = { isFolderSheetVisible = false },
-                onFolderSheetCloseClick = {
-                    coroutineScope.launch { sheetState.hide() }.invokeOnCompletion {
-                        if (!sheetState.isVisible) {
-                            isFolderSheetVisible = false
-                        }
-                    }
-                },
+                onFolderDialogVisibilityChange = { isFolderDialogVisible = true },
+                onFolderDialogDismissRequest = { isFolderDialogVisible = false },
                 onMultiSelectionModeChange = { isMultiSelectionModeEnabled = it },
                 onNoteClick = {
                     if (isMultiSelectionModeEnabled) {

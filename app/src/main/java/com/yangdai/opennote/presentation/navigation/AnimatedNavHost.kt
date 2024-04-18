@@ -29,19 +29,7 @@ fun AnimatedNavHost(
 ) = NavHost(
     modifier = modifier,
     navController = navController,
-    startDestination = Route.MAIN,
-    enterTransition = {
-        EnterTransition.None
-    },
-    exitTransition = {
-        ExitTransition.None
-    },
-    popEnterTransition = {
-        EnterTransition.None
-    },
-    popExitTransition = {
-        ExitTransition.None
-    }
+    startDestination = Route.MAIN
 ) {
 
     composable(

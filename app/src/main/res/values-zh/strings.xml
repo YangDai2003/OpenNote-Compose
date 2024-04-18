@@ -66,5 +66,5 @@
     <string name="progress">进度</string>
     <string name="coming_soon">敬请期待</string>
     <string name="import_files">导入文本文件</string>
-    <string name="select_destination_folder">选择目标文件夹</string>
+    <string name="destination_folder">目标文件夹</string>
 </resources>

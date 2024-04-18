@@ -59,7 +59,6 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -90,7 +89,7 @@ import com.yangdai.opennote.MainActivity
 import com.yangdai.opennote.R
 import com.yangdai.opennote.data.di.AppModule
 import com.yangdai.opennote.presentation.component.AnimatedArrowIcon
-import com.yangdai.opennote.presentation.component.FolderListSheet
+import com.yangdai.opennote.presentation.component.FolderListDialog
 import com.yangdai.opennote.presentation.component.ProgressDialog
 import com.yangdai.opennote.presentation.component.RatingDialog
 import com.yangdai.opennote.presentation.component.SelectableColorPlatte
@@ -190,8 +189,8 @@ fun SettingsScreen(
 
     var showRatingDialog by rememberSaveable { mutableStateOf(false) }
     var showWarningDialog by rememberSaveable { mutableStateOf(false) }
-    var showBottomSheet by rememberSaveable { mutableStateOf(false) }
-    val sheetState = rememberModalBottomSheetState()
+    var showFolderDialog by rememberSaveable { mutableStateOf(false) }
+
     val folderEntities by sharedViewModel.foldersStateFlow.collectAsStateWithLifecycle()
     val actionState by sharedViewModel.dataActionState.collectAsStateWithLifecycle()
     var folderId: Long? = null
@@ -440,7 +439,7 @@ fun SettingsScreen(
                             context as Activity, STORAGE_PERMISSIONS, 0
                         )
                     } else {
-                        showBottomSheet = true
+                        showFolderDialog = true
                     }
                 },
                 leadingContent = {
@@ -661,20 +660,13 @@ fun SettingsScreen(
             sharedViewModel.cancelAddNotes()
 
         }
-        if (showBottomSheet) {
-            FolderListSheet(
-                hint = stringResource(R.string.select_destination_folder),
+        if (showFolderDialog) {
+            FolderListDialog(
+                hint = stringResource(R.string.destination_folder),
                 oFolderId = folderId,
                 folders = folderEntities.toImmutableList(),
-                sheetState = sheetState,
-                onDismissRequest = { showBottomSheet = false },
-                onCloseClick = {
-                    scope.launch { sheetState.hide() }.invokeOnCompletion {
-                        if (!sheetState.isVisible) {
-                            showBottomSheet = false
-                        }
-                    }
-                }) {
+                onDismissRequest = { showFolderDialog = false }
+            ) {
                 folderId = it
                 importLauncher.launch(arrayOf("text/*"))
             }

@@ -32,7 +32,7 @@ import com.yangdai.opennote.R
 import com.yangdai.opennote.data.local.entity.FolderEntity
 import com.yangdai.opennote.presentation.event.FolderEvent
 import com.yangdai.opennote.presentation.component.FolderItem
-import com.yangdai.opennote.presentation.component.ModifyDialog
+import com.yangdai.opennote.presentation.component.ModifyFolderDialog
 import com.yangdai.opennote.presentation.viewmodel.SharedViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -52,7 +52,9 @@ fun FolderScreen(
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
 
     Scaffold(
-        modifier = Modifier.fillMaxSize().nestedScroll(scrollBehavior.nestedScrollConnection),
+        modifier = Modifier
+            .fillMaxSize()
+            .nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             LargeTopAppBar(
                 title = { Text(text = stringResource(id = R.string.folders)) },
@@ -98,15 +100,13 @@ fun FolderScreen(
             }
         }
 
-        if (showAddFolderDialog) {
-            ModifyDialog(
-                folder = FolderEntity(null, "", null),
-                onDismissRequest = { showAddFolderDialog = false },
-                onModify = {
-                    sharedViewModel.onFolderEvent(
-                        FolderEvent.AddFolder(it)
-                    )
-                }
+        ModifyFolderDialog(
+            showDialog = showAddFolderDialog,
+            folder = FolderEntity(),
+            onDismissRequest = { showAddFolderDialog = false }
+        ) {
+            sharedViewModel.onFolderEvent(
+                FolderEvent.AddFolder(it)
             )
         }
     }

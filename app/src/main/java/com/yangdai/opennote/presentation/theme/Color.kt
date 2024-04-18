@@ -2,6 +2,7 @@ package com.yangdai.opennote.presentation.theme
 
 import androidx.compose.ui.graphics.Color
 
+val linkColor = Color(red = 25, green = 118, blue = 210, alpha = 255)
 val Red = Color(0xFFD81B60)
 val Orange = Color(0xFFF4511E)
 val Yellow = Color(0xFFFDD835)

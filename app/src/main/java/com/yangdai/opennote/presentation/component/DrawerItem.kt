@@ -1,7 +1,6 @@
 package com.yangdai.opennote.presentation.component
 
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationDrawerItem
@@ -48,7 +47,7 @@ fun DrawerItem(
             style = MaterialTheme.typography.labelMedium
         )
     },
-    shape = RoundedCornerShape(16.dp),
+    shape = MaterialTheme.shapes.large,
     selected = isSelected,
     onClick = onClick
 )

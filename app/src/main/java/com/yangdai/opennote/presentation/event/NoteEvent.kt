@@ -5,5 +5,5 @@ sealed interface NoteEvent {
     data class Edit(val value: String) : NoteEvent
     data object SwitchType : NoteEvent
     data object Delete : NoteEvent
-    data object NavigateBack : NoteEvent
+    data object Save : NoteEvent
 }

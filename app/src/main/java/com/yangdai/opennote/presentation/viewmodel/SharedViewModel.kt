@@ -468,7 +468,7 @@ class SharedViewModel @Inject constructor(
                 }
             }
 
-            is NoteEvent.NavigateBack -> {
+            is NoteEvent.Save -> {
                 viewModelScope.launch(Dispatchers.IO) {
                     val noteState = noteStateFlow.value
                     val note = NoteEntity(

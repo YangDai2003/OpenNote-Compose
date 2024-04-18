@@ -7,7 +7,6 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.slideOutVertically
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -40,7 +39,6 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -66,11 +64,11 @@ import com.yangdai.opennote.presentation.state.DataState
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainContent(
     isFloatingButtonVisible: Boolean,
-    isFolderSheetVisible: Boolean,
+    isFolderDialogVisible: Boolean,
     selectedFolder: FolderEntity,
     selectedDrawerIndex: Int,
     allNotesSelected: Boolean,
@@ -79,15 +77,13 @@ fun MainContent(
     isLargeScreen: Boolean,
     dataState: DataState,
     folderList: ImmutableList<FolderEntity>,
-    sheetState: SheetState,
     staggeredGridState: LazyStaggeredGridState,
     navigateTo: (String) -> Unit,
     initializeNoteSelection: () -> Unit,
     onSearchBarActivationChange: (Boolean) -> Unit,
     onAllNotesSelectionChange: (Boolean) -> Unit,
-    onFolderSheetVisibilityChange: () -> Unit,
-    onFolderSheetDismissRequest: () -> Unit,
-    onFolderSheetCloseClick: () -> Unit,
+    onFolderDialogVisibilityChange: () -> Unit,
+    onFolderDialogDismissRequest: () -> Unit,
     onMultiSelectionModeChange: (Boolean) -> Unit,
     onNoteClick: (NoteEntity) -> Unit,
     onListEvent: (ListEvent) -> Unit,
@@ -249,7 +245,11 @@ fun MainContent(
 
                                 TextButton(onClick = {
                                     // TODO: Implement export notes
-                                    Toast.makeText(context, context.getString(R.string.coming_soon), Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(
+                                        context,
+                                        context.getString(R.string.coming_soon),
+                                        Toast.LENGTH_SHORT
+                                    ).show()
                                 }) {
                                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                         Icon(
@@ -260,7 +260,7 @@ fun MainContent(
                                     }
                                 }
 
-                                TextButton(onClick = onFolderSheetVisibilityChange) {
+                                TextButton(onClick = onFolderDialogVisibilityChange) {
                                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                         Icon(
                                             imageVector = Icons.AutoMirrored.Outlined.DriveFileMove,
@@ -310,14 +310,12 @@ fun MainContent(
 
         }) { innerPadding ->
 
-        if (isFolderSheetVisible) {
-            FolderListSheet(
-                hint = stringResource(R.string.select_destination_folder),
+        if (isFolderDialogVisible) {
+            FolderListDialog(
+                hint = stringResource(R.string.destination_folder),
                 oFolderId = selectedFolder.id,
                 folders = folderList,
-                sheetState = sheetState,
-                onDismissRequest = onFolderSheetDismissRequest,
-                onCloseClick = onFolderSheetCloseClick
+                onDismissRequest = onFolderDialogDismissRequest
             ) {
                 onListEvent(ListEvent.MoveNotes(selectedNotes, it))
                 initializeNoteSelection()
@@ -373,7 +371,9 @@ fun MainContent(
             content = {
                 items(dataState.notes, key = { item: NoteEntity -> item.id!! }) {
                     NoteCard(
-                        modifier = Modifier.animateItemPlacement(), // Add animation to the item
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .animateItem(), // Add animation to the item
                         note = it,
                         isEnabled = isMultiSelectionModeEnabled,
                         isSelected = selectedNotes.contains(it),

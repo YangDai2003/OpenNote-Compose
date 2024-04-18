@@ -52,6 +52,7 @@ import androidx.compose.material3.SheetValue
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -113,16 +114,13 @@ fun CameraXScreen(
 
     val cameraController = remember {
         LifecycleCameraController(context).apply {
-            this.bindToLifecycle(lifecycleOwner)
-            this.imageCaptureFlashMode = flashMode
+            bindToLifecycle(lifecycleOwner)
+            imageCaptureFlashMode = flashMode
         }
     }
 
-    val previewView = remember {
-        PreviewView(context).apply {
-            this.controller = cameraController
-            this.scaleType = PreviewView.ScaleType.FIT_CENTER
-        }
+    LaunchedEffect(flashMode) {
+        cameraController.imageCaptureFlashMode = flashMode
     }
 
     val executor = remember { Executors.newSingleThreadExecutor() }
@@ -232,7 +230,12 @@ fun CameraXScreen(
         ) {
 
             AndroidView(
-                factory = { previewView },
+                factory = {
+                    PreviewView(it).apply {
+                        controller = cameraController
+                        scaleType = PreviewView.ScaleType.FIT_CENTER
+                    }
+                },
                 modifier = Modifier.fillMaxSize()
             )
 

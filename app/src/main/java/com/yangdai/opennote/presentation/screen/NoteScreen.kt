@@ -44,7 +44,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -72,9 +71,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.yangdai.opennote.MainActivity
 import com.yangdai.opennote.R
 import com.yangdai.opennote.presentation.component.ExportDialog
-import com.yangdai.opennote.presentation.component.FolderListSheet
-import com.yangdai.opennote.presentation.component.HighlightedClickableText
-import com.yangdai.opennote.presentation.component.HtmlView
+import com.yangdai.opennote.presentation.component.FolderListDialog
+import com.yangdai.opennote.presentation.component.RichText
+import com.yangdai.opennote.presentation.component.MarkdownText
 import com.yangdai.opennote.presentation.component.LinkDialog
 import com.yangdai.opennote.presentation.component.NoteEditTextField
 import com.yangdai.opennote.presentation.component.NoteEditorRow
@@ -111,8 +110,7 @@ fun NoteScreen(
     val pagerState = rememberPagerState(pageCount = { 2 })
 
     val coroutineScope = rememberCoroutineScope()
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-    var showBottomSheet by rememberSaveable { mutableStateOf(false) }
+    var showFolderDialog by rememberSaveable { mutableStateOf(false) }
 
     // Switch between read mode and edit mode
     var isReadMode by rememberSaveable {
@@ -194,18 +192,18 @@ fun NoteScreen(
         }
     }
 
-    DisposableEffect(lifecycleOwner) {
-        onDispose {
-            sharedViewModel.onNoteEvent(NoteEvent.NavigateBack)
-        }
-    }
-
     var isTitleFocused by rememberSaveable { mutableStateOf(false) }
     var isContentFocused by rememberSaveable { mutableStateOf(false) }
 
     BackHandler(isTitleFocused || isContentFocused) {
         focusManager.clearFocus()
         keyboardController?.hide()
+    }
+
+    DisposableEffect(lifecycleOwner) {
+        onDispose {
+            sharedViewModel.onNoteEvent(NoteEvent.Save)
+        }
     }
 
     Scaffold(
@@ -218,7 +216,7 @@ fun NoteScreen(
                     FilledTonalButton(
                         modifier = Modifier.sizeIn(maxWidth = 160.dp),
                         onClick = {
-                            showBottomSheet = true
+                            showFolderDialog = true
                         }) {
                         Text(text = folderName, maxLines = 1, modifier = Modifier.basicMarquee())
                     }
@@ -442,9 +440,9 @@ fun NoteScreen(
                             .weight(1f)
                     ) {
                         if (noteState.isMarkdown) {
-                            HtmlView(html = html)
+                            MarkdownText(html = html)
                         } else {
-                            HighlightedClickableText(sharedViewModel.contentState.text.toString())
+                            RichText(sharedViewModel.contentState.text.toString())
                         }
                     }
                 }
@@ -469,9 +467,9 @@ fun NoteScreen(
 
                         1 -> {
                             if (noteState.isMarkdown) {
-                                HtmlView(html = html)
+                                MarkdownText(html = html)
                             } else {
-                                HighlightedClickableText(sharedViewModel.contentState.text.toString())
+                                RichText(sharedViewModel.contentState.text.toString())
                             }
                         }
                     }
@@ -501,20 +499,13 @@ fun NoteScreen(
         }
     }
 
-    if (showBottomSheet) {
-        FolderListSheet(
-            hint = stringResource(R.string.select_destination_folder),
+    if (showFolderDialog) {
+        FolderListDialog(
+            hint = stringResource(R.string.destination_folder),
             oFolderId = noteState.folderId,
             folders = folderList.toImmutableList(),
-            sheetState = sheetState,
-            onDismissRequest = { showBottomSheet = false },
-            onCloseClick = {
-                coroutineScope.launch { sheetState.hide() }.invokeOnCompletion {
-                    if (!sheetState.isVisible) {
-                        showBottomSheet = false
-                    }
-                }
-            }) {
+            onDismissRequest = { showFolderDialog = false }
+        ) {
             sharedViewModel.onNoteEvent(NoteEvent.FolderChanged(it))
         }
     }

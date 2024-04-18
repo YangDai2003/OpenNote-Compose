@@ -19,6 +19,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationDrawerItemDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -42,11 +43,14 @@ fun DrawerContent(
     navigateTo: (String) -> Unit,
     onClick: (Int, FolderEntity) -> Unit
 ) {
+
     // Record whether the folder list is expanded
     var isFoldersExpended by rememberSaveable { mutableStateOf(false) }
-    val scrollState = rememberScrollState()
 
-    Column(modifier = Modifier.verticalScroll(scrollState)) {
+    Column(modifier = Modifier
+        .fillMaxWidth()
+        .verticalScroll(rememberScrollState())) {
+
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.End
@@ -112,7 +116,7 @@ fun DrawerContent(
             TextButton(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(12.dp),
+                    .padding(NavigationDrawerItemDefaults.ItemPadding),
                 onClick = { navigateTo(Route.FOLDERS) }) {
                 Text(text = stringResource(R.string.manage_folders))
             }

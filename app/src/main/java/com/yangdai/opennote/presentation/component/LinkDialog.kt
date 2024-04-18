@@ -25,13 +25,9 @@ fun LinkDialog(
     onConfirm: (LinkState) -> Unit
 ) {
 
-    var name by remember {
-        mutableStateOf("")
-    }
+    var name by remember { mutableStateOf("") }
+    var uri by remember { mutableStateOf("") }
 
-    var uri by remember {
-        mutableStateOf("")
-    }
     var nameError by remember { mutableStateOf(false) }
     var uriError by remember { mutableStateOf(false) }
 

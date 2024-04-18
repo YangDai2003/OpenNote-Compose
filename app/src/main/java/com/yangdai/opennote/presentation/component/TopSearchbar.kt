@@ -26,6 +26,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.SearchBar
+import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -33,6 +34,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -62,15 +64,15 @@ fun TopSearchbar(
 
     val historySet by viewModel.historyStateFlow.collectAsStateWithLifecycle()
 
-    var inputText by remember {
+    var inputText by rememberSaveable {
         mutableStateOf("")
     }
-    var active by remember {
+    var expanded by rememberSaveable {
         mutableStateOf(false)
     }
 
-    LaunchedEffect(active) {
-        onSearchBarActivationChange(active)
+    LaunchedEffect(expanded) {
+        onSearchBarActivationChange(expanded)
     }
 
     val configuration = LocalConfiguration.current
@@ -92,13 +94,13 @@ fun TopSearchbar(
                 )
             )
         }
-        active = false
+        expanded = false
     }
 
     @Composable
     fun LeadingIcon() {
         if (!isLargeScreen) {
-            AnimatedContent(targetState = active, label = "leading") {
+            AnimatedContent(targetState = expanded, label = "leading") {
                 if (it) {
                     IconButton(onClick = { search(inputText) }) {
                         Icon(
@@ -109,7 +111,8 @@ fun TopSearchbar(
                 } else {
                     IconButton(
                         enabled = enabled,
-                        onClick = onDrawerStateChange) {
+                        onClick = onDrawerStateChange
+                    ) {
                         Icon(
                             imageVector = Icons.Outlined.Menu,
                             contentDescription = "Open Menu"
@@ -127,7 +130,7 @@ fun TopSearchbar(
 
     @Composable
     fun TrailingIcon() {
-        AnimatedContent(targetState = active, label = "trailing") {
+        AnimatedContent(targetState = expanded, label = "trailing") {
             if (it) {
                 IconButton(onClick = {
                     if (inputText.isNotEmpty()) {
@@ -203,7 +206,7 @@ fun TopSearchbar(
 
         // Animate search bar padding when active state changes
         val searchBarPadding by animateDpAsState(
-            targetValue = if (active) 0.dp else 16.dp,
+            targetValue = if (expanded) 0.dp else 16.dp,
             label = "searchBarPadding"
         )
 
@@ -214,15 +217,21 @@ fun TopSearchbar(
         ) {
             SearchBar(
                 modifier = Modifier.padding(horizontal = searchBarPadding),
-                query = inputText,
-                onQueryChange = { inputText = it },
-                onSearch = { search(it) },
-                enabled = enabled,
-                active = active,
-                onActiveChange = { active = it },
-                placeholder = { Text(text = stringResource(R.string.search)) },
-                leadingIcon = { LeadingIcon() },
-                trailingIcon = { TrailingIcon() }
+                inputField = {
+                    SearchBarDefaults.InputField(
+                        query = inputText,
+                        onQueryChange = { inputText = it },
+                        onSearch = { search(it) },
+                        enabled = enabled,
+                        expanded = expanded,
+                        onExpandedChange = { expanded = it },
+                        placeholder = { Text(text = stringResource(R.string.search)) },
+                        leadingIcon = { LeadingIcon() },
+                        trailingIcon = { TrailingIcon() },
+                    )
+                },
+                expanded = expanded,
+                onExpandedChange = { expanded = it }
             ) {
                 History()
             }
@@ -237,15 +246,21 @@ fun TopSearchbar(
             verticalAlignment = Alignment.CenterVertically
         ) {
             DockedSearchBar(
-                query = inputText,
-                onQueryChange = { inputText = it },
-                onSearch = { search(it) },
-                active = active,
-                enabled = enabled,
-                onActiveChange = { active = it },
-                placeholder = { Text(text = stringResource(R.string.search)) },
-                leadingIcon = { LeadingIcon() },
-                trailingIcon = { TrailingIcon() }
+                inputField = {
+                    SearchBarDefaults.InputField(
+                        query = inputText,
+                        onQueryChange = { inputText = it },
+                        onSearch = { search(it) },
+                        enabled = enabled,
+                        expanded = expanded,
+                        onExpandedChange = { expanded = it },
+                        placeholder = { Text(text = stringResource(R.string.search)) },
+                        leadingIcon = { LeadingIcon() },
+                        trailingIcon = { TrailingIcon() },
+                    )
+                },
+                expanded = expanded,
+                onExpandedChange = { expanded = it }
             ) {
                 History()
             }
