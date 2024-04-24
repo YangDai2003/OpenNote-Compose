@@ -45,7 +45,7 @@ You can know more about how to use OpenNote with Markdown, LaTeX Math, and Merma
 <img src="https://github.com/YangDai2003/OpenNote-Compose/blob/master/screenshots/Screenshot_5.png" width="15%" alt=""/>
 <img src="https://github.com/YangDai2003/OpenNote-Compose/blob/master/screenshots/Screenshot_6.png" width="15%" alt=""/>
 <img src="https://github.com/YangDai2003/OpenNote-Compose/blob/master/screenshots/Screenshot_7.png" width="15%" alt=""/>
-<img src="https://github.com/YangDai2003/OpenNote-Compose/blob/master/screenshots/Screenshot_8.png" width="15%" alt=""/>
+<img src="https://github.com/YangDai2003/OpenNote-Compose/blob/master/screenshots/Screenshot_8_new.png" width="15%" alt=""/>
 <img src="https://github.com/YangDai2003/OpenNote-Compose/blob/master/screenshots/Screenshot_12.png" width="15%" alt=""/>
 <img src="https://github.com/YangDai2003/OpenNote-Compose/blob/master/screenshots/Screenshot_13.png" width="15%" alt=""/>
 <img src="https://github.com/YangDai2003/OpenNote-Compose/blob/master/screenshots/Screenshot_9.png" width="30%" alt=""/>
