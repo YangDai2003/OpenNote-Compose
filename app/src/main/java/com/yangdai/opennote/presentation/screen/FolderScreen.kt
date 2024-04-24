@@ -1,9 +1,9 @@
 package com.yangdai.opennote.presentation.screen
 
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Add
@@ -12,7 +12,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -25,6 +24,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.yangdai.opennote.MainActivity
@@ -33,6 +33,7 @@ import com.yangdai.opennote.data.local.entity.FolderEntity
 import com.yangdai.opennote.presentation.event.FolderEvent
 import com.yangdai.opennote.presentation.component.FolderItem
 import com.yangdai.opennote.presentation.component.ModifyFolderDialog
+import com.yangdai.opennote.presentation.component.TopBarTitle
 import com.yangdai.opennote.presentation.viewmodel.SharedViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -57,7 +58,9 @@ fun FolderScreen(
             .nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             LargeTopAppBar(
-                title = { Text(text = stringResource(id = R.string.folders)) },
+                title = {
+                    TopBarTitle(title = stringResource(id = R.string.folders))
+                },
                 navigationIcon = {
                     IconButton(onClick = {
                         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
@@ -77,15 +80,16 @@ fun FolderScreen(
                         )
                     }
                 },
+                colors = TopAppBarDefaults.largeTopAppBarColors()
+                    .copy(scrolledContainerColor = TopAppBarDefaults.largeTopAppBarColors().containerColor),
                 scrollBehavior = scrollBehavior
             )
         }
     ) { paddingValues ->
 
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
+        LazyVerticalGrid(
+            columns = GridCells.Adaptive(360.dp),
+            contentPadding = paddingValues
         ) {
             items(folderList) {
                 FolderItem(

@@ -30,6 +30,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.yangdai.opennote.R
 import com.yangdai.opennote.data.local.entity.FolderEntity
@@ -47,9 +48,11 @@ fun DrawerContent(
     // Record whether the folder list is expanded
     var isFoldersExpended by rememberSaveable { mutableStateOf(false) }
 
-    Column(modifier = Modifier
-        .fillMaxWidth()
-        .verticalScroll(rememberScrollState())) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .verticalScroll(rememberScrollState())
+    ) {
 
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -109,17 +112,12 @@ fun DrawerContent(
             }
         }
 
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.Center
-        ) {
-            TextButton(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(NavigationDrawerItemDefaults.ItemPadding),
-                onClick = { navigateTo(Route.FOLDERS) }) {
-                Text(text = stringResource(R.string.manage_folders))
-            }
+        TextButton(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(NavigationDrawerItemDefaults.ItemPadding),
+            onClick = { navigateTo(Route.FOLDERS) }) {
+            Text(text = stringResource(R.string.manage_folders), textAlign = TextAlign.Center)
         }
     }
 }

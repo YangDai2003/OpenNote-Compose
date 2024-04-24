@@ -16,8 +16,8 @@ android {
         applicationId = "com.yangdai.opennote"
         minSdk = 29
         targetSdk = 34
-        versionCode = 118
-        versionName = "1.1.8"
+        versionCode = 120
+        versionName = "1.2.0"
         resourceConfigurations += listOf("en", "zh")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -62,10 +62,8 @@ android {
 }
 
 dependencies {
-    // For Glance support
-    implementation(libs.androidx.glance)
-    implementation(libs.androidx.glance.appwidget)
 
+    implementation(libs.google.gson)
     implementation(libs.kotlinx.collections.immutable)
 
     // CommonMark, for markdown rendering and parsing
@@ -113,6 +111,9 @@ dependencies {
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.compose.material3.window.size)
     implementation(libs.androidx.compose.material.icons)
+    implementation(libs.androidx.compose.material3.adaptive)
+    implementation(libs.androidx.compose.material3.adaptive.layout)
+    implementation(libs.androidx.compose.material3.adaptive.navigation)
     implementation(libs.androidx.compose.foundation)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.lifecycle.runtime.compose)

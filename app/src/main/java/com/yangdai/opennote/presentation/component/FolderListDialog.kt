@@ -26,10 +26,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.yangdai.opennote.R
 import com.yangdai.opennote.data.local.entity.FolderEntity
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.toImmutableList
 
 
 @Composable
@@ -128,5 +130,21 @@ fun FolderListDialog(
                 Text(text = stringResource(id = android.R.string.ok))
             }
         }
+    )
+}
+
+@Composable
+@Preview
+fun FolderListDialogPreview() {
+    FolderListDialog(
+        hint = "Select a folder",
+        oFolderId = 1,
+        folders = listOf(
+            FolderEntity(1, "Folder 1", null),
+            FolderEntity(2, "Folder 2", null),
+            FolderEntity(3, "Folder 3", null)
+        ).toImmutableList(),
+        onDismissRequest = {},
+        onSelect = {}
     )
 }

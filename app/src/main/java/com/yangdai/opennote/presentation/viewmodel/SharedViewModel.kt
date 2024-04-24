@@ -2,7 +2,10 @@ package com.yangdai.opennote.presentation.viewmodel
 
 import android.annotation.SuppressLint
 import android.content.ContentResolver
+import android.content.ContentValues
 import android.net.Uri
+import android.os.Environment
+import android.provider.MediaStore
 import android.provider.OpenableColumns
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.text.input.TextFieldState
@@ -12,19 +15,20 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.datastore.preferences.core.Preferences
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.TextRecognizer
 import com.google.mlkit.vision.text.chinese.ChineseTextRecognizerOptions
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
+import com.yangdai.opennote.data.local.Database
 import com.yangdai.opennote.data.local.entity.NoteEntity
-import com.yangdai.opennote.presentation.util.Constants.APP_COLOR
-import com.yangdai.opennote.presentation.util.Constants.APP_THEME
-import com.yangdai.opennote.presentation.util.Constants.NEED_PASSWORD
 import com.yangdai.opennote.presentation.state.SettingsState
 import com.yangdai.opennote.domain.repository.DataStoreRepository
 import com.yangdai.opennote.domain.usecase.NoteOrder
 import com.yangdai.opennote.domain.usecase.Operations
 import com.yangdai.opennote.domain.usecase.OrderType
+import com.yangdai.opennote.presentation.event.DatabaseEvent
 import com.yangdai.opennote.presentation.event.FolderEvent
 import com.yangdai.opennote.presentation.event.ListEvent
 import com.yangdai.opennote.presentation.event.NoteEvent
@@ -37,7 +41,9 @@ import com.yangdai.opennote.presentation.util.add
 import com.yangdai.opennote.presentation.util.addLink
 import com.yangdai.opennote.presentation.util.addTask
 import com.yangdai.opennote.presentation.util.bold
+import com.yangdai.opennote.presentation.util.createBackupDirectory
 import com.yangdai.opennote.presentation.util.diagram
+import com.yangdai.opennote.presentation.util.createAppDirectory
 import com.yangdai.opennote.presentation.util.inlineCode
 import com.yangdai.opennote.presentation.util.inlineFunction
 import com.yangdai.opennote.presentation.util.italic
@@ -60,6 +66,7 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.mapLatest
@@ -72,15 +79,16 @@ import org.commonmark.Extension
 import org.commonmark.ext.gfm.strikethrough.StrikethroughExtension
 import org.commonmark.ext.gfm.tables.TablesExtension
 import org.commonmark.ext.task.list.items.TaskListItemsExtension
-import org.commonmark.node.Node
 import org.commonmark.parser.Parser
 import org.commonmark.renderer.html.HtmlRenderer
+import java.io.OutputStreamWriter
 import java.util.Locale
 import javax.inject.Inject
 
 @OptIn(ExperimentalFoundationApi::class)
 @HiltViewModel
 class SharedViewModel @Inject constructor(
+    private val database: Database,
     private val dataStoreRepository: DataStoreRepository,
     private val operations: Operations
 ) : ViewModel() {
@@ -113,6 +121,7 @@ class SharedViewModel @Inject constructor(
     private lateinit var parser: Parser
     private lateinit var renderer: HtmlRenderer
     lateinit var textRecognizer: TextRecognizer
+    private val gson: Gson = Gson()
 
     // 笔记标题和内容的状态
     val titleState = TextFieldState()
@@ -122,8 +131,7 @@ class SharedViewModel @Inject constructor(
     val html = snapshotFlow { contentState.text }
         .debounce(100)
         .mapLatest {
-            val document: Node = parser.parse(it.toString())
-            renderer.render(document) ?: ""
+            renderer.render(parser.parse(it.toString())) ?: ""
         }
         .flowOn(Dispatchers.IO)
         .stateIn(
@@ -159,9 +167,9 @@ class SharedViewModel @Inject constructor(
 
     // Setting Section
     val settingsStateFlow: StateFlow<SettingsState> = combine(
-        dataStoreRepository.intFlow(APP_THEME),
-        dataStoreRepository.intFlow(APP_COLOR),
-        dataStoreRepository.booleanFlow(NEED_PASSWORD),
+        dataStoreRepository.intFlow(Constants.Preferences.APP_THEME),
+        dataStoreRepository.intFlow(Constants.Preferences.APP_COLOR),
+        dataStoreRepository.booleanFlow(Constants.Preferences.NEED_PASSWORD),
     ) { theme, color, needPassword ->
         SettingsState(
             theme = theme,
@@ -190,7 +198,7 @@ class SharedViewModel @Inject constructor(
 
     fun putHistoryStringSet(value: Set<String>) {
         viewModelScope.launch(Dispatchers.IO) {
-            dataStoreRepository.putStringSet(Constants.HISTORY, value)
+            dataStoreRepository.putStringSet(Constants.Preferences.SEARCH_HISTORY, value)
         }
     }
 
@@ -206,7 +214,7 @@ class SharedViewModel @Inject constructor(
 
 
     val historyStateFlow: StateFlow<Set<String>> =
-        dataStoreRepository.stringSetFlow(Constants.HISTORY)
+        dataStoreRepository.stringSetFlow(Constants.Preferences.SEARCH_HISTORY)
             .stateIn(
                 scope = viewModelScope,
                 started = SharingStarted.WhileSubscribed(5_000),
@@ -366,65 +374,6 @@ class SharedViewModel @Inject constructor(
             .launchIn(viewModelScope)
     }
 
-    private val _dataActionState = MutableStateFlow(DataActionState())
-    val dataActionState = _dataActionState.asStateFlow()
-    private var addNotesJob: Job? = null
-    fun addNotes(folderId: Long?, uriList: List<Uri>, contentResolver: ContentResolver) {
-        _dataActionState.update { it.copy(loading = true) }
-        addNotesJob?.cancel()
-        addNotesJob = viewModelScope.launch(Dispatchers.IO) {
-            uriList.forEach { uri ->
-                _dataActionState.update {
-                    it.copy(
-                        progress = uriList.indexOf(uri).toFloat() / uriList.size
-                    )
-                }
-                val inputStream = contentResolver.openInputStream(uri)
-                val fileName = getFileName(contentResolver, uri)
-                val content = inputStream?.bufferedReader().use { it?.readText() }
-                val note = NoteEntity(
-                    title = fileName ?: "",
-                    content = content ?: "",
-                    folderId = folderId,
-                    isMarkdown = (fileName?.endsWith(".md") == true) || (fileName?.endsWith(".markdown") == true),
-                    timestamp = System.currentTimeMillis()
-                )
-                operations.addNote(note)
-            }
-            _dataActionState.update {
-                it.copy(
-                    progress = 1f
-                )
-            }
-        }
-    }
-
-    fun cancelAddNotes() {
-        addNotesJob?.cancel()
-        _dataActionState.value = DataActionState()
-    }
-
-    // 获取文件名的函数
-    @SuppressLint("Range")
-    fun getFileName(contentResolver: ContentResolver, uri: Uri): String? {
-        var result: String? = null
-        if (uri.scheme == "content") {
-            val cursor = contentResolver.query(uri, null, null, null, null)
-            cursor.use {
-                if (it != null && it.moveToFirst()) {
-                    result = it.getString(it.getColumnIndex(OpenableColumns.DISPLAY_NAME))
-                }
-            }
-        }
-        if (result == null) {
-            result = uri.path
-            val cut = result?.lastIndexOf('/')
-            if (cut != -1) {
-                result = result?.substring(cut!! + 1)
-            }
-        }
-        return result
-    }
 
     private fun searchNotes(keyWord: String) {
         queryNotesJob?.cancel()
@@ -520,18 +469,266 @@ class SharedViewModel @Inject constructor(
 
             is NoteEvent.Edit -> {
                 when (event.value) {
-                    Constants.EDITOR_UNDO -> contentState.undoState.undo()
-                    Constants.EDITOR_REDO -> contentState.undoState.redo()
-                    Constants.EDITOR_TITLE -> contentState.edit { add("#") }
-                    Constants.EDITOR_BOLD -> contentState.edit { bold() }
-                    Constants.EDITOR_ITALIC -> contentState.edit { italic() }
-                    Constants.EDITOR_UNDERLINE -> contentState.edit { underline() }
-                    Constants.EDITOR_STRIKETHROUGH -> contentState.edit { strikeThrough() }
-                    Constants.EDITOR_MARK -> contentState.edit { mark() }
-                    Constants.EDITOR_INLINE_CODE -> contentState.edit { inlineCode() }
-                    Constants.EDITOR_INLINE_FUNC -> contentState.edit { inlineFunction() }
-                    Constants.EDITOR_QUOTE -> contentState.edit { quote() }
-                    Constants.EDITOR_DIAGRAM -> contentState.edit { diagram() }
+                    Constants.Editor.UNDO -> contentState.undoState.undo()
+                    Constants.Editor.REDO -> contentState.undoState.redo()
+                    Constants.Editor.TITLE -> contentState.edit { add("#") }
+                    Constants.Editor.BOLD -> contentState.edit { bold() }
+                    Constants.Editor.ITALIC -> contentState.edit { italic() }
+                    Constants.Editor.UNDERLINE -> contentState.edit { underline() }
+                    Constants.Editor.STRIKETHROUGH -> contentState.edit { strikeThrough() }
+                    Constants.Editor.MARK -> contentState.edit { mark() }
+                    Constants.Editor.INLINE_CODE -> contentState.edit { inlineCode() }
+                    Constants.Editor.INLINE_FUNC -> contentState.edit { inlineFunction() }
+                    Constants.Editor.QUOTE -> contentState.edit { quote() }
+                    Constants.Editor.DIAGRAM -> contentState.edit { diagram() }
+                }
+            }
+        }
+    }
+
+    private val _dataActionState = MutableStateFlow(DataActionState())
+    val dataActionStateFlow = _dataActionState.asStateFlow()
+    private var dataActionJob: Job? = null
+    fun cancelDataAction() {
+        dataActionJob?.cancel()
+        _dataActionState.value = DataActionState()
+    }
+
+    // 获取文件名的函数
+    @SuppressLint("Range")
+    fun getFileName(contentResolver: ContentResolver, uri: Uri): String? {
+        var result: String? = null
+        if (uri.scheme == "content") {
+            val cursor = contentResolver.query(uri, null, null, null, null)
+            cursor.use {
+                if (it != null && it.moveToFirst()) {
+                    result = it.getString(it.getColumnIndex(OpenableColumns.DISPLAY_NAME))
+                }
+            }
+        }
+        if (result == null) {
+            result = uri.path
+            val cut = result?.lastIndexOf('/')
+            if (cut != -1) {
+                result = result?.substring(cut!! + 1)
+            }
+        }
+        return result
+    }
+
+
+    fun onDatabaseEvent(event: DatabaseEvent) {
+        when (event) {
+
+            is DatabaseEvent.Import -> {
+
+                val contentResolver = event.contentResolver
+                val folderId = event.folderId
+                val uriList = event.uriList
+
+                dataActionJob?.cancel()
+                _dataActionState.update { it.copy(loading = true) }
+                dataActionJob = viewModelScope.launch(Dispatchers.IO) {
+                    uriList.forEachIndexed { index, uri ->
+                        _dataActionState.update {
+                            it.copy(progress = index.toFloat() / uriList.size)
+                        }
+
+                        val fileName = getFileName(contentResolver, uri)
+
+                        contentResolver.openInputStream(uri).use {
+                            it?.bufferedReader().use { reader ->
+                                val content = reader?.readText()
+                                val note = NoteEntity(
+                                    title = fileName?.substringBeforeLast(".") ?: "",
+                                    content = content ?: "",
+                                    folderId = folderId,
+                                    isMarkdown = (fileName?.endsWith(".md") == true)
+                                            || (fileName?.endsWith(".markdown") == true
+                                            || (fileName?.endsWith(".html") == true)),
+                                    timestamp = System.currentTimeMillis()
+                                )
+                                operations.addNote(note)
+                            }
+                        }
+                    }
+                    _dataActionState.update {
+                        it.copy(progress = 1f)
+                    }
+                }
+            }
+
+            is DatabaseEvent.Export -> {
+
+                val contentResolver = event.contentResolver
+                val notes = event.notes
+                val type = event.type
+
+                dataActionJob?.cancel()
+                _dataActionState.update { it.copy(loading = true) }
+
+                val extension = when (type) {
+                    "TXT" -> ".txt"
+                    "MARKDOWN" -> ".md"
+                    else -> ".html"
+                }
+
+                createAppDirectory()
+
+                dataActionJob = viewModelScope.launch(Dispatchers.IO) {
+                    notes.forEachIndexed { index, noteEntity ->
+                        _dataActionState.update {
+                            it.copy(progress = index.toFloat() / notes.size)
+                        }
+
+                        val fileName = noteEntity.title
+                        val content = noteEntity.content
+
+                        val values = ContentValues().apply {
+                            put(MediaStore.Downloads.DISPLAY_NAME, "$fileName$extension")
+                            put(MediaStore.Downloads.MIME_TYPE, "text/*")
+                            put(
+                                MediaStore.Downloads.RELATIVE_PATH,
+                                "${Environment.DIRECTORY_DOWNLOADS}/${Constants.File.OPENNOTE}"
+                            )
+                        }
+
+                        val uri = contentResolver.insert(
+                            MediaStore.Downloads.EXTERNAL_CONTENT_URI,
+                            values
+                        )
+
+                        uri?.let { uri1 ->
+                            runCatching {
+                                contentResolver.openOutputStream(uri1)?.use { outputStream ->
+                                    OutputStreamWriter(outputStream).use { writer ->
+                                        writer.write(content)
+                                    }
+                                }
+                            }.onFailure { throwable ->
+                                _dataActionState.update {
+                                    it.copy(
+                                        error = throwable.localizedMessage ?: "error"
+                                    )
+                                }
+                            }
+                        }
+                    }
+                    _dataActionState.update {
+                        it.copy(progress = 1f)
+                    }
+                }
+            }
+
+            is DatabaseEvent.Backup -> {
+
+                val contentResolver = event.contentResolver
+
+                dataActionJob?.cancel()
+                _dataActionState.update { it.copy(loading = true) }
+
+                createBackupDirectory()
+                _dataActionState.update {
+                    it.copy(progress = 0.2f)
+                }
+                dataActionJob = viewModelScope.launch(Dispatchers.IO) {
+                    val notes = operations.getNotes().first()
+                    val json = gson.toJson(notes)
+                    _dataActionState.update {
+                        it.copy(progress = 0.5f)
+                    }
+                    // 创建 ContentValues 对象
+                    val values = ContentValues().apply {
+                        put(MediaStore.Downloads.DISPLAY_NAME, "${System.currentTimeMillis()}.json")
+                        put(MediaStore.Downloads.MIME_TYPE, "application/json")
+                        put(
+                            MediaStore.Downloads.RELATIVE_PATH,
+                            "${Environment.DIRECTORY_DOWNLOADS}/${Constants.File.OPENNOTE_BACKUP}"
+                        )
+                    }
+
+                    // 获取 Uri
+                    val uri =
+                        contentResolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values)
+
+                    // 将 JSON 字符串写入到文件中
+                    uri?.let {
+                        contentResolver.openOutputStream(it)?.use { outputStream ->
+                            OutputStreamWriter(outputStream).use { writer ->
+                                writer.write(json)
+                            }
+                        }
+                    }
+
+                    _dataActionState.update {
+                        it.copy(progress = 1f)
+                    }
+                }
+            }
+
+            is DatabaseEvent.Recovery -> {
+                val contentResolver = event.contentResolver
+                val uri = event.uri
+
+                dataActionJob?.cancel()
+                _dataActionState.update { it.copy(loading = true) }
+
+                _dataActionState.update {
+                    it.copy(progress = 0.2f)
+                }
+
+                dataActionJob = viewModelScope.launch(Dispatchers.IO) {
+
+                    val json = contentResolver.openInputStream(uri)?.bufferedReader()
+                        .use { it?.readText() }
+
+                    _dataActionState.update {
+                        it.copy(progress = 0.4f)
+                    }
+
+                    // 使用 Gson 将 JSON 字符串解析为 NoteEntity 对象的列表
+                    runCatching {
+                        val notesType = object : TypeToken<List<NoteEntity>>() {}.type
+                        val notes = Gson().fromJson<List<NoteEntity>>(json, notesType)
+                        _dataActionState.update {
+                            it.copy(progress = 0.6f)
+                        }
+                        notes.forEachIndexed { _, noteEntity ->
+                            operations.addNote(noteEntity)
+                        }
+                    }.onFailure { throwable ->
+                        _dataActionState.update {
+                            it.copy(
+                                error = throwable.localizedMessage ?: "error"
+                            )
+                        }
+                    }.onSuccess {
+                        _dataActionState.update {
+                            it.copy(progress = 1f)
+                        }
+                    }
+                }
+            }
+
+            DatabaseEvent.Reset -> {
+                dataActionJob?.cancel()
+                _dataActionState.update { it.copy(loading = true, infinite = true) }
+                dataActionJob = viewModelScope.launch(Dispatchers.IO) {
+                    runCatching {
+                        database.clearAllTables()
+                    }.onSuccess {
+                        _dataActionState.update {
+                            it.copy(
+                                progress = 1f
+                            )
+                        }
+                    }.onFailure { throwable ->
+                        _dataActionState.update {
+                            it.copy(
+                                error = throwable.localizedMessage ?: "error"
+                            )
+                        }
+                    }
                 }
             }
         }

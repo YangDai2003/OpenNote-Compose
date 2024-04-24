@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
@@ -28,9 +29,21 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.yangdai.opennote.R
 import com.yangdai.opennote.data.local.entity.FolderEntity
+
+@Composable
+@Preview
+fun ModifyFolderDialogPreview() {
+    ModifyFolderDialog(
+        showDialog = true,
+        folder = FolderEntity(),
+        onDismissRequest = {},
+        onModify = {}
+    )
+}
 
 @Composable
 fun ModifyFolderDialog(
@@ -56,6 +69,7 @@ fun ModifyFolderDialog(
         text = {
             Column {
                 OutlinedTextField(
+                    modifier = Modifier.fillMaxWidth(),
                     value = text,
                     onValueChange = { text = it },
                     singleLine = true,

@@ -26,36 +26,38 @@ fun RatingDialog(
     onDismissRequest: () -> Unit,
     onRatingChanged: (Int) -> Unit
 ) {
-    if (showDialog) {
-        var rating by remember { mutableIntStateOf(0) }
-        AlertDialog(
-            title = { Text(text = stringResource(id = R.string.rate_this_app)) },
-            text = {
-                Row(horizontalArrangement = Arrangement.SpaceEvenly) {
-                    for (i in 1..5) {
-                        IconButton(onClick = {
-                            rating = i
-                        }) {
-                            Icon(
-                                imageVector = Icons.Filled.StarRate,
-                                contentDescription = "Star",
-                                tint = if (i <= rating) Color.Yellow else MaterialTheme.colorScheme.surfaceDim
-                            )
-                        }
+
+    if (!showDialog) return
+
+    var rating by remember { mutableIntStateOf(0) }
+
+    AlertDialog(
+        title = { Text(text = stringResource(id = R.string.rate_this_app)) },
+        text = {
+            Row(horizontalArrangement = Arrangement.SpaceEvenly) {
+                for (i in 1..5) {
+                    IconButton(onClick = {
+                        rating = i
+                    }) {
+                        Icon(
+                            imageVector = Icons.Filled.StarRate,
+                            contentDescription = "Star",
+                            tint = if (i <= rating) Color.Yellow else MaterialTheme.colorScheme.surfaceDim
+                        )
                     }
                 }
-            },
-            onDismissRequest = onDismissRequest,
-            confirmButton = {
-                TextButton(onClick = {
-                    onDismissRequest()
-                    onRatingChanged(rating)
-                }) {
-                    Text(text = stringResource(id = android.R.string.ok))
-                }
-            },
-        )
-    }
+            }
+        },
+        onDismissRequest = onDismissRequest,
+        confirmButton = {
+            TextButton(onClick = {
+                onDismissRequest()
+                onRatingChanged(rating)
+            }) {
+                Text(text = stringResource(id = android.R.string.ok))
+            }
+        },
+    )
 }
 
 @Preview

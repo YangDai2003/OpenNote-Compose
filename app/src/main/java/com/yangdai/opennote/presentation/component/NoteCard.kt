@@ -30,7 +30,7 @@ fun NoteCard(
     isSelected: Boolean,
     onNoteClick: (NoteEntity) -> Unit,
     onEnableChange: (Boolean) -> Unit
-) = ElevatedCard(modifier = modifier) {
+) = ElevatedCard(modifier) {
 
     val title = note.title
     val content = note.content

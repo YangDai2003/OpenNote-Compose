@@ -11,17 +11,16 @@
     <string name="manage_folders">管理文件夹</string>
     <string name="settings">设置</string>
     <string name="style">样式</string>
-    <string name="theme">主题</string>
-    <string name="color">色彩</string>
+    <string name="dark_mode">深色模式</string>
+    <string name="color">调色盘</string>
     <string name="language">语言</string>
     <string name="password">密码保护</string>
-    <string name="other">其它</string>
     <string name="privacy_policy">隐私权政策</string>
     <string name="rate_this_app">评价应用</string>
     <string name="share_this_app">分享应用</string>
     <string name="system_default">跟随系统</string>
-    <string name="light">浅色</string>
-    <string name="dark">深色</string>
+    <string name="light">关</string>
+    <string name="dark">开</string>
     <string name="dynamic_only_android_12">动态颜色</string>
     <string name="edited">最后编辑时间：</string>
     <string name="search_history">搜索历史</string>
@@ -29,9 +28,7 @@
     <string name="content">正文</string>
     <string name="delete">删除</string>
     <string name="login">登录</string>
-    <string name="biometric_login">生物信息认证</string>
-    <string name="log_in_using_your_biometric_credential">使用您的生物信息凭据登录应用</string>
-    <string name="data">数据</string>
+    <string name="data_security">数据和安全</string>
     <string name="reset_database">重置数据库</string>
     <string name="please_relaunch_the_app">请重启应用</string>
     <string name="remind">提醒</string>
@@ -43,10 +40,8 @@
     <string name="warning">警告</string>
     <string name="deleting_a_folder_will_also_delete_all_the_notes_it_contains_and_they_cannot_be_restored_do_you_want_to_continue">删除文件夹将同时删除其包含的所有笔记，且不可恢复，是否继续操作?</string>
     <string name="restore">恢复</string>
-    <string name="app_info">信息</string>
+    <string name="app_info">关于应用</string>
     <string name="version">版本号</string>
-    <string name="failed">失败</string>
-    <string name="saved_download">文件已保存到下载目录。</string>
     <string name="shareContent">欢迎使用\"Open Note\"，这是一款轻量化、美观且符合Material 3设计风格的应用。应用提供本地存储功能，无需网络也能随时记录你的想法。高效的搜索功能可以帮助你快速找到你的笔记，而文件夹分类功能则可以帮助你更好地组织你的笔记。此外，应用还提供文本OCR功能，可以将图片中的文字转换为可编辑的文本。我们的目标是为你提供最便捷、最高效的笔记体验。下载地址：https://play.google.com/store/apps/details?id=com.yangdai.opennote</string>
     <string name="export">导出</string>
     <string name="share">分享</string>
@@ -64,7 +59,17 @@
     <string name="no_password_set">请先设置系统锁屏密码</string>
     <string name="no_calendar_app_found">无可用的日历应用</string>
     <string name="progress">进度</string>
-    <string name="coming_soon">敬请期待</string>
     <string name="import_files">导入文本文件</string>
     <string name="destination_folder">目标文件夹</string>
+    <string name="language_description">选择应用语言</string>
+    <string name="settings_hint">选择一个类别来查看其详细信息</string>
+    <string name="data">数据</string>
+    <string name="security">安全</string>
+    <string name="import_files_description">批量导入文本类型的文件（比如：.txt, .md, .html）。文件名会作为标题，并自动判断是否为MARKDOWN类型。</string>
+    <string name="backup_description">将所有笔记（不包含文件夹）备份为一个JSON文件，保存到｛Downloads/OpenNote/Backup｝。</string>
+    <string name="restore_description">将所选的JSON备份文件中的数据写入到数据库中。如果数据冲突，备份文件将覆盖数据库中的笔记。</string>
+    <string name="reset_database_description">清空数据库中的所有内容（包括所有笔记和文件夹）。</string>
+    <string name="backup">备份</string>
+    <string name="recovery">还原</string>
+    <string name="password_description">应用冷启动时，用户需要使用系统锁屏密码解锁。</string>
 </resources>

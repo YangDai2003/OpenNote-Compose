@@ -65,7 +65,7 @@ fun NoteEditorRow(
             verticalAlignment = Alignment.CenterVertically
         ) {
             IconButton(
-                onClick = { onEdit(Constants.EDITOR_UNDO) },
+                onClick = { onEdit(Constants.Editor.UNDO) },
                 enabled = canUndo
             ) {
                 Icon(
@@ -75,7 +75,7 @@ fun NoteEditorRow(
             }
 
             IconButton(
-                onClick = { onEdit(Constants.EDITOR_REDO) },
+                onClick = { onEdit(Constants.Editor.REDO) },
                 enabled = canRedo
             ) {
                 Icon(
@@ -86,70 +86,70 @@ fun NoteEditorRow(
 
             if (isMarkdown) {
 
-                IconButton(onClick = { onEdit(Constants.EDITOR_TITLE) }) {
+                IconButton(onClick = { onEdit(Constants.Editor.TITLE) }) {
                     Icon(
                         imageVector = Icons.Outlined.Title,
                         contentDescription = "Title"
                     )
                 }
 
-                IconButton(onClick = { onEdit(Constants.EDITOR_BOLD) }) {
+                IconButton(onClick = { onEdit(Constants.Editor.BOLD) }) {
                     Icon(
                         imageVector = Icons.Outlined.FormatBold,
                         contentDescription = "Bold"
                     )
                 }
 
-                IconButton(onClick = { onEdit(Constants.EDITOR_ITALIC) }) {
+                IconButton(onClick = { onEdit(Constants.Editor.ITALIC) }) {
                     Icon(
                         imageVector = Icons.Outlined.FormatItalic,
                         contentDescription = "Italic"
                     )
                 }
 
-                IconButton(onClick = { onEdit(Constants.EDITOR_UNDERLINE) }) {
+                IconButton(onClick = { onEdit(Constants.Editor.UNDERLINE) }) {
                     Icon(
                         imageVector = Icons.Outlined.FormatUnderlined,
                         contentDescription = "Underline"
                     )
                 }
 
-                IconButton(onClick = { onEdit(Constants.EDITOR_STRIKETHROUGH) }) {
+                IconButton(onClick = { onEdit(Constants.Editor.STRIKETHROUGH) }) {
                     Icon(
                         imageVector = Icons.Outlined.FormatStrikethrough,
                         contentDescription = "Strikethrough"
                     )
                 }
 
-                IconButton(onClick = { onEdit(Constants.EDITOR_MARK) }) {
+                IconButton(onClick = { onEdit(Constants.Editor.MARK) }) {
                     Icon(
                         imageVector = Icons.Outlined.FormatPaint,
                         contentDescription = "Mark"
                     )
                 }
 
-                IconButton(onClick = { onEdit(Constants.EDITOR_INLINE_CODE) }) {
+                IconButton(onClick = { onEdit(Constants.Editor.INLINE_CODE) }) {
                     Icon(
                         imageVector = Icons.Outlined.Code,
                         contentDescription = "Code"
                     )
                 }
 
-                IconButton(onClick = { onEdit(Constants.EDITOR_INLINE_FUNC) }) {
+                IconButton(onClick = { onEdit(Constants.Editor.INLINE_FUNC) }) {
                     Icon(
                         painter = painterResource(id = R.drawable.function),
                         contentDescription = "Function"
                     )
                 }
 
-                IconButton(onClick = { onEdit(Constants.EDITOR_QUOTE) }) {
+                IconButton(onClick = { onEdit(Constants.Editor.QUOTE) }) {
                     Icon(
                         imageVector = Icons.Outlined.FormatQuote,
                         contentDescription = "Quote"
                     )
                 }
 
-                IconButton(onClick = { onEdit(Constants.EDITOR_DIAGRAM) }) {
+                IconButton(onClick = { onEdit(Constants.Editor.DIAGRAM) }) {
                     Icon(
                         imageVector = Icons.Outlined.AddChart,
                         contentDescription = "Diagram"

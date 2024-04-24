@@ -1,6 +1,5 @@
 package com.yangdai.opennote.presentation.component
 
-import android.widget.Toast
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.slideInHorizontally
@@ -16,10 +15,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridState
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.items
+import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.DriveFileMove
 import androidx.compose.material.icons.automirrored.outlined.Sort
@@ -51,7 +50,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -60,6 +58,7 @@ import com.yangdai.opennote.data.local.entity.FolderEntity
 import com.yangdai.opennote.data.local.entity.NoteEntity
 import com.yangdai.opennote.presentation.event.ListEvent
 import com.yangdai.opennote.presentation.navigation.Route
+import com.yangdai.opennote.presentation.state.DataActionState
 import com.yangdai.opennote.presentation.state.DataState
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
@@ -67,8 +66,8 @@ import kotlinx.collections.immutable.toImmutableList
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainContent(
+    dataActionState: DataActionState,
     isFloatingButtonVisible: Boolean,
-    isFolderDialogVisible: Boolean,
     selectedFolder: FolderEntity,
     selectedDrawerIndex: Int,
     allNotesSelected: Boolean,
@@ -77,23 +76,32 @@ fun MainContent(
     isLargeScreen: Boolean,
     dataState: DataState,
     folderList: ImmutableList<FolderEntity>,
-    staggeredGridState: LazyStaggeredGridState,
     navigateTo: (String) -> Unit,
     initializeNoteSelection: () -> Unit,
     onSearchBarActivationChange: (Boolean) -> Unit,
     onAllNotesSelectionChange: (Boolean) -> Unit,
-    onFolderDialogVisibilityChange: () -> Unit,
-    onFolderDialogDismissRequest: () -> Unit,
     onMultiSelectionModeChange: (Boolean) -> Unit,
     onNoteClick: (NoteEntity) -> Unit,
     onListEvent: (ListEvent) -> Unit,
-    onDrawerStateChange: () -> Unit
+    onDrawerStateChange: () -> Unit,
+    onExportClick: (String) -> Unit,
+    onExportCancelled: () -> Unit
 ) {
 
-    val context = LocalContext.current
+    val staggeredGridState = rememberLazyStaggeredGridState()
 
     var folderName by rememberSaveable {
         mutableStateOf("")
+    }
+
+    // Bottom sheet visibility, reset when configuration changes, no need to use rememberSaveable
+    var isFolderDialogVisible by remember {
+        mutableStateOf(false)
+    }
+
+    // Whether to show the export dialog
+    var isExportDialogVisible by remember {
+        mutableStateOf(false)
     }
 
     LaunchedEffect(selectedFolder) {
@@ -114,6 +122,7 @@ fun MainContent(
                         onDrawerStateChange = onDrawerStateChange
                     )
                 } else {
+
                     var showMenu by remember {
                         mutableStateOf(false)
                     }
@@ -187,9 +196,9 @@ fun MainContent(
                                             )
                                         })
                                 }
-
                             }
-                        })
+                        }
+                    )
                 }
             }
         },
@@ -242,14 +251,8 @@ fun MainContent(
                                     }
                                 }
                             } else {
-
                                 TextButton(onClick = {
-                                    // TODO: Implement export notes
-                                    Toast.makeText(
-                                        context,
-                                        context.getString(R.string.coming_soon),
-                                        Toast.LENGTH_SHORT
-                                    ).show()
+                                    isExportDialogVisible = true
                                 }) {
                                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                         Icon(
@@ -260,7 +263,7 @@ fun MainContent(
                                     }
                                 }
 
-                                TextButton(onClick = onFolderDialogVisibilityChange) {
+                                TextButton(onClick = { isFolderDialogVisible = true }) {
                                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                         Icon(
                                             imageVector = Icons.AutoMirrored.Outlined.DriveFileMove,
@@ -269,9 +272,7 @@ fun MainContent(
                                         Text(text = stringResource(id = R.string.move))
                                     }
                                 }
-
                             }
-
 
                             TextButton(onClick = {
                                 onListEvent(
@@ -297,25 +298,66 @@ fun MainContent(
         },
         floatingActionButton = {
             AnimatedVisibility(
-                visible = isFloatingButtonVisible,
+                visible = isFloatingButtonVisible && !staggeredGridState.isScrollInProgress,
                 enter = slideInHorizontally { fullWidth -> fullWidth * 3 / 2 },
                 exit = slideOutHorizontally { fullWidth -> fullWidth * 3 / 2 }) {
-                FloatingActionButton(onClick = {
-                    onListEvent(ListEvent.AddNote)
-                    navigateTo(Route.NOTE)
-                }) {
+                FloatingActionButton(
+                    onClick = {
+                        onListEvent(ListEvent.AddNote)
+                        navigateTo(Route.NOTE)
+                    }
+                ) {
                     Icon(imageVector = Icons.Outlined.Add, contentDescription = "Add")
                 }
             }
 
         }) { innerPadding ->
 
+        LazyVerticalStaggeredGrid(
+            modifier = Modifier
+                .fillMaxSize()
+                .statusBarsPadding()
+                .padding(top = 72.dp),
+            state = staggeredGridState,
+            // The staggered grid layout is adaptive, with a minimum column width of 160dp(mdpi)
+            columns = StaggeredGridCells.Adaptive(160.dp),
+            verticalItemSpacing = 8.dp,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            // for better edgeToEdge experience
+            contentPadding = PaddingValues(
+                start = 16.dp,
+                end = 16.dp,
+                bottom = innerPadding.calculateBottomPadding()
+            ),
+            content = {
+                items(dataState.notes, key = { item: NoteEntity -> item.id!! }) {
+                    NoteCard(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .animateItem(), // Add animation to the item
+                        note = it,
+                        isEnabled = isMultiSelectionModeEnabled,
+                        isSelected = selectedNotes.contains(it),
+                        onEnableChange = onMultiSelectionModeChange,
+                        onNoteClick = onNoteClick
+                    )
+                }
+            }
+        )
+
+        if (isExportDialogVisible) {
+            ExportDialog(onDismissRequest = { isExportDialogVisible = false }) {
+                onExportClick(it)
+                isExportDialogVisible = false
+            }
+        }
+
         if (isFolderDialogVisible) {
             FolderListDialog(
                 hint = stringResource(R.string.destination_folder),
                 oFolderId = selectedFolder.id,
                 folders = folderList,
-                onDismissRequest = onFolderDialogDismissRequest
+                onDismissRequest = { isFolderDialogVisible = false }
             ) {
                 onListEvent(ListEvent.MoveNotes(selectedNotes, it))
                 initializeNoteSelection()
@@ -351,37 +393,8 @@ fun MainContent(
                 })
         }
 
-        LazyVerticalStaggeredGrid(
-            modifier = Modifier
-                .fillMaxSize()
-                .statusBarsPadding()
-                // The top padding is used to prevent the top of the grid from being blocked by the search bar(56.dp)
-                .padding(top = 74.dp),
-            state = staggeredGridState,
-            // The staggered grid layout is adaptive, with a minimum column width of 160dp(mdpi)
-            columns = StaggeredGridCells.Adaptive(160.dp),
-            verticalItemSpacing = 8.dp,
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            // for better edgeToEdge experience
-            contentPadding = PaddingValues(
-                start = 16.dp,
-                end = 16.dp,
-                bottom = innerPadding.calculateBottomPadding()
-            ),
-            content = {
-                items(dataState.notes, key = { item: NoteEntity -> item.id!! }) {
-                    NoteCard(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .animateItem(), // Add animation to the item
-                        note = it,
-                        isEnabled = isMultiSelectionModeEnabled,
-                        isSelected = selectedNotes.contains(it),
-                        onEnableChange = onMultiSelectionModeChange,
-                        onNoteClick = onNoteClick
-                    )
-                }
-            }
-        )
+        ProgressDialog(isLoading = dataActionState.loading, progress = dataActionState.progress) {
+            onExportCancelled()
+        }
     }
 }

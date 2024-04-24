@@ -26,6 +26,7 @@ fun OpenNoteTheme(
         2 -> if (darkMode) DarkBlueColors else LightBlueColors
         3 -> if (darkMode) DarkGreenColors else LightGreenColors
         4 -> if (darkMode) DarkOrangeColors else LightOrangeColors
+        5 -> if (darkMode) DarkRedColors else LightRedColors
 
         else -> if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             val context = LocalContext.current

@@ -17,21 +17,17 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.yangdai.opennote.R
-import com.yangdai.opennote.presentation.util.exportNote
 
 @Composable
 fun ExportDialog(
-    html: String,
-    title: String,
-    content: String,
-    onDismissRequest: () -> Unit
+    onDismissRequest: () -> Unit,
+    onConfirm: (String) -> Unit
 ) {
-    val context = LocalContext.current
     val modeOptions = listOf(
         "TXT",
         "MARKDOWN",
@@ -81,22 +77,7 @@ fun ExportDialog(
         confirmButton = {
             TextButton(
                 onClick = {
-                    if (selectedMode == "HTML") {
-                        exportNote(
-                            context.applicationContext,
-                            title,
-                            html,
-                            selectedMode
-                        )
-                    } else {
-                        exportNote(
-                            context.applicationContext,
-                            title,
-                            content,
-                            selectedMode
-                        )
-                    }
-                    onDismissRequest()
+                    onConfirm(selectedMode)
                 }
             ) {
                 Text(text = stringResource(android.R.string.ok))
@@ -109,4 +90,13 @@ fun ExportDialog(
                 Text(text = stringResource(android.R.string.cancel))
             }
         })
+}
+
+@Composable
+@Preview
+fun ExportDialogPreview() {
+    ExportDialog(
+        onDismissRequest = {},
+        onConfirm = {}
+    )
 }

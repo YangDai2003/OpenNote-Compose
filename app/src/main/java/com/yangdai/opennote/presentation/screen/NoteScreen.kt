@@ -70,6 +70,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.yangdai.opennote.MainActivity
 import com.yangdai.opennote.R
+import com.yangdai.opennote.data.local.entity.NoteEntity
 import com.yangdai.opennote.presentation.component.ExportDialog
 import com.yangdai.opennote.presentation.component.FolderListDialog
 import com.yangdai.opennote.presentation.component.RichText
@@ -77,7 +78,9 @@ import com.yangdai.opennote.presentation.component.MarkdownText
 import com.yangdai.opennote.presentation.component.LinkDialog
 import com.yangdai.opennote.presentation.component.NoteEditTextField
 import com.yangdai.opennote.presentation.component.NoteEditorRow
+import com.yangdai.opennote.presentation.component.ProgressDialog
 import com.yangdai.opennote.presentation.component.TaskDialog
+import com.yangdai.opennote.presentation.event.DatabaseEvent
 import com.yangdai.opennote.presentation.event.NoteEvent
 import com.yangdai.opennote.presentation.event.UiEvent
 import com.yangdai.opennote.presentation.util.timestampToFormatLocalDateTime
@@ -106,6 +109,7 @@ fun NoteScreen(
     val noteState by sharedViewModel.noteStateFlow.collectAsStateWithLifecycle()
     val folderList by sharedViewModel.foldersStateFlow.collectAsStateWithLifecycle()
     val html by sharedViewModel.html.collectAsStateWithLifecycle()
+    val actionState by sharedViewModel.dataActionStateFlow.collectAsStateWithLifecycle()
 
     val pagerState = rememberPagerState(pageCount = { 2 })
 
@@ -149,8 +153,9 @@ fun NoteScreen(
             matchingFolder?.name ?: ""
         }
         timestamp =
-            if (noteState.timestamp == null) timestampToFormatLocalDateTime(System.currentTimeMillis())
-            else timestampToFormatLocalDateTime(noteState.timestamp!!)
+            if (noteState.timestamp == null) System.currentTimeMillis()
+                .timestampToFormatLocalDateTime()
+            else noteState.timestamp!!.timestampToFormatLocalDateTime()
     }
 
     LaunchedEffect(sharedText) {
@@ -479,10 +484,23 @@ fun NoteScreen(
     }
     if (showExportDialog) {
         ExportDialog(
-            html = html,
-            title = sharedViewModel.titleState.text.toString(),
-            content = sharedViewModel.contentState.text.toString(),
-            onDismissRequest = { showExportDialog = false }
+            onDismissRequest = { showExportDialog = false },
+            onConfirm = {
+                sharedViewModel.onDatabaseEvent(
+                    DatabaseEvent.Export(
+                        context.contentResolver,
+                        listOf(
+                            NoteEntity(
+                                title = sharedViewModel.titleState.text.toString(),
+                                content = sharedViewModel.contentState.text.toString(),
+                                timestamp = System.currentTimeMillis()
+                            )
+                        ),
+                        it
+                    )
+                )
+                showExportDialog = false
+            }
         )
     }
 
@@ -508,5 +526,12 @@ fun NoteScreen(
         ) {
             sharedViewModel.onNoteEvent(NoteEvent.FolderChanged(it))
         }
+    }
+
+    ProgressDialog(
+        isLoading = actionState.loading,
+        progress = actionState.progress
+    ) {
+        sharedViewModel.cancelDataAction()
     }
 }

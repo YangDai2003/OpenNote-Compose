@@ -1,7 +1,6 @@
 package com.yangdai.opennote.presentation.screen
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
@@ -28,6 +27,7 @@ import com.yangdai.opennote.presentation.event.ListEvent
 import com.yangdai.opennote.presentation.component.MainContent
 import com.yangdai.opennote.presentation.component.ModalNavigationScreen
 import com.yangdai.opennote.presentation.component.PermanentNavigationScreen
+import com.yangdai.opennote.presentation.event.DatabaseEvent
 import com.yangdai.opennote.presentation.viewmodel.SharedViewModel
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.launch
@@ -38,15 +38,13 @@ fun MainScreen(
     isLargeScreen: Boolean,
     navigateTo: (String) -> Unit
 ) {
+    val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
-    // Staggered grid state, used to control the scroll state of the note grid
-    val staggeredGridState = rememberLazyStaggeredGridState()
 
     val dataState by sharedViewModel.dataStateFlow.collectAsStateWithLifecycle()
     val folderList by sharedViewModel.foldersStateFlow.collectAsStateWithLifecycle()
+    val dataActionState by sharedViewModel.dataActionStateFlow.collectAsStateWithLifecycle()
 
-    // Bottom sheet visibility, reset when configuration changes, no need to use rememberSaveable
-    var isFolderDialogVisible by remember { mutableStateOf(false) }
     // Search bar state, reset when configuration changes, no need to use rememberSaveable
     var isSearchBarActivated by remember { mutableStateOf(false) }
 
@@ -71,7 +69,7 @@ fun MainScreen(
     // Whether to show the floating button, determined by the scroll state of the grid, the selected drawer, the search bar, and whether multi-select mode is enabled
     val isFloatingButtonVisible by remember {
         derivedStateOf {
-            !staggeredGridState.isScrollInProgress && selectedDrawerIndex == 0 && !isSearchBarActivated && !isMultiSelectionModeEnabled
+            selectedDrawerIndex == 0 && !isSearchBarActivated && !isMultiSelectionModeEnabled
         }
     }
 
@@ -134,6 +132,7 @@ fun MainScreen(
     val movableContent = remember {
         movableContentOf {
             MainContent(
+                dataActionState = dataActionState,
                 selectedDrawerIndex = selectedDrawerIndex,
                 selectedFolder = selectedFolder,
                 selectedNotes = selectedNotes.toImmutableList(),
@@ -143,14 +142,10 @@ fun MainScreen(
                 dataState = dataState,
                 folderList = folderList.toImmutableList(),
                 isFloatingButtonVisible = isFloatingButtonVisible,
-                isFolderDialogVisible = isFolderDialogVisible,
-                staggeredGridState = staggeredGridState,
                 navigateTo = navigateTo,
                 initializeNoteSelection = { initializeNoteSelection() },
                 onSearchBarActivationChange = { isSearchBarActivated = it },
                 onAllNotesSelectionChange = { allNotesSelected = it },
-                onFolderDialogVisibilityChange = { isFolderDialogVisible = true },
-                onFolderDialogDismissRequest = { isFolderDialogVisible = false },
                 onMultiSelectionModeChange = { isMultiSelectionModeEnabled = it },
                 onNoteClick = {
                     if (isMultiSelectionModeEnabled) {
@@ -173,6 +168,12 @@ fun MainScreen(
                             if (isClosed) open() else close()
                         }
                     }
+                },
+                onExportClick = {
+                    sharedViewModel.onDatabaseEvent(DatabaseEvent.Export(context.contentResolver, selectedNotes.toList(), it))
+                },
+                onExportCancelled = {
+                    sharedViewModel.cancelDataAction()
                 }
             )
         }
