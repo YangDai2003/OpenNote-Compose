@@ -16,7 +16,6 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
 import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.TextRecognizer
 import com.google.mlkit.vision.text.chinese.ChineseTextRecognizerOptions
@@ -35,6 +34,7 @@ import com.yangdai.opennote.presentation.event.NoteEvent
 import com.yangdai.opennote.presentation.event.UiEvent
 import com.yangdai.opennote.presentation.state.DataActionState
 import com.yangdai.opennote.presentation.state.DataState
+import com.yangdai.opennote.presentation.util.NoteEntityTypeToken
 import com.yangdai.opennote.presentation.state.NoteState
 import com.yangdai.opennote.presentation.util.Constants
 import com.yangdai.opennote.presentation.util.add
@@ -688,7 +688,7 @@ class SharedViewModel @Inject constructor(
 
                     // 使用 Gson 将 JSON 字符串解析为 NoteEntity 对象的列表
                     runCatching {
-                        val notesType = object : TypeToken<List<NoteEntity>>() {}.type
+                        val notesType = NoteEntityTypeToken().type
                         val notes = Gson().fromJson<List<NoteEntity>>(json, notesType)
                         _dataActionState.update {
                             it.copy(progress = 0.6f)
