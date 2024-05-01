@@ -8,7 +8,6 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -19,9 +18,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.datastore.preferences.core.Preferences
-import androidx.datastore.preferences.core.booleanPreferencesKey
-import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.rememberNavController
@@ -32,7 +28,6 @@ import com.yangdai.opennote.presentation.component.MaskBox
 import com.yangdai.opennote.presentation.navigation.AnimatedNavHost
 import com.yangdai.opennote.presentation.theme.OpenNoteTheme
 import com.yangdai.opennote.presentation.util.Constants
-import kotlinx.coroutines.flow.map
 
 @Composable
 fun BaseScreen(
@@ -54,32 +49,6 @@ fun BaseScreen(
         }
     }
 
-    val isAppInDarkTheme by getPreferenceState(
-        sharedViewModel,
-        booleanPreferencesKey(Constants.Preferences.IS_APP_IN_DARK_MODE),
-        false
-    )
-    val shouldFollowSystem by getPreferenceState(
-        sharedViewModel,
-        booleanPreferencesKey(Constants.Preferences.SHOULD_FOLLOW_SYSTEM),
-        false
-    )
-    val switchActive by getPreferenceState(
-        sharedViewModel,
-        booleanPreferencesKey(Constants.Preferences.IS_SWITCH_ACTIVE),
-        false
-    )
-    val maskClickX by getPreferenceState(
-        sharedViewModel,
-        floatPreferencesKey(Constants.Preferences.MASK_CLICK_X),
-        0f
-    )
-    val maskClickY by getPreferenceState(
-        sharedViewModel,
-        floatPreferencesKey(Constants.Preferences.MASK_CLICK_Y),
-        0f
-    )
-
     val isSystemInDarkTheme = isSystemInDarkTheme()
 
     LaunchedEffect(settingsState.theme) {
@@ -90,29 +59,29 @@ fun BaseScreen(
 
     OpenNoteTheme(
         color = settingsState.color,
-        darkMode = isAppInDarkTheme
+        darkMode = settingsState.isAppInDarkMode
     ) {
 
         // MaskBox is a custom composable that animates a mask over the screen
         MaskBox(
             maskComplete = {
-                sharedViewModel.putPreferenceValue(Constants.Preferences.IS_APP_IN_DARK_MODE, !isAppInDarkTheme)
+                sharedViewModel.putPreferenceValue(Constants.Preferences.IS_APP_IN_DARK_MODE, !settingsState.isAppInDarkMode)
             },
             animFinish = {
                 sharedViewModel.putPreferenceValue(Constants.Preferences.IS_SWITCH_ACTIVE, false)
-                if (shouldFollowSystem) {
+                if (settingsState.shouldFollowSystem) {
                     sharedViewModel.putPreferenceValue(Constants.Preferences.APP_THEME, 0)
                 }
             }
         ) { maskActiveEvent ->
 
-            LaunchedEffect(switchActive) {
-                if (!switchActive) return@LaunchedEffect
+            LaunchedEffect(settingsState.isSwitchActive) {
+                if (!settingsState.isSwitchActive) return@LaunchedEffect
 
-                if (isAppInDarkTheme)
-                    maskActiveEvent(MaskAnimModel.SHRINK, maskClickX, maskClickY)
+                if (settingsState.isAppInDarkMode)
+                    maskActiveEvent(MaskAnimModel.SHRINK, Constants.Preferences.MASK_CLICK_X, Constants.Preferences.MASK_CLICK_Y)
                 else
-                    maskActiveEvent(MaskAnimModel.EXPEND, maskClickX, maskClickY)
+                    maskActiveEvent(MaskAnimModel.EXPEND, Constants.Preferences.MASK_CLICK_X, Constants.Preferences.MASK_CLICK_Y)
             }
 
             val blur by animateDpAsState(targetValue = if (!loggedIn) 16.dp else 0.dp, label = "")
@@ -137,15 +106,4 @@ fun BaseScreen(
             }
         }
     }
-}
-
-@Composable
-private fun <T> getPreferenceState(
-    viewModel: SharedViewModel,
-    key: Preferences.Key<T>,
-    defaultValue: T
-): State<T> {
-    return viewModel.preferencesFlow()
-        .map { preferences -> preferences[key] ?: defaultValue }
-        .collectAsStateWithLifecycle(initialValue = defaultValue)
 }

@@ -43,7 +43,7 @@ class MainActivity : AppCompatActivity() {
                     0f
                 )
 
-                animation.duration = 200L
+                animation.duration = 300L
 
                 // Call SplashScreenView.remove at the end of your custom animation.
                 animation.doOnEnd { splashScreenView.remove() }
@@ -54,7 +54,6 @@ class MainActivity : AppCompatActivity() {
         }
 
         enableEdgeToEdge()
-
         super.onCreate(savedInstanceState)
 
         setContent {

@@ -7,7 +7,6 @@ object Constants {
 
     object File {
         const val OPENNOTE = "OpenNote"
-        const val BACKUP = "Backup"
         const val OPENNOTE_BACKUP = "OpenNote/Backup"
     }
 
@@ -20,8 +19,8 @@ object Constants {
         const val IS_APP_IN_DARK_MODE = "IS_APP_IN_DARK_MODE"
         const val SHOULD_FOLLOW_SYSTEM = "SHOULD_FOLLOW_SYSTEM"
         const val IS_SWITCH_ACTIVE = "IS_DARK_SWITCH_ACTIVE"
-        const val MASK_CLICK_X = "MASK_CLICK_X"
-        const val MASK_CLICK_Y = "MASK_CLICK_Y"
+        const val MASK_CLICK_X = 0f
+        const val MASK_CLICK_Y = 0f
     }
 
     object Editor {

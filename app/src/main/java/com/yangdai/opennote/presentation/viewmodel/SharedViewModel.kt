@@ -12,7 +12,6 @@ import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.clearText
 import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.runtime.snapshotFlow
-import androidx.datastore.preferences.core.Preferences
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.gson.Gson
@@ -41,9 +40,7 @@ import com.yangdai.opennote.presentation.util.add
 import com.yangdai.opennote.presentation.util.addLink
 import com.yangdai.opennote.presentation.util.addTask
 import com.yangdai.opennote.presentation.util.bold
-import com.yangdai.opennote.presentation.util.createBackupDirectory
 import com.yangdai.opennote.presentation.util.diagram
-import com.yangdai.opennote.presentation.util.createAppDirectory
 import com.yangdai.opennote.presentation.util.inlineCode
 import com.yangdai.opennote.presentation.util.inlineFunction
 import com.yangdai.opennote.presentation.util.italic
@@ -57,7 +54,6 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -158,7 +154,7 @@ class SharedViewModel @Inject constructor(
             } else {
                 TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
             }
-            delay(500)
+            delay(300)
             //任务完成后将 isLoading 设置为 false 以隐藏启动屏幕
             _isLoadingData.value = false
         }
@@ -170,21 +166,23 @@ class SharedViewModel @Inject constructor(
         dataStoreRepository.intFlow(Constants.Preferences.APP_THEME),
         dataStoreRepository.intFlow(Constants.Preferences.APP_COLOR),
         dataStoreRepository.booleanFlow(Constants.Preferences.NEED_PASSWORD),
-    ) { theme, color, needPassword ->
+        dataStoreRepository.booleanFlow(Constants.Preferences.IS_APP_IN_DARK_MODE),
+        dataStoreRepository.booleanFlow(Constants.Preferences.SHOULD_FOLLOW_SYSTEM),
+        dataStoreRepository.booleanFlow(Constants.Preferences.IS_SWITCH_ACTIVE)
+    ) { values ->
         SettingsState(
-            theme = theme,
-            color = color,
-            needPassword = needPassword
+            theme = values[0] as Int,
+            color = values[1] as Int,
+            needPassword = values[2] as Boolean,
+            isAppInDarkMode = values[3] as Boolean,
+            shouldFollowSystem = values[4] as Boolean,
+            isSwitchActive = values[5] as Boolean
         )
     }.flowOn(Dispatchers.IO).stateIn(
         scope = viewModelScope,
         started = SharingStarted.Eagerly,
         initialValue = SettingsState()
     )
-
-    fun preferencesFlow(): Flow<Preferences> {
-        return dataStoreRepository.preferencesFlow()
-    }
 
     fun <T> putPreferenceValue(key: String, value: T) {
         viewModelScope.launch(Dispatchers.IO) {
@@ -209,9 +207,6 @@ class SharedViewModel @Inject constructor(
     fun getBoolean(key: String): Boolean? = runBlocking {
         dataStoreRepository.getBoolean(key)
     }
-
-    fun getDataStore() = dataStoreRepository.getDataStore()
-
 
     val historyStateFlow: StateFlow<Set<String>> =
         dataStoreRepository.stringSetFlow(Constants.Preferences.SEARCH_HISTORY)
@@ -499,9 +494,9 @@ class SharedViewModel @Inject constructor(
     fun getFileName(contentResolver: ContentResolver, uri: Uri): String? {
         var result: String? = null
         if (uri.scheme == "content") {
-            val cursor = contentResolver.query(uri, null, null, null, null)
-            cursor.use {
-                if (it != null && it.moveToFirst()) {
+            val cursor = contentResolver.query(uri, null, null, null, null, null)
+            cursor?.use {
+                if (it.moveToFirst()) {
                     result = it.getString(it.getColumnIndex(OpenableColumns.DISPLAY_NAME))
                 }
             }
@@ -573,8 +568,6 @@ class SharedViewModel @Inject constructor(
                     else -> ".html"
                 }
 
-                createAppDirectory()
-
                 dataActionJob = viewModelScope.launch(Dispatchers.IO) {
                     notes.forEachIndexed { index, noteEntity ->
                         _dataActionState.update {
@@ -627,7 +620,6 @@ class SharedViewModel @Inject constructor(
                 dataActionJob?.cancel()
                 _dataActionState.update { it.copy(loading = true) }
 
-                createBackupDirectory()
                 _dataActionState.update {
                     it.copy(progress = 0.2f)
                 }

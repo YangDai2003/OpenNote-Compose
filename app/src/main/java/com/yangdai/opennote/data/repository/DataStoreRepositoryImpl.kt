@@ -5,6 +5,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.core.stringSetPreferencesKey
@@ -38,6 +39,13 @@ class DataStoreRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun putFloat(key: String, value: Float) {
+        val preferencesKey = floatPreferencesKey(key)
+        context.dataStore.edit { preferences ->
+            preferences[preferencesKey] = value
+        }
+    }
+
     override suspend fun putBoolean(key: String, value: Boolean) {
         val preferencesKey = booleanPreferencesKey(key)
         context.dataStore.edit { preferences ->
@@ -59,6 +67,17 @@ class DataStoreRepositoryImpl @Inject constructor(
     override suspend fun getInt(key: String): Int? {
         return try {
             val preferencesKey = intPreferencesKey(key)
+            val preferences = context.dataStore.data.first()
+            preferences[preferencesKey]
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
+    }
+
+    override suspend fun getFloat(key: String): Float? {
+        return try {
+            val preferencesKey = floatPreferencesKey(key)
             val preferences = context.dataStore.data.first()
             preferences[preferencesKey]
         } catch (e: Exception) {
@@ -103,6 +122,13 @@ class DataStoreRepositoryImpl @Inject constructor(
         }
     }
 
+    override fun floatFlow(key: String): Flow<Float> {
+        val preferencesKey = floatPreferencesKey(key)
+        return context.dataStore.data.map { preferences ->
+            preferences[preferencesKey] ?: 0f
+        }
+    }
+
     override fun stringFlow(key: String): Flow<String> {
         val preferencesKey = stringPreferencesKey(key)
         return context.dataStore.data.map { preferences ->
@@ -122,13 +148,5 @@ class DataStoreRepositoryImpl @Inject constructor(
         return context.dataStore.data.map { preferences ->
             preferences[preferencesKey] ?: setOf()
         }
-    }
-
-    override fun preferencesFlow(): Flow<Preferences> {
-        return context.dataStore.data
-    }
-
-    override fun getDataStore(): DataStore<Preferences> {
-        return context.dataStore
     }
 }

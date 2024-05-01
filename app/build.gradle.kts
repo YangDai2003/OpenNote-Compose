@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsKotlinAndroid)
+    alias(libs.plugins.compose.compiler)
     alias(libs.plugins.googleHilt)
     alias(libs.plugins.googleKsp)
     alias(libs.plugins.googleGms)
@@ -16,8 +17,8 @@ android {
         applicationId = "com.yangdai.opennote"
         minSdk = 29
         targetSdk = 34
-        versionCode = 120
-        versionName = "1.2.0"
+        versionCode = 122
+        versionName = "1.2.2"
         resourceConfigurations += listOf("en", "zh")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -51,8 +52,10 @@ android {
     buildFeatures {
         compose = true
     }
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.12"
+    composeCompiler {
+        enableStrongSkippingMode = true
+        enableIntrinsicRemember = true
+        enableNonSkippingGroupOptimization = true
     }
     packaging {
         resources {
@@ -95,11 +98,10 @@ dependencies {
     annotationProcessor(libs.androidx.room.compiler)
     ksp(libs.androidx.room.compiler)
     implementation(libs.androidx.room.ktx)
-    implementation(libs.androidx.room.paging)
     testImplementation(libs.androidx.room.testing)
 
     // Hilt, for dependency injection
-    implementation(libs.androidx.hilt)
+    implementation(libs.androidx.hilt.navigation)
     ksp(libs.google.hilt.compiler)
     implementation(libs.google.hilt)
 
@@ -124,7 +126,6 @@ dependencies {
     implementation(libs.androidx.core.splashscreen)
     implementation(libs.androidx.biometric)
     implementation(libs.androidx.datastore.preferences)
-    implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
 
     // Test

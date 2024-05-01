@@ -41,7 +41,7 @@ class CurlyCornerShape(
         topEnd: Float,
         bottomEnd: Float,
         bottomStart: Float,
-        layoutDirection: LayoutDirection,
+        layoutDirection: LayoutDirection
     ): Outline {
         val d = 2.0
         val r2: Double = size.width / d

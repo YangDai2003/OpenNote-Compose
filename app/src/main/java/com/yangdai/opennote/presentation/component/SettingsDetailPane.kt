@@ -1,11 +1,8 @@
 package com.yangdai.opennote.presentation.component
 
-import android.Manifest
-import android.app.Activity
 import android.app.KeyguardManager
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.widget.Toast
@@ -69,12 +66,11 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -91,11 +87,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
-import androidx.datastore.preferences.core.booleanPreferencesKey
-import androidx.datastore.preferences.core.edit
-import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.google.firebase.analytics.FirebaseAnalytics
@@ -110,8 +101,6 @@ import com.yangdai.opennote.presentation.theme.DarkPurpleColors
 import com.yangdai.opennote.presentation.util.Constants
 import com.yangdai.opennote.presentation.viewmodel.SharedViewModel
 import kotlinx.collections.immutable.toImmutableList
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -123,7 +112,8 @@ fun SettingsDetailPane(
 
     val context = LocalContext.current
     val haptic = LocalHapticFeedback.current
-    val scope = rememberCoroutineScope()
+    val settingsState by sharedViewModel.settingsStateFlow.collectAsStateWithLifecycle()
+
     val customTabsIntent = CustomTabsIntent.Builder()
         .setShowTitle(true)
         .build()
@@ -165,22 +155,8 @@ fun SettingsDetailPane(
         mutableStateOf(initFirebaseSelect)
     }
 
-    val isAppInDarkTheme by sharedViewModel.preferencesFlow()
-        .map { preferences ->
-            preferences[booleanPreferencesKey(Constants.Preferences.IS_APP_IN_DARK_MODE)] ?: false
-        }
-        .collectAsState(initial = false)
-
     fun switchTheme() {
-        scope.launch {
-            sharedViewModel
-                .getDataStore()
-                .edit {
-                    it[floatPreferencesKey(Constants.Preferences.MASK_CLICK_X)] = 0f
-                    it[floatPreferencesKey(Constants.Preferences.MASK_CLICK_Y)] = 0f
-                    it[booleanPreferencesKey(Constants.Preferences.IS_SWITCH_ACTIVE)] = true
-                }
-        }
+        sharedViewModel.putPreferenceValue(Constants.Preferences.IS_SWITCH_ACTIVE, true)
     }
 
     val isSystemDarkTheme = isSystemInDarkTheme()
@@ -329,7 +305,7 @@ fun SettingsDetailPane(
                                                 if (mode != index) {
                                                     when (index) {
                                                         0 -> {
-                                                            if (isSystemDarkTheme != isAppInDarkTheme) {
+                                                            if (isSystemDarkTheme != settingsState.isAppInDarkMode) {
                                                                 switchTheme()
                                                             } else {
                                                                 sharedViewModel.putPreferenceValue(
@@ -344,7 +320,7 @@ fun SettingsDetailPane(
                                                         }
 
                                                         1 -> {
-                                                            if (isAppInDarkTheme) {
+                                                            if (settingsState.isAppInDarkMode) {
                                                                 switchTheme()
                                                             }
                                                             sharedViewModel.putPreferenceValue(
@@ -358,7 +334,7 @@ fun SettingsDetailPane(
                                                         }
 
                                                         2 -> {
-                                                            if (!isAppInDarkTheme) {
+                                                            if (!settingsState.isAppInDarkMode) {
                                                                 switchTheme()
                                                             }
                                                             sharedViewModel.putPreferenceValue(
@@ -419,13 +395,7 @@ fun SettingsDetailPane(
 
                         ListItem(
                             modifier = Modifier.clickable {
-                                if (!hasStoragePermissions(context)) {
-                                    ActivityCompat.requestPermissions(
-                                        context as Activity, STORAGE_PERMISSIONS, 0
-                                    )
-                                } else {
-                                    showFolderDialog = true
-                                }
+                                showFolderDialog = true
                             },
                             leadingContent = {
                                 Icon(
@@ -559,7 +529,7 @@ fun SettingsDetailPane(
                                 0
                             )
                         val version = packageInfo.versionName
-                        var pressAMP by remember { mutableStateOf(16f) }
+                        var pressAMP by remember { mutableFloatStateOf(16f) }
                         val animatedPress by animateFloatAsState(
                             targetValue = pressAMP,
                             animationSpec = tween(), label = ""
@@ -567,18 +537,7 @@ fun SettingsDetailPane(
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(vertical = 16.dp)
-                                .pointerInput(Unit) {
-                                    detectTapGestures(
-                                        onPress = {
-                                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                            pressAMP = 0f
-                                            tryAwaitRelease()
-                                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                            pressAMP = 16f
-                                        }
-                                    )
-                                },
+                                .padding(vertical = 16.dp),
                             verticalArrangement = Arrangement.Center,
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
@@ -594,7 +553,18 @@ fun SettingsDetailPane(
                                         shape = CurlyCornerShape(amp = animatedPress.toDouble()),
                                         ambientColor = MaterialTheme.colorScheme.primaryContainer,
                                         spotColor = MaterialTheme.colorScheme.primaryContainer,
-                                    ),
+                                    )
+                                    .pointerInput(Unit) {
+                                        detectTapGestures(
+                                            onPress = {
+                                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                                pressAMP = 0f
+                                                tryAwaitRelease()
+                                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                                pressAMP = 16f
+                                            }
+                                        )
+                                    },
                                 contentAlignment = Alignment.Center,
                             ) {
                                 Image(
@@ -782,21 +752,6 @@ fun SettingsDetailPane(
         }
     }
 }
-
-fun hasStoragePermissions(
-    context: Context
-): Boolean {
-    if (Build.VERSION.SDK_INT > Build.VERSION_CODES.S) {
-        return true
-    }
-    return STORAGE_PERMISSIONS.all {
-        ContextCompat.checkSelfPermission(context, it) == PackageManager.PERMISSION_GRANTED
-    }
-}
-
-val STORAGE_PERMISSIONS = arrayOf(
-    Manifest.permission.READ_EXTERNAL_STORAGE
-)
 
 @Composable
 fun SettingsDetailPlaceHolder() =

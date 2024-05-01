@@ -30,7 +30,6 @@
     <string name="login">登录</string>
     <string name="data_security">数据和安全</string>
     <string name="reset_database">重置数据库</string>
-    <string name="please_relaunch_the_app">请重启应用</string>
     <string name="remind">提醒</string>
     <string name="restore_all">全部恢复</string>
     <string name="delete_all">全部删除</string>

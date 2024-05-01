@@ -73,7 +73,8 @@ fun MarkdownText(html: String) {
                 setPadding(0, 0, 0, 0)
                 setBackgroundColor(Color.TRANSPARENT)
             }
-        }, update = {
+        },
+        update = {
             val data = """
                     <!DOCTYPE html>
                     <html>

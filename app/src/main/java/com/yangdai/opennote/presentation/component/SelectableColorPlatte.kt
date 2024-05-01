@@ -62,7 +62,7 @@ fun SelectableColorPlatte(
                     modifier = Modifier
                         .align(Alignment.Center)
                         .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.primary),
+                        .background(colorScheme.tertiaryContainer),
                     enter = fadeIn() + expandIn(expandFrom = Alignment.Center),
                     exit = shrinkOut(shrinkTowards = Alignment.Center) + fadeOut()
                 ) {

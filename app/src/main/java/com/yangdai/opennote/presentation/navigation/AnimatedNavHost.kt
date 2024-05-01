@@ -22,7 +22,7 @@ import com.yangdai.opennote.presentation.screen.SettingsScreen
 import com.yangdai.opennote.presentation.util.Constants.NAV_ANIMATION_TIME
 import com.yangdai.opennote.presentation.util.parseSharedContent
 
-private fun sharedAxisXIn(
+fun sharedAxisXIn(
     initialOffsetX: (fullWidth: Int) -> Int,
     durationMillis: Int = NAV_ANIMATION_TIME,
 ): EnterTransition = slideInHorizontally(
@@ -33,7 +33,7 @@ private fun sharedAxisXIn(
     initialOffsetX = initialOffsetX
 )
 
-private fun sharedAxisXOut(
+fun sharedAxisXOut(
     targetOffsetX: (fullWidth: Int) -> Int,
     durationMillis: Int = NAV_ANIMATION_TIME,
 ): ExitTransition = slideOutHorizontally(
