@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.dp
@@ -22,23 +23,31 @@ import com.yangdai.opennote.presentation.theme.linkColor
 @Composable
 fun MarkdownText(html: String) {
 
-    if (html.isEmpty()) {
-        return
-    }
-
     val textColor = MaterialTheme.colorScheme.onSurface.toArgb()
     val codeBackgroundColor = MaterialTheme.colorScheme.surfaceVariant.toArgb()
     val preCodeBackgroundColor = MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp).toArgb()
     val quoteBackgroundColor = MaterialTheme.colorScheme.surfaceDim.toArgb()
-    val hexTextColor = String.format("#%06X", 0xFFFFFF and textColor)
-    val hexCodeBackgroundColor = String.format("#%06X", 0xFFFFFF and codeBackgroundColor)
-    val hexPreCodeBackgroundColor = String.format("#%06X", 0xFFFFFF and preCodeBackgroundColor)
-    val hexQuoteBackgroundColor = String.format("#%06X", 0xFFFFFF and quoteBackgroundColor)
-    val hexLinkColor = String.format("#%06X", 0xFFFFFF and linkColor.toArgb())
+    val hexTextColor = remember {
+        String.format("#%06X", 0xFFFFFF and textColor)
+    }
+    val hexCodeBackgroundColor = remember {
+        String.format("#%06X", 0xFFFFFF and codeBackgroundColor)
+    }
+    val hexPreCodeBackgroundColor = remember {
+        String.format("#%06X", 0xFFFFFF and preCodeBackgroundColor)
+    }
+    val hexQuoteBackgroundColor = remember {
+        String.format("#%06X", 0xFFFFFF and quoteBackgroundColor)
+    }
+    val hexLinkColor = remember {
+        String.format("#%06X", 0xFFFFFF and linkColor.toArgb())
+    }
 
-    val customTabsIntent = CustomTabsIntent.Builder()
-        .setShowTitle(true)
-        .build()
+    val customTabsIntent = remember {
+        CustomTabsIntent.Builder()
+            .setShowTitle(true)
+            .build()
+    }
 
     AndroidView(
         modifier = Modifier.fillMaxSize(),
@@ -70,7 +79,6 @@ fun MarkdownText(html: String) {
                 settings.displayZoomControls = false
                 settings.useWideViewPort = false
                 settings.loadWithOverviewMode = false
-                setPadding(0, 0, 0, 0)
                 setBackgroundColor(Color.TRANSPARENT)
             }
         },

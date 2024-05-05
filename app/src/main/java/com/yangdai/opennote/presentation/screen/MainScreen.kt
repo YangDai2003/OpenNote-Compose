@@ -42,6 +42,7 @@ fun MainScreen(
     val coroutineScope = rememberCoroutineScope()
 
     val dataState by sharedViewModel.dataStateFlow.collectAsStateWithLifecycle()
+    val settingsState by sharedViewModel.settingsStateFlow.collectAsStateWithLifecycle()
     val folderList by sharedViewModel.foldersStateFlow.collectAsStateWithLifecycle()
     val dataActionState by sharedViewModel.dataActionStateFlow.collectAsStateWithLifecycle()
 
@@ -132,6 +133,7 @@ fun MainScreen(
     val movableContent = remember {
         movableContentOf {
             MainContent(
+                isListViewMode = settingsState.isListView,
                 dataActionState = dataActionState,
                 selectedDrawerIndex = selectedDrawerIndex,
                 selectedFolder = selectedFolder,

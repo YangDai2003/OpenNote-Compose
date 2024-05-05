@@ -38,7 +38,6 @@ import androidx.compose.material.icons.filled.BrightnessAuto
 import androidx.compose.material.icons.filled.Colorize
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.LightMode
-import androidx.compose.material.icons.outlined.Analytics
 import androidx.compose.material.icons.outlined.Backup
 import androidx.compose.material.icons.outlined.CleaningServices
 import androidx.compose.material.icons.outlined.Close
@@ -89,7 +88,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.google.firebase.analytics.FirebaseAnalytics
 import com.yangdai.opennote.MainActivity
 import com.yangdai.opennote.R
 import com.yangdai.opennote.presentation.event.DatabaseEvent
@@ -114,9 +112,11 @@ fun SettingsDetailPane(
     val haptic = LocalHapticFeedback.current
     val settingsState by sharedViewModel.settingsStateFlow.collectAsStateWithLifecycle()
 
-    val customTabsIntent = CustomTabsIntent.Builder()
-        .setShowTitle(true)
-        .build()
+    val customTabsIntent = remember {
+        CustomTabsIntent.Builder()
+            .setShowTitle(true)
+            .build()
+    }
 
     val modeOptions = listOf(
         stringResource(R.string.system_default),
@@ -148,11 +148,6 @@ fun SettingsDetailPane(
         sharedViewModel.getBoolean(Constants.Preferences.NEED_PASSWORD) ?: false
     var passwordChecked by rememberSaveable {
         mutableStateOf(initPasswordSelect)
-    }
-
-    val initFirebaseSelect = sharedViewModel.getBoolean(Constants.Preferences.FIREBASE) ?: false
-    var firebaseEnabled by rememberSaveable {
-        mutableStateOf(initFirebaseSelect)
     }
 
     fun switchTheme() {
@@ -655,34 +650,6 @@ fun SettingsDetailPane(
                                 )
                             },
                             headlineContent = { Text(text = stringResource(R.string.share_this_app)) })
-
-                        ListItem(
-                            leadingContent = {
-                                Icon(
-                                    imageVector = Icons.Outlined.Analytics,
-                                    contentDescription = "Firebase"
-                                )
-                            },
-                            headlineContent = { Text(text = stringResource(R.string.firebase)) },
-                            supportingContent = {
-                                Text(
-                                    text = stringResource(R.string.firebase_description)
-                                )
-                            },
-                            trailingContent = {
-                                Switch(
-                                    checked = firebaseEnabled,
-                                    onCheckedChange = { checked ->
-                                        firebaseEnabled = checked
-                                        sharedViewModel.putPreferenceValue(
-                                            Constants.Preferences.FIREBASE,
-                                            checked
-                                        )
-                                        FirebaseAnalytics.getInstance(context)
-                                            .setAnalyticsCollectionEnabled(checked)
-                                    }
-                                )
-                            })
                     }
                 }
 

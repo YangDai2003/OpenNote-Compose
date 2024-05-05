@@ -1,19 +1,15 @@
 package com.yangdai.opennote.presentation.screen
 
-import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.background
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
 import androidx.compose.material3.adaptive.layout.AnimatedPane
-import androidx.compose.material3.adaptive.layout.ListDetailPaneScaffold
 import androidx.compose.material3.adaptive.layout.ListDetailPaneScaffoldRole
+import androidx.compose.material3.adaptive.navigation.NavigableListDetailPaneScaffold
 import androidx.compose.material3.adaptive.navigation.rememberListDetailPaneScaffoldNavigator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
 
 import com.yangdai.opennote.presentation.component.SettingsDetailPane
 import com.yangdai.opennote.presentation.component.SettingsListPane
@@ -22,18 +18,11 @@ import com.yangdai.opennote.presentation.component.SettingsListPane
 @Composable
 fun SettingsScreen(navigateUp: () -> Unit) {
 
-    val navigator =
-        rememberListDetailPaneScaffoldNavigator<Nothing>(isDestinationHistoryAware = false)
+    val navigator = rememberListDetailPaneScaffoldNavigator<Any>()
     var selectedListItem by rememberSaveable { mutableStateOf(Pair(-1, -1)) }
 
-    BackHandler(navigator.canNavigateBack()) {
-        navigator.navigateBack()
-    }
-
-    ListDetailPaneScaffold(
-        modifier = Modifier.background(MaterialTheme.colorScheme.surface),
-        directive = navigator.scaffoldDirective,
-        value = navigator.scaffoldValue,
+    NavigableListDetailPaneScaffold(
+        navigator = navigator,
         listPane = {
             AnimatedPane {
                 SettingsListPane(navigateUp = navigateUp) {

@@ -1,9 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="title">标题</string>
-    <string name="date">日期</string>
-    <string name="ascending">升序</string>
-    <string name="descending">降序</string>
     <string name="search">搜索</string>
     <string name="all_notes">全部笔记</string>
     <string name="trash">回收站</string>
@@ -24,7 +21,6 @@
     <string name="dynamic_only_android_12">动态颜色</string>
     <string name="edited">最后编辑时间：</string>
     <string name="search_history">搜索历史</string>
-    <string name="sort_by">排序方式</string>
     <string name="content">正文</string>
     <string name="delete">删除</string>
     <string name="login">登录</string>
@@ -51,8 +47,6 @@
     <string name="task">任务</string>
     <string name="completed">已完成</string>
     <string name="rich_text">富文本</string>
-    <string name="firebase">Firebase 数据分析</string>
-    <string name="firebase_description">仅用于改善使用体验，不会收集个人信息。</string>
     <string name="guide">用户指南</string>
     <string name="no_text_found">没有找到文字</string>
     <string name="no_password_set">请先设置系统锁屏密码</string>
@@ -71,4 +65,8 @@
     <string name="backup">备份</string>
     <string name="recovery">还原</string>
     <string name="password_description">应用冷启动时，用户需要使用系统锁屏密码解锁。</string>
+    <string name="date">日期</string>
+    <string name="ascending">升序</string>
+    <string name="descending">降序</string>
+    <string name="sort_by">排序</string>
 </resources>

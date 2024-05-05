@@ -8,17 +8,20 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.Sort
 import androidx.compose.material.icons.outlined.Clear
 import androidx.compose.material.icons.outlined.DeleteForever
+import androidx.compose.material.icons.outlined.GridView
 import androidx.compose.material.icons.outlined.History
 import androidx.compose.material.icons.outlined.Menu
 import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material.icons.outlined.SortByAlpha
+import androidx.compose.material.icons.outlined.ViewAgenda
 import androidx.compose.material3.DockedSearchBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -63,6 +66,7 @@ fun TopSearchbar(
 ) {
 
     val historySet by viewModel.historyStateFlow.collectAsStateWithLifecycle()
+    val settingsState by viewModel.settingsStateFlow.collectAsStateWithLifecycle()
 
     var inputText by rememberSaveable {
         mutableStateOf("")
@@ -145,13 +149,21 @@ fun TopSearchbar(
                     )
                 }
             } else {
-                IconButton(
-                    enabled = enabled,
-                    onClick = { viewModel.onListEvent(ListEvent.ToggleOrderSection) }) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Outlined.Sort,
-                        contentDescription = "Sort"
-                    )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    IconButton(onClick = { viewModel.onListEvent(ListEvent.ChangeViewMode) }) {
+                        Icon(
+                            imageVector = if (settingsState.isListView) Icons.Outlined.ViewAgenda else Icons.Outlined.GridView,
+                            contentDescription = "View Mode"
+                        )
+                    }
+                    IconButton(onClick = { viewModel.onListEvent(ListEvent.ToggleOrderSection) }) {
+                        Icon(
+                            imageVector = Icons.Outlined.SortByAlpha,
+                            contentDescription = "Sort"
+                        )
+                    }
                 }
             }
         }
@@ -210,30 +222,27 @@ fun TopSearchbar(
             label = "searchBarPadding"
         )
 
-        Box(
-            modifier = Modifier.fillMaxWidth(),
-            contentAlignment = Alignment.Center
+        SearchBar(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = searchBarPadding),
+            inputField = {
+                SearchBarDefaults.InputField(
+                    query = inputText,
+                    onQueryChange = { inputText = it },
+                    onSearch = { search(it) },
+                    enabled = enabled,
+                    expanded = expanded,
+                    onExpandedChange = { expanded = it },
+                    placeholder = { Text(text = stringResource(R.string.search)) },
+                    leadingIcon = { LeadingIcon() },
+                    trailingIcon = { TrailingIcon() },
+                )
+            },
+            expanded = expanded,
+            onExpandedChange = { expanded = it }
         ) {
-            SearchBar(
-                modifier = Modifier.padding(horizontal = searchBarPadding),
-                inputField = {
-                    SearchBarDefaults.InputField(
-                        query = inputText,
-                        onQueryChange = { inputText = it },
-                        onSearch = { search(it) },
-                        enabled = enabled,
-                        expanded = expanded,
-                        onExpandedChange = { expanded = it },
-                        placeholder = { Text(text = stringResource(R.string.search)) },
-                        leadingIcon = { LeadingIcon() },
-                        trailingIcon = { TrailingIcon() },
-                    )
-                },
-                expanded = expanded,
-                onExpandedChange = { expanded = it }
-            ) {
-                History()
-            }
+            History()
         }
     } else {
         Box(

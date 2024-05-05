@@ -4,9 +4,8 @@ plugins {
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.googleHilt)
     alias(libs.plugins.googleKsp)
-    alias(libs.plugins.googleGms)
-    alias(libs.plugins.googleCrashlytics)
     alias(libs.plugins.room)
+    alias(libs.plugins.serialization)
 }
 
 android {
@@ -17,8 +16,8 @@ android {
         applicationId = "com.yangdai.opennote"
         minSdk = 29
         targetSdk = 34
-        versionCode = 122
-        versionName = "1.2.2"
+        versionCode = 123
+        versionName = "1.2.3"
         resourceConfigurations += listOf("en", "zh")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -54,8 +53,6 @@ android {
     }
     composeCompiler {
         enableStrongSkippingMode = true
-        enableIntrinsicRemember = true
-        enableNonSkippingGroupOptimization = true
     }
     packaging {
         resources {
@@ -66,7 +63,7 @@ android {
 
 dependencies {
 
-    implementation(libs.google.gson)
+    implementation(libs.kotlinx.serialization)
     implementation(libs.kotlinx.collections.immutable)
 
     // CommonMark, for markdown rendering and parsing
@@ -87,11 +84,6 @@ dependencies {
     implementation(libs.text.recognition)
     // To recognize Chinese script
     implementation(libs.text.recognition.chinese)
-
-    // Firebase, if u don't have google-services.json, remove this block
-    implementation(platform(libs.firebase.bom))
-    implementation(libs.firebase.analytics)
-    implementation(libs.firebase.crashlytics)
 
     // Room, for local database
     implementation(libs.androidx.room.runtime)

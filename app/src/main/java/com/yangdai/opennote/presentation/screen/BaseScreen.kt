@@ -4,8 +4,10 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
@@ -53,7 +55,10 @@ fun BaseScreen(
 
     LaunchedEffect(settingsState.theme) {
         if (settingsState.theme == 0) {
-            sharedViewModel.putPreferenceValue(Constants.Preferences.IS_APP_IN_DARK_MODE, isSystemInDarkTheme)
+            sharedViewModel.putPreferenceValue(
+                Constants.Preferences.IS_APP_IN_DARK_MODE,
+                isSystemInDarkTheme
+            )
         }
     }
 
@@ -65,7 +70,10 @@ fun BaseScreen(
         // MaskBox is a custom composable that animates a mask over the screen
         MaskBox(
             maskComplete = {
-                sharedViewModel.putPreferenceValue(Constants.Preferences.IS_APP_IN_DARK_MODE, !settingsState.isAppInDarkMode)
+                sharedViewModel.putPreferenceValue(
+                    Constants.Preferences.IS_APP_IN_DARK_MODE,
+                    !settingsState.isAppInDarkMode
+                )
             },
             animFinish = {
                 sharedViewModel.putPreferenceValue(Constants.Preferences.IS_SWITCH_ACTIVE, false)
@@ -79,9 +87,17 @@ fun BaseScreen(
                 if (!settingsState.isSwitchActive) return@LaunchedEffect
 
                 if (settingsState.isAppInDarkMode)
-                    maskActiveEvent(MaskAnimModel.SHRINK, Constants.Preferences.MASK_CLICK_X, Constants.Preferences.MASK_CLICK_Y)
+                    maskActiveEvent(
+                        MaskAnimModel.SHRINK,
+                        Constants.Preferences.MASK_CLICK_X,
+                        Constants.Preferences.MASK_CLICK_Y
+                    )
                 else
-                    maskActiveEvent(MaskAnimModel.EXPEND, Constants.Preferences.MASK_CLICK_X, Constants.Preferences.MASK_CLICK_Y)
+                    maskActiveEvent(
+                        MaskAnimModel.EXPEND,
+                        Constants.Preferences.MASK_CLICK_X,
+                        Constants.Preferences.MASK_CLICK_Y
+                    )
             }
 
             val blur by animateDpAsState(targetValue = if (!loggedIn) 16.dp else 0.dp, label = "")
@@ -90,6 +106,7 @@ fun BaseScreen(
             AnimatedNavHost(
                 modifier = Modifier
                     .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.surface)
                     .blur(blur),
                 navController = navController,
                 isLargeScreen = isLargeScreen

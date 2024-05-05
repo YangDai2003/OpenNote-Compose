@@ -8,7 +8,6 @@ class GetFolders(
     private val repository: FolderRepository
 ) {
 
-    operator fun invoke(): Flow<List<FolderEntity>> {
-        return repository.getAllFolders()
-    }
+    operator fun invoke(): Flow<List<FolderEntity>> =
+        repository.getAllFolders()
 }

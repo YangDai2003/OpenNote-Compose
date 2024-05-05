@@ -6,5 +6,6 @@ data class SettingsState(
     val needPassword: Boolean = false,
     val isAppInDarkMode: Boolean = false,
     val shouldFollowSystem: Boolean = false,
-    val isSwitchActive: Boolean = false
+    val isSwitchActive: Boolean = false,
+    val isListView: Boolean = false
 )

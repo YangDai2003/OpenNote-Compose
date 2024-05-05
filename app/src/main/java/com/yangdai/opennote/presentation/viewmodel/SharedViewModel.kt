@@ -14,7 +14,6 @@ import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.gson.Gson
 import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.TextRecognizer
 import com.google.mlkit.vision.text.chinese.ChineseTextRecognizerOptions
@@ -33,7 +32,6 @@ import com.yangdai.opennote.presentation.event.NoteEvent
 import com.yangdai.opennote.presentation.event.UiEvent
 import com.yangdai.opennote.presentation.state.DataActionState
 import com.yangdai.opennote.presentation.state.DataState
-import com.yangdai.opennote.presentation.util.NoteEntityTypeToken
 import com.yangdai.opennote.presentation.state.NoteState
 import com.yangdai.opennote.presentation.util.Constants
 import com.yangdai.opennote.presentation.util.add
@@ -71,6 +69,8 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import org.commonmark.Extension
 import org.commonmark.ext.gfm.strikethrough.StrikethroughExtension
 import org.commonmark.ext.gfm.tables.TablesExtension
@@ -117,7 +117,6 @@ class SharedViewModel @Inject constructor(
     private lateinit var parser: Parser
     private lateinit var renderer: HtmlRenderer
     lateinit var textRecognizer: TextRecognizer
-    private val gson: Gson = Gson()
 
     // 笔记标题和内容的状态
     val titleState = TextFieldState()
@@ -168,7 +167,8 @@ class SharedViewModel @Inject constructor(
         dataStoreRepository.booleanFlow(Constants.Preferences.NEED_PASSWORD),
         dataStoreRepository.booleanFlow(Constants.Preferences.IS_APP_IN_DARK_MODE),
         dataStoreRepository.booleanFlow(Constants.Preferences.SHOULD_FOLLOW_SYSTEM),
-        dataStoreRepository.booleanFlow(Constants.Preferences.IS_SWITCH_ACTIVE)
+        dataStoreRepository.booleanFlow(Constants.Preferences.IS_SWITCH_ACTIVE),
+        dataStoreRepository.booleanFlow(Constants.Preferences.IS_LIST_VIEW)
     ) { values ->
         SettingsState(
             theme = values[0] as Int,
@@ -176,7 +176,8 @@ class SharedViewModel @Inject constructor(
             needPassword = values[2] as Boolean,
             isAppInDarkMode = values[3] as Boolean,
             shouldFollowSystem = values[4] as Boolean,
-            isSwitchActive = values[5] as Boolean
+            isSwitchActive = values[5] as Boolean,
+            isListView = values[6] as Boolean
         )
     }.flowOn(Dispatchers.IO).stateIn(
         scope = viewModelScope,
@@ -271,10 +272,11 @@ class SharedViewModel @Inject constructor(
                 }
             }
 
-            is ListEvent.ToggleOrderSection -> {
-                _dataState.update {
-                    it.copy(
-                        isOrderSectionVisible = !it.isOrderSectionVisible
+            is ListEvent.ChangeViewMode -> {
+                viewModelScope.launch(Dispatchers.IO) {
+                    dataStoreRepository.putBoolean(
+                        Constants.Preferences.IS_LIST_VIEW,
+                        settingsStateFlow.value.isListView.not()
                     )
                 }
             }
@@ -319,6 +321,14 @@ class SharedViewModel @Inject constructor(
                 contentState.clearText()
                 _noteState.value = NoteState()
                 oNote = null
+            }
+
+            ListEvent.ToggleOrderSection -> {
+                _dataState.update {
+                    it.copy(
+                        isOrderSectionVisible = it.isOrderSectionVisible.not()
+                    )
+                }
             }
         }
     }
@@ -625,7 +635,7 @@ class SharedViewModel @Inject constructor(
                 }
                 dataActionJob = viewModelScope.launch(Dispatchers.IO) {
                     val notes = operations.getNotes().first()
-                    val json = gson.toJson(notes)
+                    val json = Json.encodeToString(notes)
                     _dataActionState.update {
                         it.copy(progress = 0.5f)
                     }
@@ -678,10 +688,8 @@ class SharedViewModel @Inject constructor(
                         it.copy(progress = 0.4f)
                     }
 
-                    // 使用 Gson 将 JSON 字符串解析为 NoteEntity 对象的列表
                     runCatching {
-                        val notesType = NoteEntityTypeToken().type
-                        val notes = Gson().fromJson<List<NoteEntity>>(json, notesType)
+                        val notes = Json.decodeFromString<List<NoteEntity>>(json ?: "")
                         _dataActionState.update {
                             it.copy(progress = 0.6f)
                         }

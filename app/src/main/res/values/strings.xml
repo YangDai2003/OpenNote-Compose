@@ -1,9 +1,6 @@
 <resources>
     <string name="app_name" translatable="false">Open Note</string>
     <string name="title">Title</string>
-    <string name="date">Date</string>
-    <string name="ascending">Ascending</string>
-    <string name="descending">Descending</string>
     <string name="search">Search</string>
     <string name="all_notes">All notes</string>
     <string name="trash">Trash</string>
@@ -24,7 +21,6 @@
     <string name="dynamic_only_android_12">Dynamic color</string>
     <string name="edited">"Edited: "</string>
     <string name="search_history">Search History</string>
-    <string name="sort_by">Sort by</string>
     <string name="content">Content</string>
     <string name="delete">Delete</string>
     <string name="login">Login</string>
@@ -52,8 +48,6 @@
     <string name="task">Task</string>
     <string name="completed">Completed</string>
     <string name="rich_text">RTF</string>
-    <string name="firebase">Firebase analytics</string>
-    <string name="firebase_description">It is only used to improve the user experience and no personal information will be collected.</string>
     <string name="guide">User guide</string>
     <string name="no_text_found">No text found</string>
     <string name="no_password_set">Please set the system lock screen password first</string>
@@ -72,4 +66,8 @@
     <string name="backup">Backup</string>
     <string name="recovery">Recovery</string>
     <string name="password_description">When the application is cold started, the user needs to unlock it using the system lock screen password.</string>
+    <string name="date">Date</string>
+    <string name="ascending">Ascending</string>
+    <string name="descending">Descending</string>
+    <string name="sort_by">Sort by</string>
 </resources>

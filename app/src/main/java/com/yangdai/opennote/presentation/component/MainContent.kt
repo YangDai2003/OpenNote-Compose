@@ -7,6 +7,7 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -15,19 +16,24 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.items
 import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.DriveFileMove
-import androidx.compose.material.icons.automirrored.outlined.Sort
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.GridView
 import androidx.compose.material.icons.outlined.Menu
 import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material.icons.outlined.RestartAlt
+import androidx.compose.material.icons.outlined.SortByAlpha
 import androidx.compose.material.icons.outlined.Upload
+import androidx.compose.material.icons.outlined.ViewAgenda
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Checkbox
@@ -41,6 +47,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -66,6 +73,7 @@ import kotlinx.collections.immutable.toImmutableList
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainContent(
+    isListViewMode: Boolean,
     dataActionState: DataActionState,
     isFloatingButtonVisible: Boolean,
     selectedFolder: FolderEntity,
@@ -89,6 +97,7 @@ fun MainContent(
 ) {
 
     val staggeredGridState = rememberLazyStaggeredGridState()
+    val lazyListState = rememberLazyListState()
 
     var folderName by rememberSaveable {
         mutableStateOf("")
@@ -150,9 +159,15 @@ fun MainContent(
                             }
                         },
                         actions = {
+                            IconButton(onClick = { onListEvent(ListEvent.ChangeViewMode) }) {
+                                Icon(
+                                    imageVector = if (isListViewMode) Icons.Outlined.ViewAgenda else Icons.Outlined.GridView,
+                                    contentDescription = "View Mode"
+                                )
+                            }
                             IconButton(onClick = { onListEvent(ListEvent.ToggleOrderSection) }) {
                                 Icon(
-                                    imageVector = Icons.AutoMirrored.Outlined.Sort,
+                                    imageVector = Icons.Outlined.SortByAlpha,
                                     contentDescription = "Sort"
                                 )
                             }
@@ -298,7 +313,7 @@ fun MainContent(
         },
         floatingActionButton = {
             AnimatedVisibility(
-                visible = isFloatingButtonVisible && !staggeredGridState.isScrollInProgress,
+                visible = isFloatingButtonVisible && !staggeredGridState.isScrollInProgress && !lazyListState.isScrollInProgress,
                 enter = slideInHorizontally { fullWidth -> fullWidth * 3 / 2 },
                 exit = slideOutHorizontally { fullWidth -> fullWidth * 3 / 2 }) {
                 FloatingActionButton(
@@ -313,54 +328,88 @@ fun MainContent(
 
         }) { innerPadding ->
 
-        LazyVerticalStaggeredGrid(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
                 .statusBarsPadding()
-                .padding(top = 72.dp),
-            state = staggeredGridState,
-            // The staggered grid layout is adaptive, with a minimum column width of 160dp(mdpi)
-            columns = StaggeredGridCells.Adaptive(160.dp),
-            verticalItemSpacing = 8.dp,
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            // for better edgeToEdge experience
-            contentPadding = PaddingValues(
-                start = 16.dp,
-                end = 16.dp,
-                bottom = innerPadding.calculateBottomPadding()
-            ),
-            content = {
-                items(dataState.notes, key = { item: NoteEntity -> item.id!! }) {
-                    NoteCard(
+                .padding(top = 72.dp)
+        ) {
+
+            AnimatedContent(targetState = isListViewMode, label = "") {
+                if (!it) {
+                    LazyVerticalStaggeredGrid(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .animateItem(), // Add animation to the item
-                        note = it,
-                        isEnabled = isMultiSelectionModeEnabled,
-                        isSelected = selectedNotes.contains(it),
-                        onEnableChange = onMultiSelectionModeChange,
-                        onNoteClick = onNoteClick
+                            .fillMaxSize(),
+                        state = staggeredGridState,
+                        // The staggered grid layout is adaptive, with a minimum column width of 160dp(mdpi)
+                        columns = StaggeredGridCells.Adaptive(160.dp),
+                        verticalItemSpacing = 8.dp,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        // for better edgeToEdge experience
+                        contentPadding = PaddingValues(
+                            start = 16.dp,
+                            end = 16.dp,
+                            bottom = innerPadding.calculateBottomPadding()
+                        ),
+                        content = {
+                            items(
+                                dataState.notes,
+                                key = { item: NoteEntity -> item.id!! }) { note ->
+                                GridNoteCard(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .animateItem(), // Add animation to the item
+                                    note = note,
+                                    isEnabled = isMultiSelectionModeEnabled,
+                                    isSelected = selectedNotes.contains(note),
+                                    onEnableChange = onMultiSelectionModeChange,
+                                    onNoteClick = onNoteClick
+                                )
+                            }
+                        }
                     )
+                } else {
+                    if (dataState.notes.isEmpty()) {
+                        return@AnimatedContent
+                    }
+                    Box(
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        VerticalDivider(
+                            Modifier
+                                .align(Alignment.TopStart)
+                                .fillMaxHeight()
+                                .padding(start = 15.dp),
+                            thickness = 2.dp
+                        )
+                        LazyColumn(
+                            modifier = Modifier
+                                .align(Alignment.Center)
+                                .fillMaxSize(),
+                            state = lazyListState,
+                            contentPadding = PaddingValues(
+                                start = 12.dp,
+                                end = 16.dp,
+                                bottom = innerPadding.calculateBottomPadding()
+                            )
+                        ) {
+                            items(
+                                dataState.notes,
+                                key = { item: NoteEntity -> item.id!! }) { note ->
+                                ColumnNoteCard(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .animateItem(), // Add animation to the item
+                                    note = note,
+                                    isEnabled = isMultiSelectionModeEnabled,
+                                    isSelected = selectedNotes.contains(note),
+                                    onEnableChange = onMultiSelectionModeChange,
+                                    onNoteClick = onNoteClick
+                                )
+                            }
+                        }
+                    }
                 }
-            }
-        )
-
-        if (isExportDialogVisible) {
-            ExportDialog(onDismissRequest = { isExportDialogVisible = false }) {
-                onExportClick(it)
-                isExportDialogVisible = false
-            }
-        }
-
-        if (isFolderDialogVisible) {
-            FolderListDialog(
-                hint = stringResource(R.string.destination_folder),
-                oFolderId = selectedFolder.id,
-                folders = folderList,
-                onDismissRequest = { isFolderDialogVisible = false }
-            ) {
-                onListEvent(ListEvent.MoveNotes(selectedNotes, it))
-                initializeNoteSelection()
             }
         }
 
@@ -391,6 +440,25 @@ fun MainContent(
                         Text(stringResource(id = android.R.string.ok))
                     }
                 })
+        }
+
+        if (isExportDialogVisible) {
+            ExportDialog(onDismissRequest = { isExportDialogVisible = false }) {
+                onExportClick(it)
+                isExportDialogVisible = false
+            }
+        }
+
+        if (isFolderDialogVisible) {
+            FolderListDialog(
+                hint = stringResource(R.string.destination_folder),
+                oFolderId = selectedFolder.id,
+                folders = folderList,
+                onDismissRequest = { isFolderDialogVisible = false }
+            ) {
+                onListEvent(ListEvent.MoveNotes(selectedNotes, it))
+                initializeNoteSelection()
+            }
         }
 
         ProgressDialog(isLoading = dataActionState.loading, progress = dataActionState.progress) {

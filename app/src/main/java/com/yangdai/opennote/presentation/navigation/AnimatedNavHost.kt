@@ -3,8 +3,12 @@ package com.yangdai.opennote.presentation.navigation
 import android.content.Intent
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.core.FastOutLinearInEasing
 import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.runtime.Composable
@@ -22,6 +26,14 @@ import com.yangdai.opennote.presentation.screen.SettingsScreen
 import com.yangdai.opennote.presentation.util.Constants.NAV_ANIMATION_TIME
 import com.yangdai.opennote.presentation.util.parseSharedContent
 
+private const val ProgressThreshold = 0.35f
+private const val INITIAL_OFFSET_FACTOR = 0.10f
+private val Int.ForOutgoing: Int
+    get() = (this * ProgressThreshold).toInt()
+
+private val Int.ForIncoming: Int
+    get() = this - this.ForOutgoing
+
 fun sharedAxisXIn(
     initialOffsetX: (fullWidth: Int) -> Int,
     durationMillis: Int = NAV_ANIMATION_TIME,
@@ -31,6 +43,12 @@ fun sharedAxisXIn(
         easing = FastOutSlowInEasing
     ),
     initialOffsetX = initialOffsetX
+) + fadeIn(
+    animationSpec = tween(
+        durationMillis = durationMillis.ForIncoming,
+        delayMillis = durationMillis.ForOutgoing,
+        easing = LinearOutSlowInEasing
+    )
 )
 
 fun sharedAxisXOut(
@@ -42,6 +60,12 @@ fun sharedAxisXOut(
         easing = FastOutSlowInEasing
     ),
     targetOffsetX = targetOffsetX
+) + fadeOut(
+    animationSpec = tween(
+        durationMillis = durationMillis.ForOutgoing,
+        delayMillis = 0,
+        easing = FastOutLinearInEasing
+    )
 )
 
 @Composable
@@ -54,30 +78,20 @@ fun AnimatedNavHost(
     navController = navController,
     startDestination = Route.MAIN,
     enterTransition = {
-        sharedAxisXIn(initialOffsetX = { fullWidth -> fullWidth })
+        sharedAxisXIn(initialOffsetX = { (it * INITIAL_OFFSET_FACTOR).toInt() })
     },
     exitTransition = {
-        sharedAxisXOut(targetOffsetX = { fullWidth -> -fullWidth / 4 })
+        sharedAxisXOut(targetOffsetX = { -(it * INITIAL_OFFSET_FACTOR).toInt() })
     },
     popEnterTransition = {
-        sharedAxisXIn(initialOffsetX = { fullWidth -> -fullWidth / 4 })
+        sharedAxisXIn(initialOffsetX = { -(it * INITIAL_OFFSET_FACTOR).toInt() })
     },
     popExitTransition = {
-        sharedAxisXOut(targetOffsetX = { fullWidth -> fullWidth })
-    }
+        sharedAxisXOut(targetOffsetX = { (it * INITIAL_OFFSET_FACTOR).toInt() })
+    },
 ) {
 
-    composable(
-        route = Route.MAIN,
-        enterTransition = { EnterTransition.None },
-        exitTransition = {
-            sharedAxisXOut(targetOffsetX = { fullWidth -> -fullWidth / 4 })
-        },
-        popEnterTransition = {
-            sharedAxisXIn(initialOffsetX = { fullWidth -> -fullWidth / 4 })
-        },
-        popExitTransition = { ExitTransition.None }
-    ) {
+    composable(route = Route.MAIN) {
         MainScreen(isLargeScreen = isLargeScreen) { route ->
             navController.navigate(route)
         }
@@ -101,26 +115,26 @@ fun AnimatedNavHost(
             isLargeScreen = isLargeScreen,
             sharedText = sharedText,
             scannedText = scannedText,
-            navigateUp = { navController.navigateUp() }
+            navigateUp = { navController.popBackStack() }
         ) { navController.navigate(Route.CAMERAX) }
     }
 
     composable(route = Route.FOLDERS) {
         FolderScreen {
-            navController.navigateUp()
+            navController.popBackStack()
         }
     }
 
     composable(route = Route.CAMERAX) {
-        CameraXScreen(onCloseClick = { navController.navigateUp() }) {
+        CameraXScreen(onCloseClick = { navController.popBackStack() }) {
             navController.previousBackStackEntry?.savedStateHandle?.set("scannedText", it)
-            navController.navigateUp()
+            navController.popBackStack()
         }
     }
 
     composable(route = Route.SETTINGS) {
         SettingsScreen {
-            navController.navigateUp()
+            navController.popBackStack()
         }
     }
 }

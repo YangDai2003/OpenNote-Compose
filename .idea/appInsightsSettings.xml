@@ -28,10 +28,10 @@
             <InsightsFilterSettings>
               <option name="connection">
                 <ConnectionSetting>
-                  <option name="appId" value="com.yangdai.opennote" />
-                  <option name="mobileSdkAppId" value="1:385342613392:android:31813daf8fcfd1495af515" />
-                  <option name="projectId" value="open-note-ebd6f" />
-                  <option name="projectNumber" value="385342613392" />
+                  <option name="appId" value="PLACEHOLDER" />
+                  <option name="mobileSdkAppId" value="" />
+                  <option name="projectId" value="" />
+                  <option name="projectNumber" value="" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />

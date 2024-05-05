@@ -10,6 +10,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.LinkAnnotation
@@ -25,13 +26,18 @@ fun RichText(str: String) {
 
     val context = LocalContext.current
 
-    val customTabsIntent = CustomTabsIntent.Builder()
-        .setShowTitle(true)
-        .build()
+    val customTabsIntent = remember {
+        CustomTabsIntent.Builder()
+            .setShowTitle(true)
+            .build()
+    }
+
+    val pattern = remember {
+        "\\[(.*?)]\\((.*?)\\)".toRegex()
+    }
 
     val text = str.replace("- [ ]", "◎").replace("- [x]", "◉")
 
-    val pattern = "\\[(.*?)]\\((.*?)\\)".toRegex()
     val matches = pattern.findAll(text)
 
     val annotatedString = buildAnnotatedString {

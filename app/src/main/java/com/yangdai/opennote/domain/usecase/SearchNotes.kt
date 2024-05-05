@@ -8,7 +8,6 @@ class SearchNotes(
     private val repository: NoteRepository
 ) {
 
-    operator fun invoke(keyWord: String): Flow<List<NoteEntity>> {
-        return repository.getNotesByKeyWord(keyWord)
-    }
+    operator fun invoke(keyWord: String): Flow<List<NoteEntity>> =
+        repository.getNotesByKeyWord(keyWord)
 }
