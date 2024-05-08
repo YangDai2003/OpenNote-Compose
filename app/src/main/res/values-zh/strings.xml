@@ -45,7 +45,6 @@
     <string name="reset">重置</string>
     <string name="reset_database_warning">重置数据库会导致所有笔记和文件夹被彻底删除且不可恢复，请决定是否继续操作?</string>
     <string name="task">任务</string>
-    <string name="completed">已完成</string>
     <string name="rich_text">富文本</string>
     <string name="guide">用户指南</string>
     <string name="no_text_found">没有找到文字</string>
@@ -69,4 +68,7 @@
     <string name="ascending">升序</string>
     <string name="descending">降序</string>
     <string name="sort_by">排序</string>
+    <string name="table">表格</string>
+    <string name="row">行数</string>
+    <string name="column">列数</string>
 </resources>

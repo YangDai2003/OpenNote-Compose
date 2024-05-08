@@ -17,13 +17,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.yangdai.opennote.R
-import com.yangdai.opennote.presentation.state.LinkState
 
 
 @Composable
 fun LinkDialog(
     onDismissRequest: () -> Unit,
-    onConfirm: (LinkState) -> Unit
+    onConfirm: (name: String, uri: String) -> Unit
 ) {
 
     var name by remember { mutableStateOf("") }
@@ -82,7 +81,7 @@ fun LinkDialog(
                         ) {
                             uri = "https://$uri"
                         }
-                        onConfirm(LinkState(name, uri))
+                        onConfirm(name, uri)
                         onDismissRequest()
                     }
                 }
@@ -101,5 +100,6 @@ fun LinkDialog(
 @Composable
 @Preview
 fun LinkDialogPreview() {
-    LinkDialog(onDismissRequest = {}, onConfirm = {})
+    LinkDialog(onDismissRequest = {}) { _, _ ->
+    }
 }

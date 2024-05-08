@@ -25,6 +25,7 @@ import com.yangdai.opennote.domain.repository.DataStoreRepository
 import com.yangdai.opennote.domain.usecase.NoteOrder
 import com.yangdai.opennote.domain.usecase.Operations
 import com.yangdai.opennote.domain.usecase.OrderType
+import com.yangdai.opennote.presentation.component.TaskItem
 import com.yangdai.opennote.presentation.event.DatabaseEvent
 import com.yangdai.opennote.presentation.event.FolderEvent
 import com.yangdai.opennote.presentation.event.ListEvent
@@ -34,11 +35,16 @@ import com.yangdai.opennote.presentation.state.DataActionState
 import com.yangdai.opennote.presentation.state.DataState
 import com.yangdai.opennote.presentation.state.NoteState
 import com.yangdai.opennote.presentation.util.Constants
-import com.yangdai.opennote.presentation.util.add
+import com.yangdai.opennote.presentation.util.addHeader
+import com.yangdai.opennote.presentation.util.addInNewLine
 import com.yangdai.opennote.presentation.util.addLink
+import com.yangdai.opennote.presentation.util.addRule
+import com.yangdai.opennote.presentation.util.addTable
 import com.yangdai.opennote.presentation.util.addTask
 import com.yangdai.opennote.presentation.util.bold
-import com.yangdai.opennote.presentation.util.diagram
+import com.yangdai.opennote.presentation.util.addMermaid
+import com.yangdai.opennote.presentation.util.inlineBraces
+import com.yangdai.opennote.presentation.util.inlineBrackets
 import com.yangdai.opennote.presentation.util.inlineCode
 import com.yangdai.opennote.presentation.util.inlineFunction
 import com.yangdai.opennote.presentation.util.italic
@@ -125,9 +131,7 @@ class SharedViewModel @Inject constructor(
     @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
     val html = snapshotFlow { contentState.text }
         .debounce(100)
-        .mapLatest {
-            renderer.render(parser.parse(it.toString())) ?: ""
-        }
+        .mapLatest { renderer.render(parser.parse(it.toString())) }
         .flowOn(Dispatchers.IO)
         .stateIn(
             scope = viewModelScope,
@@ -394,9 +398,14 @@ class SharedViewModel @Inject constructor(
             .launchIn(viewModelScope)
     }
 
+    fun addTable(row: Int, column: Int) {
+        contentState.edit { addTable(row, column) }
+    }
 
-    fun addTask(task: String, checked: Boolean) {
-        contentState.edit { addTask(task, checked) }
+    fun addTasks(taskList: List<TaskItem>) {
+        taskList.forEach {
+            contentState.edit { addTask(it.task, it.checked) }
+        }
     }
 
     fun addLink(link: String) {
@@ -404,7 +413,7 @@ class SharedViewModel @Inject constructor(
     }
 
     fun addText(text: String) {
-        contentState.edit { add(text) }
+        contentState.edit { addInNewLine(text) }
     }
 
     fun canUndo() = contentState.undoState.canUndo
@@ -476,16 +485,24 @@ class SharedViewModel @Inject constructor(
                 when (event.value) {
                     Constants.Editor.UNDO -> contentState.undoState.undo()
                     Constants.Editor.REDO -> contentState.undoState.redo()
-                    Constants.Editor.TITLE -> contentState.edit { add("#") }
+                    Constants.Editor.H1 -> contentState.edit { addHeader(1) }
+                    Constants.Editor.H2 -> contentState.edit { addHeader(2) }
+                    Constants.Editor.H3 -> contentState.edit { addHeader(3) }
+                    Constants.Editor.H4 -> contentState.edit { addHeader(4) }
+                    Constants.Editor.H5 -> contentState.edit { addHeader(5) }
+                    Constants.Editor.H6 -> contentState.edit { addHeader(6) }
                     Constants.Editor.BOLD -> contentState.edit { bold() }
                     Constants.Editor.ITALIC -> contentState.edit { italic() }
                     Constants.Editor.UNDERLINE -> contentState.edit { underline() }
                     Constants.Editor.STRIKETHROUGH -> contentState.edit { strikeThrough() }
                     Constants.Editor.MARK -> contentState.edit { mark() }
                     Constants.Editor.INLINE_CODE -> contentState.edit { inlineCode() }
+                    Constants.Editor.INLINE_BRACKETS -> contentState.edit { inlineBrackets() }
+                    Constants.Editor.INLINE_BRACES -> contentState.edit { inlineBraces() }
                     Constants.Editor.INLINE_FUNC -> contentState.edit { inlineFunction() }
                     Constants.Editor.QUOTE -> contentState.edit { quote() }
-                    Constants.Editor.DIAGRAM -> contentState.edit { diagram() }
+                    Constants.Editor.RULE -> contentState.edit { addRule() }
+                    Constants.Editor.DIAGRAM -> contentState.edit { addMermaid() }
                 }
             }
         }
@@ -585,7 +602,9 @@ class SharedViewModel @Inject constructor(
                         }
 
                         val fileName = noteEntity.title
-                        val content = noteEntity.content
+                        val content =
+                            if (".html" != extension) noteEntity.content
+                            else renderer.render(parser.parse(noteEntity.content))
 
                         val values = ContentValues().apply {
                             put(MediaStore.Downloads.DISPLAY_NAME, "$fileName$extension")

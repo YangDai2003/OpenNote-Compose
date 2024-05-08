@@ -3,7 +3,7 @@ package com.yangdai.opennote.presentation.util
 import androidx.compose.foundation.text.input.TextFieldBuffer
 import androidx.compose.ui.text.TextRange
 
-fun TextFieldBuffer.inlineWrap(
+private fun TextFieldBuffer.inlineWrap(
     startWrappedString: String,
     endWrappedString: String = startWrappedString
 ) {
@@ -30,7 +30,9 @@ fun TextFieldBuffer.strikeThrough() = inlineWrap("~~")
 
 fun TextFieldBuffer.mark() = inlineWrap("<mark>", "</mark>")
 
-fun TextFieldBuffer.diagram() = inlineWrap("<pre class=\"mermaid\">", "\n</pre>")
+fun TextFieldBuffer.inlineBrackets() = inlineWrap("[", "]")
+
+fun TextFieldBuffer.inlineBraces() = inlineWrap("{", "}")
 
 fun TextFieldBuffer.inlineCode() = inlineWrap("`")
 
@@ -53,17 +55,54 @@ fun TextFieldBuffer.quote() {
     )
 }
 
-fun TextFieldBuffer.add(str: String) {
+private fun TextFieldBuffer.add(str: String) {
     val initialSelection = selection
     replace(initialSelection.min, initialSelection.max, str)
 }
 
 fun TextFieldBuffer.addLink(link: String) = add(link)
 
+fun TextFieldBuffer.addInNewLine(str: String) {
+    val text = toString()
+    if (selection.min != 0 && text[selection.min - 1] != '\n') {
+        // 如果不是换行符，那么就先添加一个换行符
+        add("\n")
+    }
+    add(str)
+}
+
+fun TextFieldBuffer.addMermaid() {
+    addInNewLine("<pre class=\"mermaid\">\n</pre>")
+}
+
+fun TextFieldBuffer.addHeader(level: Int) {
+    addInNewLine("#".repeat(level) + " ")
+}
+
+fun TextFieldBuffer.addRule() {
+    addInNewLine("\n")
+    add("------")
+    add("\n")
+    add("\n")
+}
+
 fun TextFieldBuffer.addTask(task: String, checked: Boolean) {
     if (checked) {
-        add("- [x] $task")
+        addInNewLine("- [x] $task")
     } else {
-        add("- [ ] $task")
+        addInNewLine("- [ ] $task")
     }
 }
+
+fun TextFieldBuffer.addTable(row: Int, column: Int) = addInNewLine(
+    buildString {
+        append("|")
+        repeat(column) { append(" HEADER |") }
+        append("\n|")
+        repeat(column) { append(" :-----------: |") }
+        repeat(row) {
+            append("\n|")
+            repeat(column) { append(" Element |") }
+        }
+    }
+)

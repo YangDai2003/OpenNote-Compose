@@ -1,8 +1,11 @@
 package com.yangdai.opennote.presentation.component
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
@@ -13,6 +16,8 @@ import androidx.compose.material.icons.automirrored.outlined.Undo
 import androidx.compose.material.icons.outlined.AddChart
 import androidx.compose.material.icons.outlined.CheckBox
 import androidx.compose.material.icons.outlined.Code
+import androidx.compose.material.icons.outlined.DataArray
+import androidx.compose.material.icons.outlined.DataObject
 import androidx.compose.material.icons.outlined.DocumentScanner
 import androidx.compose.material.icons.outlined.FormatBold
 import androidx.compose.material.icons.outlined.FormatItalic
@@ -20,13 +25,19 @@ import androidx.compose.material.icons.outlined.FormatPaint
 import androidx.compose.material.icons.outlined.FormatQuote
 import androidx.compose.material.icons.outlined.FormatStrikethrough
 import androidx.compose.material.icons.outlined.FormatUnderlined
+import androidx.compose.material.icons.outlined.HorizontalRule
 import androidx.compose.material.icons.outlined.Link
+import androidx.compose.material.icons.outlined.TableChart
 import androidx.compose.material.icons.outlined.Title
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -40,10 +51,13 @@ fun NoteEditorRow(
     canUndo: Boolean,
     canRedo: Boolean,
     onEdit: (String) -> Unit,
+    onTableButtonClick: () -> Unit,
     onScanButtonClick: () -> Unit,
     onTaskButtonClick: () -> Unit,
     onLinkButtonClick: () -> Unit
 ) {
+
+    var isExpanded by rememberSaveable { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -86,11 +100,56 @@ fun NoteEditorRow(
 
             if (isMarkdown) {
 
-                IconButton(onClick = { onEdit(Constants.Editor.TITLE) }) {
+                IconButton(onClick = { isExpanded = !isExpanded }) {
                     Icon(
                         imageVector = Icons.Outlined.Title,
-                        contentDescription = "Title"
+                        contentDescription = "Heading Level"
                     )
+                }
+
+                AnimatedVisibility(visible = isExpanded) {
+                    Row(
+                        modifier = Modifier.fillMaxHeight(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Start
+                    ) {
+                        IconButton(onClick = { onEdit(Constants.Editor.H1) }) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.format_h1),
+                                contentDescription = "H1"
+                            )
+                        }
+                        IconButton(onClick = { onEdit(Constants.Editor.H2) }) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.format_h2),
+                                contentDescription = "H2"
+                            )
+                        }
+                        IconButton(onClick = { onEdit(Constants.Editor.H3) }) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.format_h3),
+                                contentDescription = "H3"
+                            )
+                        }
+                        IconButton(onClick = { onEdit(Constants.Editor.H4) }) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.format_h4),
+                                contentDescription = "H4"
+                            )
+                        }
+                        IconButton(onClick = { onEdit(Constants.Editor.H5) }) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.format_h5),
+                                contentDescription = "H5"
+                            )
+                        }
+                        IconButton(onClick = { onEdit(Constants.Editor.H6) }) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.format_h6),
+                                contentDescription = "H6"
+                            )
+                        }
+                    }
                 }
 
                 IconButton(onClick = { onEdit(Constants.Editor.BOLD) }) {
@@ -135,6 +194,20 @@ fun NoteEditorRow(
                     )
                 }
 
+                IconButton(onClick = { onEdit(Constants.Editor.INLINE_BRACKETS) }) {
+                    Icon(
+                        imageVector = Icons.Outlined.DataArray,
+                        contentDescription = "Brackets"
+                    )
+                }
+
+                IconButton(onClick = { onEdit(Constants.Editor.INLINE_BRACES) }) {
+                    Icon(
+                        imageVector = Icons.Outlined.DataObject,
+                        contentDescription = "Braces"
+                    )
+                }
+
                 IconButton(onClick = { onEdit(Constants.Editor.INLINE_FUNC) }) {
                     Icon(
                         painter = painterResource(id = R.drawable.function),
@@ -146,6 +219,20 @@ fun NoteEditorRow(
                     Icon(
                         imageVector = Icons.Outlined.FormatQuote,
                         contentDescription = "Quote"
+                    )
+                }
+
+                IconButton(onClick = { onEdit(Constants.Editor.RULE) }) {
+                    Icon(
+                        imageVector = Icons.Outlined.HorizontalRule,
+                        contentDescription = "Horizontal Rule"
+                    )
+                }
+
+                IconButton(onClick = onTableButtonClick) {
+                    Icon(
+                        imageVector = Icons.Outlined.TableChart,
+                        contentDescription = "Table"
                     )
                 }
 

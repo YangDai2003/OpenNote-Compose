@@ -76,7 +76,7 @@ fun AnimatedNavHost(
 ) = NavHost(
     modifier = modifier,
     navController = navController,
-    startDestination = Route.MAIN,
+    startDestination = Home,
     enterTransition = {
         sharedAxisXIn(initialOffsetX = { (it * INITIAL_OFFSET_FACTOR).toInt() })
     },
@@ -91,14 +91,13 @@ fun AnimatedNavHost(
     },
 ) {
 
-    composable(route = Route.MAIN) {
+    composable<Home> {
         MainScreen(isLargeScreen = isLargeScreen) { route ->
             navController.navigate(route)
         }
     }
 
-    composable(
-        route = Route.NOTE,
+    composable<Note>(
         deepLinks = listOf(
             navDeepLink {
                 action = Intent.ACTION_SEND
@@ -116,23 +115,23 @@ fun AnimatedNavHost(
             sharedText = sharedText,
             scannedText = scannedText,
             navigateUp = { navController.popBackStack() }
-        ) { navController.navigate(Route.CAMERAX) }
+        ) { navController.navigate(CameraX) }
     }
 
-    composable(route = Route.FOLDERS) {
+    composable<Folders> {
         FolderScreen {
             navController.popBackStack()
         }
     }
 
-    composable(route = Route.CAMERAX) {
+    composable<CameraX> {
         CameraXScreen(onCloseClick = { navController.popBackStack() }) {
             navController.previousBackStackEntry?.savedStateHandle?.set("scannedText", it)
             navController.popBackStack()
         }
     }
 
-    composable(route = Route.SETTINGS) {
+    composable<Settings> {
         SettingsScreen {
             navController.popBackStack()
         }

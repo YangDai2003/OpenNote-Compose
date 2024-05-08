@@ -64,7 +64,7 @@ import com.yangdai.opennote.R
 import com.yangdai.opennote.data.local.entity.FolderEntity
 import com.yangdai.opennote.data.local.entity.NoteEntity
 import com.yangdai.opennote.presentation.event.ListEvent
-import com.yangdai.opennote.presentation.navigation.Route
+import com.yangdai.opennote.presentation.navigation.Note
 import com.yangdai.opennote.presentation.state.DataActionState
 import com.yangdai.opennote.presentation.state.DataState
 import kotlinx.collections.immutable.ImmutableList
@@ -84,7 +84,7 @@ fun MainContent(
     isLargeScreen: Boolean,
     dataState: DataState,
     folderList: ImmutableList<FolderEntity>,
-    navigateTo: (String) -> Unit,
+    navigateTo: (Any) -> Unit,
     initializeNoteSelection: () -> Unit,
     onSearchBarActivationChange: (Boolean) -> Unit,
     onAllNotesSelectionChange: (Boolean) -> Unit,
@@ -319,7 +319,7 @@ fun MainContent(
                 FloatingActionButton(
                     onClick = {
                         onListEvent(ListEvent.AddNote)
-                        navigateTo(Route.NOTE)
+                        navigateTo(Note)
                     }
                 ) {
                     Icon(imageVector = Icons.Outlined.Add, contentDescription = "Add")

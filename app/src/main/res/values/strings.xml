@@ -46,7 +46,6 @@
     <string name="reset">Reset</string>
     <string name="reset_database_warning">Resetting the database will cause all notes and folders to be completely deleted and irrecoverable. Please decide whether to continue?</string>
     <string name="task">Task</string>
-    <string name="completed">Completed</string>
     <string name="rich_text">RTF</string>
     <string name="guide">User guide</string>
     <string name="no_text_found">No text found</string>
@@ -70,4 +69,7 @@
     <string name="ascending">Ascending</string>
     <string name="descending">Descending</string>
     <string name="sort_by">Sort by</string>
+    <string name="table">Table</string>
+    <string name="row">Rows</string>
+    <string name="column">Columns</string>
 </resources>

@@ -24,7 +24,7 @@ import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.res.stringResource
 import com.yangdai.opennote.R
-import com.yangdai.opennote.presentation.util.add
+import com.yangdai.opennote.presentation.util.addInNewLine
 import com.yangdai.opennote.presentation.util.bold
 import com.yangdai.opennote.presentation.util.inlineCode
 import com.yangdai.opennote.presentation.util.inlineFunction
@@ -49,7 +49,7 @@ fun NoteEditTextField(
                 transferableContent.consume { item: ClipData.Item ->
                     val hasText = item.text.isNotEmpty()
                     if (hasText) {
-                        state.edit { add(item.text.toString()) }
+                        state.edit { addInNewLine(item.text.toString()) }
                     }
                     hasText
                 }

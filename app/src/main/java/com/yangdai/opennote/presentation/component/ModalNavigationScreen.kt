@@ -16,7 +16,7 @@ fun ModalNavigationScreen(
     folderList: ImmutableList<FolderEntity>,
     selectedDrawerIndex: Int,
     content: @Composable () -> Unit,
-    navigateTo: (String) -> Unit,
+    navigateTo: (Any) -> Unit,
     selectDrawer: (Int, FolderEntity)-> Unit
 ) = ModalNavigationDrawer(
     modifier = Modifier.fillMaxSize(),

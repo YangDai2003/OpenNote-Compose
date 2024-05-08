@@ -79,6 +79,7 @@ import com.yangdai.opennote.presentation.component.LinkDialog
 import com.yangdai.opennote.presentation.component.NoteEditTextField
 import com.yangdai.opennote.presentation.component.NoteEditorRow
 import com.yangdai.opennote.presentation.component.ProgressDialog
+import com.yangdai.opennote.presentation.component.TableDialog
 import com.yangdai.opennote.presentation.component.TaskDialog
 import com.yangdai.opennote.presentation.event.DatabaseEvent
 import com.yangdai.opennote.presentation.event.NoteEvent
@@ -121,25 +122,20 @@ fun NoteScreen(
         mutableStateOf(false)
     }
 
+    // Whether to show the table dialog
+    var showTableDialog by rememberSaveable { mutableStateOf(false) }
+
     // Whether to show the link dialog
-    var showLinkDialog by rememberSaveable {
-        mutableStateOf(false)
-    }
+    var showLinkDialog by rememberSaveable { mutableStateOf(false) }
 
     // Whether to show the task dialog
-    var showTaskDialog by rememberSaveable {
-        mutableStateOf(false)
-    }
+    var showTaskDialog by rememberSaveable { mutableStateOf(false) }
 
     // Whether to show the export dialog
-    var showExportDialog by rememberSaveable {
-        mutableStateOf(false)
-    }
+    var showExportDialog by rememberSaveable { mutableStateOf(false) }
 
     // Whether to show the overflow menu
-    var showMenu by rememberSaveable {
-        mutableStateOf(false)
-    }
+    var showMenu by rememberSaveable { mutableStateOf(false) }
 
     // Folder name, default to "All Notes", or the name of the current folder the note is in
     var folderName by rememberSaveable { mutableStateOf("") }
@@ -356,6 +352,7 @@ fun NoteScreen(
                     canRedo = sharedViewModel.canRedo(),
                     canUndo = sharedViewModel.canUndo(),
                     onEdit = { sharedViewModel.onNoteEvent(NoteEvent.Edit(it)) },
+                    onTableButtonClick = { showTableDialog = true },
                     onScanButtonClick = onScanTextClick,
                     onTaskButtonClick = { showTaskDialog = true },
                     onLinkButtonClick = { showLinkDialog = true })
@@ -504,15 +501,21 @@ fun NoteScreen(
         )
     }
 
+    if (showTableDialog) {
+        TableDialog(onDismissRequest = { showTableDialog = false }) { row, column ->
+            sharedViewModel.addTable(row, column)
+        }
+    }
+
     if (showTaskDialog) {
         TaskDialog(onDismissRequest = { showTaskDialog = false }) {
-            sharedViewModel.addTask(it.task, it.checked)
+            sharedViewModel.addTasks(it)
         }
     }
 
     if (showLinkDialog) {
-        LinkDialog(onDismissRequest = { showLinkDialog = false }) {
-            val insertText = "[${it.title}](${it.uri})"
+        LinkDialog(onDismissRequest = { showLinkDialog = false }) { name, uri ->
+            val insertText = "[${name}](${uri})"
             sharedViewModel.addLink(insertText)
         }
     }

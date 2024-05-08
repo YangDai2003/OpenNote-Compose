@@ -20,7 +20,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.yangdai.opennote.MainActivity
-import com.yangdai.opennote.presentation.navigation.Route
 import com.yangdai.opennote.data.local.entity.FolderEntity
 import com.yangdai.opennote.data.local.entity.NoteEntity
 import com.yangdai.opennote.presentation.event.ListEvent
@@ -28,6 +27,7 @@ import com.yangdai.opennote.presentation.component.MainContent
 import com.yangdai.opennote.presentation.component.ModalNavigationScreen
 import com.yangdai.opennote.presentation.component.PermanentNavigationScreen
 import com.yangdai.opennote.presentation.event.DatabaseEvent
+import com.yangdai.opennote.presentation.navigation.Note
 import com.yangdai.opennote.presentation.viewmodel.SharedViewModel
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.launch
@@ -36,7 +36,7 @@ import kotlinx.coroutines.launch
 fun MainScreen(
     sharedViewModel: SharedViewModel = hiltViewModel(LocalContext.current as MainActivity),
     isLargeScreen: Boolean,
-    navigateTo: (String) -> Unit
+    navigateTo: (Any) -> Unit
 ) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
@@ -157,7 +157,7 @@ fun MainScreen(
                     } else {
                         if (selectedDrawerIndex != 1) {
                             sharedViewModel.onListEvent(ListEvent.OpenNote(it))
-                            navigateTo(Route.NOTE)
+                            navigateTo(Note)
                         } else {
                             Unit
                         }

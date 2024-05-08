@@ -25,22 +25,27 @@ fun MarkdownText(html: String) {
 
     val textColor = MaterialTheme.colorScheme.onSurface.toArgb()
     val codeBackgroundColor = MaterialTheme.colorScheme.surfaceVariant.toArgb()
-    val preCodeBackgroundColor = MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp).toArgb()
-    val quoteBackgroundColor = MaterialTheme.colorScheme.surfaceDim.toArgb()
+    val preBackgroundColor = MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp).toArgb()
+    val quoteBackgroundColor = MaterialTheme.colorScheme.secondaryContainer.toArgb()
+    val borderColor = MaterialTheme.colorScheme.outline.toArgb()
+
     val hexTextColor = remember {
         String.format("#%06X", 0xFFFFFF and textColor)
     }
     val hexCodeBackgroundColor = remember {
         String.format("#%06X", 0xFFFFFF and codeBackgroundColor)
     }
-    val hexPreCodeBackgroundColor = remember {
-        String.format("#%06X", 0xFFFFFF and preCodeBackgroundColor)
+    val hexPreBackgroundColor = remember {
+        String.format("#%06X", 0xFFFFFF and preBackgroundColor)
     }
     val hexQuoteBackgroundColor = remember {
         String.format("#%06X", 0xFFFFFF and quoteBackgroundColor)
     }
     val hexLinkColor = remember {
         String.format("#%06X", 0xFFFFFF and linkColor.toArgb())
+    }
+    val hexBorderColor = remember {
+        String.format("#%06X", 0xFFFFFF and borderColor)
     }
 
     val customTabsIntent = remember {
@@ -103,13 +108,17 @@ fun MarkdownText(html: String) {
                         mermaid.initialize({ startOnLoad: true });
                     </script>
                     <style type="text/css">
-                        body {color: $hexTextColor; padding: 0px; margin: 0px;}
+                        body { color: $hexTextColor; padding: 0px; margin: 0px; }
                         a { color: $hexLinkColor; }
                         p code { background-color: $hexCodeBackgroundColor; padding: 4px 4px 2px 4px; margin: 4px; border-radius: 4px; }
-                        pre { background-color: $hexPreCodeBackgroundColor; display: block; padding: 16px; overflow-x: auto;}
+                        td code { background-color: $hexCodeBackgroundColor; padding: 4px 4px 2px 4px; margin: 4px; border-radius: 4px; }
+                        pre { background-color: $hexPreBackgroundColor; display: block; white-space: nowrap; padding: 16px; overflow-x: auto; }
                         blockquote { border-left: 4px solid ${hexQuoteBackgroundColor}; padding-left: 0px; margin-left: 0px; padding-right: 0px; margin-right: 0px; }
                         blockquote > * { margin-left: 16px; padding: 0px; }
                         blockquote blockquote { margin: 16px; }
+                        table { border-collapse: collapse; display: block; white-space: nowrap; overflow-x: auto; margin-right: 1px; }
+                        th, td { border: 1px solid $hexBorderColor; padding: 6px 13px; line-height: 1.5; }
+                        tr:nth-child(even) { background-color: $hexPreBackgroundColor; }
                     </style>
                     </head>
                     <body>

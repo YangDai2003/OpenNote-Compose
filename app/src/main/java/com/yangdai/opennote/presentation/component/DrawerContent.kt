@@ -34,14 +34,15 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.yangdai.opennote.R
 import com.yangdai.opennote.data.local.entity.FolderEntity
-import com.yangdai.opennote.presentation.navigation.Route
+import com.yangdai.opennote.presentation.navigation.Folders
+import com.yangdai.opennote.presentation.navigation.Settings
 import kotlinx.collections.immutable.ImmutableList
 
 @Composable
 fun DrawerContent(
     folderList: ImmutableList<FolderEntity>,
     selectedDrawerIndex: Int,
-    navigateTo: (String) -> Unit,
+    navigateTo: (Any) -> Unit,
     onClick: (Int, FolderEntity) -> Unit
 ) {
 
@@ -60,7 +61,7 @@ fun DrawerContent(
         ) {
             IconButton(
                 modifier = Modifier.padding(12.dp),
-                onClick = { navigateTo(Route.SETTINGS) }
+                onClick = { navigateTo(Settings) }
             ) {
                 Icon(
                     imageVector = Icons.Outlined.Settings,
@@ -116,7 +117,7 @@ fun DrawerContent(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(NavigationDrawerItemDefaults.ItemPadding),
-            onClick = { navigateTo(Route.FOLDERS) }) {
+            onClick = { navigateTo(Folders) }) {
             Text(text = stringResource(R.string.manage_folders), textAlign = TextAlign.Center)
         }
     }
