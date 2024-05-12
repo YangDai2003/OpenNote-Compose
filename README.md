@@ -36,21 +36,21 @@ You can know more about how to use OpenNote with Markdown, LaTeX Math, and Merma
 
 ## Screenshots
 
-<div style="overflow-x: auto; white-space: nowrap; height: 200px;">
+<div style="overflow-x: auto; white-space: nowrap;">
 
-<img src="screenshots/Screenshot_Login.PNG" style="height: 100%;" alt=""/>
-<img src="screenshots/Screenshot_Grid.PNG" style="height: 100%;" alt=""/>
-<img src="screenshots/Screenshot_List.PNG" style="height: 100%;" alt=""/>
-<img src="screenshots/Screenshot_Drawer.PNG" style="height: 100%;" alt=""/>
-<img src="screenshots/Screenshot_Edit.PNG" style="height: 100%;" alt=""/>
-<img src="screenshots/Screenshot_Preview.PNG" style="height: 100%;" alt=""/>
-<img src="screenshots/Screenshot_Style.PNG" style="height: 100%;" alt=""/>
-<img src="screenshots/Screenshot_Data.PNG" style="height: 100%;" alt=""/>
-<img src="screenshots/Screenshot_Widget.PNG" style="height: 100%;" alt=""/>
-<img src="screenshots/Screenshot_Math_Edit.png" style="height: 100%;" alt=""/>
-<img src="screenshots/Screenshot_Math_Preview.png" style="height: 100%;" alt=""/>
-<img src="screenshots/Screenshot_Mermaid_Edit.png" style="height: 100%;" alt=""/>
-<img src="screenshots/Screenshot_Mermaid_Preview.png" style="height: 100%;" alt=""/>
+<img src="screenshots/Screenshot_Login.PNG" width="15%" alt=""/>
+<img src="screenshots/Screenshot_Grid.PNG" width="15%" alt=""/>
+<img src="screenshots/Screenshot_List.PNG" width="15%" alt=""/>
+<img src="screenshots/Screenshot_Drawer.PNG" width="15%" alt=""/>
+<img src="screenshots/Screenshot_Edit.PNG" width="15%" alt=""/>
+<img src="screenshots/Screenshot_Preview.PNG" width="15%" alt=""/>
+<img src="screenshots/Screenshot_Style.PNG" width="15%" alt=""/>
+<img src="screenshots/Screenshot_Data.PNG" width="15%" alt=""/>
+<img src="screenshots/Screenshot_Widget.PNG" width="15%" alt=""/>
+<img src="screenshots/Screenshot_Math_Edit.png" width="15%" alt=""/>
+<img src="screenshots/Screenshot_Math_Preview.png" width="15%" alt=""/>
+<img src="screenshots/Screenshot_Mermaid_Edit.png" width="15%" alt=""/>
+<img src="screenshots/Screenshot_Mermaid_Preview.png" width="15%" alt=""/>
 
 </div>
 
