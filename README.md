@@ -38,7 +38,7 @@ You can know more about how to use OpenNote with Markdown, LaTeX Math, and Merma
 
 <div style="overflow-x: auto; white-space: nowrap;">
 
-<img src="screenshots/Screenshot_Login.PNG" width="15%" alt=""/>
+<img src="screenshots/Screenshot_Login.PNG" alt="" style="width: 15vw;"/>
 <img src="screenshots/Screenshot_Grid.PNG" width="15%" alt=""/>
 <img src="screenshots/Screenshot_List.PNG" width="15%" alt=""/>
 <img src="screenshots/Screenshot_Drawer.PNG" width="15%" alt=""/>
