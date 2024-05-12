@@ -52,8 +52,8 @@ OpenNote是一款完全使用Compose构建的现代化Android记事本应用程�
 <img src="screenshots/Screenshot_Math_Preview.png" width="15%" alt=""/>
 <img src="screenshots/Screenshot_Mermaid_Edit.png" width="15%" alt=""/>
 <img src="screenshots/Screenshot_Mermaid_Preview.png" width="15%" alt=""/>
-<img src="screenshots/Screenshot_Large_Screen.png" width="30%" alt=""/>
-<img src="screenshots/Screenshot_Large_Screen_Edit_Preview.png" width="30%" alt=""/>
+<img src="screenshots/Screenshot_Large_Screen.png" width="32%" alt=""/>
+<img src="screenshots/Screenshot_Large_Screen_Edit_Preview.png" width="32%" alt=""/>
 
 </div>
 
