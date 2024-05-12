@@ -38,19 +38,19 @@ You can know more about how to use OpenNote with Markdown, LaTeX Math, and Merma
 
 <div style="overflow-x: auto; white-space: nowrap;">
 
-<img src="https://github.com/YangDai2003/OpenNote-Compose/blob/master/screenshots/Screenshot_1.png" width="15%" alt=""/>
-<img src="https://github.com/YangDai2003/OpenNote-Compose/blob/master/screenshots/Screenshot_2.png" width="15%" alt=""/>
-<img src="https://github.com/YangDai2003/OpenNote-Compose/blob/master/screenshots/Screenshot_3.png" width="15%" alt=""/>
-<img src="https://github.com/YangDai2003/OpenNote-Compose/blob/master/screenshots/Screenshot_4.png" width="15%" alt=""/>
-<img src="https://github.com/YangDai2003/OpenNote-Compose/blob/master/screenshots/Screenshot_5.png" width="15%" alt=""/>
-<img src="https://github.com/YangDai2003/OpenNote-Compose/blob/master/screenshots/Screenshot_6.png" width="15%" alt=""/>
-<img src="https://github.com/YangDai2003/OpenNote-Compose/blob/master/screenshots/Screenshot_7.png" width="15%" alt=""/>
-<img src="https://github.com/YangDai2003/OpenNote-Compose/blob/master/screenshots/Screenshot_8_new.png" width="15%" alt=""/>
-<img src="https://github.com/YangDai2003/OpenNote-Compose/blob/master/screenshots/Screenshot_12.png" width="15%" alt=""/>
-<img src="https://github.com/YangDai2003/OpenNote-Compose/blob/master/screenshots/Screenshot_13.png" width="15%" alt=""/>
-<img src="https://github.com/YangDai2003/OpenNote-Compose/blob/master/screenshots/Screenshot_9.png" width="30%" alt=""/>
-<img src="https://github.com/YangDai2003/OpenNote-Compose/blob/master/screenshots/Screenshot_10.png" width="30%" alt=""/>
-<img src="https://github.com/YangDai2003/OpenNote-Compose/blob/master/screenshots/Screenshot_11.png" width="30%" alt=""/>
+<img src="screenshots/Screenshot_Login.PNG" width="1440" alt=""/>
+<img src="screenshots/Screenshot_Grid.PNG" width="1440" alt=""/>
+<img src="screenshots/Screenshot_List.PNG" width="1440" alt=""/>
+<img src="screenshots/Screenshot_Drawer.PNG" width="1440" alt=""/>
+<img src="screenshots/Screenshot_Edit.PNG" width="1440" alt=""/>
+<img src="screenshots/Screenshot_Preview.PNG" width="1440" alt=""/>
+<img src="screenshots/Screenshot_Style.PNG" width="1440" alt=""/>
+<img src="screenshots/Screenshot_Data.PNG" width="1440" alt=""/>
+<img src="screenshots/Screenshot_Widget.PNG" width="1440" alt=""/>
+<img src="screenshots/Screenshot_Math_Edit.png" width="1440" alt=""/>
+<img src="screenshots/Screenshot_Math_Preview.png" width="1440" alt=""/>
+<img src="screenshots/Screenshot_Mermaid_Edit.png" width="1440" alt=""/>
+<img src="screenshots/Screenshot_Mermaid_Preview.png" width="1440" alt=""/>
 
 </div>
 
