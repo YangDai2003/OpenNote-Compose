@@ -16,7 +16,8 @@ OpenNote是一款完全使用Compose构建的现代化Android记事本应用程�
 
 ## 如何使用 Markdown, LaTeX Math 和 Mermaid 图表的语法在 OpenNote 中编写文档？
 
-您可以在[指南](Guide.zh.md)中了解有关如何使用 Markdown，LaTeX Math 和 Mermaid 图表的语法在 OpenNote 中编写文档的更多信息。
+您可以在[指南](Guide.zh.md)中了解有关如何使用 Markdown，LaTeX Math 和 Mermaid 图表的语法在 OpenNote
+中编写文档的更多信息。
 
 ## 功能
 
@@ -38,19 +39,21 @@ OpenNote是一款完全使用Compose构建的现代化Android记事本应用程�
 
 <div style="overflow-x: auto; white-space: nowrap;">
 
-<img src="https://github.com/YangDai2003/OpenNote-Compose/blob/master/screenshots/Screenshot_1.png" width="15%" alt=""/>
-<img src="https://github.com/YangDai2003/OpenNote-Compose/blob/master/screenshots/Screenshot_2.png" width="15%" alt=""/>
-<img src="https://github.com/YangDai2003/OpenNote-Compose/blob/master/screenshots/Screenshot_3.png" width="15%" alt=""/>
-<img src="https://github.com/YangDai2003/OpenNote-Compose/blob/master/screenshots/Screenshot_4.png" width="15%" alt=""/>
-<img src="https://github.com/YangDai2003/OpenNote-Compose/blob/master/screenshots/Screenshot_5.png" width="15%" alt=""/>
-<img src="https://github.com/YangDai2003/OpenNote-Compose/blob/master/screenshots/Screenshot_6.png" width="15%" alt=""/>
-<img src="https://github.com/YangDai2003/OpenNote-Compose/blob/master/screenshots/Screenshot_7.png" width="15%" alt=""/>
-<img src="https://github.com/YangDai2003/OpenNote-Compose/blob/master/screenshots/Screenshot_8_new.png" width="15%" alt=""/>
-<img src="https://github.com/YangDai2003/OpenNote-Compose/blob/master/screenshots/Screenshot_12.png" width="15%" alt=""/>
-<img src="https://github.com/YangDai2003/OpenNote-Compose/blob/master/screenshots/Screenshot_13.png" width="15%" alt=""/>
-<img src="https://github.com/YangDai2003/OpenNote-Compose/blob/master/screenshots/Screenshot_9.png" width="30%" alt=""/>
-<img src="https://github.com/YangDai2003/OpenNote-Compose/blob/master/screenshots/Screenshot_10.png" width="30%" alt=""/>
-<img src="https://github.com/YangDai2003/OpenNote-Compose/blob/master/screenshots/Screenshot_11.png" width="30%" alt=""/>
+<img src="screenshots/Screenshot_Login.PNG" width="15%" alt=""/>
+<img src="screenshots/Screenshot_Grid.PNG" width="15%" alt=""/>
+<img src="screenshots/Screenshot_List.PNG" width="15%" alt=""/>
+<img src="screenshots/Screenshot_Drawer.PNG" width="15%" alt=""/>
+<img src="screenshots/Screenshot_Edit.PNG" width="15%" alt=""/>
+<img src="screenshots/Screenshot_Preview.PNG" width="15%" alt=""/>
+<img src="screenshots/Screenshot_Style.PNG" width="15%" alt=""/>
+<img src="screenshots/Screenshot_Data.PNG" width="15%" alt=""/>
+<img src="screenshots/Screenshot_Widget.PNG" width="15%" alt=""/>
+<img src="screenshots/Screenshot_Math_Edit.png" width="15%" alt=""/>
+<img src="screenshots/Screenshot_Math_Preview.png" width="15%" alt=""/>
+<img src="screenshots/Screenshot_Mermaid_Edit.png" width="15%" alt=""/>
+<img src="screenshots/Screenshot_Mermaid_Preview.png" width="15%" alt=""/>
+<img src="screenshots/Screenshot_Large_Screen.png" width="15%" alt=""/>
+<img src="screenshots/Screenshot_Large_Screen_Edit_Preview.png" width="15%" alt=""/>
 
 </div>
 
@@ -84,7 +87,8 @@ OpenNote是一款完全使用Compose构建的现代化Android记事本应用程�
 
 ## 安装
 
-要构建和运行此应用程序，您需要安装最新版本的Android Studio。然后，您可以从GitHub克隆此仓库并在Android Studio中打开它。
+要构建和运行此应用程序，您需要安装最新版本的Android Studio。然后，您可以从GitHub克隆此仓库并在Android
+Studio中打开它。
 
 ```bash
 git clone https://github.com/YangDai2003/OpenNote.git
