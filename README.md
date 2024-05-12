@@ -36,6 +36,8 @@ You can know more about how to use OpenNote with Markdown, LaTeX Math, and Merma
 
 ## Screenshots
 
+<div style="overflow-x: auto; white-space: nowrap;">
+
 <img src="screenshots/Screenshot_Login.PNG" width="15%" alt=""/>
 <img src="screenshots/Screenshot_Grid.PNG" width="15%" alt=""/>
 <img src="screenshots/Screenshot_List.PNG" width="15%" alt=""/>
@@ -49,6 +51,8 @@ You can know more about how to use OpenNote with Markdown, LaTeX Math, and Merma
 <img src="screenshots/Screenshot_Math_Preview.png" width="15%" alt=""/>
 <img src="screenshots/Screenshot_Mermaid_Edit.png" width="15%" alt=""/>
 <img src="screenshots/Screenshot_Mermaid_Preview.png" width="15%" alt=""/>
+
+</div>
 
 ## Technical Details
 
