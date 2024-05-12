@@ -10,7 +10,7 @@ It is developed using Kotlin (Compose) and follows the MVVM (Model-View-ViewMode
       <img alt="Get it on Google Play" src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" height="100">
 </a>
 
-<a href="https://github.com/YangDai2003/OpenNote-Compose/tree/master/app/release">
+<a href="https://github.com/YangDai2003/OpenNote-Compose/releases">
       <img alt="Get it on GitHub" src="https://raw.githubusercontent.com/deckerst/common/main/assets/get-it-on-github.png" height="100">
 </a>
 
