@@ -26,7 +26,7 @@
     <string name="login">Login</string>
     <string name="data_security">Data and security</string>
     <string name="reset_database">Reset database</string>
-    <string name="shareContent" >Welcome to \"Open Note\", a lightweight, aesthetically pleasing application that adheres to the Material 3 design style. Our app offers local storage, allowing you to jot down your thoughts anytime, anywhere, even without an internet connection. The efficient search function helps you quickly locate your notes, while the folder categorization feature aids in better organization of your notes. Additionally, it provides a text OCR feature, capable of converting text in images into editable text. The goal is to provide you with the most convenient and efficient note-taking experience. Download: https://play.google.com/store/apps/details?id=com.yangdai.opennote</string>
+    <string name="shareContent">Welcome to \"Open Note\", a lightweight, aesthetically pleasing application that adheres to the Material 3 design style. Our app offers local storage, allowing you to jot down your thoughts anytime, anywhere, even without an internet connection. The efficient search function helps you quickly locate your notes, while the folder categorization feature aids in better organization of your notes. Additionally, it provides a text OCR feature, capable of converting text in images into editable text. The goal is to provide you with the most convenient and efficient note-taking experience. Download: https://play.google.com/store/apps/details?id=com.yangdai.opennote</string>
     <string name="remind">Remind</string>
     <string name="restore_all">All restore</string>
     <string name="delete_all">All delete</string>
@@ -72,4 +72,5 @@
     <string name="table">Table</string>
     <string name="row">Rows</string>
     <string name="column">Columns</string>
+    <string name="view_all_notes">View all notes</string>
 </resources>

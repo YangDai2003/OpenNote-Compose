@@ -20,6 +20,7 @@ import com.yangdai.opennote.domain.usecase.UpdateFolder
 import com.yangdai.opennote.domain.usecase.UpdateNote
 import com.yangdai.opennote.domain.repository.DataStoreRepository
 import com.yangdai.opennote.domain.repository.FolderRepository
+import com.yangdai.opennote.domain.usecase.GetNoteById
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -64,6 +65,7 @@ object AppModule {
     ): Operations {
         return Operations(
             getNotes = GetNotes(noteRepository),
+            getNoteById = GetNoteById(noteRepository),
             deleteNote = DeleteNote(noteRepository),
             addNote = AddNote(noteRepository),
             searchNotes = SearchNotes(noteRepository),

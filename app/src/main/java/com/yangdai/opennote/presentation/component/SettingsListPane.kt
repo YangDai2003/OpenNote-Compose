@@ -17,6 +17,7 @@ import androidx.compose.material.icons.outlined.Language
 import androidx.compose.material.icons.outlined.Palette
 import androidx.compose.material.icons.outlined.PermDeviceInformation
 import androidx.compose.material.icons.outlined.SdStorage
+import androidx.compose.material.icons.outlined.Widgets
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -26,14 +27,16 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.glance.appwidget.GlanceAppWidgetManager
 import com.yangdai.opennote.R
+import com.yangdai.opennote.presentation.glance.NoteListWidgetReceiver
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -43,9 +46,10 @@ fun SettingsListPane(
 ) {
 
     val context = LocalContext.current
-    val haptic = LocalHapticFeedback.current
 
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+
+    val scope = rememberCoroutineScope()
 
     Scaffold(
         modifier = Modifier
@@ -54,10 +58,7 @@ fun SettingsListPane(
         topBar = {
             LargeTopAppBar(
                 navigationIcon = {
-                    IconButton(onClick = {
-                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                        navigateUp()
-                    }) {
+                    IconButton(onClick = navigateUp) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
                             contentDescription = "Back"
@@ -66,6 +67,18 @@ fun SettingsListPane(
                 },
                 title = {
                     TopBarTitle(title = stringResource(id = R.string.settings))
+                },
+                actions = {
+                    IconButton(onClick = {
+                        scope.launch {
+                            GlanceAppWidgetManager(context).requestPinGlanceAppWidget(NoteListWidgetReceiver::class.java)
+                        }
+                    }) {
+                        Icon(
+                            imageVector = Icons.Outlined.Widgets,
+                            contentDescription = "Widgets"
+                        )
+                    }
                 },
                 colors = TopAppBarDefaults.largeTopAppBarColors()
                     .copy(scrolledContainerColor = TopAppBarDefaults.largeTopAppBarColors().containerColor),

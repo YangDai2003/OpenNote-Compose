@@ -22,7 +22,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.compose.rememberNavController
 import com.yangdai.opennote.MainActivity
 import com.yangdai.opennote.presentation.viewmodel.SharedViewModel
 import com.yangdai.opennote.presentation.component.MaskAnimModel
@@ -102,13 +101,11 @@ fun BaseScreen(
 
             val blur by animateDpAsState(targetValue = if (!loggedIn) 16.dp else 0.dp, label = "")
 
-            val navController = rememberNavController()
             AnimatedNavHost(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(MaterialTheme.colorScheme.surface)
                     .blur(blur),
-                navController = navController,
                 isLargeScreen = isLargeScreen
             )
 

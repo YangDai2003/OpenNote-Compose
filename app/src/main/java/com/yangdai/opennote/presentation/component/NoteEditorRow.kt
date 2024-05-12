@@ -29,10 +29,16 @@ import androidx.compose.material.icons.outlined.HorizontalRule
 import androidx.compose.material.icons.outlined.Link
 import androidx.compose.material.icons.outlined.TableChart
 import androidx.compose.material.icons.outlined.Title
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.PlainTooltip
+import androidx.compose.material3.Text
+import androidx.compose.material3.TooltipBox
+import androidx.compose.material3.TooltipDefaults
+import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -40,10 +46,50 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.yangdai.opennote.R
 import com.yangdai.opennote.presentation.util.Constants
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun IconButtonWithTooltip(
+    enabled: Boolean = true,
+    imageVector: ImageVector? = null,
+    painter: Int? = null,
+    contentDescription: String,
+    shortCutDescription: String? = null,
+    onClick: () -> Unit
+) {
+    TooltipBox(
+        positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
+        tooltip = {
+            if (shortCutDescription != null) {
+                PlainTooltip(
+                    content = { Text(shortCutDescription) }
+                )
+            }
+        },
+        state = rememberTooltipState(),
+        focusable = false,
+        enableUserInput = true
+    ) {
+        IconButton(onClick = onClick, enabled = enabled) {
+            if (imageVector != null) {
+                Icon(
+                    imageVector = imageVector,
+                    contentDescription = contentDescription
+                )
+            } else {
+                Icon(
+                    painter = painterResource(id = painter!!),
+                    contentDescription = contentDescription
+                )
+            }
+        }
+    }
+}
 
 @Composable
 fun NoteEditorRow(
@@ -78,33 +124,32 @@ fun NoteEditorRow(
                 .horizontalScroll(rememberScrollState()),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            IconButton(
-                onClick = { onEdit(Constants.Editor.UNDO) },
-                enabled = canUndo
+
+            IconButtonWithTooltip(
+                enabled = canUndo,
+                imageVector = Icons.AutoMirrored.Outlined.Undo,
+                contentDescription = "Undo",
+                shortCutDescription = "Ctrl + Z"
             ) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Outlined.Undo,
-                    contentDescription = "Undo"
-                )
+                onEdit(Constants.Editor.UNDO)
             }
 
-            IconButton(
-                onClick = { onEdit(Constants.Editor.REDO) },
-                enabled = canRedo
+            IconButtonWithTooltip(
+                enabled = canRedo,
+                imageVector = Icons.AutoMirrored.Outlined.Redo,
+                contentDescription = "Redo",
+                shortCutDescription = "Ctrl + Y"
             ) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Outlined.Redo,
-                    contentDescription = "Redo"
-                )
+                onEdit(Constants.Editor.REDO)
             }
 
             if (isMarkdown) {
 
-                IconButton(onClick = { isExpanded = !isExpanded }) {
-                    Icon(
-                        imageVector = Icons.Outlined.Title,
-                        contentDescription = "Heading Level"
-                    )
+                IconButtonWithTooltip(
+                    imageVector = Icons.Outlined.Title,
+                    contentDescription = "Heading Level"
+                ) {
+                    isExpanded = !isExpanded
                 }
 
                 AnimatedVisibility(visible = isExpanded) {
@@ -113,156 +158,182 @@ fun NoteEditorRow(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.Start
                     ) {
-                        IconButton(onClick = { onEdit(Constants.Editor.H1) }) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.format_h1),
-                                contentDescription = "H1"
-                            )
+
+                        IconButtonWithTooltip(
+                            painter = R.drawable.format_h1,
+                            contentDescription = "H1",
+                            shortCutDescription = "Ctrl + 1"
+                        ) {
+                            onEdit(Constants.Editor.H1)
                         }
-                        IconButton(onClick = { onEdit(Constants.Editor.H2) }) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.format_h2),
-                                contentDescription = "H2"
-                            )
+
+                        IconButtonWithTooltip(
+                            painter = R.drawable.format_h2,
+                            contentDescription = "H2",
+                            shortCutDescription = "Ctrl + 2"
+                        ) {
+                            onEdit(Constants.Editor.H2)
                         }
-                        IconButton(onClick = { onEdit(Constants.Editor.H3) }) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.format_h3),
-                                contentDescription = "H3"
-                            )
+
+                        IconButtonWithTooltip(
+                            painter = R.drawable.format_h3,
+                            contentDescription = "H3",
+                            shortCutDescription = "Ctrl + 3"
+                        ) {
+                            onEdit(Constants.Editor.H3)
                         }
-                        IconButton(onClick = { onEdit(Constants.Editor.H4) }) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.format_h4),
-                                contentDescription = "H4"
-                            )
+
+                        IconButtonWithTooltip(
+                            painter = R.drawable.format_h4,
+                            contentDescription = "H4",
+                            shortCutDescription = "Ctrl + 4"
+                        ) {
+                            onEdit(Constants.Editor.H4)
                         }
-                        IconButton(onClick = { onEdit(Constants.Editor.H5) }) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.format_h5),
-                                contentDescription = "H5"
-                            )
+
+                        IconButtonWithTooltip(
+                            painter = R.drawable.format_h5,
+                            contentDescription = "H5",
+                            shortCutDescription = "Ctrl + 5"
+                        ) {
+                            onEdit(Constants.Editor.H5)
                         }
-                        IconButton(onClick = { onEdit(Constants.Editor.H6) }) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.format_h6),
-                                contentDescription = "H6"
-                            )
+
+                        IconButtonWithTooltip(
+                            painter = R.drawable.format_h6,
+                            contentDescription = "H6",
+                            shortCutDescription = "Ctrl + 6"
+                        ) {
+                            onEdit(Constants.Editor.H6)
                         }
                     }
                 }
 
-                IconButton(onClick = { onEdit(Constants.Editor.BOLD) }) {
-                    Icon(
-                        imageVector = Icons.Outlined.FormatBold,
-                        contentDescription = "Bold"
-                    )
+                IconButtonWithTooltip(
+                    imageVector = Icons.Outlined.FormatBold,
+                    contentDescription = "Bold",
+                    shortCutDescription = "Ctrl + B"
+                ) {
+                    onEdit(Constants.Editor.BOLD)
                 }
 
-                IconButton(onClick = { onEdit(Constants.Editor.ITALIC) }) {
-                    Icon(
-                        imageVector = Icons.Outlined.FormatItalic,
-                        contentDescription = "Italic"
-                    )
+                IconButtonWithTooltip(
+                    imageVector = Icons.Outlined.FormatItalic,
+                    contentDescription = "Italic",
+                    shortCutDescription = "Ctrl + I"
+                ) {
+                    onEdit(Constants.Editor.ITALIC)
                 }
 
-                IconButton(onClick = { onEdit(Constants.Editor.UNDERLINE) }) {
-                    Icon(
-                        imageVector = Icons.Outlined.FormatUnderlined,
-                        contentDescription = "Underline"
-                    )
+                IconButtonWithTooltip(
+                    imageVector = Icons.Outlined.FormatUnderlined,
+                    contentDescription = "Underline",
+                    shortCutDescription = "Ctrl + U"
+                ) {
+                    onEdit(Constants.Editor.UNDERLINE)
                 }
 
-                IconButton(onClick = { onEdit(Constants.Editor.STRIKETHROUGH) }) {
-                    Icon(
-                        imageVector = Icons.Outlined.FormatStrikethrough,
-                        contentDescription = "Strikethrough"
-                    )
+                IconButtonWithTooltip(
+                    imageVector = Icons.Outlined.FormatStrikethrough,
+                    contentDescription = "Strikethrough",
+                    shortCutDescription = "Ctrl + D"
+                ) {
+                    onEdit(Constants.Editor.STRIKETHROUGH)
                 }
 
-                IconButton(onClick = { onEdit(Constants.Editor.MARK) }) {
-                    Icon(
-                        imageVector = Icons.Outlined.FormatPaint,
-                        contentDescription = "Mark"
-                    )
+                IconButtonWithTooltip(
+                    imageVector = Icons.Outlined.FormatPaint,
+                    contentDescription = "Mark",
+                    shortCutDescription = "Ctrl + M"
+                ) {
+                    onEdit(Constants.Editor.MARK)
                 }
 
-                IconButton(onClick = { onEdit(Constants.Editor.INLINE_CODE) }) {
-                    Icon(
-                        imageVector = Icons.Outlined.Code,
-                        contentDescription = "Code"
-                    )
+                IconButtonWithTooltip(
+                    imageVector = Icons.Outlined.Code,
+                    contentDescription = "Code",
+                    shortCutDescription = "Ctrl + Shift + K"
+                ) {
+                    onEdit(Constants.Editor.INLINE_CODE)
                 }
 
-                IconButton(onClick = { onEdit(Constants.Editor.INLINE_BRACKETS) }) {
-                    Icon(
-                        imageVector = Icons.Outlined.DataArray,
-                        contentDescription = "Brackets"
-                    )
+                IconButtonWithTooltip(
+                    imageVector = Icons.Outlined.DataArray,
+                    contentDescription = "Brackets"
+                ) {
+                    onEdit(Constants.Editor.INLINE_BRACKETS)
                 }
 
-                IconButton(onClick = { onEdit(Constants.Editor.INLINE_BRACES) }) {
-                    Icon(
-                        imageVector = Icons.Outlined.DataObject,
-                        contentDescription = "Braces"
-                    )
+                IconButtonWithTooltip(
+                    imageVector = Icons.Outlined.DataObject,
+                    contentDescription = "Braces"
+                ) {
+                    onEdit(Constants.Editor.INLINE_BRACES)
                 }
 
-                IconButton(onClick = { onEdit(Constants.Editor.INLINE_FUNC) }) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.function),
-                        contentDescription = "Function"
-                    )
+                IconButtonWithTooltip(
+                    painter = R.drawable.function,
+                    contentDescription = "Math",
+                    shortCutDescription = "Ctrl + Shift + M"
+                ) {
+                    onEdit(Constants.Editor.INLINE_MATH)
                 }
 
-                IconButton(onClick = { onEdit(Constants.Editor.QUOTE) }) {
-                    Icon(
-                        imageVector = Icons.Outlined.FormatQuote,
-                        contentDescription = "Quote"
-                    )
+                IconButtonWithTooltip(
+                    imageVector = Icons.Outlined.FormatQuote,
+                    contentDescription = "Quote",
+                    shortCutDescription = "Ctrl + Shift + Q"
+                ) {
+                    onEdit(Constants.Editor.QUOTE)
                 }
 
-                IconButton(onClick = { onEdit(Constants.Editor.RULE) }) {
-                    Icon(
-                        imageVector = Icons.Outlined.HorizontalRule,
-                        contentDescription = "Horizontal Rule"
-                    )
+                IconButtonWithTooltip(
+                    imageVector = Icons.Outlined.HorizontalRule,
+                    contentDescription = "Horizontal Rule",
+                    shortCutDescription = "Ctrl + Shift + R"
+                ) {
+                    onEdit(Constants.Editor.RULE)
                 }
 
-                IconButton(onClick = onTableButtonClick) {
-                    Icon(
-                        imageVector = Icons.Outlined.TableChart,
-                        contentDescription = "Table"
-                    )
+                IconButtonWithTooltip(
+                    imageVector = Icons.Outlined.TableChart,
+                    contentDescription = "Table",
+                    shortCutDescription = "Ctrl + T"
+                ) {
+                    onTableButtonClick()
                 }
 
-                IconButton(onClick = { onEdit(Constants.Editor.DIAGRAM) }) {
-                    Icon(
-                        imageVector = Icons.Outlined.AddChart,
-                        contentDescription = "Diagram"
-                    )
+                IconButtonWithTooltip(
+                    imageVector = Icons.Outlined.AddChart,
+                    contentDescription = "Mermaid",
+                    shortCutDescription = "Ctrl + Shift + D"
+                ) {
+                    onEdit(Constants.Editor.DIAGRAM)
                 }
             }
 
-            IconButton(onClick = onTaskButtonClick) {
-                Icon(
-                    imageVector = Icons.Outlined.CheckBox,
-                    contentDescription = "Task"
-                )
+            IconButtonWithTooltip(
+                imageVector = Icons.Outlined.CheckBox,
+                contentDescription = "Task",
+                shortCutDescription = "Ctrl + Shift + T"
+            ) {
+                onTaskButtonClick()
             }
 
-            IconButton(onClick = onLinkButtonClick) {
-                Icon(
-                    imageVector = Icons.Outlined.Link,
-                    contentDescription = "Link"
-                )
+            IconButtonWithTooltip(
+                imageVector = Icons.Outlined.Link,
+                contentDescription = "Link",
+                shortCutDescription = "Ctrl + K"
+            ) {
+                onLinkButtonClick()
             }
 
-            IconButton(onClick = onScanButtonClick) {
-                Icon(
-                    imageVector = Icons.Outlined.DocumentScanner,
-                    contentDescription = "OCR"
-                )
+            IconButtonWithTooltip(
+                imageVector = Icons.Outlined.DocumentScanner,
+                contentDescription = "OCR",
+                shortCutDescription = "Ctrl + S"
+            ) {
+                onScanButtonClick()
             }
         }
     }

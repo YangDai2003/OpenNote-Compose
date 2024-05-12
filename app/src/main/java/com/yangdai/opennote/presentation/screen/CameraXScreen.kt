@@ -62,9 +62,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -87,7 +85,6 @@ fun CameraXScreen(
     onCloseClick: () -> Unit,
     onDoneClick: (String) -> Unit
 ) {
-    val haptic = LocalHapticFeedback.current
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val keyboardController = LocalSoftwareKeyboardController.current
@@ -244,10 +241,7 @@ fun CameraXScreen(
                     .align(Alignment.TopStart)
                     .statusBarsPadding()
                     .padding(start = 32.dp, top = 32.dp),
-                onClick = {
-                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                    onCloseClick()
-                }
+                onClick = onCloseClick
             ) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,

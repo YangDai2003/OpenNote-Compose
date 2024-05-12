@@ -19,10 +19,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -42,7 +40,6 @@ fun FolderScreen(
     sharedViewModel: SharedViewModel = hiltViewModel(LocalContext.current as MainActivity),
     navigateUp: () -> Unit
 ) {
-    val haptic = LocalHapticFeedback.current
 
     val folderList by sharedViewModel.foldersStateFlow.collectAsStateWithLifecycle()
 
@@ -62,10 +59,7 @@ fun FolderScreen(
                     TopBarTitle(title = stringResource(id = R.string.folders))
                 },
                 navigationIcon = {
-                    IconButton(onClick = {
-                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                        navigateUp()
-                    }) {
+                    IconButton(onClick = navigateUp) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
                             contentDescription = "Back"

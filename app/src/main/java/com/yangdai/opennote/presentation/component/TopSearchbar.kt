@@ -53,6 +53,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.yangdai.opennote.MainActivity
 import com.yangdai.opennote.R
 import com.yangdai.opennote.presentation.event.ListEvent
+import com.yangdai.opennote.presentation.util.Constants
 import com.yangdai.opennote.presentation.viewmodel.SharedViewModel
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
@@ -86,7 +87,7 @@ fun TopSearchbar(
         if (text.isNotEmpty()) {
             val newSet = historySet.toMutableSet()
             newSet.add(text)
-            viewModel.putHistoryStringSet(newSet)
+            viewModel.putPreferenceValue(Constants.Preferences.SEARCH_HISTORY, newSet.toSet())
             viewModel.onListEvent(ListEvent.Search(text))
         } else {
             viewModel.onListEvent(
@@ -154,7 +155,7 @@ fun TopSearchbar(
                 ) {
                     IconButton(onClick = { viewModel.onListEvent(ListEvent.ChangeViewMode) }) {
                         Icon(
-                            imageVector = if (settingsState.isListView) Icons.Outlined.ViewAgenda else Icons.Outlined.GridView,
+                            imageVector = if (!settingsState.isListView) Icons.Outlined.ViewAgenda else Icons.Outlined.GridView,
                             contentDescription = "View Mode"
                         )
                     }
@@ -185,7 +186,7 @@ fun TopSearchbar(
                 // To align the icon with search bar, use icon.clickable{} instead of IconButton onClick()
                 Icon(
                     modifier = Modifier.clickable {
-                        viewModel.putHistoryStringSet(emptySet())
+                        viewModel.putPreferenceValue(Constants.Preferences.SEARCH_HISTORY, setOf<String>())
                     },
                     imageVector = Icons.Outlined.DeleteForever,
                     contentDescription = "Clear History"

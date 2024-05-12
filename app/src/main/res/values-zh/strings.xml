@@ -71,4 +71,5 @@
     <string name="table">表格</string>
     <string name="row">行数</string>
     <string name="column">列数</string>
+    <string name="view_all_notes">查看所有笔记</string>
 </resources>

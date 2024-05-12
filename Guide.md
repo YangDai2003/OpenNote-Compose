@@ -17,51 +17,68 @@
 
 # What is Markdown?
 
-Markdown is a plain text format for writing structured documents, based on conventions for indicating formatting in email and usenet posts.
-It was developed by John Gruber (with help from Aaron Swartz) and released in 2004 in the form of a syntax description and a Perl script (Markdown.pl) for converting Markdown to HTML. 
+Markdown is a plain text format for writing structured documents, based on conventions for
+indicating formatting in email and usenet posts.
+It was developed by John Gruber (with help from Aaron Swartz) and released in 2004 in the form of a
+syntax description and a Perl script (Markdown.pl) for converting Markdown to HTML.
 
 In the next decade, dozens of implementations were developed in many languages.
-Some extended the original Markdown syntax with conventions for footnotes, tables, and other document elements. 
-Some allowed Markdown documents to be rendered in formats other than HTML. 
+Some extended the original Markdown syntax with conventions for footnotes, tables, and other
+document elements.
+Some allowed Markdown documents to be rendered in formats other than HTML.
 
-Websites like Reddit, StackOverflow, and GitHub had millions of people using Markdown. 
-And Markdown started to be used beyond the web, to author books, articles, slide shows, letters, and lecture notes.
+Websites like Reddit, StackOverflow, and GitHub had millions of people using Markdown.
+And Markdown started to be used beyond the web, to author books, articles, slide shows, letters, and
+lecture notes.
 
 # What is CommonMark?
 
-CommonMark was developed to address inconsistencies and ambiguities in Markdown. 
+CommonMark was developed to address inconsistencies and ambiguities in Markdown.
 
-The CommonMark specification defines rules for elements such as headings, lists, links, emphasis, and code blocks, among others. 
+The CommonMark specification defines rules for elements such as headings, lists, links, emphasis,
+and code blocks, among others.
 
-By adhering to the CommonMark standard, developers can ensure consistent rendering of Markdown content across different applications and platforms.
+By adhering to the CommonMark standard, developers can ensure consistent rendering of Markdown
+content across different applications and platforms.
 
 # What is GitHub Flavored Markdown?
 
-GitHub Flavored Markdown, often shortened as GFM, is the dialect of Markdown that is currently supported for user content on GitHub.com and GitHub Enterprise.
+GitHub Flavored Markdown, often shortened as GFM, is the dialect of Markdown that is currently
+supported for user content on GitHub.com and GitHub Enterprise.
 
-This formal specification, based on the CommonMark Spec, defines the syntax and semantics of this dialect.
+This formal specification, based on the CommonMark Spec, defines the syntax and semantics of this
+dialect.
 
-GFM is a strict superset of CommonMark. All the features which are supported in GitHub user content and that are not specified on the original CommonMark Spec are hence known as extensions, and highlighted as such.
+GFM is a strict superset of CommonMark. All the features which are supported in GitHub user content
+and that are not specified on the original CommonMark Spec are hence known as extensions, and
+highlighted as such.
 
-While GFM supports a wide range of inputs, it’s worth noting that GitHub.com and GitHub Enterprise perform additional post-processing and sanitization after GFM is converted to HTML to ensure security and consistency of the website.
+While GFM supports a wide range of inputs, it’s worth noting that GitHub.com and GitHub Enterprise
+perform additional post-processing and sanitization after GFM is converted to HTML to ensure
+security and consistency of the website.
 
 # What is LaTeX?
 
 LaTeX is a typesetting system commonly used for producing scientific and mathematical documents.
 
-LaTeX provides a powerful way to represent mathematical notation in documents, allowing users to create complex equations and formulas with ease.
+LaTeX provides a powerful way to represent mathematical notation in documents, allowing users to
+create complex equations and formulas with ease.
 
 # How to use LaTeX in Markdown?
 
-Mathematical expressions are key to information sharing amongst engineers, scientists, data scientists, and mathematicians. 
+Mathematical expressions are key to information sharing amongst engineers, scientists, data
+scientists, and mathematicians.
 
 You can use the $ and $$ delimiters in GFM to insert math expressions in TeX and LaTeX style syntax.
 
 # What has OpenNote offered?
 
-OpenNote supports CommonMark and GitHub Flavored Markdown (GFM) syntax, as well as LaTeX math syntax. 
+OpenNote supports CommonMark and GitHub Flavored Markdown (GFM) syntax, as well as LaTeX math
+syntax.
 
-This allows users to create richly formatted notes with support for headings, lists, links, emphasis, code blocks, tables, and mathematical expressions, and allows notes to be exported in various formats including TXT, MD (Markdown), and HTML.
+This allows users to create richly formatted notes with support for headings, lists, links,
+emphasis, code blocks, tables, and mathematical expressions, and allows notes to be exported in
+various formats including TXT, MD (Markdown), and HTML.
 
 # Some Basic Markdown Syntax
 
@@ -160,20 +177,29 @@ This allows users to create richly formatted notes with support for headings, li
 
 # Keyboard Shortcuts
 
-|    Element    |    Shortcut    |
-|:-------------:|:--------------:|
-|     Bold      |    `Ctrl+B`    |
-|    Italic     |    `Ctrl+I`    |
-|   Underline   |    `Ctrl+U`    |
-| Strikethrough |    `Ctrl+D`    |
-|     Mark      |    `Ctrl+M`    |
-|     Code      | `Ctrl+Shift+K` |
-|     Quote     | `Ctrl+Shift+Q` |
-|     Math      | `Ctrl+Shift+M` |
+|     Element     |    Shortcut    |
+|:---------------:|:--------------:|
+|      Bold       |    `Ctrl+B`    |
+|     Italic      |    `Ctrl+I`    |
+|    Underline    |    `Ctrl+U`    |
+|  Strikethrough  |    `Ctrl+D`    |
+|      Mark       |    `Ctrl+M`    |
+|      Table      |    `Ctrl+T`    |
+|      Link       |    `Ctrl+K`    |
+|      Scan       |    `Ctrl+S`    |
+|     Preview     |    `Ctrl+P`    |
+|     Heading     |   `Ctrl+1~6`   |
+|      Code       | `Ctrl+Shift+K` |
+|      Quote      | `Ctrl+Shift+Q` |
+|      Math       | `Ctrl+Shift+M` |
+| Horizontal Rule | `Ctrl+Shift+R` |
+|      Task       | `Ctrl+Shift+T` |
+| Mermaid Diagram | `Ctrl+Shift+D` |
 
 # References
 
-You can find more information about Markdown, CommonMark, GitHub Flavored Markdown, LaTeX Math, and Mermaid at the following links:
+You can find more information about Markdown, CommonMark, GitHub Flavored Markdown, LaTeX Math, and
+Mermaid at the following links:
 
 - [CommonMark](https://commonmark.org/)
 - [GitHub Flavored Markdown](https://github.github.com/gfm/)

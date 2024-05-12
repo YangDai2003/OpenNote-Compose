@@ -12,7 +12,6 @@ import androidx.datastore.preferences.core.stringSetPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.yangdai.opennote.domain.repository.DataStoreRepository
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
@@ -53,65 +52,10 @@ class DataStoreRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun getString(key: String): String? {
-        return try {
-            val preferencesKey = stringPreferencesKey(key)
-            val preferences = context.dataStore.data.first()
-            preferences[preferencesKey]
-        } catch (e: Exception) {
-            e.printStackTrace()
-            null
-        }
-    }
-
-    override suspend fun getInt(key: String): Int? {
-        return try {
-            val preferencesKey = intPreferencesKey(key)
-            val preferences = context.dataStore.data.first()
-            preferences[preferencesKey]
-        } catch (e: Exception) {
-            e.printStackTrace()
-            null
-        }
-    }
-
-    override suspend fun getFloat(key: String): Float? {
-        return try {
-            val preferencesKey = floatPreferencesKey(key)
-            val preferences = context.dataStore.data.first()
-            preferences[preferencesKey]
-        } catch (e: Exception) {
-            e.printStackTrace()
-            null
-        }
-    }
-
-    override suspend fun getBoolean(key: String): Boolean? {
-        return try {
-            val preferencesKey = booleanPreferencesKey(key)
-            val preferences = context.dataStore.data.first()
-            preferences[preferencesKey]
-        } catch (e: Exception) {
-            e.printStackTrace()
-            null
-        }
-    }
-
     override suspend fun putStringSet(key: String, value: Set<String>) {
         val preferencesKey = stringSetPreferencesKey(key)
         context.dataStore.edit { preferences ->
             preferences[preferencesKey] = value
-        }
-    }
-
-    override suspend fun getStringSet(key: String): Set<String>? {
-        return try {
-            val preferencesKey = stringSetPreferencesKey(key)
-            val preferences = context.dataStore.data.first()
-            preferences[preferencesKey]
-        } catch (e: Exception) {
-            e.printStackTrace()
-            null
         }
     }
 

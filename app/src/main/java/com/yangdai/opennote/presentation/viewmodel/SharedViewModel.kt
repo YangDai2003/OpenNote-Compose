@@ -35,9 +35,8 @@ import com.yangdai.opennote.presentation.state.DataActionState
 import com.yangdai.opennote.presentation.state.DataState
 import com.yangdai.opennote.presentation.state.NoteState
 import com.yangdai.opennote.presentation.util.Constants
+import com.yangdai.opennote.presentation.util.add
 import com.yangdai.opennote.presentation.util.addHeader
-import com.yangdai.opennote.presentation.util.addInNewLine
-import com.yangdai.opennote.presentation.util.addLink
 import com.yangdai.opennote.presentation.util.addRule
 import com.yangdai.opennote.presentation.util.addTable
 import com.yangdai.opennote.presentation.util.addTask
@@ -46,7 +45,7 @@ import com.yangdai.opennote.presentation.util.addMermaid
 import com.yangdai.opennote.presentation.util.inlineBraces
 import com.yangdai.opennote.presentation.util.inlineBrackets
 import com.yangdai.opennote.presentation.util.inlineCode
-import com.yangdai.opennote.presentation.util.inlineFunction
+import com.yangdai.opennote.presentation.util.inlineMath
 import com.yangdai.opennote.presentation.util.italic
 import com.yangdai.opennote.presentation.util.mark
 import com.yangdai.opennote.presentation.util.quote
@@ -74,7 +73,6 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.commonmark.Extension
@@ -87,7 +85,7 @@ import java.io.OutputStreamWriter
 import java.util.Locale
 import javax.inject.Inject
 
-@OptIn(ExperimentalFoundationApi::class)
+
 @HiltViewModel
 class SharedViewModel @Inject constructor(
     private val database: Database,
@@ -193,24 +191,17 @@ class SharedViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             when (value) {
                 is Int -> dataStoreRepository.putInt(key, value)
+                is Float -> dataStoreRepository.putFloat(key, value)
                 is Boolean -> dataStoreRepository.putBoolean(key, value)
+                is String -> dataStoreRepository.putString(key, value)
+                is Set<*> -> dataStoreRepository.putStringSet(
+                    key,
+                    value.filterIsInstance<String>().toSet()
+                )
+
                 else -> throw IllegalArgumentException("Unsupported value type")
             }
         }
-    }
-
-    fun putHistoryStringSet(value: Set<String>) {
-        viewModelScope.launch(Dispatchers.IO) {
-            dataStoreRepository.putStringSet(Constants.Preferences.SEARCH_HISTORY, value)
-        }
-    }
-
-    fun getInt(key: String): Int? = runBlocking {
-        dataStoreRepository.getInt(key)
-    }
-
-    fun getBoolean(key: String): Boolean? = runBlocking {
-        dataStoreRepository.getBoolean(key)
     }
 
     val historyStateFlow: StateFlow<Set<String>> =
@@ -220,7 +211,6 @@ class SharedViewModel @Inject constructor(
                 started = SharingStarted.WhileSubscribed(5_000),
                 initialValue = setOf()
             )
-
 
     // Event Section
 
@@ -321,10 +311,10 @@ class SharedViewModel @Inject constructor(
             }
 
             ListEvent.AddNote -> {
+                oNote = null
                 titleState.clearText()
                 contentState.clearText()
                 _noteState.value = NoteState()
-                oNote = null
             }
 
             ListEvent.ToggleOrderSection -> {
@@ -408,18 +398,7 @@ class SharedViewModel @Inject constructor(
         }
     }
 
-    fun addLink(link: String) {
-        contentState.edit { addLink(link) }
-    }
-
-    fun addText(text: String) {
-        contentState.edit { addInNewLine(text) }
-    }
-
-    fun canUndo() = contentState.undoState.canUndo
-
-    fun canRedo() = contentState.undoState.canRedo
-
+    @OptIn(ExperimentalFoundationApi::class)
     fun onNoteEvent(event: NoteEvent) {
         when (event) {
 
@@ -482,7 +461,7 @@ class SharedViewModel @Inject constructor(
             }
 
             is NoteEvent.Edit -> {
-                when (event.value) {
+                when (event.key) {
                     Constants.Editor.UNDO -> contentState.undoState.undo()
                     Constants.Editor.REDO -> contentState.undoState.redo()
                     Constants.Editor.H1 -> contentState.edit { addHeader(1) }
@@ -499,10 +478,30 @@ class SharedViewModel @Inject constructor(
                     Constants.Editor.INLINE_CODE -> contentState.edit { inlineCode() }
                     Constants.Editor.INLINE_BRACKETS -> contentState.edit { inlineBrackets() }
                     Constants.Editor.INLINE_BRACES -> contentState.edit { inlineBraces() }
-                    Constants.Editor.INLINE_FUNC -> contentState.edit { inlineFunction() }
+                    Constants.Editor.INLINE_MATH -> contentState.edit { inlineMath() }
                     Constants.Editor.QUOTE -> contentState.edit { quote() }
                     Constants.Editor.RULE -> contentState.edit { addRule() }
                     Constants.Editor.DIAGRAM -> contentState.edit { addMermaid() }
+                    Constants.Editor.TEXT -> contentState.edit { add(event.value) }
+                }
+            }
+
+            is NoteEvent.Open -> {
+                viewModelScope.launch(Dispatchers.IO) {
+                    val note = operations.getNoteById(event.id)
+                    note?.let {
+                        oNote = note
+                        _noteState.update {
+                            it.copy(
+                                id = note.id,
+                                folderId = note.folderId,
+                                isMarkdown = note.isMarkdown,
+                                timestamp = note.timestamp
+                            )
+                        }
+                        titleState.setTextAndPlaceCursorAtEnd(note.title)
+                        contentState.setTextAndPlaceCursorAtEnd(note.content)
+                    }
                 }
             }
         }

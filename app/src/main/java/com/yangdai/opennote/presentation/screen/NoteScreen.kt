@@ -1,12 +1,13 @@
 package com.yangdai.opennote.presentation.screen
 
 import android.content.Intent
+import android.provider.CalendarContract
 import android.widget.Toast
-import android.provider.CalendarContract.Events
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -56,10 +57,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
@@ -84,16 +83,18 @@ import com.yangdai.opennote.presentation.component.TaskDialog
 import com.yangdai.opennote.presentation.event.DatabaseEvent
 import com.yangdai.opennote.presentation.event.NoteEvent
 import com.yangdai.opennote.presentation.event.UiEvent
+import com.yangdai.opennote.presentation.util.Constants
 import com.yangdai.opennote.presentation.util.timestampToFormatLocalDateTime
 import com.yangdai.opennote.presentation.viewmodel.SharedViewModel
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.launch
 
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun NoteScreen(
     sharedViewModel: SharedViewModel = hiltViewModel(LocalContext.current as MainActivity),
+    id: Long,
     isLargeScreen: Boolean,
     sharedText: String?,
     scannedText: String?,
@@ -101,7 +102,11 @@ fun NoteScreen(
     onScanTextClick: () -> Unit
 ) {
 
-    val haptic = LocalHapticFeedback.current
+    LaunchedEffect(id) {
+        if (id != -1L)
+            sharedViewModel.onNoteEvent(NoteEvent.Open(id))
+    }
+
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val keyboardController = LocalSoftwareKeyboardController.current
@@ -156,13 +161,13 @@ fun NoteScreen(
 
     LaunchedEffect(sharedText) {
         if (!sharedText.isNullOrEmpty()) {
-            sharedViewModel.addText(sharedText)
+            sharedViewModel.onNoteEvent(NoteEvent.Edit(Constants.Editor.TEXT, sharedText))
         }
     }
 
     LaunchedEffect(scannedText) {
         if (!scannedText.isNullOrEmpty()) {
-            sharedViewModel.addText(scannedText)
+            sharedViewModel.onNoteEvent(NoteEvent.Edit(Constants.Editor.TEXT, scannedText))
         }
     }
 
@@ -223,10 +228,7 @@ fun NoteScreen(
                     }
                 },
                 navigationIcon = {
-                    IconButton(onClick = {
-                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                        navigateUp()
-                    }) {
+                    IconButton(onClick = navigateUp) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
                             contentDescription = "Back"
@@ -281,25 +283,16 @@ fun NoteScreen(
                             },
                             text = { Text(text = stringResource(id = R.string.remind)) },
                             onClick = {
-                                val intent = Intent(Intent.ACTION_INSERT).apply {
-                                    data = Events.CONTENT_URI
-                                    putExtra(
-                                        Events.TITLE,
-                                        sharedViewModel.titleState.text.toString()
-                                    )
-                                    putExtra(
-                                        Events.DESCRIPTION,
-                                        sharedViewModel.contentState.text.toString()
-                                    )
-                                }
-                                if (intent.resolveActivity(context.packageManager) != null) {
+
+                                val intent = Intent(Intent.ACTION_INSERT)
+                                    .setData(CalendarContract.Events.CONTENT_URI)
+                                    .putExtra(CalendarContract.Events.TITLE, sharedViewModel.titleState.text.toString())
+                                    .putExtra(CalendarContract.Events.DESCRIPTION, sharedViewModel.contentState.text.toString())
+
+                                try {
                                     context.startActivity(intent)
-                                } else {
-                                    Toast.makeText(
-                                        context,
-                                        context.getString(R.string.no_calendar_app_found),
-                                        Toast.LENGTH_SHORT
-                                    ).show()
+                                } catch (e: Exception) {
+                                    Toast.makeText(context, context.getString(R.string.no_calendar_app_found), Toast.LENGTH_SHORT).show()
                                 }
                             })
 
@@ -349,11 +342,11 @@ fun NoteScreen(
                 exit = slideOutVertically { fullHeight -> fullHeight }) {
                 NoteEditorRow(
                     isMarkdown = noteState.isMarkdown,
-                    canRedo = sharedViewModel.canRedo(),
-                    canUndo = sharedViewModel.canUndo(),
+                    canRedo = sharedViewModel.contentState.undoState.canRedo,
+                    canUndo = sharedViewModel.contentState.undoState.canUndo,
                     onEdit = { sharedViewModel.onNoteEvent(NoteEvent.Edit(it)) },
-                    onTableButtonClick = { showTableDialog = true },
                     onScanButtonClick = onScanTextClick,
+                    onTableButtonClick = { showTableDialog = true },
                     onTaskButtonClick = { showTaskDialog = true },
                     onLinkButtonClick = { showLinkDialog = true })
             }
@@ -430,8 +423,13 @@ fun NoteScreen(
                         modifier = Modifier
                             .fillMaxHeight()
                             .weight(1f),
+                        readMode = isReadMode,
                         state = sharedViewModel.contentState,
-                        readMode = isReadMode
+                        onScanButtonClick = onScanTextClick,
+                        onTableButtonClick = { showTableDialog = true },
+                        onTaskButtonClick = { showTaskDialog = true },
+                        onLinkButtonClick = { showLinkDialog = true },
+                        onPreviewButtonClick = { isReadMode = !isReadMode }
                     ) {
                         isContentFocused = it
                     }
@@ -461,7 +459,12 @@ fun NoteScreen(
                             NoteEditTextField(
                                 modifier = Modifier.fillMaxSize(),
                                 state = sharedViewModel.contentState,
-                                readMode = isReadMode
+                                readMode = isReadMode,
+                                onScanButtonClick = onScanTextClick,
+                                onTableButtonClick = { showTableDialog = true },
+                                onTaskButtonClick = { showTaskDialog = true },
+                                onLinkButtonClick = { showLinkDialog = true },
+                                onPreviewButtonClick = { isReadMode = !isReadMode }
                             ) {
                                 isContentFocused = it
                             }
@@ -516,7 +519,7 @@ fun NoteScreen(
     if (showLinkDialog) {
         LinkDialog(onDismissRequest = { showLinkDialog = false }) { name, uri ->
             val insertText = "[${name}](${uri})"
-            sharedViewModel.addLink(insertText)
+            sharedViewModel.onNoteEvent(NoteEvent.Edit(Constants.Editor.TEXT, insertText))
         }
     }
 

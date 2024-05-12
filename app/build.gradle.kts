@@ -16,8 +16,8 @@ android {
         applicationId = "com.yangdai.opennote"
         minSdk = 29
         targetSdk = 34
-        versionCode = 124
-        versionName = "1.2.4"
+        versionCode = 126
+        versionName = "1.2.6"
         resourceConfigurations += listOf("en", "zh")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -62,7 +62,7 @@ android {
 }
 
 dependencies {
-
+    // Kotlin
     implementation(libs.kotlinx.serialization)
     implementation(libs.kotlinx.collections.immutable)
 
@@ -119,6 +119,11 @@ dependencies {
     implementation(libs.androidx.biometric)
     implementation(libs.androidx.datastore.preferences)
     implementation(libs.androidx.appcompat)
+
+    // For Glance support
+    implementation(libs.androidx.glance)
+    // For AppWidgets support
+    implementation(libs.androidx.glance.appwidget)
 
     // Test
     testImplementation(libs.junit)

@@ -5,8 +5,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 object Home
 
-@Serializable
-object Note
+const val Note = "note"
 
 @Serializable
 object Settings

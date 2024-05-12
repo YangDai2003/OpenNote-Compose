@@ -27,7 +27,6 @@ import com.yangdai.opennote.presentation.component.MainContent
 import com.yangdai.opennote.presentation.component.ModalNavigationScreen
 import com.yangdai.opennote.presentation.component.PermanentNavigationScreen
 import com.yangdai.opennote.presentation.event.DatabaseEvent
-import com.yangdai.opennote.presentation.navigation.Note
 import com.yangdai.opennote.presentation.viewmodel.SharedViewModel
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.launch
@@ -36,6 +35,7 @@ import kotlinx.coroutines.launch
 fun MainScreen(
     sharedViewModel: SharedViewModel = hiltViewModel(LocalContext.current as MainActivity),
     isLargeScreen: Boolean,
+    navigateToNote: () -> Unit,
     navigateTo: (Any) -> Unit
 ) {
     val context = LocalContext.current
@@ -144,7 +144,7 @@ fun MainScreen(
                 dataState = dataState,
                 folderList = folderList.toImmutableList(),
                 isFloatingButtonVisible = isFloatingButtonVisible,
-                navigateTo = navigateTo,
+                navigateToNote = navigateToNote,
                 initializeNoteSelection = { initializeNoteSelection() },
                 onSearchBarActivationChange = { isSearchBarActivated = it },
                 onAllNotesSelectionChange = { allNotesSelected = it },
@@ -157,7 +157,7 @@ fun MainScreen(
                     } else {
                         if (selectedDrawerIndex != 1) {
                             sharedViewModel.onListEvent(ListEvent.OpenNote(it))
-                            navigateTo(Note)
+                            navigateToNote()
                         } else {
                             Unit
                         }

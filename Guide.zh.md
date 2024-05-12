@@ -162,16 +162,24 @@ TXT、MD (Markdown) 和 HTML。
 
 # 键盘快捷键
 
-| 元素  |       键位       |
-|:---:|:--------------:|
-| 粗体  |    `Ctrl+B`    |
-| 斜体  |    `Ctrl+I`    |
-| 下划线 |    `Ctrl+U`    |
-| 删除线 |    `Ctrl+D`    |
-| 标记  |    `Ctrl+M`    |
-| 代码  | `Ctrl+Shift+K` |
-| 引用  | `Ctrl+Shift+Q` |
-| 数学  | `Ctrl+Shift+M` |
+|     元素     |      快捷键       |
+|:----------:|:--------------:|
+|     粗体     |    `Ctrl+B`    |
+|     斜体     |    `Ctrl+I`    |
+|    下划线     |    `Ctrl+U`    |
+|    删除线     |    `Ctrl+D`    |
+|     标记     |    `Ctrl+M`    |
+|     表格     |    `Ctrl+T`    |
+|     链接     |    `Ctrl+K`    |
+|     扫描     |    `Ctrl+S`    |
+|     预览     |    `Ctrl+P`    |
+|     标题     |   `Ctrl+1~6`   |
+|     代码     | `Ctrl+Shift+K` |
+|     引用     | `Ctrl+Shift+Q` |
+|     数学     | `Ctrl+Shift+M` |
+|    分隔线     | `Ctrl+Shift+R` |
+|    任务列表    | `Ctrl+Shift+T` |
+| Mermaid 图表 | `Ctrl+Shift+D` |
 
 # 参考
 

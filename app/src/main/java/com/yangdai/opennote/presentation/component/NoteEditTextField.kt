@@ -24,10 +24,13 @@ import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.res.stringResource
 import com.yangdai.opennote.R
+import com.yangdai.opennote.presentation.util.addHeader
 import com.yangdai.opennote.presentation.util.addInNewLine
+import com.yangdai.opennote.presentation.util.addMermaid
+import com.yangdai.opennote.presentation.util.addRule
 import com.yangdai.opennote.presentation.util.bold
 import com.yangdai.opennote.presentation.util.inlineCode
-import com.yangdai.opennote.presentation.util.inlineFunction
+import com.yangdai.opennote.presentation.util.inlineMath
 import com.yangdai.opennote.presentation.util.italic
 import com.yangdai.opennote.presentation.util.mark
 import com.yangdai.opennote.presentation.util.quote
@@ -40,6 +43,11 @@ fun NoteEditTextField(
     modifier: Modifier,
     state: TextFieldState,
     readMode: Boolean,
+    onScanButtonClick: () -> Unit,
+    onTableButtonClick: () -> Unit,
+    onTaskButtonClick: () -> Unit,
+    onLinkButtonClick: () -> Unit,
+    onPreviewButtonClick: () -> Unit,
     onFocusChanged: (Boolean) -> Unit
 ) = BasicTextField(
     // The contentReceiver modifier is used to receive text content from the clipboard or drag-and-drop operations.
@@ -70,12 +78,27 @@ fun NoteEditTextField(
                             }
 
                             Key.M -> {
-                                state.edit { inlineFunction() }
+                                state.edit { inlineMath() }
                                 true
                             }
 
                             Key.Q -> {
                                 state.edit { quote() }
+                                true
+                            }
+
+                            Key.R -> {
+                                state.edit { addRule() }
+                                true
+                            }
+
+                            Key.T -> {
+                                onTaskButtonClick()
+                                true
+                            }
+
+                            Key.D -> {
+                                state.edit { addMermaid() }
                                 true
                             }
 
@@ -88,13 +111,18 @@ fun NoteEditTextField(
                                 true
                             }
 
-                            Key.D -> {
-                                state.edit { strikeThrough() }
+                            Key.I -> {
+                                state.edit { italic() }
                                 true
                             }
 
-                            Key.I -> {
-                                state.edit { italic() }
+                            Key.U -> {
+                                state.edit { underline() }
+                                true
+                            }
+
+                            Key.D -> {
+                                state.edit { strikeThrough() }
                                 true
                             }
 
@@ -103,8 +131,53 @@ fun NoteEditTextField(
                                 true
                             }
 
-                            Key.U -> {
-                                state.edit { underline() }
+                            Key.T -> {
+                                onTableButtonClick()
+                                true
+                            }
+
+                            Key.K -> {
+                                onLinkButtonClick()
+                                true
+                            }
+
+                            Key.S -> {
+                                onScanButtonClick()
+                                true
+                            }
+
+                            Key.P -> {
+                                onPreviewButtonClick()
+                                true
+                            }
+
+                            Key.NumPad1 -> {
+                                state.edit { addHeader(1) }
+                                true
+                            }
+
+                            Key.NumPad2 -> {
+                                state.edit { addHeader(2) }
+                                true
+                            }
+
+                            Key.NumPad3 -> {
+                                state.edit { addHeader(3) }
+                                true
+                            }
+
+                            Key.NumPad4 -> {
+                                state.edit { addHeader(4) }
+                                true
+                            }
+
+                            Key.NumPad5 -> {
+                                state.edit { addHeader(5) }
+                                true
+                            }
+
+                            Key.NumPad6 -> {
+                                state.edit { addHeader(6) }
                                 true
                             }
 

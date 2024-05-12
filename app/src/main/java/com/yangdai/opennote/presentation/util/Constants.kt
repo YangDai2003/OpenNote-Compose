@@ -4,7 +4,7 @@ object Constants {
 
     const val NAV_ANIMATION_TIME = 300
     const val MIME_TYPE_TEXT = "text/"
-
+    const val LINK = "https://www.yangdai-opennote.com"
     object File {
         const val OPENNOTE = "OpenNote"
         const val OPENNOTE_BACKUP = "OpenNote/Backup"
@@ -43,11 +43,13 @@ object Constants {
         const val INLINE_CODE = "inlineCode"
         const val INLINE_BRACKETS = "inlineBrackets"
         const val INLINE_BRACES = "inlineBraces"
-        const val INLINE_FUNC = "inlineFunction"
+        const val INLINE_MATH = "inlineMath"
 
         const val QUOTE = "quote"
         const val RULE = "rule"
         const val DIAGRAM = "diagram"
+
+        const val TEXT = "text"
     }
 
 }

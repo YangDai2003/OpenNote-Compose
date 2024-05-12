@@ -36,7 +36,7 @@ fun TextFieldBuffer.inlineBraces() = inlineWrap("{", "}")
 
 fun TextFieldBuffer.inlineCode() = inlineWrap("`")
 
-fun TextFieldBuffer.inlineFunction() = inlineWrap("$")
+fun TextFieldBuffer.inlineMath() = inlineWrap("$")
 
 fun TextFieldBuffer.quote() {
     val text = toString()
@@ -55,12 +55,10 @@ fun TextFieldBuffer.quote() {
     )
 }
 
-private fun TextFieldBuffer.add(str: String) {
+fun TextFieldBuffer.add(str: String) {
     val initialSelection = selection
     replace(initialSelection.min, initialSelection.max, str)
 }
-
-fun TextFieldBuffer.addLink(link: String) = add(link)
 
 fun TextFieldBuffer.addInNewLine(str: String) {
     val text = toString()

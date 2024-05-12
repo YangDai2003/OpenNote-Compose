@@ -13,10 +13,17 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.hapticfeedback.HapticFeedback
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import androidx.navigation.navDeepLink
 import com.yangdai.opennote.presentation.screen.CameraXScreen
 import com.yangdai.opennote.presentation.screen.FolderScreen
@@ -24,6 +31,7 @@ import com.yangdai.opennote.presentation.screen.MainScreen
 import com.yangdai.opennote.presentation.screen.NoteScreen
 import com.yangdai.opennote.presentation.screen.SettingsScreen
 import com.yangdai.opennote.presentation.util.Constants.NAV_ANIMATION_TIME
+import com.yangdai.opennote.presentation.util.Constants.LINK
 import com.yangdai.opennote.presentation.util.parseSharedContent
 
 private const val ProgressThreshold = 0.35f
@@ -34,7 +42,7 @@ private val Int.ForOutgoing: Int
 private val Int.ForIncoming: Int
     get() = this - this.ForOutgoing
 
-fun sharedAxisXIn(
+private fun sharedAxisXIn(
     initialOffsetX: (fullWidth: Int) -> Int,
     durationMillis: Int = NAV_ANIMATION_TIME,
 ): EnterTransition = slideInHorizontally(
@@ -51,7 +59,7 @@ fun sharedAxisXIn(
     )
 )
 
-fun sharedAxisXOut(
+private fun sharedAxisXOut(
     targetOffsetX: (fullWidth: Int) -> Int,
     durationMillis: Int = NAV_ANIMATION_TIME,
 ): ExitTransition = slideOutHorizontally(
@@ -68,10 +76,16 @@ fun sharedAxisXOut(
     )
 )
 
+private fun NavHostController.navigateBackWithHapticFeedback(hapticFeedback: HapticFeedback) {
+    hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+    navigateUp()
+}
+
 @Composable
 fun AnimatedNavHost(
     modifier: Modifier,
-    navController: NavHostController,
+    hapticFeedback: HapticFeedback = LocalHapticFeedback.current,
+    navController: NavHostController = rememberNavController(),
     isLargeScreen: Boolean
 ) = NavHost(
     modifier = modifier,
@@ -92,48 +106,73 @@ fun AnimatedNavHost(
 ) {
 
     composable<Home> {
-        MainScreen(isLargeScreen = isLargeScreen) { route ->
+        MainScreen(
+            isLargeScreen = isLargeScreen,
+            navigateToNote = { navController.navigate(Note) }
+        ) { route ->
             navController.navigate(route)
         }
     }
 
-    composable<Note>(
+    composable(
+        route = Note,
         deepLinks = listOf(
             navDeepLink {
                 action = Intent.ACTION_SEND
                 mimeType = "text/*"
+            },
+            navDeepLink {
+                action = Intent.ACTION_VIEW
+                mimeType = "text/*"
+            },
+            navDeepLink {
+                uriPattern = "$LINK/note/{id}"
+            }
+        ),
+        arguments = listOf(
+            navArgument("id") {
+                type = NavType.LongType
+                defaultValue = -1L
             }
         )
     ) {
+        val context = LocalContext.current
+        val id = it.arguments?.getLong("id") ?: -1L
         val sharedText = it.arguments?.getParcelable<Intent>(NavController.KEY_DEEP_LINK_INTENT)
-            ?.parseSharedContent()?.trim()
-        val scannedText =
-            navController.currentBackStackEntry?.savedStateHandle?.get<String>("scannedText")
-                ?.trim()
+            ?.parseSharedContent(context.applicationContext)?.trim()
+        val scannedText = navController.currentBackStackEntry
+            ?.savedStateHandle?.get<String>("scannedText")?.trim()
         NoteScreen(
+            id = id,
             isLargeScreen = isLargeScreen,
             sharedText = sharedText,
             scannedText = scannedText,
-            navigateUp = { navController.popBackStack() }
+            navigateUp = { navController.navigateBackWithHapticFeedback(hapticFeedback) }
         ) { navController.navigate(CameraX) }
     }
 
     composable<Folders> {
         FolderScreen {
-            navController.popBackStack()
+            navController.navigateBackWithHapticFeedback(hapticFeedback)
         }
     }
 
     composable<CameraX> {
-        CameraXScreen(onCloseClick = { navController.popBackStack() }) {
+        CameraXScreen(onCloseClick = { navController.navigateBackWithHapticFeedback(hapticFeedback) }) {
             navController.previousBackStackEntry?.savedStateHandle?.set("scannedText", it)
-            navController.popBackStack()
+            navController.navigateBackWithHapticFeedback(hapticFeedback)
         }
     }
 
-    composable<Settings> {
+    composable<Settings>(
+        deepLinks = listOf(
+            navDeepLink {
+                uriPattern = "$LINK/settings"
+            }
+        )
+    ) {
         SettingsScreen {
-            navController.popBackStack()
+            navController.navigateBackWithHapticFeedback(hapticFeedback)
         }
     }
 }

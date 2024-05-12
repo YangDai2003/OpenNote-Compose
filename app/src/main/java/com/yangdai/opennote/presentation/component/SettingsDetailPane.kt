@@ -64,16 +64,15 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
@@ -111,6 +110,8 @@ fun SettingsDetailPane(
     val context = LocalContext.current
     val haptic = LocalHapticFeedback.current
     val settingsState by sharedViewModel.settingsStateFlow.collectAsStateWithLifecycle()
+    val folderEntities by sharedViewModel.foldersStateFlow.collectAsStateWithLifecycle()
+    val actionState by sharedViewModel.dataActionStateFlow.collectAsStateWithLifecycle()
 
     val customTabsIntent = remember {
         CustomTabsIntent.Builder()
@@ -124,15 +125,6 @@ fun SettingsDetailPane(
         stringResource(R.string.dark)
     )
 
-    val initModeSelect = sharedViewModel.getInt(Constants.Preferences.APP_THEME) ?: 0
-    val (selectedMode, onModeSelected) = rememberSaveable {
-        mutableStateOf(
-            modeOptions[initModeSelect]
-        )
-    }
-
-    val initColorSelect = sharedViewModel.getInt(Constants.Preferences.APP_COLOR) ?: 0
-    var selectedScheme by rememberSaveable { mutableIntStateOf(initColorSelect) }
     val colorSchemes = listOf(
         Pair(1, DarkPurpleColors),
         Pair(2, DarkBlueColors),
@@ -140,27 +132,13 @@ fun SettingsDetailPane(
         Pair(4, DarkOrangeColors),
         Pair(5, DarkRedColors)
     )
-    LaunchedEffect(selectedScheme) {
-        sharedViewModel.putPreferenceValue(Constants.Preferences.APP_COLOR, selectedScheme)
-    }
-
-    val initPasswordSelect =
-        sharedViewModel.getBoolean(Constants.Preferences.NEED_PASSWORD) ?: false
-    var passwordChecked by rememberSaveable {
-        mutableStateOf(initPasswordSelect)
-    }
-
-    fun switchTheme() {
-        sharedViewModel.putPreferenceValue(Constants.Preferences.IS_SWITCH_ACTIVE, true)
-    }
 
     val isSystemDarkTheme = isSystemInDarkTheme()
 
     var showWarningDialog by rememberSaveable { mutableStateOf(false) }
     var showFolderDialog by rememberSaveable { mutableStateOf(false) }
     var showRatingDialog by rememberSaveable { mutableStateOf(false) }
-    val folderEntities by sharedViewModel.foldersStateFlow.collectAsStateWithLifecycle()
-    val actionState by sharedViewModel.dataActionStateFlow.collectAsStateWithLifecycle()
+
     var folderId: Long? = null
     val importLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenMultipleDocuments()
@@ -228,6 +206,19 @@ fun SettingsDetailPane(
                             .fillMaxSize()
                             .verticalScroll(rememberScrollState())
                     ) {
+
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp)
+                                .clip(MaterialTheme.shapes.large)
+                                .background(MaterialTheme.colorScheme.surfaceContainer)
+                                .padding(16.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            PaletteImage()
+                        }
+
                         SettingsHeader(text = stringResource(R.string.color))
 
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
@@ -235,12 +226,17 @@ fun SettingsDetailPane(
                                 Modifier
                                     .fillMaxWidth()
                                     .height(56.dp)
-                                    .clickable { selectedScheme = 0 },
+                                    .clickable {
+                                        sharedViewModel.putPreferenceValue(
+                                            Constants.Preferences.APP_COLOR,
+                                            0
+                                        )
+                                    },
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 RadioButton(
                                     modifier = Modifier.padding(start = 32.dp),
-                                    selected = selectedScheme == 0,
+                                    selected = settingsState.color == 0,
                                     onClick = null
                                 )
                                 Icon(
@@ -270,10 +266,13 @@ fun SettingsDetailPane(
                             Spacer(modifier = Modifier.width(24.dp))
                             colorSchemes.forEach { colorSchemePair ->
                                 SelectableColorPlatte(
-                                    selected = selectedScheme == colorSchemePair.first,
+                                    selected = settingsState.color == colorSchemePair.first,
                                     colorScheme = colorSchemePair.second
                                 ) {
-                                    selectedScheme = colorSchemePair.first
+                                    sharedViewModel.putPreferenceValue(
+                                        Constants.Preferences.APP_COLOR,
+                                        colorSchemePair.first
+                                    )
                                 }
                             }
                             Spacer(modifier = Modifier.width(32.dp))
@@ -290,18 +289,17 @@ fun SettingsDetailPane(
                                         .fillMaxWidth()
                                         .height(56.dp)
                                         .selectable(
-                                            selected = (text == selectedMode),
+                                            selected = (index == settingsState.theme),
                                             onClick = {
-                                                onModeSelected(text)
 
-                                                val mode =
-                                                    sharedViewModel.getInt(Constants.Preferences.APP_THEME)
-
-                                                if (mode != index) {
+                                                if (settingsState.theme != index) {
                                                     when (index) {
                                                         0 -> {
                                                             if (isSystemDarkTheme != settingsState.isAppInDarkMode) {
-                                                                switchTheme()
+                                                                sharedViewModel.putPreferenceValue(
+                                                                    Constants.Preferences.IS_SWITCH_ACTIVE,
+                                                                    true
+                                                                )
                                                             } else {
                                                                 sharedViewModel.putPreferenceValue(
                                                                     Constants.Preferences.APP_THEME,
@@ -316,7 +314,10 @@ fun SettingsDetailPane(
 
                                                         1 -> {
                                                             if (settingsState.isAppInDarkMode) {
-                                                                switchTheme()
+                                                                sharedViewModel.putPreferenceValue(
+                                                                    Constants.Preferences.IS_SWITCH_ACTIVE,
+                                                                    true
+                                                                )
                                                             }
                                                             sharedViewModel.putPreferenceValue(
                                                                 Constants.Preferences.SHOULD_FOLLOW_SYSTEM,
@@ -330,7 +331,10 @@ fun SettingsDetailPane(
 
                                                         2 -> {
                                                             if (!settingsState.isAppInDarkMode) {
-                                                                switchTheme()
+                                                                sharedViewModel.putPreferenceValue(
+                                                                    Constants.Preferences.IS_SWITCH_ACTIVE,
+                                                                    true
+                                                                )
                                                             }
                                                             sharedViewModel.putPreferenceValue(
                                                                 Constants.Preferences.SHOULD_FOLLOW_SYSTEM,
@@ -350,7 +354,7 @@ fun SettingsDetailPane(
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     RadioButton(
-                                        selected = (text == selectedMode),
+                                        selected = (index == settingsState.theme),
                                         onClick = null
                                     )
 
@@ -482,12 +486,11 @@ fun SettingsDetailPane(
                             headlineContent = { Text(text = stringResource(R.string.password)) },
                             trailingContent = {
                                 Switch(
-                                    checked = passwordChecked,
+                                    checked = settingsState.needPassword,
                                     onCheckedChange = { checked ->
                                         val keyguardManager =
                                             context.getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager
                                         if (keyguardManager.isKeyguardSecure) {
-                                            passwordChecked = checked
                                             sharedViewModel.putPreferenceValue(
                                                 Constants.Preferences.NEED_PASSWORD,
                                                 checked

@@ -2,6 +2,7 @@ package com.yangdai.opennote.domain.usecase
 
 data class Operations(
     val getNotes: GetNotes,
+    val getNoteById: GetNoteById,
     val deleteNote: DeleteNote,
     val addNote: AddNote,
     val searchNotes: SearchNotes,
