@@ -8,6 +8,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -26,10 +27,18 @@ fun LinkDialog(
 ) {
 
     var name by remember { mutableStateOf("") }
-    var uri by remember { mutableStateOf("") }
+    var link by remember { mutableStateOf("") }
 
-    var nameError by remember { mutableStateOf(false) }
-    var uriError by remember { mutableStateOf(false) }
+    val linkError by remember {
+        derivedStateOf {
+            if (link.isNotEmpty()) {
+                // Email is considered erroneous until it completely matches EMAIL_ADDRESS.
+                !android.util.Patterns.WEB_URL.matcher(link).matches()
+            } else {
+                false
+            }
+        }
+    }
 
     AlertDialog(
         title = {
@@ -39,25 +48,25 @@ fun LinkDialog(
             Column {
                 OutlinedTextField(
                     value = name,
-                    onValueChange = {
-                        name = it
-                        nameError = it.isBlank()
-                    },
+                    onValueChange = { name = it },
                     singleLine = true,
-                    isError = nameError,
-                    placeholder = { Text(text = stringResource(R.string.name)) })
+                    label = { Text(text = stringResource(R.string.name)) }
+                )
 
                 Spacer(modifier = Modifier.height(8.dp))
 
                 OutlinedTextField(
-                    value = uri,
-                    onValueChange = {
-                        uri = it
-                        uriError = it.isBlank()
-                    },
+                    value = link,
+                    onValueChange = { link = it },
                     singleLine = true,
-                    isError = uriError,
-                    placeholder = { Text(text = stringResource(R.string.uri_example)) }
+                    isError = linkError,
+                    label = { Text(text = stringResource(id = R.string.web_url)) },
+                    placeholder = { Text(text = stringResource(R.string.uri_example)) },
+                    supportingText = {
+                        if (linkError) {
+                            Text(text = stringResource(R.string.incorrect_link_format))
+                        }
+                    }
                 )
             }
         },
@@ -67,21 +76,15 @@ fun LinkDialog(
         confirmButton = {
             TextButton(
                 onClick = {
-                    if (name.isBlank()) {
-                        nameError = true
-                    }
-                    if (uri.isBlank()) {
-                        uriError = true
-                    }
-                    if (!nameError && !uriError) {
+                    if (!linkError) {
                         name = name.trim()
-                        uri = uri.trim()
-                        if (!uri.startsWith("http://") && !uri.startsWith("https://")
-                            && uri.startsWith("www.")
+                        link = link.trim()
+                        if (!link.startsWith("http://") && !link.startsWith("https://")
+                            && link.startsWith("www.")
                         ) {
-                            uri = "https://$uri"
+                            link = "https://$link"
                         }
-                        onConfirm(name, uri)
+                        onConfirm(name, link)
                         onDismissRequest()
                     }
                 }

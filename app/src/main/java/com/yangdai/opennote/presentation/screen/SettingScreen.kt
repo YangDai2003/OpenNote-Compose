@@ -1,43 +1,47 @@
 package com.yangdai.opennote.presentation.screen
 
+import android.os.Parcelable
+import androidx.activity.compose.BackHandler
 import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
 import androidx.compose.material3.adaptive.layout.AnimatedPane
+import androidx.compose.material3.adaptive.layout.ListDetailPaneScaffold
 import androidx.compose.material3.adaptive.layout.ListDetailPaneScaffoldRole
-import androidx.compose.material3.adaptive.navigation.NavigableListDetailPaneScaffold
 import androidx.compose.material3.adaptive.navigation.rememberListDetailPaneScaffoldNavigator
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
-
 import com.yangdai.opennote.presentation.component.SettingsDetailPane
 import com.yangdai.opennote.presentation.component.SettingsListPane
+import kotlinx.parcelize.Parcelize
+
+@Parcelize
+class SettingsItem(val index: Int, val titleId: Int) : Parcelable
 
 @OptIn(ExperimentalMaterial3AdaptiveApi::class)
 @Composable
 fun SettingsScreen(navigateUp: () -> Unit) {
 
-    val navigator = rememberListDetailPaneScaffoldNavigator<Any>()
-    var selectedListItem by rememberSaveable { mutableStateOf(Pair(-1, -1)) }
+    val navigator = rememberListDetailPaneScaffoldNavigator<SettingsItem>()
 
-    NavigableListDetailPaneScaffold(
-        navigator = navigator,
+    BackHandler(navigator.canNavigateBack()) {
+        navigator.navigateBack()
+    }
+
+    ListDetailPaneScaffold(
+        directive = navigator.scaffoldDirective,
+        value = navigator.scaffoldValue,
         listPane = {
             AnimatedPane {
                 SettingsListPane(navigateUp = navigateUp) {
-                    selectedListItem = it
-                    navigator.navigateTo(ListDetailPaneScaffoldRole.Detail)
+                    navigator.navigateTo(ListDetailPaneScaffoldRole.Detail, it)
                 }
             }
         },
         detailPane = {
             AnimatedPane {
-                SettingsDetailPane(selectedListItem = selectedListItem) {
-                    if (navigator.canNavigateBack()) {
-                        navigator.navigateBack()
-                    } else {
-                        selectedListItem = Pair(-1, -1)
+                navigator.currentDestination?.content?.let { item ->
+                    SettingsDetailPane(selectedSettingsItem = item) {
+                        if (navigator.canNavigateBack()) {
+                            navigator.navigateBack()
+                        }
                     }
                 }
             }

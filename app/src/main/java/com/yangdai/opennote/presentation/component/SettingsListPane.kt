@@ -36,13 +36,14 @@ import androidx.compose.ui.unit.dp
 import androidx.glance.appwidget.GlanceAppWidgetManager
 import com.yangdai.opennote.R
 import com.yangdai.opennote.presentation.glance.NoteListWidgetReceiver
+import com.yangdai.opennote.presentation.screen.SettingsItem
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsListPane(
     navigateUp: () -> Unit,
-    navigateToDetail: (Pair<Int, Int>) -> Unit
+    navigateToDetail: (SettingsItem) -> Unit
 ) {
 
     val context = LocalContext.current
@@ -98,7 +99,7 @@ fun SettingsListPane(
                 modifier = Modifier
                     .padding(vertical = 4.dp)
                     .clickable {
-                        navigateToDetail(Pair(0, R.string.style))
+                        navigateToDetail(SettingsItem(0, R.string.style))
                     },
                 leadingContent = {
                     Icon(
@@ -168,7 +169,7 @@ fun SettingsListPane(
                 modifier = Modifier
                     .padding(vertical = 4.dp)
                     .clickable {
-                        navigateToDetail(Pair(1, R.string.data_security))
+                        navigateToDetail(SettingsItem(1, R.string.data_security))
                     },
                 leadingContent = {
                     Icon(
@@ -190,7 +191,7 @@ fun SettingsListPane(
                 modifier = Modifier
                     .padding(vertical = 4.dp)
                     .clickable {
-                        navigateToDetail(Pair(2, R.string.app_info))
+                        navigateToDetail(SettingsItem(2, R.string.app_info))
                     },
                 leadingContent = {
                     Icon(

@@ -26,13 +26,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.yangdai.opennote.R
-import com.yangdai.opennote.presentation.theme.Blue
-import com.yangdai.opennote.presentation.theme.Cyan
-import com.yangdai.opennote.presentation.theme.Green
-import com.yangdai.opennote.presentation.theme.Orange
-import com.yangdai.opennote.presentation.theme.Purple
-import com.yangdai.opennote.presentation.theme.Red
-import com.yangdai.opennote.presentation.theme.Yellow
+import com.yangdai.opennote.presentation.theme.MaterialColors
 import com.yangdai.opennote.presentation.util.BiometricPromptManager
 
 @Composable
@@ -103,17 +97,9 @@ fun LoginOverlayScreen(
     ) {
         Text(
             text = stringResource(id = R.string.app_name),
-            style = MaterialTheme.typography.headlineLarge.copy(
+            style = MaterialTheme.typography.displaySmall.copy(
                 brush = Brush.linearGradient(
-                    colors = listOf(
-                        Red,
-                        Orange,
-                        Yellow,
-                        Green,
-                        Cyan,
-                        Blue,
-                        Purple
-                    )
+                    colors = MaterialColors
                 )
             )
         )

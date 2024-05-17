@@ -3,6 +3,18 @@ package com.yangdai.opennote.presentation.util
 import androidx.compose.foundation.text.input.TextFieldBuffer
 import androidx.compose.ui.text.TextRange
 
+fun TextFieldBuffer.moveCursorLeft() {
+    if (selection.min > 0) {
+        selection = TextRange(selection.min - 1, selection.min - 1)
+    }
+}
+
+fun TextFieldBuffer.moveCursorRight() {
+    if (selection.max < length) {
+        selection = TextRange(selection.max + 1, selection.max + 1)
+    }
+}
+
 private fun TextFieldBuffer.inlineWrap(
     startWrappedString: String,
     endWrappedString: String = startWrappedString

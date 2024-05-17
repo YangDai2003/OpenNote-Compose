@@ -6,6 +6,7 @@ plugins {
     alias(libs.plugins.googleKsp)
     alias(libs.plugins.room)
     alias(libs.plugins.serialization)
+    id("kotlin-parcelize")
 }
 
 android {
@@ -16,14 +17,18 @@ android {
         applicationId = "com.yangdai.opennote"
         minSdk = 29
         targetSdk = 34
-        versionCode = 126
-        versionName = "1.2.6"
-        resourceConfigurations += listOf("en", "zh")
+        versionCode = 127
+        versionName = "1.2.7"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary = true
         }
+    }
+
+    androidResources {
+        @Suppress("UnstableApiUsage")
+        generateLocaleConfig = true
     }
 
     room {
@@ -103,11 +108,10 @@ dependencies {
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
-    implementation(libs.androidx.compose.material3.window.size)
-    implementation(libs.androidx.compose.material.icons)
     implementation(libs.androidx.compose.material3.adaptive)
     implementation(libs.androidx.compose.material3.adaptive.layout)
     implementation(libs.androidx.compose.material3.adaptive.navigation)
+    implementation(libs.androidx.compose.material.icons)
     implementation(libs.androidx.compose.foundation)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.lifecycle.runtime.compose)

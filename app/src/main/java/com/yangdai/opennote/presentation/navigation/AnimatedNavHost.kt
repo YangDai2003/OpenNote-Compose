@@ -84,9 +84,9 @@ private fun NavHostController.navigateBackWithHapticFeedback(hapticFeedback: Hap
 @Composable
 fun AnimatedNavHost(
     modifier: Modifier,
+    isLargeScreen: Boolean,
     hapticFeedback: HapticFeedback = LocalHapticFeedback.current,
-    navController: NavHostController = rememberNavController(),
-    isLargeScreen: Boolean
+    navController: NavHostController = rememberNavController()
 ) = NavHost(
     modifier = modifier,
     navController = navController,
@@ -108,14 +108,14 @@ fun AnimatedNavHost(
     composable<Home> {
         MainScreen(
             isLargeScreen = isLargeScreen,
-            navigateToNote = { navController.navigate(Note) }
+            navigateToNote = { navController.navigate("$Note/$it") }
         ) { route ->
             navController.navigate(route)
         }
     }
 
     composable(
-        route = Note,
+        route = "$Note/{id}",
         deepLinks = listOf(
             navDeepLink {
                 action = Intent.ACTION_SEND
@@ -158,7 +158,9 @@ fun AnimatedNavHost(
     }
 
     composable<CameraX> {
-        CameraXScreen(onCloseClick = { navController.navigateBackWithHapticFeedback(hapticFeedback) }) {
+        CameraXScreen(onCloseClick = {
+            navController.navigateBackWithHapticFeedback(hapticFeedback)
+        }) {
             navController.previousBackStackEntry?.savedStateHandle?.set("scannedText", it)
             navController.navigateBackWithHapticFeedback(hapticFeedback)
         }

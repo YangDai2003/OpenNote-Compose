@@ -3,6 +3,7 @@ package com.yangdai.opennote.presentation.event
 import android.content.ContentResolver
 import android.net.Uri
 import com.yangdai.opennote.data.local.entity.NoteEntity
+import com.yangdai.opennote.presentation.component.ExportType
 
 sealed interface DatabaseEvent {
 
@@ -15,7 +16,7 @@ sealed interface DatabaseEvent {
     data class Export(
         val contentResolver: ContentResolver,
         val notes: List<NoteEntity>,
-        val type: String
+        val type: ExportType
     ) : DatabaseEvent
 
     data class Backup(val contentResolver: ContentResolver) : DatabaseEvent

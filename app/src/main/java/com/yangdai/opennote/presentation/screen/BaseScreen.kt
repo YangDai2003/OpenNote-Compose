@@ -8,6 +8,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
@@ -22,18 +23,22 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.window.core.layout.WindowHeightSizeClass
+import androidx.window.core.layout.WindowSizeClass
+import androidx.window.core.layout.WindowWidthSizeClass
 import com.yangdai.opennote.MainActivity
 import com.yangdai.opennote.presentation.viewmodel.SharedViewModel
 import com.yangdai.opennote.presentation.component.MaskAnimModel
 import com.yangdai.opennote.presentation.component.MaskBox
 import com.yangdai.opennote.presentation.navigation.AnimatedNavHost
+import com.yangdai.opennote.presentation.state.AppTheme
+import com.yangdai.opennote.presentation.state.AppTheme.Companion.toInt
 import com.yangdai.opennote.presentation.theme.OpenNoteTheme
 import com.yangdai.opennote.presentation.util.Constants
 
 @Composable
 fun BaseScreen(
-    sharedViewModel: SharedViewModel = hiltViewModel(LocalContext.current as MainActivity),
-    isLargeScreen: Boolean
+    sharedViewModel: SharedViewModel = hiltViewModel(LocalContext.current as MainActivity)
 ) {
 
     val settingsState by sharedViewModel.settingsStateFlow.collectAsStateWithLifecycle()
@@ -53,7 +58,7 @@ fun BaseScreen(
     val isSystemInDarkTheme = isSystemInDarkTheme()
 
     LaunchedEffect(settingsState.theme) {
-        if (settingsState.theme == 0) {
+        if (settingsState.theme == AppTheme.SYSTEM) {
             sharedViewModel.putPreferenceValue(
                 Constants.Preferences.IS_APP_IN_DARK_MODE,
                 isSystemInDarkTheme
@@ -77,7 +82,10 @@ fun BaseScreen(
             animFinish = {
                 sharedViewModel.putPreferenceValue(Constants.Preferences.IS_SWITCH_ACTIVE, false)
                 if (settingsState.shouldFollowSystem) {
-                    sharedViewModel.putPreferenceValue(Constants.Preferences.APP_THEME, 0)
+                    sharedViewModel.putPreferenceValue(
+                        Constants.Preferences.APP_THEME,
+                        AppTheme.SYSTEM.toInt()
+                    )
                 }
             }
         ) { maskActiveEvent ->
@@ -100,6 +108,14 @@ fun BaseScreen(
             }
 
             val blur by animateDpAsState(targetValue = if (!loggedIn) 16.dp else 0.dp, label = "")
+
+            val windowSizeClass: WindowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
+            val isLargeScreen by remember {
+                derivedStateOf {
+                    windowSizeClass.windowWidthSizeClass == WindowWidthSizeClass.EXPANDED
+                            && windowSizeClass.windowHeightSizeClass != WindowHeightSizeClass.COMPACT
+                }
+            }
 
             AnimatedNavHost(
                 modifier = Modifier

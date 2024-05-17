@@ -51,7 +51,7 @@ fun TableDialog(
                         imeAction = ImeAction.Next
                     ),
                     singleLine = true,
-                    placeholder = { Text(text = stringResource(R.string.row)) })
+                    label = { Text(text = stringResource(R.string.row)) })
 
                 Spacer(modifier = Modifier.height(8.dp))
 
@@ -67,7 +67,7 @@ fun TableDialog(
                         imeAction = ImeAction.Done
                     ),
                     singleLine = true,
-                    placeholder = { Text(text = stringResource(R.string.column)) }
+                    label = { Text(text = stringResource(R.string.column)) }
                 )
             }
         },

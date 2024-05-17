@@ -9,7 +9,6 @@ import android.provider.MediaStore
 import android.provider.OpenableColumns
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.text.input.TextFieldState
-import androidx.compose.foundation.text.input.clearText
 import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
@@ -25,12 +24,15 @@ import com.yangdai.opennote.domain.repository.DataStoreRepository
 import com.yangdai.opennote.domain.usecase.NoteOrder
 import com.yangdai.opennote.domain.usecase.Operations
 import com.yangdai.opennote.domain.usecase.OrderType
+import com.yangdai.opennote.presentation.component.ExportType
 import com.yangdai.opennote.presentation.component.TaskItem
 import com.yangdai.opennote.presentation.event.DatabaseEvent
 import com.yangdai.opennote.presentation.event.FolderEvent
 import com.yangdai.opennote.presentation.event.ListEvent
 import com.yangdai.opennote.presentation.event.NoteEvent
 import com.yangdai.opennote.presentation.event.UiEvent
+import com.yangdai.opennote.presentation.state.AppColor
+import com.yangdai.opennote.presentation.state.AppTheme
 import com.yangdai.opennote.presentation.state.DataActionState
 import com.yangdai.opennote.presentation.state.DataState
 import com.yangdai.opennote.presentation.state.NoteState
@@ -138,7 +140,7 @@ class SharedViewModel @Inject constructor(
         )
 
     // 当前笔记的初始化状态，用于比较是否有修改
-    private var oNote: NoteEntity? = null
+    private var _oNote: NoteEntity = NoteEntity(timestamp = System.currentTimeMillis())
 
     init {
         viewModelScope.launch(Dispatchers.IO) {
@@ -173,8 +175,8 @@ class SharedViewModel @Inject constructor(
         dataStoreRepository.booleanFlow(Constants.Preferences.IS_LIST_VIEW)
     ) { values ->
         SettingsState(
-            theme = values[0] as Int,
-            color = values[1] as Int,
+            theme = AppTheme.fromInt(values[0] as Int),
+            color = AppColor.fromInt(values[1] as Int),
             needPassword = values[2] as Boolean,
             isAppInDarkMode = values[3] as Boolean,
             shouldFollowSystem = values[4] as Boolean,
@@ -184,7 +186,7 @@ class SharedViewModel @Inject constructor(
     }.flowOn(Dispatchers.IO).stateIn(
         scope = viewModelScope,
         started = SharingStarted.Eagerly,
-        initialValue = SettingsState()
+        initialValue = SettingsState.DEFAULT
     )
 
     fun <T> putPreferenceValue(key: String, value: T) {
@@ -296,25 +298,11 @@ class SharedViewModel @Inject constructor(
             }
 
             is ListEvent.OpenNote -> {
-                val note = event.noteEntity
-                oNote = note
-                _noteState.update { noteState ->
-                    noteState.copy(
-                        id = note.id,
-                        folderId = note.folderId,
-                        isMarkdown = note.isMarkdown,
-                        timestamp = note.timestamp
-                    )
-                }
-                titleState.setTextAndPlaceCursorAtEnd(note.title)
-                contentState.setTextAndPlaceCursorAtEnd(note.content)
+                _oNote = event.noteEntity
             }
 
             ListEvent.AddNote -> {
-                oNote = null
-                titleState.clearText()
-                contentState.clearText()
-                _noteState.value = NoteState()
+                _oNote = NoteEntity(timestamp = System.currentTimeMillis())
             }
 
             ListEvent.ToggleOrderSection -> {
@@ -421,14 +409,8 @@ class SharedViewModel @Inject constructor(
                         isMarkdown = noteState.isMarkdown,
                         timestamp = System.currentTimeMillis()
                     )
-                    if (note.id == null) {
-                        if (note.title.isNotEmpty() || note.content.isNotEmpty()) {
-                            operations.addNote(note)
-                        }
-                    } else {
-                        if (note.title != oNote?.title || note.content != oNote?.content || note.isMarkdown != oNote?.isMarkdown || note.folderId != oNote?.folderId)
-                            operations.updateNote(note)
-                    }
+                    operations.addNote(note)
+                    _event.emit(UiEvent.NavigateBack)
                 }
             }
 
@@ -486,22 +468,39 @@ class SharedViewModel @Inject constructor(
                 }
             }
 
-            is NoteEvent.Open -> {
+            is NoteEvent.Load -> {
+                // 判断id是否与oNote的id相同，不同则从数据库获取笔记，并更新oNote。
                 viewModelScope.launch(Dispatchers.IO) {
-                    val note = operations.getNoteById(event.id)
-                    note?.let {
-                        oNote = note
-                        _noteState.update {
-                            it.copy(
-                                id = note.id,
-                                folderId = note.folderId,
-                                isMarkdown = note.isMarkdown,
-                                timestamp = note.timestamp
-                            )
-                        }
-                        titleState.setTextAndPlaceCursorAtEnd(note.title)
-                        contentState.setTextAndPlaceCursorAtEnd(note.content)
+                    if (event.id != (_oNote.id ?: -1L))
+                        _oNote = operations.getNoteById(event.id)
+                            ?: NoteEntity(timestamp = System.currentTimeMillis())
+                    _noteState.update { noteState ->
+                        noteState.copy(
+                            id = _oNote.id,
+                            folderId = _oNote.folderId,
+                            isMarkdown = _oNote.isMarkdown,
+                            timestamp = _oNote.timestamp
+                        )
                     }
+                    titleState.setTextAndPlaceCursorAtEnd(_oNote.title)
+                    contentState.setTextAndPlaceCursorAtEnd(_oNote.content)
+                }
+            }
+
+            NoteEvent.Update -> {
+                viewModelScope.launch(Dispatchers.IO) {
+                    val noteState = noteStateFlow.value
+                    val note = NoteEntity(
+                        id = noteState.id,
+                        title = titleState.text.toString(),
+                        content = contentState.text.toString(),
+                        folderId = noteState.folderId,
+                        isMarkdown = noteState.isMarkdown,
+                        timestamp = System.currentTimeMillis()
+                    )
+                    if (note.id != null)
+                        if (note.title != _oNote.title || note.content != _oNote.content || note.isMarkdown != _oNote.isMarkdown || note.folderId != _oNote.folderId)
+                            operations.updateNote(note)
                 }
             }
         }
@@ -589,8 +588,8 @@ class SharedViewModel @Inject constructor(
                 _dataActionState.update { it.copy(loading = true) }
 
                 val extension = when (type) {
-                    "TXT" -> ".txt"
-                    "MARKDOWN" -> ".md"
+                    ExportType.TXT -> ".txt"
+                    ExportType.MARKDOWN -> ".md"
                     else -> ".html"
                 }
 

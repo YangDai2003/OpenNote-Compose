@@ -25,8 +25,8 @@ import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.SizeMode
 import androidx.glance.appwidget.action.ActionCallback
 import androidx.glance.appwidget.action.actionRunCallback
-import androidx.glance.appwidget.appWidgetBackground
 import androidx.glance.appwidget.components.CircleIconButton
+import androidx.glance.appwidget.components.Scaffold
 import androidx.glance.appwidget.components.SquareIconButton
 import androidx.glance.appwidget.cornerRadius
 import androidx.glance.appwidget.lazy.LazyColumn
@@ -37,7 +37,6 @@ import androidx.glance.layout.Alignment
 import androidx.glance.layout.Column
 import androidx.glance.layout.Row
 import androidx.glance.layout.Spacer
-import androidx.glance.layout.fillMaxSize
 import androidx.glance.layout.fillMaxWidth
 import androidx.glance.layout.height
 import androidx.glance.layout.padding
@@ -66,59 +65,56 @@ class NoteListWidget : GlanceAppWidget() {
             val notes by noteRepository.getAllNotes().collectAsState(initial = emptyList())
 
             GlanceTheme {
-                MyContent(notes.take(25))
+                Content(notes.take(25))
             }
         }
     }
 
     @Composable
-    private fun MyContent(notes: List<NoteEntity> = emptyList()) {
+    private fun Content(notes: List<NoteEntity> = emptyList()) {
 
         val size = LocalSize.current
 
-        Column(
-            modifier = GlanceModifier
-                .fillMaxSize()
-                .padding(top = 16.dp)
-                .padding(horizontal = if (size.width > 250.dp) 16.dp else 2.dp)
-                .appWidgetBackground()
-                .background(GlanceTheme.colors.widgetBackground)
-                .appWidgetBackgroundCornerRadius()
-        ) {
-            Row(
-                modifier = GlanceModifier.fillMaxWidth().height(56.dp).padding(bottom = 8.dp)
-                    .padding(horizontal = if (size.width > 250.dp) 0.dp else 8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
+        Scaffold(
+            titleBar = {
+                Row(
+                    modifier = GlanceModifier.fillMaxWidth()
+                        .padding(bottom = 8.dp, top = if (size.width > 250.dp) 16.dp else 8.dp)
+                        .padding(horizontal = if (size.width > 250.dp) 16.dp else 8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
 
-                Text(
-                    text = "Open Note",
-                    style = TextStyle(
-                        color = GlanceTheme.colors.onSurface,
-                        fontSize = 18.sp
+                    Text(
+                        text = "Open Note",
+                        style = TextStyle(
+                            color = GlanceTheme.colors.onSurface,
+                            fontSize = 18.sp
+                        )
                     )
-                )
 
-                if (size.width > 250.dp) {
-                    CircleIconButton(
-                        imageProvider = ImageProvider(R.drawable.sync),
-                        contentDescription = "Sync",
-                        backgroundColor = GlanceTheme.colors.widgetBackground,
-                        onClick = actionRunCallback<RefreshAction>()
+                    if (size.width > 250.dp) {
+                        CircleIconButton(
+                            imageProvider = ImageProvider(R.drawable.sync),
+                            contentDescription = "Sync",
+                            backgroundColor = GlanceTheme.colors.widgetBackground,
+                            onClick = actionRunCallback<RefreshAction>()
+                        )
+                    }
+
+                    Spacer(modifier = GlanceModifier.defaultWeight())
+
+                    SquareIconButton(
+                        modifier = GlanceModifier.size(48.dp),
+                        imageProvider = ImageProvider(R.drawable.add),
+                        contentDescription = "Add",
+                        onClick = actionRunCallback<NoteAction>(
+                            parameters = actionParametersOf(destinationKey to "-1")
+                        )
                     )
                 }
-
-                Spacer(modifier = GlanceModifier.defaultWeight())
-
-                SquareIconButton(
-                    modifier = GlanceModifier.size(48.dp),
-                    imageProvider = ImageProvider(R.drawable.add),
-                    contentDescription = "Add",
-                    onClick = actionRunCallback<NoteAction>(
-                        parameters = actionParametersOf(destinationKey to "-1")
-                    )
-                )
-            }
+            },
+            horizontalPadding = if (size.width > 250.dp) 16.dp else 2.dp
+        ) {
             LazyColumn {
                 items(
                     items = notes,
@@ -179,9 +175,8 @@ class NoteListWidget : GlanceAppWidget() {
     }
 }
 
-private val destinationKey = ActionParameters.Key<String>(
-    "KEY_DESTINATION"
-)
+
+private val destinationKey = ActionParameters.Key<String>("KEY_DESTINATION")
 
 class NoteAction : ActionCallback {
     override suspend fun onAction(
@@ -207,13 +202,6 @@ class RefreshAction : ActionCallback {
     ) {
         NoteListWidget().update(context, glanceId)
     }
-}
-
-fun GlanceModifier.appWidgetBackgroundCornerRadius(): GlanceModifier {
-    if (Build.VERSION.SDK_INT >= 31) {
-        cornerRadius(android.R.dimen.system_app_widget_background_radius)
-    }
-    return cornerRadius(16.dp)
 }
 
 fun GlanceModifier.appWidgetInnerCornerRadius(): GlanceModifier {

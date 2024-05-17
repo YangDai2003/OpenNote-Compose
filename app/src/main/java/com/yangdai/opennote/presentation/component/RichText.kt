@@ -9,6 +9,7 @@ import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -52,18 +53,14 @@ fun RichText(str: String) {
             // Append plain text
             append(text.substring(lastIndex, range.first))
 
-            val url = LinkAnnotation.Url(
-                link,
-                style = SpanStyle(color = linkColor, textDecoration = TextDecoration.Underline)
-            ) {
+            val url = LinkAnnotation.Url(link) {
                 // Handle click event
-                var url = (it as LinkAnnotation.Url).url
-
-                if (!url.startsWith("http://") && !url.startsWith("https://"))
-                    url = "http://$url"
+                val url = (it as LinkAnnotation.Url).url
 
                 try {
-                    customTabsIntent.launchUrl(context, Uri.parse(url))
+                    if (url.startsWith("http://") || url.startsWith("https://")) {
+                        customTabsIntent.launchUrl(context, Uri.parse(url))
+                    }
                 } catch (e: Exception) {
                     e.printStackTrace()
                     // Show error message to the user
@@ -91,6 +88,9 @@ fun RichText(str: String) {
             style = MaterialTheme.typography.bodyLarge.copy(
                 color = MaterialTheme.colorScheme.onSurface,
                 lineBreak = LineBreak.Paragraph
+            ),
+            linkStyles = TextDefaults.linkStyles().copy(
+                linkStyle = SpanStyle(color = linkColor, textDecoration = TextDecoration.Underline)
             )
         )
     }

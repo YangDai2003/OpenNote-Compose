@@ -31,6 +31,7 @@ import androidx.compose.material.icons.outlined.Alarm
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.EditNote
 import androidx.compose.material.icons.outlined.MoreVert
+import androidx.compose.material.icons.outlined.Save
 import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material.icons.outlined.SwapHoriz
 import androidx.compose.material.icons.outlined.Upload
@@ -42,14 +43,23 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.PlainTooltip
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
+import androidx.compose.material3.TooltipBox
+import androidx.compose.material3.TooltipDefaults
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -64,6 +74,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.unit.dp
+import androidx.core.content.FileProvider
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -72,12 +83,14 @@ import com.yangdai.opennote.R
 import com.yangdai.opennote.data.local.entity.NoteEntity
 import com.yangdai.opennote.presentation.component.ExportDialog
 import com.yangdai.opennote.presentation.component.FolderListDialog
-import com.yangdai.opennote.presentation.component.RichText
-import com.yangdai.opennote.presentation.component.MarkdownText
 import com.yangdai.opennote.presentation.component.LinkDialog
+import com.yangdai.opennote.presentation.component.MarkdownText
 import com.yangdai.opennote.presentation.component.NoteEditTextField
 import com.yangdai.opennote.presentation.component.NoteEditorRow
 import com.yangdai.opennote.presentation.component.ProgressDialog
+import com.yangdai.opennote.presentation.component.RichText
+import com.yangdai.opennote.presentation.component.ShareDialog
+import com.yangdai.opennote.presentation.component.ShareType
 import com.yangdai.opennote.presentation.component.TableDialog
 import com.yangdai.opennote.presentation.component.TaskDialog
 import com.yangdai.opennote.presentation.event.DatabaseEvent
@@ -88,6 +101,7 @@ import com.yangdai.opennote.presentation.util.timestampToFormatLocalDateTime
 import com.yangdai.opennote.presentation.viewmodel.SharedViewModel
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.launch
+import java.io.File
 
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
@@ -102,9 +116,8 @@ fun NoteScreen(
     onScanTextClick: () -> Unit
 ) {
 
-    LaunchedEffect(id) {
-        if (id != -1L)
-            sharedViewModel.onNoteEvent(NoteEvent.Open(id))
+    LaunchedEffect(Unit) {
+        sharedViewModel.onNoteEvent(NoteEvent.Load(id))
     }
 
     val context = LocalContext.current
@@ -118,26 +131,19 @@ fun NoteScreen(
     val actionState by sharedViewModel.dataActionStateFlow.collectAsStateWithLifecycle()
 
     val pagerState = rememberPagerState(pageCount = { 2 })
-
-    val coroutineScope = rememberCoroutineScope()
-    var showFolderDialog by rememberSaveable { mutableStateOf(false) }
-
+    val snackbarHostState = remember { SnackbarHostState() }
     // Switch between read mode and edit mode
     var isReadMode by rememberSaveable {
         mutableStateOf(false)
     }
 
-    // Whether to show the table dialog
+    val coroutineScope = rememberCoroutineScope()
+    var showFolderDialog by rememberSaveable { mutableStateOf(false) }
     var showTableDialog by rememberSaveable { mutableStateOf(false) }
-
-    // Whether to show the link dialog
     var showLinkDialog by rememberSaveable { mutableStateOf(false) }
-
-    // Whether to show the task dialog
     var showTaskDialog by rememberSaveable { mutableStateOf(false) }
-
-    // Whether to show the export dialog
     var showExportDialog by rememberSaveable { mutableStateOf(false) }
+    var showShareDialog by rememberSaveable { mutableStateOf(false) }
 
     // Whether to show the overflow menu
     var showMenu by rememberSaveable { mutableStateOf(false) }
@@ -208,8 +214,32 @@ fun NoteScreen(
 
     DisposableEffect(lifecycleOwner) {
         onDispose {
-            sharedViewModel.onNoteEvent(NoteEvent.Save)
+            sharedViewModel.onNoteEvent(NoteEvent.Update)
         }
+    }
+
+    fun showSnackbar() {
+        coroutineScope.launch {
+            val result = snackbarHostState
+                .showSnackbar(
+                    message = context.getString(R.string.confirm_msg),
+                    actionLabel = context.getString(R.string.confirm),
+                    duration = SnackbarDuration.Indefinite
+                )
+            when (result) {
+                SnackbarResult.ActionPerformed -> {
+                    navigateUp()
+                }
+
+                SnackbarResult.Dismissed -> {
+                    // Do nothing
+                }
+            }
+        }
+    }
+
+    BackHandler(noteState.id == null && sharedViewModel.titleState.text.isNotBlank() && sharedViewModel.contentState.text.isNotBlank()) {
+        showSnackbar()
     }
 
     Scaffold(
@@ -224,11 +254,23 @@ fun NoteScreen(
                         onClick = {
                             showFolderDialog = true
                         }) {
-                        Text(text = folderName, maxLines = 1, modifier = Modifier.basicMarquee())
+                        Text(
+                            text = folderName,
+                            maxLines = 1,
+                            modifier = Modifier.basicMarquee()
+                        )
                     }
                 },
                 navigationIcon = {
-                    IconButton(onClick = navigateUp) {
+                    IconButton(onClick = {
+                        if (noteState.id != null)
+                            navigateUp()
+                        else
+                            if (sharedViewModel.titleState.text.isBlank() && sharedViewModel.contentState.text.isBlank())
+                                navigateUp()
+                            else
+                                showSnackbar()
+                    }) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
                             contentDescription = "Back"
@@ -237,19 +279,41 @@ fun NoteScreen(
                 },
                 actions = {
 
-                    IconButton(onClick = { sharedViewModel.onNoteEvent(NoteEvent.SwitchType) }) {
-                        Icon(
-                            imageVector = Icons.Outlined.SwapHoriz,
-                            contentDescription = "Switch Note Type"
-                        )
-                    }
+                    if (noteState.id == null)
+                        IconButton(onClick = {
+                            if (sharedViewModel.titleState.text.isBlank() && sharedViewModel.contentState.text.isBlank())
+                                Toast.makeText(
+                                    context,
+                                    context.getString(R.string.empty_note),
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            else
+                                sharedViewModel.onNoteEvent(NoteEvent.Save)
+                        }) {
+                            Icon(
+                                imageVector = Icons.Outlined.Save,
+                                contentDescription = "Save"
+                            )
+                        }
 
-                    IconButton(onClick = { isReadMode = !isReadMode }) {
-                        Icon(
-                            imageVector = if (!isReadMode) Icons.AutoMirrored.Outlined.MenuBook
-                            else Icons.Outlined.EditNote,
-                            contentDescription = "Mode"
-                        )
+                    TooltipBox(
+                        positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
+                        tooltip = {
+                            PlainTooltip(
+                                content = { Text("Ctrl + P") }
+                            )
+                        },
+                        state = rememberTooltipState(),
+                        focusable = false,
+                        enableUserInput = true
+                    ) {
+                        IconButton(onClick = { isReadMode = !isReadMode }) {
+                            Icon(
+                                imageVector = if (!isReadMode) Icons.AutoMirrored.Outlined.MenuBook
+                                else Icons.Outlined.EditNote,
+                                contentDescription = "Mode"
+                            )
+                        }
                     }
 
                     IconButton(onClick = { showMenu = !showMenu }) {
@@ -263,6 +327,21 @@ fun NoteScreen(
                         expanded = showMenu,
                         onDismissRequest = { showMenu = false }
                     ) {
+
+                        DropdownMenuItem(
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = Icons.Outlined.SwapHoriz,
+                                    contentDescription = "Switch Note Type"
+                                )
+                            },
+                            text = {
+                                Text(
+                                    text = if (!noteState.isMarkdown) "MARKDOWN"
+                                    else stringResource(R.string.rich_text)
+                                )
+                            },
+                            onClick = { sharedViewModel.onNoteEvent(NoteEvent.SwitchType) })
 
                         DropdownMenuItem(
                             leadingIcon = {
@@ -286,13 +365,23 @@ fun NoteScreen(
 
                                 val intent = Intent(Intent.ACTION_INSERT)
                                     .setData(CalendarContract.Events.CONTENT_URI)
-                                    .putExtra(CalendarContract.Events.TITLE, sharedViewModel.titleState.text.toString())
-                                    .putExtra(CalendarContract.Events.DESCRIPTION, sharedViewModel.contentState.text.toString())
+                                    .putExtra(
+                                        CalendarContract.Events.TITLE,
+                                        sharedViewModel.titleState.text.toString()
+                                    )
+                                    .putExtra(
+                                        CalendarContract.Events.DESCRIPTION,
+                                        sharedViewModel.contentState.text.toString()
+                                    )
 
                                 try {
                                     context.startActivity(intent)
                                 } catch (e: Exception) {
-                                    Toast.makeText(context, context.getString(R.string.no_calendar_app_found), Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(
+                                        context,
+                                        context.getString(R.string.no_calendar_app_found),
+                                        Toast.LENGTH_SHORT
+                                    ).show()
                                 }
                             })
 
@@ -304,9 +393,7 @@ fun NoteScreen(
                                 )
                             },
                             text = { Text(text = stringResource(R.string.export)) },
-                            onClick = {
-                                showExportDialog = true
-                            })
+                            onClick = { showExportDialog = true })
 
                         DropdownMenuItem(
                             leadingIcon = {
@@ -316,22 +403,7 @@ fun NoteScreen(
                                 )
                             },
                             text = { Text(text = stringResource(R.string.share)) },
-                            onClick = {
-                                val sendIntent: Intent = Intent().apply {
-                                    action = Intent.ACTION_SEND
-                                    putExtra(
-                                        Intent.EXTRA_TITLE,
-                                        sharedViewModel.titleState.text.toString()
-                                    )
-                                    putExtra(
-                                        Intent.EXTRA_TEXT,
-                                        sharedViewModel.contentState.text.toString()
-                                    )
-                                    type = "text/plain"
-                                }
-                                val shareIntent = Intent.createChooser(sendIntent, null)
-                                context.startActivity(shareIntent)
-                            })
+                            onClick = { showShareDialog = true })
                     }
                 })
         },
@@ -350,7 +422,8 @@ fun NoteScreen(
                     onTaskButtonClick = { showTaskDialog = true },
                     onLinkButtonClick = { showLinkDialog = true })
             }
-        }
+        },
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -482,6 +555,8 @@ fun NoteScreen(
             }
         }
     }
+
+
     if (showExportDialog) {
         ExportDialog(
             onDismissRequest = { showExportDialog = false },
@@ -500,6 +575,54 @@ fun NoteScreen(
                     )
                 )
                 showExportDialog = false
+            }
+        )
+    }
+
+    if (showShareDialog) {
+        ShareDialog(
+            onDismissRequest = { showShareDialog = false },
+            onConfirm = {
+                when (it) {
+                    ShareType.TEXT -> {
+                        val sendIntent: Intent = Intent().apply {
+                            action = Intent.ACTION_SEND
+                            putExtra(
+                                Intent.EXTRA_TITLE,
+                                sharedViewModel.titleState.text.toString()
+                            )
+                            putExtra(
+                                Intent.EXTRA_TEXT,
+                                sharedViewModel.contentState.text.toString()
+                            )
+                            type = "text/plain"
+                        }
+                        val shareIntent = Intent.createChooser(sendIntent, null)
+                        context.startActivity(shareIntent)
+                    }
+
+                    ShareType.FILE -> {
+                        val fileName =
+                            sharedViewModel.titleState.text.toString() + if (noteState.isMarkdown) ".md" else ".txt"
+                        val file = File(context.applicationContext.cacheDir, fileName)
+                        val fileContent = sharedViewModel.contentState.text.toString()
+                        file.writeText(fileContent)
+                        val fileUri = FileProvider.getUriForFile(
+                            context.applicationContext,
+                            "${context.applicationContext.packageName}.fileprovider",
+                            file
+                        )
+                        val sendIntent: Intent = Intent().apply {
+                            action = Intent.ACTION_SEND
+                            putExtra(Intent.EXTRA_STREAM, fileUri)
+                            type = "text/*"
+                            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                        }
+                        val shareIntent = Intent.createChooser(sendIntent, null)
+                        context.startActivity(shareIntent)
+                    }
+                }
+                showShareDialog = false
             }
         )
     }

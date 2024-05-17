@@ -73,4 +73,13 @@
     <string name="row">Rows</string>
     <string name="column">Columns</string>
     <string name="view_all_notes">View all notes</string>
+    <string name="incorrect_link_format">Incorrect link format.</string>
+    <string name="web_url" translatable="false">URL</string>
+    <string name="share_note_as">Share note as</string>
+    <string name="file">File</string>
+    <string name="text">Text</string>
+    <string name="export_as">Export note as</string>
+    <string name="empty_note">Cannot save empty note.</string>
+    <string name="confirm">Confirm</string>
+    <string name="confirm_msg">The note has not been saved. Are you sure of navigating up?</string>
 </resources>

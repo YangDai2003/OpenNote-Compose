@@ -72,4 +72,12 @@
     <string name="row">行数</string>
     <string name="column">列数</string>
     <string name="view_all_notes">查看所有笔记</string>
+    <string name="incorrect_link_format">链接格式不正确。</string>
+    <string name="share_note_as">分享笔记为</string>
+    <string name="file">文件</string>
+    <string name="text">文本</string>
+    <string name="export_as">导出笔记为</string>
+    <string name="empty_note">不能保存空笔记。</string>
+    <string name="confirm">确定</string>
+    <string name="confirm_msg">笔记尚未保存，确定要返回主界面吗?</string>
 </resources>

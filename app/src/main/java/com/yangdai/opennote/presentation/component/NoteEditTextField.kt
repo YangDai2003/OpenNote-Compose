@@ -33,6 +33,8 @@ import com.yangdai.opennote.presentation.util.inlineCode
 import com.yangdai.opennote.presentation.util.inlineMath
 import com.yangdai.opennote.presentation.util.italic
 import com.yangdai.opennote.presentation.util.mark
+import com.yangdai.opennote.presentation.util.moveCursorLeft
+import com.yangdai.opennote.presentation.util.moveCursorRight
 import com.yangdai.opennote.presentation.util.quote
 import com.yangdai.opennote.presentation.util.strikeThrough
 import com.yangdai.opennote.presentation.util.underline
@@ -186,7 +188,19 @@ fun NoteEditTextField(
                     }
 
                 } else {
-                    false
+                    when (keyEvent.key) {
+                        Key.DirectionLeft -> {
+                            state.edit { moveCursorLeft() }
+                            true
+                        }
+
+                        Key.DirectionRight -> {
+                            state.edit { moveCursorRight() }
+                            true
+                        }
+
+                        else -> false
+                    }
                 }
             } else {
                 false

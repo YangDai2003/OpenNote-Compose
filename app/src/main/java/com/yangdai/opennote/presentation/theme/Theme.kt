@@ -11,20 +11,21 @@ import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
+import com.yangdai.opennote.presentation.state.AppColor
 
 
 @Composable
 fun OpenNoteTheme(
     darkMode: Boolean = isSystemInDarkTheme(),
-    color: Int = 0,
+    color: AppColor = AppColor.DYNAMIC,
     content: @Composable () -> Unit
 ) {
     val colorScheme = when (color) {
-        1 -> if (darkMode) DarkPurpleColors else LightPurpleColors
-        2 -> if (darkMode) DarkBlueColors else LightBlueColors
-        3 -> if (darkMode) DarkGreenColors else LightGreenColors
-        4 -> if (darkMode) DarkOrangeColors else LightOrangeColors
-        5 -> if (darkMode) DarkRedColors else LightRedColors
+        AppColor.PURPLE -> if (darkMode) DarkPurpleColors else LightPurpleColors
+        AppColor.BLUE -> if (darkMode) DarkBlueColors else LightBlueColors
+        AppColor.GREEN -> if (darkMode) DarkGreenColors else LightGreenColors
+        AppColor.ORANGE -> if (darkMode) DarkOrangeColors else LightOrangeColors
+        AppColor.RED -> if (darkMode) DarkRedColors else LightRedColors
 
         else -> if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             val context = LocalContext.current

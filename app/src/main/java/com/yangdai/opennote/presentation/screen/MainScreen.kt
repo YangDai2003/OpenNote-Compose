@@ -35,7 +35,7 @@ import kotlinx.coroutines.launch
 fun MainScreen(
     sharedViewModel: SharedViewModel = hiltViewModel(LocalContext.current as MainActivity),
     isLargeScreen: Boolean,
-    navigateToNote: () -> Unit,
+    navigateToNote: (Long) -> Unit,
     navigateTo: (Any) -> Unit
 ) {
     val context = LocalContext.current
@@ -157,7 +157,7 @@ fun MainScreen(
                     } else {
                         if (selectedDrawerIndex != 1) {
                             sharedViewModel.onListEvent(ListEvent.OpenNote(it))
-                            navigateToNote()
+                            navigateToNote(it.id!!)
                         } else {
                             Unit
                         }
@@ -172,7 +172,13 @@ fun MainScreen(
                     }
                 },
                 onExportClick = {
-                    sharedViewModel.onDatabaseEvent(DatabaseEvent.Export(context.contentResolver, selectedNotes.toList(), it))
+                    sharedViewModel.onDatabaseEvent(
+                        DatabaseEvent.Export(
+                            context.contentResolver,
+                            selectedNotes.toList(),
+                            it
+                        )
+                    )
                 },
                 onExportCancelled = {
                     sharedViewModel.cancelDataAction()

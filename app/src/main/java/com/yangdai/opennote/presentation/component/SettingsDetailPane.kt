@@ -62,7 +62,9 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -76,7 +78,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
@@ -87,9 +88,15 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.window.core.layout.WindowWidthSizeClass
 import com.yangdai.opennote.MainActivity
 import com.yangdai.opennote.R
 import com.yangdai.opennote.presentation.event.DatabaseEvent
+import com.yangdai.opennote.presentation.screen.SettingsItem
+import com.yangdai.opennote.presentation.state.AppColor
+import com.yangdai.opennote.presentation.state.AppColor.Companion.toInt
+import com.yangdai.opennote.presentation.state.AppTheme
+import com.yangdai.opennote.presentation.state.AppTheme.Companion.toInt
 import com.yangdai.opennote.presentation.theme.DarkBlueColors
 import com.yangdai.opennote.presentation.theme.DarkGreenColors
 import com.yangdai.opennote.presentation.theme.DarkOrangeColors
@@ -103,7 +110,7 @@ import kotlinx.collections.immutable.toImmutableList
 @Composable
 fun SettingsDetailPane(
     sharedViewModel: SharedViewModel = hiltViewModel(LocalContext.current as MainActivity),
-    selectedListItem: Pair<Int, Int>,
+    selectedSettingsItem: SettingsItem,
     navigateBackToList: () -> Unit
 ) {
 
@@ -126,11 +133,11 @@ fun SettingsDetailPane(
     )
 
     val colorSchemes = listOf(
-        Pair(1, DarkPurpleColors),
-        Pair(2, DarkBlueColors),
-        Pair(3, DarkGreenColors),
-        Pair(4, DarkOrangeColors),
-        Pair(5, DarkRedColors)
+        Pair(AppColor.PURPLE, DarkPurpleColors),
+        Pair(AppColor.BLUE, DarkBlueColors),
+        Pair(AppColor.GREEN, DarkGreenColors),
+        Pair(AppColor.ORANGE, DarkOrangeColors),
+        Pair(AppColor.RED, DarkRedColors)
     )
 
     val isSystemDarkTheme = isSystemInDarkTheme()
@@ -164,14 +171,18 @@ fun SettingsDetailPane(
         }
     }
 
-    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
-
     Scaffold(
-        modifier = Modifier
-            .fillMaxSize()
-            .nestedScroll(scrollBehavior.nestedScrollConnection),
+        modifier = Modifier.fillMaxSize(),
         topBar = {
-            if (selectedListItem.first != -1)
+            if (currentWindowAdaptiveInfo().windowSizeClass.windowWidthSizeClass == WindowWidthSizeClass.EXPANDED)
+                TopAppBar(
+                    title = {
+                        TopBarTitle(title = stringResource(selectedSettingsItem.titleId))
+                    },
+                    colors = TopAppBarDefaults.largeTopAppBarColors()
+                        .copy(scrolledContainerColor = TopAppBarDefaults.largeTopAppBarColors().containerColor)
+                )
+            else
                 LargeTopAppBar(
                     navigationIcon = {
                         IconButton(onClick = {
@@ -185,11 +196,10 @@ fun SettingsDetailPane(
                         }
                     },
                     title = {
-                        TopBarTitle(title = stringResource(selectedListItem.second))
+                        TopBarTitle(title = stringResource(selectedSettingsItem.titleId))
                     },
                     colors = TopAppBarDefaults.largeTopAppBarColors()
-                        .copy(scrolledContainerColor = TopAppBarDefaults.largeTopAppBarColors().containerColor),
-                    scrollBehavior = scrollBehavior
+                        .copy(scrolledContainerColor = TopAppBarDefaults.largeTopAppBarColors().containerColor)
                 )
         }
     ) {
@@ -199,7 +209,7 @@ fun SettingsDetailPane(
                 .padding(it),
             contentAlignment = Alignment.Center
         ) {
-            when (selectedListItem.first) {
+            when (selectedSettingsItem.index) {
                 0 -> {
                     Column(
                         Modifier
@@ -229,14 +239,14 @@ fun SettingsDetailPane(
                                     .clickable {
                                         sharedViewModel.putPreferenceValue(
                                             Constants.Preferences.APP_COLOR,
-                                            0
+                                            AppColor.DYNAMIC.toInt()
                                         )
                                     },
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 RadioButton(
                                     modifier = Modifier.padding(start = 32.dp),
-                                    selected = settingsState.color == 0,
+                                    selected = settingsState.color == AppColor.DYNAMIC,
                                     onClick = null
                                 )
                                 Icon(
@@ -271,7 +281,7 @@ fun SettingsDetailPane(
                                 ) {
                                     sharedViewModel.putPreferenceValue(
                                         Constants.Preferences.APP_COLOR,
-                                        colorSchemePair.first
+                                        colorSchemePair.first.toInt()
                                     )
                                 }
                             }
@@ -289,10 +299,10 @@ fun SettingsDetailPane(
                                         .fillMaxWidth()
                                         .height(56.dp)
                                         .selectable(
-                                            selected = (index == settingsState.theme),
+                                            selected = (index == settingsState.theme.toInt()),
                                             onClick = {
 
-                                                if (settingsState.theme != index) {
+                                                if (settingsState.theme.toInt() != index) {
                                                     when (index) {
                                                         0 -> {
                                                             if (isSystemDarkTheme != settingsState.isAppInDarkMode) {
@@ -303,7 +313,7 @@ fun SettingsDetailPane(
                                                             } else {
                                                                 sharedViewModel.putPreferenceValue(
                                                                     Constants.Preferences.APP_THEME,
-                                                                    0
+                                                                    AppTheme.SYSTEM.toInt()
                                                                 )
                                                             }
                                                             sharedViewModel.putPreferenceValue(
@@ -325,7 +335,7 @@ fun SettingsDetailPane(
                                                             )
                                                             sharedViewModel.putPreferenceValue(
                                                                 Constants.Preferences.APP_THEME,
-                                                                1
+                                                                AppTheme.LIGHT.toInt()
                                                             )
                                                         }
 
@@ -342,7 +352,7 @@ fun SettingsDetailPane(
                                                             )
                                                             sharedViewModel.putPreferenceValue(
                                                                 Constants.Preferences.APP_THEME,
-                                                                2
+                                                                AppTheme.DARK.toInt()
                                                             )
                                                         }
                                                     }
@@ -354,7 +364,7 @@ fun SettingsDetailPane(
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     RadioButton(
-                                        selected = (index == settingsState.theme),
+                                        selected = (index == settingsState.theme.toInt()),
                                         onClick = null
                                     )
 
@@ -362,8 +372,8 @@ fun SettingsDetailPane(
                                         modifier = Modifier
                                             .padding(start = 16.dp),
                                         imageVector = when (index) {
-                                            1 -> Icons.Default.LightMode
-                                            2 -> Icons.Default.DarkMode
+                                            AppTheme.LIGHT.toInt() -> Icons.Default.LightMode
+                                            AppTheme.DARK.toInt() -> Icons.Default.DarkMode
                                             else -> Icons.Default.BrightnessAuto
                                         },
                                         tint = MaterialTheme.colorScheme.secondary,
@@ -541,7 +551,7 @@ fun SettingsDetailPane(
                         ) {
                             Box(
                                 modifier = Modifier
-                                    .size(200.dp)
+                                    .size(240.dp)
                                     .background(
                                         color = MaterialTheme.colorScheme.primaryContainer,
                                         shape = CurlyCornerShape(amp = animatedPress.toDouble()),
@@ -566,7 +576,7 @@ fun SettingsDetailPane(
                                 contentAlignment = Alignment.Center,
                             ) {
                                 Image(
-                                    modifier = Modifier.size(160.dp),
+                                    modifier = Modifier.size(180.dp),
                                     painter = painterResource(id = R.drawable.ic_launcher_foreground),
                                     colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary),
                                     contentDescription = "Icon"
@@ -671,6 +681,7 @@ fun SettingsDetailPane(
                     Uri.parse("https://play.google.com/store/apps/details?id=com.yangdai.opennote")
                 )
             } else {
+                if (stars == 0) return@RatingDialog
                 // 获取当前应用的版本号
                 val packageInfo =
                     context.packageManager.getPackageInfo(context.packageName, 0)

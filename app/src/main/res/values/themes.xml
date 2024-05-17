@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <style name="Theme.OpenNote" parent="Theme.AppCompat.DayNight.NoActionBar" >
-        <item name="android:windowLayoutInDisplayCutoutMode">default</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
     </style>

@@ -11,6 +11,11 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
+import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -57,6 +62,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -83,7 +89,7 @@ fun MainContent(
     isLargeScreen: Boolean,
     dataState: DataState,
     folderList: ImmutableList<FolderEntity>,
-    navigateToNote: () -> Unit,
+    navigateToNote: (Long) -> Unit,
     initializeNoteSelection: () -> Unit,
     onSearchBarActivationChange: (Boolean) -> Unit,
     onAllNotesSelectionChange: (Boolean) -> Unit,
@@ -91,7 +97,7 @@ fun MainContent(
     onNoteClick: (NoteEntity) -> Unit,
     onListEvent: (ListEvent) -> Unit,
     onDrawerStateChange: () -> Unit,
-    onExportClick: (String) -> Unit,
+    onExportClick: (ExportType) -> Unit,
     onExportCancelled: () -> Unit
 ) {
 
@@ -318,7 +324,7 @@ fun MainContent(
                 FloatingActionButton(
                     onClick = {
                         onListEvent(ListEvent.AddNote)
-                        navigateToNote()
+                        navigateToNote(-1)
                     }
                 ) {
                     Icon(imageVector = Icons.Outlined.Add, contentDescription = "Add")
@@ -327,86 +333,87 @@ fun MainContent(
 
         }) { innerPadding ->
 
-        Column(
+        // Add layoutDirection, displayCutout, startPadding, and endPadding.
+        val layoutDirection = LocalLayoutDirection.current
+        val displayCutout = WindowInsets.displayCutout.asPaddingValues()
+        val startPadding = displayCutout.calculateStartPadding(layoutDirection)
+        val endPadding = displayCutout.calculateEndPadding(layoutDirection)
+
+        Box(
             modifier = Modifier
                 .fillMaxSize()
                 .statusBarsPadding()
-                .padding(top = 72.dp)
+                .padding(top = 72.dp, start = startPadding, end = endPadding)
         ) {
-
-            AnimatedContent(targetState = isListViewMode, label = "") {
-                if (!it) {
-                    LazyVerticalStaggeredGrid(
-                        modifier = Modifier
-                            .fillMaxSize(),
-                        state = staggeredGridState,
-                        // The staggered grid layout is adaptive, with a minimum column width of 160dp(mdpi)
-                        columns = StaggeredGridCells.Adaptive(160.dp),
-                        verticalItemSpacing = 8.dp,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        // for better edgeToEdge experience
-                        contentPadding = PaddingValues(
-                            start = 16.dp,
-                            end = 16.dp,
-                            bottom = innerPadding.calculateBottomPadding()
-                        ),
-                        content = {
-                            items(
-                                dataState.notes,
-                                key = { item: NoteEntity -> item.id!! }) { note ->
-                                GridNoteCard(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .animateItem(), // Add animation to the item
-                                    note = note,
-                                    isEnabled = isMultiSelectionModeEnabled,
-                                    isSelected = selectedNotes.contains(note),
-                                    onEnableChange = onMultiSelectionModeChange,
-                                    onNoteClick = onNoteClick
-                                )
-                            }
-                        }
-                    )
-                } else {
-                    if (dataState.notes.isEmpty()) {
-                        return@AnimatedContent
-                    }
-                    Box(
-                        modifier = Modifier.fillMaxSize()
-                    ) {
-                        VerticalDivider(
-                            Modifier
-                                .align(Alignment.TopStart)
-                                .fillMaxHeight()
-                                .padding(start = 15.dp),
-                            thickness = 2.dp
-                        )
-                        LazyColumn(
-                            modifier = Modifier
-                                .align(Alignment.Center)
-                                .fillMaxSize(),
-                            state = lazyListState,
-                            contentPadding = PaddingValues(
-                                start = 12.dp,
-                                end = 16.dp,
-                                bottom = innerPadding.calculateBottomPadding()
+            if (!isListViewMode) {
+                LazyVerticalStaggeredGrid(
+                    modifier = Modifier
+                        .fillMaxSize(),
+                    state = staggeredGridState,
+                    // The staggered grid layout is adaptive, with a minimum column width of 160dp(mdpi)
+                    columns = StaggeredGridCells.Adaptive(160.dp),
+                    verticalItemSpacing = 8.dp,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    // for better edgeToEdge experience
+                    contentPadding = PaddingValues(
+                        start = 16.dp,
+                        end = 16.dp,
+                        bottom = innerPadding.calculateBottomPadding()
+                    ),
+                    content = {
+                        items(
+                            dataState.notes,
+                            key = { item: NoteEntity -> item.id!! }) { note ->
+                            GridNoteCard(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .animateItem(), // Add animation to the item
+                                note = note,
+                                isEnabled = isMultiSelectionModeEnabled,
+                                isSelected = selectedNotes.contains(note),
+                                onEnableChange = onMultiSelectionModeChange,
+                                onNoteClick = onNoteClick
                             )
-                        ) {
-                            items(
-                                dataState.notes,
-                                key = { item: NoteEntity -> item.id!! }) { note ->
-                                ColumnNoteCard(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .animateItem(), // Add animation to the item
-                                    note = note,
-                                    isEnabled = isMultiSelectionModeEnabled,
-                                    isSelected = selectedNotes.contains(note),
-                                    onEnableChange = onMultiSelectionModeChange,
-                                    onNoteClick = onNoteClick
-                                )
-                            }
                         }
+                    }
+                )
+            } else {
+
+                if (dataState.notes.isEmpty()) {
+                    return@Box
+                }
+
+                VerticalDivider(
+                    Modifier
+                        .align(Alignment.TopStart)
+                        .fillMaxHeight()
+                        .padding(start = 15.dp),
+                    thickness = 2.dp
+                )
+                LazyColumn(
+                    modifier = Modifier
+                        .align(Alignment.Center)
+                        .fillMaxSize(),
+                    state = lazyListState,
+                    contentPadding = PaddingValues(
+                        start = 12.dp,
+                        end = 16.dp,
+                        bottom = innerPadding.calculateBottomPadding()
+                    )
+                ) {
+                    items(
+                        dataState.notes,
+                        key = { item: NoteEntity -> item.id!! }) { note ->
+                        ColumnNoteCard(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .animateItem(), // Add animation to the item
+                            note = note,
+                            isEnabled = isMultiSelectionModeEnabled,
+                            isSelected = selectedNotes.contains(note),
+                            onEnableChange = onMultiSelectionModeChange,
+                            onNoteClick = onNoteClick
+                        )
                     }
                 }
             }
