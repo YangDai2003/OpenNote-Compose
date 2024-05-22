@@ -71,9 +71,7 @@ fun TableDialog(
                 )
             }
         },
-        onDismissRequest = {
-            onDismissRequest()
-        },
+        onDismissRequest = onDismissRequest,
         confirmButton = {
             TextButton(
                 onClick = {
@@ -95,7 +93,7 @@ fun TableDialog(
             }
         },
         dismissButton = {
-            TextButton(onClick = { onDismissRequest() }) {
+            TextButton(onClick = onDismissRequest) {
                 Text(text = stringResource(id = android.R.string.cancel))
             }
         }

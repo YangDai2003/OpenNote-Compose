@@ -61,32 +61,30 @@ fun IconButtonWithTooltip(
     contentDescription: String,
     shortCutDescription: String? = null,
     onClick: () -> Unit
+) = TooltipBox(
+    positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
+    tooltip = {
+        if (shortCutDescription != null) {
+            PlainTooltip(
+                content = { Text(shortCutDescription) }
+            )
+        }
+    },
+    state = rememberTooltipState(),
+    focusable = false,
+    enableUserInput = true
 ) {
-    TooltipBox(
-        positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
-        tooltip = {
-            if (shortCutDescription != null) {
-                PlainTooltip(
-                    content = { Text(shortCutDescription) }
-                )
-            }
-        },
-        state = rememberTooltipState(),
-        focusable = false,
-        enableUserInput = true
-    ) {
-        IconButton(onClick = onClick, enabled = enabled) {
-            if (imageVector != null) {
-                Icon(
-                    imageVector = imageVector,
-                    contentDescription = contentDescription
-                )
-            } else {
-                Icon(
-                    painter = painterResource(id = painter!!),
-                    contentDescription = contentDescription
-                )
-            }
+    IconButton(onClick = onClick, enabled = enabled) {
+        if (imageVector != null) {
+            Icon(
+                imageVector = imageVector,
+                contentDescription = contentDescription
+            )
+        } else {
+            Icon(
+                painter = painterResource(id = painter!!),
+                contentDescription = contentDescription
+            )
         }
     }
 }
@@ -298,10 +296,9 @@ fun NoteEditorRow(
                 IconButtonWithTooltip(
                     imageVector = Icons.Outlined.TableChart,
                     contentDescription = "Table",
-                    shortCutDescription = "Ctrl + T"
-                ) {
-                    onTableButtonClick()
-                }
+                    shortCutDescription = "Ctrl + T",
+                    onClick = onTableButtonClick
+                )
 
                 IconButtonWithTooltip(
                     imageVector = Icons.Outlined.AddChart,
@@ -315,26 +312,23 @@ fun NoteEditorRow(
             IconButtonWithTooltip(
                 imageVector = Icons.Outlined.CheckBox,
                 contentDescription = "Task",
-                shortCutDescription = "Ctrl + Shift + T"
-            ) {
-                onTaskButtonClick()
-            }
+                shortCutDescription = "Ctrl + Shift + T",
+                onClick = onTaskButtonClick
+            )
 
             IconButtonWithTooltip(
                 imageVector = Icons.Outlined.Link,
                 contentDescription = "Link",
-                shortCutDescription = "Ctrl + K"
-            ) {
-                onLinkButtonClick()
-            }
+                shortCutDescription = "Ctrl + K",
+                onClick = onLinkButtonClick
+            )
 
             IconButtonWithTooltip(
                 imageVector = Icons.Outlined.DocumentScanner,
                 contentDescription = "OCR",
-                shortCutDescription = "Ctrl + S"
-            ) {
-                onScanButtonClick()
-            }
+                shortCutDescription = "Ctrl + S",
+                onClick = onScanButtonClick
+            )
         }
     }
 }

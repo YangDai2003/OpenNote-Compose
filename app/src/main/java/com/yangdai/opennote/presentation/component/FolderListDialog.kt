@@ -30,15 +30,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.yangdai.opennote.R
 import com.yangdai.opennote.data.local.entity.FolderEntity
-import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.toImmutableList
 
 
 @Composable
 fun FolderListDialog(
     hint: String = "",
     oFolderId: Long?,
-    folders: ImmutableList<FolderEntity>,
+    folders: List<FolderEntity>,
     onDismissRequest: () -> Unit,
     onSelect: (Long?) -> Unit
 ) {
@@ -143,7 +141,7 @@ fun FolderListDialogPreview() {
             FolderEntity(1, "Folder 1", null),
             FolderEntity(2, "Folder 2", null),
             FolderEntity(3, "Folder 3", null)
-        ).toImmutableList(),
+        ),
         onDismissRequest = {},
         onSelect = {}
     )

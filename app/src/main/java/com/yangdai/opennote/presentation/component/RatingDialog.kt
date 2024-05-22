@@ -22,12 +22,9 @@ import com.yangdai.opennote.R
 
 @Composable
 fun RatingDialog(
-    showDialog: Boolean,
     onDismissRequest: () -> Unit,
     onRatingChanged: (Int) -> Unit
 ) {
-
-    if (!showDialog) return
 
     var rating by remember { mutableIntStateOf(0) }
 
@@ -63,5 +60,5 @@ fun RatingDialog(
 @Preview
 @Composable
 fun RatingDialogPreview() {
-    RatingDialog(showDialog = true, onDismissRequest = {}, onRatingChanged = {})
+    RatingDialog(onDismissRequest = {}, onRatingChanged = {})
 }

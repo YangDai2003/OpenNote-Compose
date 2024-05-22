@@ -34,11 +34,11 @@ fun LazyGridItemScope.FolderItem(
     onDelete: () -> Unit
 ) {
 
-    var modify by remember {
+    var showModifyDialog by remember {
         mutableStateOf(false)
     }
 
-    var delete by remember {
+    var showWarningDialog by remember {
         mutableStateOf(false)
     }
 
@@ -68,7 +68,7 @@ fun LazyGridItemScope.FolderItem(
 
         Row {
             IconButton(onClick = {
-                modify = !modify
+                showModifyDialog = !showModifyDialog
             }) {
                 Icon(
                     imageVector = Icons.Outlined.DriveFileRenameOutline,
@@ -77,7 +77,7 @@ fun LazyGridItemScope.FolderItem(
             }
 
             IconButton(onClick = {
-                delete = !delete
+                showWarningDialog = !showWarningDialog
             }) {
                 Icon(
                     imageVector = Icons.Outlined.Delete,
@@ -87,18 +87,20 @@ fun LazyGridItemScope.FolderItem(
             }
         }
 
-        WarningDialog(
-            showDialog = delete,
-            message = stringResource(R.string.deleting_a_folder_will_also_delete_all_the_notes_it_contains_and_they_cannot_be_restored_do_you_want_to_continue),
-            onDismissRequest = { delete = false }) {
-            onDelete()
+        if (showWarningDialog) {
+            WarningDialog(
+                message = stringResource(R.string.deleting_a_folder_will_also_delete_all_the_notes_it_contains_and_they_cannot_be_restored_do_you_want_to_continue),
+                onDismissRequest = { showWarningDialog = false },
+                onConfirm = onDelete
+            )
         }
 
-        ModifyFolderDialog(
-            showDialog = modify,
-            folder = folder,
-            onDismissRequest = { modify = false }) {
-            onModify(it)
+        if (showModifyDialog) {
+            ModifyFolderDialog(
+                folder = folder,
+                onDismissRequest = { showModifyDialog = false }) {
+                onModify(it)
+            }
         }
     }
 }

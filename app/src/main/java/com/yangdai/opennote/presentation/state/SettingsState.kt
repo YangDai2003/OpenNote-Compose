@@ -1,5 +1,8 @@
 package com.yangdai.opennote.presentation.state
 
+import androidx.compose.runtime.Stable
+
+@Stable
 data class SettingsState(
     val theme: AppTheme = AppTheme.UNDEFINED,
     val color: AppColor = AppColor.DYNAMIC,
@@ -8,11 +11,7 @@ data class SettingsState(
     val shouldFollowSystem: Boolean = false,
     val isSwitchActive: Boolean = false,
     val isListView: Boolean = false
-) {
-    companion object {
-        val DEFAULT = SettingsState()
-    }
-}
+)
 
 enum class AppTheme(private val value: Int) {
     UNDEFINED(-1),

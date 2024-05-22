@@ -129,10 +129,11 @@ fun BaseScreen(
                 LoginOverlayScreen(
                     onAuthenticated = {
                         authenticated = true
+                    },
+                    onAuthenticationNotEnrolled = {
+                        sharedViewModel.putPreferenceValue(Constants.Preferences.NEED_PASSWORD, false)
                     }
-                ) {
-                    sharedViewModel.putPreferenceValue(Constants.Preferences.NEED_PASSWORD, false)
-                }
+                )
             }
         }
     }

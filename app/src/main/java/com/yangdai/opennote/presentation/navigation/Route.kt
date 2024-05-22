@@ -3,15 +3,22 @@ package com.yangdai.opennote.presentation.navigation
 import kotlinx.serialization.Serializable
 
 @Serializable
-object Home
+sealed class Screen(val route: String) {
+    @Serializable
+    data object Home : Screen("home")
 
-const val Note = "note"
+    data object Note : Screen("note/{id}") {
+        fun passId(id: Long): String {
+            return this.route.replace("{id}", id.toString())
+        }
+    }
 
-@Serializable
-object Settings
+    @Serializable
+    data object Settings : Screen("settings")
 
-@Serializable
-object Folders
+    @Serializable
+    data object Folders : Screen("folders")
 
-@Serializable
-object CameraX
+    @Serializable
+    data object CameraX : Screen("cameraX")
+}

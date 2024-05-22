@@ -38,7 +38,6 @@ import com.yangdai.opennote.data.local.entity.FolderEntity
 @Preview
 fun ModifyFolderDialogPreview() {
     ModifyFolderDialog(
-        showDialog = true,
         folder = FolderEntity(),
         onDismissRequest = {},
         onModify = {}
@@ -47,13 +46,10 @@ fun ModifyFolderDialogPreview() {
 
 @Composable
 fun ModifyFolderDialog(
-    showDialog: Boolean,
     folder: FolderEntity,
     onDismissRequest: () -> Unit,
     onModify: (FolderEntity) -> Unit
 ) {
-
-    if (!showDialog) return
 
     var text by remember { mutableStateOf(folder.name) }
     var color by remember { mutableStateOf(folder.color) }
@@ -95,9 +91,7 @@ fun ModifyFolderDialog(
                 }
             }
         },
-        onDismissRequest = {
-            onDismissRequest()
-        },
+        onDismissRequest = onDismissRequest,
         confirmButton = {
             TextButton(
                 onClick = {
@@ -120,7 +114,7 @@ fun ModifyFolderDialog(
             }
         },
         dismissButton = {
-            TextButton(onClick = { onDismissRequest() }) {
+            TextButton(onClick = onDismissRequest) {
                 Text(text = stringResource(id = android.R.string.cancel))
             }
         }

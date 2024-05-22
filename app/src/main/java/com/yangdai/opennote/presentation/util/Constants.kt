@@ -1,7 +1,7 @@
 package com.yangdai.opennote.presentation.util
 
 object Constants {
-
+    const val DEFAULT_MAX_LINES = 2
     const val NAV_ANIMATION_TIME = 300
     const val MIME_TYPE_TEXT = "text/"
     const val LINK = "https://www.yangdai-opennote.com"

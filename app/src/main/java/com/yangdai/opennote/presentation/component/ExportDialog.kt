@@ -20,31 +20,28 @@ enum class ExportType {
 fun ExportDialog(
     onDismissRequest: () -> Unit,
     onConfirm: (ExportType) -> Unit
-) {
-
-    AlertDialog(
-        title = {
-            Text(text = stringResource(R.string.export_as))
-        },
-        text = {
-            Column(modifier = Modifier.fillMaxWidth()) {
-                TextOptionButton(text = "TXT") {
-                    onConfirm(ExportType.TXT)
-                }
-
-                TextOptionButton(text = "MARKDOWN") {
-                    onConfirm(ExportType.MARKDOWN)
-                }
-
-                TextOptionButton(text = "HTML") {
-                    onConfirm(ExportType.HTML)
-                }
+) = AlertDialog(
+    title = {
+        Text(text = stringResource(R.string.export_as))
+    },
+    text = {
+        Column(modifier = Modifier.fillMaxWidth()) {
+            TextOptionButton(text = "TXT") {
+                onConfirm(ExportType.TXT)
             }
-        },
-        onDismissRequest = onDismissRequest,
-        confirmButton = {}
-    )
-}
+
+            TextOptionButton(text = "MARKDOWN") {
+                onConfirm(ExportType.MARKDOWN)
+            }
+
+            TextOptionButton(text = "HTML") {
+                onConfirm(ExportType.HTML)
+            }
+        }
+    },
+    onDismissRequest = onDismissRequest,
+    confirmButton = {}
+)
 
 @Composable
 @Preview

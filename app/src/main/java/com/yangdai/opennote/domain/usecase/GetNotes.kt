@@ -32,7 +32,7 @@ class GetNotes(
                 is OrderType.Ascending -> {
                     when (noteOrder) {
                         is NoteOrder.Title -> notes.sortedBy { it.title.lowercase() }
-                        is NoteOrder.Date -> notes.sortedBy { it.timestamp }
+                        is NoteOrder.Date -> notes.reversed()
                     }
                 }
 

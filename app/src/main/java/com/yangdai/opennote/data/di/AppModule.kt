@@ -14,7 +14,7 @@ import com.yangdai.opennote.domain.usecase.DeleteNote
 import com.yangdai.opennote.domain.usecase.DeleteNotesByFolderId
 import com.yangdai.opennote.domain.usecase.GetFolders
 import com.yangdai.opennote.domain.usecase.GetNotes
-import com.yangdai.opennote.domain.usecase.Operations
+import com.yangdai.opennote.domain.usecase.UseCases
 import com.yangdai.opennote.domain.usecase.SearchNotes
 import com.yangdai.opennote.domain.usecase.UpdateFolder
 import com.yangdai.opennote.domain.usecase.UpdateNote
@@ -34,9 +34,8 @@ object AppModule {
 
     @Singleton
     @Provides
-    fun provideDataStoreRepository(
-        @ApplicationContext context: Context
-    ): DataStoreRepository = DataStoreRepositoryImpl(context)
+    fun provideDataStoreRepository(@ApplicationContext context: Context): DataStoreRepository =
+        DataStoreRepositoryImpl(context)
 
     @Provides
     @Singleton
@@ -62,8 +61,8 @@ object AppModule {
     fun provideNoteUseCases(
         noteRepository: NoteRepository,
         folderRepository: FolderRepository
-    ): Operations {
-        return Operations(
+    ): UseCases {
+        return UseCases(
             getNotes = GetNotes(noteRepository),
             getNoteById = GetNoteById(noteRepository),
             deleteNote = DeleteNote(noteRepository),

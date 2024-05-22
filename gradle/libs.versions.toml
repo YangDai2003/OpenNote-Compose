@@ -1,10 +1,9 @@
 [versions]
-agp = "8.4.0"
+agp = "8.4.1"
 glance = "1.1.0-rc01"
-kotlin = "2.0.0-RC3"
-ksp = "2.0.0-RC3-1.0.20"
+kotlin = "2.0.0"
+ksp = "2.0.0-1.0.21"
 kotlinxSerialization = "1.6.3"
-kotlinxCollectionsImmutable = "0.3.7"
 
 composeBom = "2024.05.00"
 composeFoundation = "1.7.0-beta01"
@@ -82,7 +81,6 @@ androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = 
 androidx-room-testing = { group = "androidx.room", name = "room-testing", version.ref = "room" }
 
 kotlinx-serialization = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinxSerialization" }
-kotlinx-collections-immutable = { group = "org.jetbrains.kotlinx", name = "kotlinx-collections-immutable", version.ref = "kotlinxCollectionsImmutable" }
 text-recognition = { group = "com.google.mlkit", name = "text-recognition", version.ref = "textRecognition" }
 text-recognition-chinese = { group = "com.google.mlkit", name = "text-recognition-chinese", version.ref = "textRecognition" }
 

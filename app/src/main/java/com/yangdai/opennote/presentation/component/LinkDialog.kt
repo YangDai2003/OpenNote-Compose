@@ -70,9 +70,7 @@ fun LinkDialog(
                 )
             }
         },
-        onDismissRequest = {
-            onDismissRequest()
-        },
+        onDismissRequest = onDismissRequest,
         confirmButton = {
             TextButton(
                 onClick = {
@@ -93,7 +91,7 @@ fun LinkDialog(
             }
         },
         dismissButton = {
-            TextButton(onClick = { onDismissRequest() }) {
+            TextButton(onClick = onDismissRequest) {
                 Text(text = stringResource(id = android.R.string.cancel))
             }
         }

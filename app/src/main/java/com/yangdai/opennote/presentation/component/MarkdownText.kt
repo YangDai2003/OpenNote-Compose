@@ -7,88 +7,58 @@ import android.view.ViewGroup
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
-import androidx.browser.customtabs.CustomTabsIntent
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.yangdai.opennote.presentation.theme.linkColor
+import com.yangdai.opennote.presentation.util.rememberCustomTabsIntent
 
 @SuppressLint("SetJavaScriptEnabled")
 @Composable
-fun MarkdownText(html: String) {
+fun MarkdownText(
+    html: String,
+    colorScheme: ColorScheme = MaterialTheme.colorScheme
+) {
 
-    val textColor = MaterialTheme.colorScheme.onSurface.toArgb()
-    val codeBackgroundColor = MaterialTheme.colorScheme.surfaceVariant.toArgb()
-    val preBackgroundColor = MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp).toArgb()
-    val quoteBackgroundColor = MaterialTheme.colorScheme.secondaryContainer.toArgb()
-    val borderColor = MaterialTheme.colorScheme.outline.toArgb()
-
-    val hexTextColor = remember {
-        String.format("#%06X", 0xFFFFFF and textColor)
+    val hexTextColor = remember(colorScheme) {
+        String.format("#%06X", 0xFFFFFF and colorScheme.onSurface.toArgb())
     }
-    val hexCodeBackgroundColor = remember {
-        String.format("#%06X", 0xFFFFFF and codeBackgroundColor)
+    val hexCodeBackgroundColor = remember(colorScheme) {
+        String.format("#%06X", 0xFFFFFF and colorScheme.surfaceVariant.toArgb())
     }
-    val hexPreBackgroundColor = remember {
-        String.format("#%06X", 0xFFFFFF and preBackgroundColor)
+    val hexPreBackgroundColor = remember(colorScheme) {
+        String.format("#%06X", 0xFFFFFF and colorScheme.surfaceColorAtElevation(1.dp).toArgb())
     }
-    val hexQuoteBackgroundColor = remember {
-        String.format("#%06X", 0xFFFFFF and quoteBackgroundColor)
+    val hexQuoteBackgroundColor = remember(colorScheme) {
+        String.format("#%06X", 0xFFFFFF and colorScheme.secondaryContainer.toArgb())
     }
-    val hexLinkColor = remember {
+    val hexLinkColor = remember(colorScheme) {
         String.format("#%06X", 0xFFFFFF and linkColor.toArgb())
     }
-    val hexBorderColor = remember {
-        String.format("#%06X", 0xFFFFFF and borderColor)
+    val hexBorderColor = remember(colorScheme) {
+        String.format("#%06X", 0xFFFFFF and colorScheme.outline.toArgb())
     }
 
-    val customTabsIntent = remember {
-        CustomTabsIntent.Builder()
-            .setShowTitle(true)
-            .build()
-    }
-
-    AndroidView(
-        modifier = Modifier.fillMaxSize(),
-        factory = {
-            WebView(it).apply {
-                layoutParams = ViewGroup.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.MATCH_PARENT
-                )
-                webViewClient = object : WebViewClient() {
-                    override fun shouldOverrideUrlLoading(
-                        view: WebView?,
-                        request: WebResourceRequest
-                    ): Boolean {
-                        val url = request.url.toString()
-                        if (url.startsWith("http://") || url.startsWith("https://")) {
-                            customTabsIntent.launchUrl(it, Uri.parse(url))
-                        }
-                        return true
-                    }
-                }
-                settings.javaScriptEnabled = true
-                settings.loadsImagesAutomatically = true
-                settings.defaultTextEncodingName = "utf-8"
-                isVerticalScrollBarEnabled = false
-                isHorizontalScrollBarEnabled = false
-                settings.setSupportZoom(true)
-                settings.builtInZoomControls = true
-                settings.displayZoomControls = false
-                settings.useWideViewPort = false
-                settings.loadWithOverviewMode = false
-                setBackgroundColor(Color.TRANSPARENT)
-            }
-        },
-        update = {
-            val data = """
+    val data by remember(
+        html,
+        hexTextColor,
+        hexCodeBackgroundColor,
+        hexPreBackgroundColor,
+        hexQuoteBackgroundColor,
+        hexLinkColor,
+        hexBorderColor
+    ) {
+        mutableStateOf(
+            """
                     <!DOCTYPE html>
                     <html>
                     <head>
@@ -126,6 +96,45 @@ fun MarkdownText(html: String) {
                     </body>
                     </html>
                 """.trimIndent()
+        )
+    }
+
+    val customTabsIntent = rememberCustomTabsIntent()
+
+    AndroidView(
+        modifier = Modifier.fillMaxSize(),
+        factory = {
+            WebView(it).apply {
+                layoutParams = ViewGroup.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.MATCH_PARENT
+                )
+                webViewClient = object : WebViewClient() {
+                    override fun shouldOverrideUrlLoading(
+                        view: WebView?,
+                        request: WebResourceRequest
+                    ): Boolean {
+                        val url = request.url.toString()
+                        if (url.startsWith("http://") || url.startsWith("https://")) {
+                            customTabsIntent.launchUrl(it, Uri.parse(url))
+                        }
+                        return true
+                    }
+                }
+                settings.javaScriptEnabled = true
+                settings.loadsImagesAutomatically = true
+                settings.defaultTextEncodingName = "UTF-8"
+                isVerticalScrollBarEnabled = false
+                isHorizontalScrollBarEnabled = false
+                settings.setSupportZoom(true)
+                settings.builtInZoomControls = true
+                settings.displayZoomControls = false
+                settings.useWideViewPort = false
+                settings.loadWithOverviewMode = false
+                setBackgroundColor(Color.TRANSPARENT)
+            }
+        },
+        update = {
             it.loadDataWithBaseURL(
                 null,
                 data,

@@ -22,7 +22,7 @@ import com.yangdai.opennote.data.local.entity.NoteEntity
 import com.yangdai.opennote.presentation.state.SettingsState
 import com.yangdai.opennote.domain.repository.DataStoreRepository
 import com.yangdai.opennote.domain.usecase.NoteOrder
-import com.yangdai.opennote.domain.usecase.Operations
+import com.yangdai.opennote.domain.usecase.UseCases
 import com.yangdai.opennote.domain.usecase.OrderType
 import com.yangdai.opennote.presentation.component.ExportType
 import com.yangdai.opennote.presentation.component.TaskItem
@@ -92,7 +92,7 @@ import javax.inject.Inject
 class SharedViewModel @Inject constructor(
     private val database: Database,
     private val dataStoreRepository: DataStoreRepository,
-    private val operations: Operations
+    private val useCases: UseCases
 ) : ViewModel() {
 
     // 起始页加载状态，初始值为 true
@@ -107,7 +107,7 @@ class SharedViewModel @Inject constructor(
     private val _noteState = MutableStateFlow(NoteState())
     val noteStateFlow = _noteState.asStateFlow()
 
-    val foldersStateFlow = operations.getFolders()
+    val foldersStateFlow = useCases.getFolders()
         .flowOn(Dispatchers.IO)
         .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
@@ -186,7 +186,7 @@ class SharedViewModel @Inject constructor(
     }.flowOn(Dispatchers.IO).stateIn(
         scope = viewModelScope,
         started = SharingStarted.Eagerly,
-        initialValue = SettingsState.DEFAULT
+        initialValue = SettingsState()
     )
 
     fun <T> putPreferenceValue(key: String, value: T) {
@@ -230,7 +230,7 @@ class SharedViewModel @Inject constructor(
                 viewModelScope.launch(Dispatchers.IO) {
                     if (event.recycle) {
                         event.noteEntities.forEach {
-                            operations.updateNote(
+                            useCases.updateNote(
                                 NoteEntity(
                                     id = it.id,
                                     title = it.title,
@@ -244,7 +244,7 @@ class SharedViewModel @Inject constructor(
                         }
                     } else {
                         event.noteEntities.forEach {
-                            operations.deleteNote(it)
+                            useCases.deleteNote(it)
                         }
                     }
                 }
@@ -253,7 +253,7 @@ class SharedViewModel @Inject constructor(
             is ListEvent.RestoreNotes -> {
                 viewModelScope.launch(Dispatchers.IO) {
                     event.noteEntities.forEach {
-                        operations.updateNote(
+                        useCases.updateNote(
                             NoteEntity(
                                 id = it.id,
                                 title = it.title,
@@ -282,7 +282,7 @@ class SharedViewModel @Inject constructor(
                 viewModelScope.launch(Dispatchers.IO) {
                     val folderId = event.folderId
                     event.noteEntities.forEach {
-                        operations.updateNote(
+                        useCases.updateNote(
                             NoteEntity(
                                 id = it.id,
                                 title = it.title,
@@ -319,20 +319,20 @@ class SharedViewModel @Inject constructor(
         when (event) {
             is FolderEvent.AddFolder -> {
                 viewModelScope.launch(Dispatchers.IO) {
-                    operations.addFolder(event.folder)
+                    useCases.addFolder(event.folder)
                 }
             }
 
             is FolderEvent.DeleteFolder -> {
                 viewModelScope.launch(Dispatchers.IO) {
-                    operations.deleteNotesByFolderId(event.folder.id)
-                    operations.deleteFolder(event.folder)
+                    useCases.deleteNotesByFolderId(event.folder.id)
+                    useCases.deleteFolder(event.folder)
                 }
             }
 
             is FolderEvent.UpdateFolder -> {
                 viewModelScope.launch(Dispatchers.IO) {
-                    operations.updateFolder(event.folder)
+                    useCases.updateFolder(event.folder)
                 }
             }
         }
@@ -345,7 +345,7 @@ class SharedViewModel @Inject constructor(
         folderId: Long? = null,
     ) {
         queryNotesJob?.cancel()
-        queryNotesJob = operations.getNotes(noteOrder, trash, filterFolder, folderId)
+        queryNotesJob = useCases.getNotes(noteOrder, trash, filterFolder, folderId)
             .flowOn(Dispatchers.IO)
             .onEach { notes ->
                 _dataState.update {
@@ -364,7 +364,7 @@ class SharedViewModel @Inject constructor(
 
     private fun searchNotes(keyWord: String) {
         queryNotesJob?.cancel()
-        queryNotesJob = operations.searchNotes(keyWord)
+        queryNotesJob = useCases.searchNotes(keyWord)
             .flowOn(Dispatchers.IO)
             .onEach { notes ->
                 _dataState.update {
@@ -409,7 +409,7 @@ class SharedViewModel @Inject constructor(
                         isMarkdown = noteState.isMarkdown,
                         timestamp = System.currentTimeMillis()
                     )
-                    operations.addNote(note)
+                    useCases.addNote(note)
                     _event.emit(UiEvent.NavigateBack)
                 }
             }
@@ -418,7 +418,7 @@ class SharedViewModel @Inject constructor(
                 viewModelScope.launch(Dispatchers.IO) {
                     val note = noteStateFlow.value
                     note.id?.let {
-                        operations.updateNote(
+                        useCases.updateNote(
                             NoteEntity(
                                 id = it,
                                 title = titleState.text.toString(),
@@ -472,7 +472,7 @@ class SharedViewModel @Inject constructor(
                 // 判断id是否与oNote的id相同，不同则从数据库获取笔记，并更新oNote。
                 viewModelScope.launch(Dispatchers.IO) {
                     if (event.id != (_oNote.id ?: -1L))
-                        _oNote = operations.getNoteById(event.id)
+                        _oNote = useCases.getNoteById(event.id)
                             ?: NoteEntity(timestamp = System.currentTimeMillis())
                     _noteState.update { noteState ->
                         noteState.copy(
@@ -500,7 +500,7 @@ class SharedViewModel @Inject constructor(
                     )
                     if (note.id != null)
                         if (note.title != _oNote.title || note.content != _oNote.content || note.isMarkdown != _oNote.isMarkdown || note.folderId != _oNote.folderId)
-                            operations.updateNote(note)
+                            useCases.updateNote(note)
                 }
             }
         }
@@ -568,7 +568,7 @@ class SharedViewModel @Inject constructor(
                                             || (fileName?.endsWith(".html") == true)),
                                     timestamp = System.currentTimeMillis()
                                 )
-                                operations.addNote(note)
+                                useCases.addNote(note)
                             }
                         }
                     }
@@ -651,7 +651,7 @@ class SharedViewModel @Inject constructor(
                     it.copy(progress = 0.2f)
                 }
                 dataActionJob = viewModelScope.launch(Dispatchers.IO) {
-                    val notes = operations.getNotes().first()
+                    val notes = useCases.getNotes().first()
                     val json = Json.encodeToString(notes)
                     _dataActionState.update {
                         it.copy(progress = 0.5f)
@@ -711,7 +711,7 @@ class SharedViewModel @Inject constructor(
                             it.copy(progress = 0.6f)
                         }
                         notes.forEachIndexed { _, noteEntity ->
-                            operations.addNote(noteEntity)
+                            useCases.addNote(noteEntity)
                         }
                     }.onFailure { throwable ->
                         _dataActionState.update {

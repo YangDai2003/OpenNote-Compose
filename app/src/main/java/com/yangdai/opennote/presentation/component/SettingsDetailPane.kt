@@ -8,7 +8,6 @@ import android.os.Build
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.browser.customtabs.CustomTabsIntent
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
@@ -103,8 +102,8 @@ import com.yangdai.opennote.presentation.theme.DarkOrangeColors
 import com.yangdai.opennote.presentation.theme.DarkRedColors
 import com.yangdai.opennote.presentation.theme.DarkPurpleColors
 import com.yangdai.opennote.presentation.util.Constants
+import com.yangdai.opennote.presentation.util.rememberCustomTabsIntent
 import com.yangdai.opennote.presentation.viewmodel.SharedViewModel
-import kotlinx.collections.immutable.toImmutableList
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -120,11 +119,7 @@ fun SettingsDetailPane(
     val folderEntities by sharedViewModel.foldersStateFlow.collectAsStateWithLifecycle()
     val actionState by sharedViewModel.dataActionStateFlow.collectAsStateWithLifecycle()
 
-    val customTabsIntent = remember {
-        CustomTabsIntent.Builder()
-            .setShowTitle(true)
-            .build()
-    }
+    val customTabsIntent = rememberCustomTabsIntent()
 
     val modeOptions = listOf(
         stringResource(R.string.system_default),
@@ -146,7 +141,7 @@ fun SettingsDetailPane(
     var showFolderDialog by rememberSaveable { mutableStateOf(false) }
     var showRatingDialog by rememberSaveable { mutableStateOf(false) }
 
-    var folderId: Long? = null
+    var folderId: Long? by rememberSaveable { mutableStateOf(null) }
     val importLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenMultipleDocuments()
     ) { uriList ->
@@ -672,59 +667,65 @@ fun SettingsDetailPane(
             }
         }
 
-        RatingDialog(
-            showDialog = showRatingDialog,
-            onDismissRequest = { showRatingDialog = false }) { stars ->
-            if (stars > 3) {
-                customTabsIntent.launchUrl(
-                    context,
-                    Uri.parse("https://play.google.com/store/apps/details?id=com.yangdai.opennote")
-                )
-            } else {
-                if (stars == 0) return@RatingDialog
-                // 获取当前应用的版本号
-                val packageInfo =
-                    context.packageManager.getPackageInfo(context.packageName, 0)
-                val appVersion = packageInfo.versionName
-                val deviceModel = Build.MODEL
-                val systemVersion = Build.VERSION.SDK_INT
+        if (showRatingDialog) {
+            RatingDialog(
+                onDismissRequest = { showRatingDialog = false }
+            ) { stars ->
+                if (stars > 3) {
+                    customTabsIntent.launchUrl(
+                        context,
+                        Uri.parse("https://play.google.com/store/apps/details?id=com.yangdai.opennote")
+                    )
+                } else {
+                    if (stars == 0) return@RatingDialog
+                    // 获取当前应用的版本号
+                    val packageInfo =
+                        context.packageManager.getPackageInfo(context.packageName, 0)
+                    val appVersion = packageInfo.versionName
+                    val deviceModel = Build.MODEL
+                    val systemVersion = Build.VERSION.SDK_INT
 
-                val emailIntent = Intent(Intent.ACTION_SENDTO).apply {
-                    data = Uri.parse("mailto:")
-                    putExtra(Intent.EXTRA_EMAIL, arrayOf("dy15800837435@gmail.com"))
-                    putExtra(Intent.EXTRA_SUBJECT, "Feedback - Open Note")
-                    putExtra(
-                        Intent.EXTRA_TEXT,
-                        "Version: $appVersion\nDevice: $deviceModel\nSystem: $systemVersion\n"
+                    val emailIntent = Intent(Intent.ACTION_SENDTO).apply {
+                        data = Uri.parse("mailto:")
+                        putExtra(Intent.EXTRA_EMAIL, arrayOf("dy15800837435@gmail.com"))
+                        putExtra(Intent.EXTRA_SUBJECT, "Feedback - Open Note")
+                        putExtra(
+                            Intent.EXTRA_TEXT,
+                            "Version: $appVersion\nDevice: $deviceModel\nSystem: $systemVersion\n"
+                        )
+                    }
+                    context.startActivity(
+                        Intent.createChooser(
+                            emailIntent,
+                            "Feedback (E-mail)"
+                        )
                     )
                 }
-                context.startActivity(
-                    Intent.createChooser(
-                        emailIntent,
-                        "Feedback (E-mail)"
-                    )
-                )
             }
         }
-        WarningDialog(
-            showDialog = showWarningDialog,
-            message = stringResource(R.string.reset_database_warning),
-            onDismissRequest = { showWarningDialog = false }) {
-            sharedViewModel.onDatabaseEvent(DatabaseEvent.Reset)
+
+        if (showWarningDialog) {
+            WarningDialog(
+                message = stringResource(R.string.reset_database_warning),
+                onDismissRequest = { showWarningDialog = false }
+            ) {
+                sharedViewModel.onDatabaseEvent(DatabaseEvent.Reset)
+            }
         }
+
         ProgressDialog(
             isLoading = actionState.loading,
             progress = actionState.progress,
             infinite = actionState.infinite,
-            errorMessage = actionState.error
-        ) {
-            sharedViewModel.cancelDataAction()
-        }
+            errorMessage = actionState.error,
+            onDismissRequest = sharedViewModel::cancelDataAction
+        )
+
         if (showFolderDialog) {
             FolderListDialog(
                 hint = stringResource(R.string.destination_folder),
                 oFolderId = folderId,
-                folders = folderEntities.toImmutableList(),
+                folders = folderEntities,
                 onDismissRequest = { showFolderDialog = false }
             ) { id ->
                 folderId = id

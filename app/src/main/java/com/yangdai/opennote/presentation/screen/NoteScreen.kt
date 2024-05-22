@@ -99,7 +99,6 @@ import com.yangdai.opennote.presentation.event.UiEvent
 import com.yangdai.opennote.presentation.util.Constants
 import com.yangdai.opennote.presentation.util.timestampToFormatLocalDateTime
 import com.yangdai.opennote.presentation.viewmodel.SharedViewModel
-import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.launch
 import java.io.File
 
@@ -650,7 +649,7 @@ fun NoteScreen(
         FolderListDialog(
             hint = stringResource(R.string.destination_folder),
             oFolderId = noteState.folderId,
-            folders = folderList.toImmutableList(),
+            folders = folderList,
             onDismissRequest = { showFolderDialog = false }
         ) {
             sharedViewModel.onNoteEvent(NoteEvent.FolderChanged(it))
@@ -659,8 +658,7 @@ fun NoteScreen(
 
     ProgressDialog(
         isLoading = actionState.loading,
-        progress = actionState.progress
-    ) {
-        sharedViewModel.cancelDataAction()
-    }
+        progress = actionState.progress,
+        onDismissRequest = sharedViewModel::cancelDataAction
+    )
 }

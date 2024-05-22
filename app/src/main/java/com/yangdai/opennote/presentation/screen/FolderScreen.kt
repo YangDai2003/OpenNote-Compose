@@ -92,20 +92,22 @@ fun FolderScreen(
                         sharedViewModel.onFolderEvent(
                             FolderEvent.UpdateFolder(folderEntity)
                         )
-                    }) {
+                    }
+                ) {
                     sharedViewModel.onFolderEvent(FolderEvent.DeleteFolder(it))
                 }
             }
         }
 
-        ModifyFolderDialog(
-            showDialog = showAddFolderDialog,
-            folder = FolderEntity(),
-            onDismissRequest = { showAddFolderDialog = false }
-        ) {
-            sharedViewModel.onFolderEvent(
-                FolderEvent.AddFolder(it)
-            )
+        if (showAddFolderDialog) {
+            ModifyFolderDialog(
+                folder = FolderEntity(),
+                onDismissRequest = { showAddFolderDialog = false }
+            ) {
+                sharedViewModel.onFolderEvent(
+                    FolderEvent.AddFolder(it)
+                )
+            }
         }
     }
 }

@@ -30,51 +30,49 @@ fun SelectableColorPlatte(
     selected: Boolean,
     colorScheme: ColorScheme,
     onClick: () -> Unit
+) = Surface(
+    modifier = modifier,
+    shape = MaterialTheme.shapes.large,
+    color = MaterialTheme.colorScheme.surfaceContainer
 ) {
     Surface(
-        modifier = modifier,
-        shape = MaterialTheme.shapes.large,
-        color = MaterialTheme.colorScheme.surfaceContainer
+        modifier = Modifier
+            .clickable { onClick() }
+            .padding(12.dp)
+            .size(48.dp),
+        shape = CircleShape,
+        color = colorScheme.primary,
     ) {
-        Surface(
-            modifier = Modifier
-                .clickable { onClick() }
-                .padding(12.dp)
-                .size(48.dp),
-            shape = CircleShape,
-            color = colorScheme.primary,
-        ) {
-            Box {
-                Surface(
+        Box {
+            Surface(
+                modifier = Modifier
+                    .size(48.dp)
+                    .offset((-24).dp, 24.dp),
+                color = colorScheme.tertiary,
+            ) {}
+            Surface(
+                modifier = Modifier
+                    .size(48.dp)
+                    .offset(24.dp, 24.dp),
+                color = colorScheme.secondaryContainer,
+            ) {}
+            AnimatedVisibility(
+                visible = selected,
+                modifier = Modifier
+                    .align(Alignment.Center)
+                    .clip(CircleShape)
+                    .background(colorScheme.tertiaryContainer),
+                enter = fadeIn() + expandIn(expandFrom = Alignment.Center),
+                exit = shrinkOut(shrinkTowards = Alignment.Center) + fadeOut()
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.Check,
+                    contentDescription = "Checked",
                     modifier = Modifier
-                        .size(48.dp)
-                        .offset((-24).dp, 24.dp),
-                    color = colorScheme.tertiary,
-                ) {}
-                Surface(
-                    modifier = Modifier
-                        .size(48.dp)
-                        .offset(24.dp, 24.dp),
-                    color = colorScheme.secondaryContainer,
-                ) {}
-                AnimatedVisibility(
-                    visible = selected,
-                    modifier = Modifier
-                        .align(Alignment.Center)
-                        .clip(CircleShape)
-                        .background(colorScheme.tertiaryContainer),
-                    enter = fadeIn() + expandIn(expandFrom = Alignment.Center),
-                    exit = shrinkOut(shrinkTowards = Alignment.Center) + fadeOut()
-                ) {
-                    Icon(
-                        imageVector = Icons.Outlined.Check,
-                        contentDescription = "Checked",
-                        modifier = Modifier
-                            .padding(8.dp)
-                            .size(16.dp),
-                        tint = MaterialTheme.colorScheme.surface
-                    )
-                }
+                        .padding(8.dp)
+                        .size(16.dp),
+                    tint = MaterialTheme.colorScheme.surface
+                )
             }
         }
     }

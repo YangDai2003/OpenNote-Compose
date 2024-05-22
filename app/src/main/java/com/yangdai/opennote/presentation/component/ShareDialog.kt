@@ -19,26 +19,24 @@ enum class ShareType {
 fun ShareDialog(
     onDismissRequest: () -> Unit,
     onConfirm: (ShareType) -> Unit
-) {
-    AlertDialog(
-        onDismissRequest = onDismissRequest,
-        title = {
-            Text(text = stringResource(R.string.share_note_as))
-        },
-        text = {
-            Column(modifier = Modifier.fillMaxWidth()) {
-                TextOptionButton(text = stringResource(R.string.file)) {
-                    onConfirm(ShareType.FILE)
-                }
-
-                TextOptionButton(text = stringResource(R.string.text)) {
-                    onConfirm(ShareType.TEXT)
-                }
+) = AlertDialog(
+    onDismissRequest = onDismissRequest,
+    title = {
+        Text(text = stringResource(R.string.share_note_as))
+    },
+    text = {
+        Column(modifier = Modifier.fillMaxWidth()) {
+            TextOptionButton(text = stringResource(R.string.file)) {
+                onConfirm(ShareType.FILE)
             }
-        },
-        confirmButton = {}
-    )
-}
+
+            TextOptionButton(text = stringResource(R.string.text)) {
+                onConfirm(ShareType.TEXT)
+            }
+        }
+    },
+    confirmButton = {}
+)
 
 @Composable
 @Preview

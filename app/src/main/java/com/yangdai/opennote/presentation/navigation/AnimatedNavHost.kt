@@ -33,6 +33,7 @@ import com.yangdai.opennote.presentation.screen.SettingsScreen
 import com.yangdai.opennote.presentation.util.Constants.NAV_ANIMATION_TIME
 import com.yangdai.opennote.presentation.util.Constants.LINK
 import com.yangdai.opennote.presentation.util.parseSharedContent
+import com.yangdai.opennote.presentation.navigation.Screen.*
 
 private const val ProgressThreshold = 0.35f
 private const val INITIAL_OFFSET_FACTOR = 0.10f
@@ -108,14 +109,13 @@ fun AnimatedNavHost(
     composable<Home> {
         MainScreen(
             isLargeScreen = isLargeScreen,
-            navigateToNote = { navController.navigate("$Note/$it") }
-        ) { route ->
-            navController.navigate(route)
-        }
+            navigateToNote = { navController.navigate(Note.passId(it)) },
+            navigateToScreen = { navController.navigate(it) }
+        )
     }
 
     composable(
-        route = "$Note/{id}",
+        route = Note.route,
         deepLinks = listOf(
             navDeepLink {
                 action = Intent.ACTION_SEND
@@ -126,7 +126,7 @@ fun AnimatedNavHost(
                 mimeType = "text/*"
             },
             navDeepLink {
-                uriPattern = "$LINK/note/{id}"
+                uriPattern = "$LINK/${Note.route}"
             }
         ),
         arguments = listOf(
@@ -147,8 +147,9 @@ fun AnimatedNavHost(
             isLargeScreen = isLargeScreen,
             sharedText = sharedText,
             scannedText = scannedText,
-            navigateUp = { navController.navigateBackWithHapticFeedback(hapticFeedback) }
-        ) { navController.navigate(CameraX) }
+            navigateUp = { navController.navigateBackWithHapticFeedback(hapticFeedback) },
+            onScanTextClick = { navController.navigate(CameraX) }
+        )
     }
 
     composable<Folders> {
@@ -169,7 +170,7 @@ fun AnimatedNavHost(
     composable<Settings>(
         deepLinks = listOf(
             navDeepLink {
-                uriPattern = "$LINK/settings"
+                uriPattern = "$LINK/${Settings.route}"
             }
         )
     ) {

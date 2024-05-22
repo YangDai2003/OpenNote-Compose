@@ -19,6 +19,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.NavigationDrawerItemDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -29,20 +30,22 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.yangdai.opennote.R
 import com.yangdai.opennote.data.local.entity.FolderEntity
-import com.yangdai.opennote.presentation.navigation.Folders
-import com.yangdai.opennote.presentation.navigation.Settings
-import kotlinx.collections.immutable.ImmutableList
+import com.yangdai.opennote.presentation.navigation.Screen
+import com.yangdai.opennote.presentation.navigation.Screen.*
 
 @Composable
 fun DrawerContent(
-    folderList: ImmutableList<FolderEntity>,
+    folderList: List<FolderEntity>,
     selectedDrawerIndex: Int,
-    navigateTo: (Any) -> Unit,
+    navigateTo: (Screen) -> Unit,
     onClick: (Int, FolderEntity) -> Unit
 ) {
 
@@ -122,3 +125,41 @@ fun DrawerContent(
         }
     }
 }
+
+@Composable
+fun DrawerItem(
+    icon: ImageVector,
+    iconTint: Color = MaterialTheme.colorScheme.onSurface,
+    label: String,
+    badge: String = "",
+    isSelected: Boolean,
+    onClick: () -> Unit
+) = NavigationDrawerItem(
+    modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding),
+    icon = {
+        Icon(
+            modifier = Modifier.padding(horizontal = 12.dp),
+            imageVector = icon,
+            tint = iconTint,
+            contentDescription = "Leading Icon"
+        )
+    },
+    label = {
+        Text(
+            text = label,
+            color = MaterialTheme.colorScheme.onSurface,
+            fontWeight = FontWeight.Bold,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+    },
+    badge = {
+        Text(
+            text = badge,
+            style = MaterialTheme.typography.labelMedium
+        )
+    },
+    shape = MaterialTheme.shapes.large,
+    selected = isSelected,
+    onClick = onClick
+)
