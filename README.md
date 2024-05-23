@@ -3,6 +3,11 @@
 
 # OpenNote
 
+![Android](https://img.shields.io/badge/Android-3DDC84?style=for-the-badge&logo=android&logoColor=white)
+![Kotlin](https://img.shields.io/badge/kotlin-%237F52FF.svg?style=for-the-badge&logo=kotlin&logoColor=white)
+![Compose](https://img.shields.io/static/v1?style=for-the-badge&message=Jetpack+Compose&color=4285F4&logo=Jetpack+Compose&logoColor=FFFFFF&label=)
+![Material](https://img.shields.io/badge/material%20you-lightblue?style=for-the-badge&logoColor=333&logo=material-you)
+
 OpenNote is a modern Android note-taking application built entirely with Compose.  
 It is developed using Kotlin (Compose) and follows the MVVM (Model-View-ViewModel) architecture
 pattern along with Clean Architecture principles.
