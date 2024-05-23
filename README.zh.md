@@ -7,6 +7,8 @@
 ![Kotlin](https://img.shields.io/badge/kotlin-%237F52FF.svg?style=for-the-badge&logo=kotlin&logoColor=white)
 ![Compose](https://img.shields.io/static/v1?style=for-the-badge&message=Jetpack+Compose&color=4285F4&logo=Jetpack+Compose&logoColor=FFFFFF&label=)
 ![Material](https://img.shields.io/badge/material%20you-lightblue?style=for-the-badge&logoColor=333&logo=material-you)
+![LaTeX](https://img.shields.io/badge/latex-%23008080.svg?style=for-the-badge&logo=latex&logoColor=white)
+![Markdown](https://img.shields.io/badge/markdown-%23000000.svg?style=for-the-badge&logo=markdown&logoColor=white)
 
 OpenNote是一款完全使用Compose构建的现代化Android记事本应用程序。
 它使用Gradle和Kotlin DSL进行项目构建和依赖管理, 采用MVVM架构。
