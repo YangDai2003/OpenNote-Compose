@@ -9,6 +9,9 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.basicMarquee
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.draggable
+import androidx.compose.foundation.gestures.rememberDraggableState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -27,6 +30,7 @@ import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.automirrored.outlined.MenuBook
+import androidx.compose.material.icons.filled.DragIndicator
 import androidx.compose.material.icons.outlined.Alarm
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.EditNote
@@ -53,11 +57,13 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TooltipBox
 import androidx.compose.material3.TooltipDefaults
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.adaptive.currentWindowSize
 import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -101,6 +107,7 @@ import com.yangdai.opennote.presentation.util.timestampToFormatLocalDateTime
 import com.yangdai.opennote.presentation.viewmodel.SharedViewModel
 import kotlinx.coroutines.launch
 import java.io.File
+import kotlin.math.abs
 
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
@@ -434,9 +441,7 @@ fun NoteScreen(
             BasicTextField(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .onFocusChanged {
-                        isTitleFocused = it.isFocused
-                    },
+                    .onFocusChanged { isTitleFocused = it.isFocused },
                 state = sharedViewModel.titleState,
                 readOnly = isReadMode,
                 lineLimits = TextFieldLineLimits.SingleLine,
@@ -490,26 +495,52 @@ fun NoteScreen(
             HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
             if (isLargeScreen) {
-                Row(Modifier.fillMaxSize()) {
+                var textFieldWeight by remember { mutableFloatStateOf(0.5f) }
+                val windowWidth = currentWindowSize().width.toFloat()
+                Row(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                     NoteEditTextField(
                         modifier = Modifier
                             .fillMaxHeight()
-                            .weight(1f),
+                            .weight(textFieldWeight),
                         readMode = isReadMode,
                         state = sharedViewModel.contentState,
                         onScanButtonClick = onScanTextClick,
                         onTableButtonClick = { showTableDialog = true },
                         onTaskButtonClick = { showTaskDialog = true },
                         onLinkButtonClick = { showLinkDialog = true },
-                        onPreviewButtonClick = { isReadMode = !isReadMode }
-                    ) {
-                        isContentFocused = it
-                    }
+                        onPreviewButtonClick = { isReadMode = !isReadMode },
+                        onFocusChanged = { isContentFocused = it }
+                    )
+
+                    Icon(
+                        modifier = Modifier
+                            .padding(horizontal = 4.dp)
+                            .draggable(
+                                state = rememberDraggableState { delta ->
+                                    textFieldWeight =
+                                        (textFieldWeight + delta / windowWidth).coerceIn(0.2f, 0.8f)
+                                },
+                                orientation = Orientation.Horizontal,
+                                onDragStopped = {
+                                    val positions = listOf(0.25f, 0.5f, 0.75f)
+                                    val closest =
+                                        positions.minByOrNull { abs(it - textFieldWeight) }
+                                    if (closest != null) {
+                                        textFieldWeight = closest
+                                    }
+                                }
+                            ),
+                        imageVector = Icons.Default.DragIndicator,
+                        contentDescription = "DragIndicator"
+                    )
 
                     Box(
                         Modifier
                             .fillMaxHeight()
-                            .weight(1f)
+                            .weight(1f - textFieldWeight)
                     ) {
                         if (noteState.isMarkdown) {
                             MarkdownText(html = html)
@@ -536,10 +567,9 @@ fun NoteScreen(
                                 onTableButtonClick = { showTableDialog = true },
                                 onTaskButtonClick = { showTaskDialog = true },
                                 onLinkButtonClick = { showLinkDialog = true },
-                                onPreviewButtonClick = { isReadMode = !isReadMode }
-                            ) {
-                                isContentFocused = it
-                            }
+                                onPreviewButtonClick = { isReadMode = !isReadMode },
+                                onFocusChanged = { isContentFocused = it }
+                            )
                         }
 
                         1 -> {

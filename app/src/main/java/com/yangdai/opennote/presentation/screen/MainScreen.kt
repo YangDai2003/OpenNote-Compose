@@ -211,7 +211,6 @@ fun MainScreen(
         },
     ) {
         Scaffold(
-            modifier = Modifier.fillMaxSize(),
             topBar = {
                 AnimatedContent(targetState = selectedDrawerIndex == 0, label = "") {
                     if (it) {
