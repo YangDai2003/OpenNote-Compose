@@ -82,4 +82,25 @@
     <string name="empty_note">Cannot save empty note.</string>
     <string name="confirm">Confirm</string>
     <string name="confirm_msg">The note has not been saved. Are you sure of navigating up?</string>
+    <string name="note_editing">Note editing</string>
+    <string name="select_all">Select All</string>
+    <string name="cut">Cut</string>
+    <string name="copy">Copy</string>
+    <string name="paste">Paste</string>
+    <string name="undo">Undo</string>
+    <string name="redo">Redo</string>
+    <string name="bold">Bold</string>
+    <string name="italic">Italic</string>
+    <string name="underline">Underline</string>
+    <string name="strikethrough">Strikethrough</string>
+    <string name="mark">Mark</string>
+    <string name="scan">Scan</string>
+    <string name="preview">Preview</string>
+    <string name="code">Code</string>
+    <string name="quote">Quote</string>
+    <string name="math">Math</string>
+    <string name="horizontal_rule">Horizontal Rule</string>
+    <string name="task_list">Task List</string>
+    <string name="mermaid_diagram">Mermaid Diagram</string>
+    <string name="create_new_folder">Create new folder</string>
 </resources>

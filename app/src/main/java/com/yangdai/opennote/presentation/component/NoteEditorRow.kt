@@ -48,6 +48,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.yangdai.opennote.R
 import com.yangdai.opennote.presentation.util.Constants
@@ -126,7 +127,7 @@ fun NoteEditorRow(
             IconButtonWithTooltip(
                 enabled = canUndo,
                 imageVector = Icons.AutoMirrored.Outlined.Undo,
-                contentDescription = "Undo",
+                contentDescription = stringResource(id = R.string.undo),
                 shortCutDescription = "Ctrl + Z"
             ) {
                 onEdit(Constants.Editor.UNDO)
@@ -135,7 +136,7 @@ fun NoteEditorRow(
             IconButtonWithTooltip(
                 enabled = canRedo,
                 imageVector = Icons.AutoMirrored.Outlined.Redo,
-                contentDescription = "Redo",
+                contentDescription = stringResource(id = R.string.redo),
                 shortCutDescription = "Ctrl + Y"
             ) {
                 onEdit(Constants.Editor.REDO)
@@ -209,7 +210,7 @@ fun NoteEditorRow(
 
                 IconButtonWithTooltip(
                     imageVector = Icons.Outlined.FormatBold,
-                    contentDescription = "Bold",
+                    contentDescription = stringResource(id = R.string.bold),
                     shortCutDescription = "Ctrl + B"
                 ) {
                     onEdit(Constants.Editor.BOLD)
@@ -217,7 +218,7 @@ fun NoteEditorRow(
 
                 IconButtonWithTooltip(
                     imageVector = Icons.Outlined.FormatItalic,
-                    contentDescription = "Italic",
+                    contentDescription = stringResource(id = R.string.italic),
                     shortCutDescription = "Ctrl + I"
                 ) {
                     onEdit(Constants.Editor.ITALIC)
@@ -225,7 +226,7 @@ fun NoteEditorRow(
 
                 IconButtonWithTooltip(
                     imageVector = Icons.Outlined.FormatUnderlined,
-                    contentDescription = "Underline",
+                    contentDescription = stringResource(id = R.string.underline),
                     shortCutDescription = "Ctrl + U"
                 ) {
                     onEdit(Constants.Editor.UNDERLINE)
@@ -233,7 +234,7 @@ fun NoteEditorRow(
 
                 IconButtonWithTooltip(
                     imageVector = Icons.Outlined.FormatStrikethrough,
-                    contentDescription = "Strikethrough",
+                    contentDescription = stringResource(id = R.string.strikethrough),
                     shortCutDescription = "Ctrl + D"
                 ) {
                     onEdit(Constants.Editor.STRIKETHROUGH)
@@ -241,7 +242,7 @@ fun NoteEditorRow(
 
                 IconButtonWithTooltip(
                     imageVector = Icons.Outlined.FormatPaint,
-                    contentDescription = "Mark",
+                    contentDescription = stringResource(id = R.string.mark),
                     shortCutDescription = "Ctrl + M"
                 ) {
                     onEdit(Constants.Editor.MARK)
@@ -249,7 +250,7 @@ fun NoteEditorRow(
 
                 IconButtonWithTooltip(
                     imageVector = Icons.Outlined.Code,
-                    contentDescription = "Code",
+                    contentDescription = stringResource(id = R.string.code),
                     shortCutDescription = "Ctrl + Shift + K"
                 ) {
                     onEdit(Constants.Editor.INLINE_CODE)
@@ -271,7 +272,7 @@ fun NoteEditorRow(
 
                 IconButtonWithTooltip(
                     painter = R.drawable.function,
-                    contentDescription = "Math",
+                    contentDescription = stringResource(id = R.string.math),
                     shortCutDescription = "Ctrl + Shift + M"
                 ) {
                     onEdit(Constants.Editor.INLINE_MATH)
@@ -279,7 +280,7 @@ fun NoteEditorRow(
 
                 IconButtonWithTooltip(
                     imageVector = Icons.Outlined.FormatQuote,
-                    contentDescription = "Quote",
+                    contentDescription = stringResource(id = R.string.quote),
                     shortCutDescription = "Ctrl + Shift + Q"
                 ) {
                     onEdit(Constants.Editor.QUOTE)
@@ -287,7 +288,7 @@ fun NoteEditorRow(
 
                 IconButtonWithTooltip(
                     imageVector = Icons.Outlined.HorizontalRule,
-                    contentDescription = "Horizontal Rule",
+                    contentDescription = stringResource(id = R.string.horizontal_rule),
                     shortCutDescription = "Ctrl + Shift + R"
                 ) {
                     onEdit(Constants.Editor.RULE)
@@ -295,14 +296,14 @@ fun NoteEditorRow(
 
                 IconButtonWithTooltip(
                     imageVector = Icons.Outlined.TableChart,
-                    contentDescription = "Table",
+                    contentDescription = stringResource(id = R.string.table),
                     shortCutDescription = "Ctrl + T",
                     onClick = onTableButtonClick
                 )
 
                 IconButtonWithTooltip(
                     imageVector = Icons.Outlined.AddChart,
-                    contentDescription = "Mermaid",
+                    contentDescription = stringResource(id = R.string.mermaid_diagram),
                     shortCutDescription = "Ctrl + Shift + D"
                 ) {
                     onEdit(Constants.Editor.DIAGRAM)
@@ -311,21 +312,21 @@ fun NoteEditorRow(
 
             IconButtonWithTooltip(
                 imageVector = Icons.Outlined.CheckBox,
-                contentDescription = "Task",
+                contentDescription = stringResource(id = R.string.task_list),
                 shortCutDescription = "Ctrl + Shift + T",
                 onClick = onTaskButtonClick
             )
 
             IconButtonWithTooltip(
                 imageVector = Icons.Outlined.Link,
-                contentDescription = "Link",
+                contentDescription = stringResource(id = R.string.link),
                 shortCutDescription = "Ctrl + K",
                 onClick = onLinkButtonClick
             )
 
             IconButtonWithTooltip(
                 imageVector = Icons.Outlined.DocumentScanner,
-                contentDescription = "OCR",
+                contentDescription = stringResource(id = R.string.scan),
                 shortCutDescription = "Ctrl + S",
                 onClick = onScanButtonClick
             )

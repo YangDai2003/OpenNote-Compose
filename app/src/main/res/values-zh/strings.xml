@@ -80,4 +80,25 @@
     <string name="empty_note">不能保存空笔记。</string>
     <string name="confirm">确定</string>
     <string name="confirm_msg">笔记尚未保存，确定要返回主界面吗?</string>
+    <string name="note_editing">笔记编辑</string>
+    <string name="select_all">全选</string>
+    <string name="cut">剪切</string>
+    <string name="copy">复制</string>
+    <string name="paste">粘贴</string>
+    <string name="undo">撤销</string>
+    <string name="redo">恢复</string>
+    <string name="bold">粗体</string>
+    <string name="italic">斜体</string>
+    <string name="underline">下划线</string>
+    <string name="strikethrough">删除线</string>
+    <string name="mark">标记</string>
+    <string name="scan">扫描</string>
+    <string name="preview">预览</string>
+    <string name="code">代码</string>
+    <string name="quote">引用</string>
+    <string name="math">数学</string>
+    <string name="horizontal_rule">分割线</string>
+    <string name="task_list">任务列表</string>
+    <string name="mermaid_diagram">Mermaid 图表</string>
+    <string name="create_new_folder">新建文件夹</string>
 </resources>
