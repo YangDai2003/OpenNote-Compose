@@ -100,5 +100,4 @@
     <string name="horizontal_rule">分割线</string>
     <string name="task_list">任务列表</string>
     <string name="mermaid_diagram">Mermaid 图表</string>
-    <string name="create_new_folder">新建文件夹</string>
 </resources>

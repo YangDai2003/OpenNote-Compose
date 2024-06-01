@@ -102,5 +102,4 @@
     <string name="horizontal_rule">Horizontal Rule</string>
     <string name="task_list">Task List</string>
     <string name="mermaid_diagram">Mermaid Diagram</string>
-    <string name="create_new_folder">Create new folder</string>
 </resources>

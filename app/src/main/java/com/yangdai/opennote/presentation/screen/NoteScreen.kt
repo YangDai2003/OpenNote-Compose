@@ -204,9 +204,7 @@ fun NoteScreen(
 
     LaunchedEffect(true) {
         sharedViewModel.event.collect { event ->
-            when (event) {
-                is UiEvent.NavigateBack -> navigateUp()
-            }
+            if (event is UiEvent.NavigateBack) navigateUp()
         }
     }
 
