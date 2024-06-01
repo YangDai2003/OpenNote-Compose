@@ -8,7 +8,6 @@ import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -17,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextLinkStyles
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.LineBreak
 import androidx.compose.ui.text.style.TextDecoration
@@ -62,7 +62,15 @@ fun RichText(str: String) {
                     // Append plain text
                     append(text.substring(lastIndex, range.first))
 
-                    val url = LinkAnnotation.Url(link) {
+                    val url = LinkAnnotation.Url(
+                        url = link,
+                        styles = TextLinkStyles(
+                            style = SpanStyle(
+                                color = linkColor,
+                                textDecoration = TextDecoration.Underline
+                            )
+                        )
+                    ) {
                         // Handle click event
                         val url = (it as LinkAnnotation.Url).url
 
@@ -91,9 +99,6 @@ fun RichText(str: String) {
             style = MaterialTheme.typography.bodyLarge.copy(
                 color = MaterialTheme.colorScheme.onSurface,
                 lineBreak = LineBreak.Paragraph
-            ),
-            linkStyles = TextDefaults.linkStyles().copy(
-                linkStyle = SpanStyle(color = linkColor, textDecoration = TextDecoration.Underline)
             )
         )
     }

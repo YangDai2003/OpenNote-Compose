@@ -3,7 +3,6 @@ package com.yangdai.opennote.presentation.screen
 import android.os.Parcelable
 import androidx.activity.compose.BackHandler
 import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
-import androidx.compose.material3.adaptive.layout.AnimatedPane
 import androidx.compose.material3.adaptive.layout.ListDetailPaneScaffold
 import androidx.compose.material3.adaptive.layout.ListDetailPaneScaffoldRole
 import androidx.compose.material3.adaptive.navigation.rememberListDetailPaneScaffoldNavigator
@@ -29,19 +28,15 @@ fun SettingsScreen(navigateUp: () -> Unit) {
         directive = navigator.scaffoldDirective,
         value = navigator.scaffoldValue,
         listPane = {
-            AnimatedPane {
-                SettingsListPane(navigateUp = navigateUp) {
-                    navigator.navigateTo(ListDetailPaneScaffoldRole.Detail, it)
-                }
+            SettingsListPane(navigateUp = navigateUp) {
+                navigator.navigateTo(ListDetailPaneScaffoldRole.Detail, it)
             }
         },
         detailPane = {
-            AnimatedPane {
-                navigator.currentDestination?.content?.let { item ->
-                    SettingsDetailPane(selectedSettingsItem = item) {
-                        if (navigator.canNavigateBack()) {
-                            navigator.navigateBack()
-                        }
+            navigator.currentDestination?.content?.let { item ->
+                SettingsDetailPane(selectedSettingsItem = item) {
+                    if (navigator.canNavigateBack()) {
+                        navigator.navigateBack()
                     }
                 }
             }
