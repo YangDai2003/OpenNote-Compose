@@ -15,7 +15,7 @@
     <string name="privacy_policy">Privacy policy</string>
     <string name="rate_this_app">Rate this app</string>
     <string name="share_this_app">Share this app</string>
-    <string name="system_default">Follow system</string>
+    <string name="system_default">System default</string>
     <string name="light">Off</string>
     <string name="dark">On</string>
     <string name="dynamic_only_android_12">Dynamic color</string>

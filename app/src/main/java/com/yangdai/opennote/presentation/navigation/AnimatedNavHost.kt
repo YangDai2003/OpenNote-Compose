@@ -1,6 +1,7 @@
 package com.yangdai.opennote.presentation.navigation
 
 import android.content.Intent
+import android.os.Build
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.FastOutLinearInEasing
@@ -114,21 +115,31 @@ fun AnimatedNavHost(
         )
     }
 
+    val noteNavDeepLink = mutableListOf(
+        navDeepLink {
+            action = Intent.ACTION_SEND
+            mimeType = "text/*"
+        },
+        navDeepLink {
+            action = Intent.ACTION_VIEW
+            mimeType = "text/*"
+        },
+        navDeepLink {
+            uriPattern = "$LINK/${Note.route}"
+        }
+    )
+
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+        noteNavDeepLink.add(
+            navDeepLink {
+                action = Intent.ACTION_CREATE_NOTE
+            }
+        )
+    }
+
     composable(
         route = Note.route,
-        deepLinks = listOf(
-            navDeepLink {
-                action = Intent.ACTION_SEND
-                mimeType = "text/*"
-            },
-            navDeepLink {
-                action = Intent.ACTION_VIEW
-                mimeType = "text/*"
-            },
-            navDeepLink {
-                uriPattern = "$LINK/${Note.route}"
-            }
-        ),
+        deepLinks = noteNavDeepLink,
         arguments = listOf(
             navArgument("id") {
                 type = NavType.LongType

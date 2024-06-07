@@ -22,6 +22,30 @@ import androidx.compose.ui.viewinterop.AndroidView
 import com.yangdai.opennote.presentation.theme.linkColor
 import com.yangdai.opennote.presentation.util.rememberCustomTabsIntent
 
+data class MarkdownStyles(
+    val hexTextColor: String,
+    val hexCodeBackgroundColor: String,
+    val hexPreBackgroundColor: String,
+    val hexQuoteBackgroundColor: String,
+    val hexLinkColor: String,
+    val hexBorderColor: String
+)
+
+private fun Int.toHexColor(): String {
+    return String.format("#%06X", 0xFFFFFF and this)
+}
+
+private fun createMarkdownStyles(colorScheme: ColorScheme) =
+    MarkdownStyles(
+        hexTextColor = colorScheme.onSurface.toArgb().toHexColor(),
+        hexCodeBackgroundColor = colorScheme.surfaceVariant.toArgb().toHexColor(),
+        hexPreBackgroundColor = colorScheme.surfaceColorAtElevation(1.dp).toArgb().toHexColor(),
+        hexQuoteBackgroundColor = colorScheme.secondaryContainer.toArgb().toHexColor(),
+        hexLinkColor = linkColor.toArgb().toHexColor(),
+        hexBorderColor = colorScheme.outline.toArgb().toHexColor()
+    )
+
+
 @SuppressLint("SetJavaScriptEnabled")
 @Composable
 fun MarkdownText(
@@ -29,34 +53,11 @@ fun MarkdownText(
     colorScheme: ColorScheme = MaterialTheme.colorScheme
 ) {
 
-    val hexTextColor = remember(colorScheme) {
-        String.format("#%06X", 0xFFFFFF and colorScheme.onSurface.toArgb())
-    }
-    val hexCodeBackgroundColor = remember(colorScheme) {
-        String.format("#%06X", 0xFFFFFF and colorScheme.surfaceVariant.toArgb())
-    }
-    val hexPreBackgroundColor = remember(colorScheme) {
-        String.format("#%06X", 0xFFFFFF and colorScheme.surfaceColorAtElevation(1.dp).toArgb())
-    }
-    val hexQuoteBackgroundColor = remember(colorScheme) {
-        String.format("#%06X", 0xFFFFFF and colorScheme.secondaryContainer.toArgb())
-    }
-    val hexLinkColor = remember(colorScheme) {
-        String.format("#%06X", 0xFFFFFF and linkColor.toArgb())
-    }
-    val hexBorderColor = remember(colorScheme) {
-        String.format("#%06X", 0xFFFFFF and colorScheme.outline.toArgb())
+    val markdownStyles = remember(colorScheme) {
+        createMarkdownStyles(colorScheme)
     }
 
-    val data by remember(
-        html,
-        hexTextColor,
-        hexCodeBackgroundColor,
-        hexPreBackgroundColor,
-        hexQuoteBackgroundColor,
-        hexLinkColor,
-        hexBorderColor
-    ) {
+    val data by remember(html, markdownStyles) {
         mutableStateOf(
             """
                     <!DOCTYPE html>
@@ -66,7 +67,7 @@ fun MarkdownText(
                     <script>
                         MathJax = {
                             tex: {
-                                inlineMath: [['${'$'}', '${'$'}'], ['\\(', '\\)']]
+                                inlineMath: [['$', '$'], ['\\(', '\\)']]
                             }
                         };
                     </script>
@@ -78,17 +79,17 @@ fun MarkdownText(
                         mermaid.initialize({ startOnLoad: true });
                     </script>
                     <style type="text/css">
-                        body { color: $hexTextColor; padding: 0px; margin: 0px; }
-                        a { color: $hexLinkColor; }
-                        p code { background-color: $hexCodeBackgroundColor; padding: 4px 4px 2px 4px; margin: 4px; border-radius: 4px; }
-                        td code { background-color: $hexCodeBackgroundColor; padding: 4px 4px 2px 4px; margin: 4px; border-radius: 4px; }
-                        pre { background-color: $hexPreBackgroundColor; display: block; white-space: nowrap; padding: 16px; overflow-x: auto; }
-                        blockquote { border-left: 4px solid ${hexQuoteBackgroundColor}; padding-left: 0px; margin-left: 0px; padding-right: 0px; margin-right: 0px; }
+                        body { color: ${markdownStyles.hexTextColor}; padding: 0px; margin: 0px; }
+                        a { color: ${markdownStyles.hexLinkColor}; }
+                        p code { background-color: ${markdownStyles.hexCodeBackgroundColor}; padding: 4px 4px 2px 4px; margin: 4px; border-radius: 4px; }
+                        td code { background-color: ${markdownStyles.hexCodeBackgroundColor}; padding: 4px 4px 2px 4px; margin: 4px; border-radius: 4px; }
+                        pre { background-color: ${markdownStyles.hexPreBackgroundColor}; display: block; padding: 16px; overflow-x: auto; }
+                        blockquote { border-left: 4px solid ${markdownStyles.hexQuoteBackgroundColor}; padding-left: 0px; margin-left: 0px; padding-right: 0px; margin-right: 0px; }
                         blockquote > * { margin-left: 16px; padding: 0px; }
                         blockquote blockquote { margin: 16px; }
                         table { border-collapse: collapse; display: block; white-space: nowrap; overflow-x: auto; margin-right: 1px; }
-                        th, td { border: 1px solid $hexBorderColor; padding: 6px 13px; line-height: 1.5; }
-                        tr:nth-child(even) { background-color: $hexPreBackgroundColor; }
+                        th, td { border: 1px solid ${markdownStyles.hexBorderColor}; padding: 6px 13px; line-height: 1.5; }
+                        tr:nth-child(even) { background-color: ${markdownStyles.hexPreBackgroundColor}; }
                     </style>
                     </head>
                     <body>

@@ -7,6 +7,7 @@ sealed class Screen(val route: String) {
     @Serializable
     data object Home : Screen("home")
 
+    @Serializable
     data object Note : Screen("note/{id}") {
         fun passId(id: Long): String {
             return this.route.replace("{id}", id.toString())

@@ -132,10 +132,10 @@ class SharedViewModel @Inject constructor(
     val html = snapshotFlow { contentState.text }
         .debounce(100)
         .mapLatest { renderer.render(parser.parse(it.toString())) }
-        .flowOn(Dispatchers.IO)
+        .flowOn(Dispatchers.Default)
         .stateIn(
             scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5_000),
+            started = SharingStarted.WhileSubscribed(5_000L),
             initialValue = ""
         )
 

@@ -2,8 +2,8 @@
 agp = "8.4.1"
 glance = "1.1.0-rc01"
 kotlin = "2.0.0"
-ksp = "2.0.0-1.0.21"
-kotlinxSerialization = "1.6.3"
+ksp = "2.0.0-1.0.22"
+kotlinxSerialization = "1.7.0"
 
 composeBom = "2024.05.00"
 composeFoundation = "1.7.0-beta02"

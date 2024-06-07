@@ -1,16 +1,12 @@
 package com.yangdai.opennote.presentation.glance
 
-import android.app.PendingIntent
 import android.content.Context
-import android.content.Intent
 import android.os.Build
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.app.TaskStackBuilder
-import androidx.core.net.toUri
 import androidx.glance.GlanceId
 import androidx.glance.GlanceModifier
 import androidx.glance.GlanceTheme
@@ -50,6 +46,7 @@ import com.yangdai.opennote.data.di.AppModule
 import com.yangdai.opennote.data.local.entity.NoteEntity
 import com.yangdai.opennote.data.repository.NoteRepositoryImpl
 import com.yangdai.opennote.presentation.util.Constants.LINK
+import com.yangdai.opennote.presentation.util.sendPendingIntent
 
 class NoteListWidget : GlanceAppWidget() {
 
@@ -124,7 +121,7 @@ class NoteListWidget : GlanceAppWidget() {
                         Column(
                             modifier = GlanceModifier
                                 .fillMaxWidth()
-                                .padding(horizontal = 10.dp)
+                                .padding(horizontal = 10.dp, vertical = 2.dp)
                                 .background(GlanceTheme.colors.secondaryContainer)
                                 .appWidgetInnerCornerRadius()
                                 .padding(4.dp)
@@ -184,13 +181,7 @@ class NoteAction : ActionCallback {
         glanceId: GlanceId,
         parameters: ActionParameters
     ) {
-        val intent = Intent(context, MainActivity::class.java)
-            .setData("$LINK/note/${parameters[destinationKey]}".toUri())
-        val pendingIntent = TaskStackBuilder.create(context).run {
-            addNextIntentWithParentStack(intent)
-            getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
-        }
-        pendingIntent?.send()
+        context.sendPendingIntent("$LINK/note/${parameters[destinationKey]}")
     }
 }
 

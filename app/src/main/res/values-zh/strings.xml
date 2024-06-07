@@ -15,7 +15,7 @@
     <string name="privacy_policy">隐私权政策</string>
     <string name="rate_this_app">评价应用</string>
     <string name="share_this_app">分享应用</string>
-    <string name="system_default">跟随系统</string>
+    <string name="system_default">系统默认</string>
     <string name="light">关</string>
     <string name="dark">开</string>
     <string name="dynamic_only_android_12">动态颜色</string>
