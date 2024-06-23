@@ -100,4 +100,12 @@
     <string name="horizontal_rule">Horizontale Linie</string>
     <string name="task_list">Aufgabenliste</string>
     <string name="mermaid_diagram">Mermaid-Diagramm</string>
+    <string name="unlock_to_use_open_note">Freischalten, um Open Note zu verwenden</string>
+    <string name="account_cloud">Konto und Cloud-Dienste</string>
+    <string name="sync">Sync</string>
+    <string name="the_feature_is_still_under_construction_and_is_still_unavailable">Die Funktion befindet sich noch in der Entwicklung und ist derzeit nicht verfügbar.</string>
+    <string name="url">URL</string>
+    <string name="account">Konto</string>
+    <string name="pass">Passwort</string>
+    <string name="color_picker">Farbwähler</string>
 </resources>

@@ -83,13 +83,13 @@ import com.yangdai.opennote.data.local.entity.NoteEntity
 import com.yangdai.opennote.presentation.component.AdaptiveNavigationScreen
 import com.yangdai.opennote.presentation.component.ColumnNoteCard
 import com.yangdai.opennote.presentation.component.DrawerContent
-import com.yangdai.opennote.presentation.component.ExportDialog
-import com.yangdai.opennote.presentation.component.FolderListDialog
+import com.yangdai.opennote.presentation.component.dialog.ExportDialog
+import com.yangdai.opennote.presentation.component.dialog.FolderListDialog
 import com.yangdai.opennote.presentation.component.GridNoteCard
 import com.yangdai.opennote.presentation.event.ListEvent
-import com.yangdai.opennote.presentation.component.ProgressDialog
+import com.yangdai.opennote.presentation.component.dialog.ProgressDialog
 import com.yangdai.opennote.presentation.component.AdaptiveTopSearchbar
-import com.yangdai.opennote.presentation.component.OrderSectionDialog
+import com.yangdai.opennote.presentation.component.dialog.OrderSectionDialog
 import com.yangdai.opennote.presentation.event.DatabaseEvent
 import com.yangdai.opennote.presentation.navigation.Screen
 import com.yangdai.opennote.presentation.viewmodel.SharedViewModel

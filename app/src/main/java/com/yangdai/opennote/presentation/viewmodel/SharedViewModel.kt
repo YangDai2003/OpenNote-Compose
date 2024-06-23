@@ -24,8 +24,8 @@ import com.yangdai.opennote.domain.repository.DataStoreRepository
 import com.yangdai.opennote.domain.usecase.NoteOrder
 import com.yangdai.opennote.domain.usecase.UseCases
 import com.yangdai.opennote.domain.usecase.OrderType
-import com.yangdai.opennote.presentation.component.ExportType
-import com.yangdai.opennote.presentation.component.TaskItem
+import com.yangdai.opennote.presentation.component.dialog.ExportType
+import com.yangdai.opennote.presentation.component.dialog.TaskItem
 import com.yangdai.opennote.presentation.event.DatabaseEvent
 import com.yangdai.opennote.presentation.event.FolderEvent
 import com.yangdai.opennote.presentation.event.ListEvent
@@ -86,7 +86,6 @@ import org.commonmark.renderer.html.HtmlRenderer
 import java.io.OutputStreamWriter
 import java.util.Locale
 import javax.inject.Inject
-
 
 @HiltViewModel
 class SharedViewModel @Inject constructor(

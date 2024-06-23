@@ -1,4 +1,4 @@
-package com.yangdai.opennote.presentation.component
+package com.yangdai.opennote.presentation.component.setting
 
 import androidx.compose.foundation.Image
 import androidx.compose.material3.ColorScheme

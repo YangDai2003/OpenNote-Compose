@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.yangdai.opennote.presentation.theme.linkColor
 import com.yangdai.opennote.presentation.util.rememberCustomTabsIntent
+import com.yangdai.opennote.presentation.util.toHexColor
 
 data class MarkdownStyles(
     val hexTextColor: String,
@@ -30,10 +31,6 @@ data class MarkdownStyles(
     val hexLinkColor: String,
     val hexBorderColor: String
 )
-
-private fun Int.toHexColor(): String {
-    return String.format("#%06X", 0xFFFFFF and this)
-}
 
 private fun createMarkdownStyles(colorScheme: ColorScheme) =
     MarkdownStyles(

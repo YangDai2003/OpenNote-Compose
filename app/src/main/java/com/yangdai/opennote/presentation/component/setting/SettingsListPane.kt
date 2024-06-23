@@ -1,4 +1,4 @@
-package com.yangdai.opennote.presentation.component
+package com.yangdai.opennote.presentation.component.setting
 
 import android.content.Intent
 import android.net.Uri
@@ -13,6 +13,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.outlined.CloudCircle
 import androidx.compose.material.icons.outlined.Language
 import androidx.compose.material.icons.outlined.Palette
 import androidx.compose.material.icons.outlined.PermDeviceInformation
@@ -35,6 +36,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.glance.appwidget.GlanceAppWidgetManager
 import com.yangdai.opennote.R
+import com.yangdai.opennote.presentation.component.TopBarTitle
 import com.yangdai.opennote.presentation.glance.NoteListWidgetReceiver
 import com.yangdai.opennote.presentation.screen.SettingsItem
 import kotlinx.coroutines.launch
@@ -72,7 +74,9 @@ fun SettingsListPane(
                 actions = {
                     IconButton(onClick = {
                         scope.launch {
-                            GlanceAppWidgetManager(context).requestPinGlanceAppWidget(NoteListWidgetReceiver::class.java)
+                            GlanceAppWidgetManager(context).requestPinGlanceAppWidget(
+                                NoteListWidgetReceiver::class.java
+                            )
                         }
                     }) {
                         Icon(
@@ -160,7 +164,11 @@ fun SettingsListPane(
                     },
                     headlineContent = { Text(text = stringResource(R.string.language)) },
                     supportingContent = {
-                        Text(text = stringResource(R.string.language_description))
+                        Text(
+                            text = stringResource(R.string.language_description),
+                            maxLines = 1,
+                            modifier = Modifier.basicMarquee()
+                        )
                     }
                 )
             }
@@ -182,7 +190,9 @@ fun SettingsListPane(
                     Text(
                         text = stringResource(R.string.backup)
                                 + "  •  " + stringResource(id = R.string.recovery)
-                                + "  •  " + stringResource(id = R.string.password)
+                                + "  •  " + stringResource(id = R.string.password),
+                        maxLines = 1,
+                        modifier = Modifier.basicMarquee()
                     )
                 }
             )
@@ -191,7 +201,29 @@ fun SettingsListPane(
                 modifier = Modifier
                     .padding(vertical = 4.dp)
                     .clickable {
-                        navigateToDetail(SettingsItem(2, R.string.app_info))
+                        navigateToDetail(SettingsItem(2, R.string.account_cloud))
+                    },
+                leadingContent = {
+                    Icon(
+                        imageVector = Icons.Outlined.CloudCircle,
+                        contentDescription = "Account"
+                    )
+                },
+                headlineContent = { Text(text = stringResource(R.string.account_cloud)) },
+                supportingContent = {
+                    Text(
+                        text = "WebDAV" + "  •  " + "Dropbox" + "  •  " + stringResource(R.string.sync),
+                        maxLines = 1,
+                        modifier = Modifier.basicMarquee()
+                    )
+                }
+            )
+
+            ListItem(
+                modifier = Modifier
+                    .padding(vertical = 4.dp)
+                    .clickable {
+                        navigateToDetail(SettingsItem(3, R.string.app_info))
                     },
                 leadingContent = {
                     Icon(
@@ -204,7 +236,9 @@ fun SettingsListPane(
                     Text(
                         text = stringResource(R.string.version) + "  •  "
                                 + stringResource(R.string.guide) + "  •  "
-                                + stringResource(R.string.privacy_policy)
+                                + stringResource(R.string.privacy_policy),
+                        maxLines = 1,
+                        modifier = Modifier.basicMarquee()
                     )
                 }
             )

@@ -20,13 +20,12 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.yangdai.opennote.R
-import com.yangdai.opennote.presentation.theme.MaterialColors
+import com.yangdai.opennote.presentation.component.LogoText
 import com.yangdai.opennote.presentation.util.BiometricPromptManager
 
 @Composable
@@ -95,16 +94,10 @@ fun LoginOverlayScreen(
         verticalArrangement = Arrangement.SpaceEvenly,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(
-            text = stringResource(id = R.string.app_name),
-            style = MaterialTheme.typography.displaySmall.copy(
-                brush = Brush.linearGradient(
-                    colors = MaterialColors
-                )
-            )
-        )
 
-        val title = stringResource(R.string.app_name)
+        LogoText()
+
+        val title = stringResource(R.string.unlock_to_use_open_note)
         val negativeButtonText = stringResource(android.R.string.cancel)
 
         OutlinedButton(onClick = {

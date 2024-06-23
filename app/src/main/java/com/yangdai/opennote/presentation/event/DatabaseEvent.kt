@@ -3,7 +3,7 @@ package com.yangdai.opennote.presentation.event
 import android.content.ContentResolver
 import android.net.Uri
 import com.yangdai.opennote.data.local.entity.NoteEntity
-import com.yangdai.opennote.presentation.component.ExportType
+import com.yangdai.opennote.presentation.component.dialog.ExportType
 
 sealed interface DatabaseEvent {
 

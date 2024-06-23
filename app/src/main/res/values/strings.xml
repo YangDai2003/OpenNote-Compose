@@ -102,4 +102,12 @@
     <string name="horizontal_rule">Horizontal Rule</string>
     <string name="task_list">Task List</string>
     <string name="mermaid_diagram">Mermaid Diagram</string>
+    <string name="unlock_to_use_open_note">Unlock to use Open Note</string>
+    <string name="account_cloud">Account and cloud services</string>
+    <string name="sync">Sync</string>
+    <string name="the_feature_is_still_under_construction_and_is_still_unavailable">The feature is still under construction and is still unavailable.</string>
+    <string name="url">URL</string>
+    <string name="account">Account</string>
+    <string name="pass">Password</string>
+    <string name="color_picker">Color Picker</string>
 </resources>

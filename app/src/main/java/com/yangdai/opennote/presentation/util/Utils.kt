@@ -69,3 +69,7 @@ fun Context.sendPendingIntent(data: String) {
     }
     pendingIntent?.send()
 }
+
+fun Int.toHexColor(): String {
+    return String.format("#%06X", 0xFFFFFF and this)
+}

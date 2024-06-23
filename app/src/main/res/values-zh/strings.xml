@@ -100,4 +100,12 @@
     <string name="horizontal_rule">分割线</string>
     <string name="task_list">任务列表</string>
     <string name="mermaid_diagram">Mermaid 图表</string>
+    <string name="unlock_to_use_open_note">解锁以使用 Open Note</string>
+    <string name="account_cloud">账号和云服务</string>
+    <string name="sync">同步</string>
+    <string name="the_feature_is_still_under_construction_and_is_still_unavailable">功能仍在构建中，暂不可用。</string>
+    <string name="url">网址</string>
+    <string name="account">账号</string>
+    <string name="pass">密码</string>
+    <string name="color_picker">颜色选择器</string>
 </resources>

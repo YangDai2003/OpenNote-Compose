@@ -43,9 +43,9 @@ import com.yangdai.opennote.MainActivity
 import com.yangdai.opennote.R
 import com.yangdai.opennote.data.local.entity.FolderEntity
 import com.yangdai.opennote.presentation.event.FolderEvent
-import com.yangdai.opennote.presentation.component.ModifyFolderDialog
+import com.yangdai.opennote.presentation.component.dialog.ModifyFolderDialog
 import com.yangdai.opennote.presentation.component.TopBarTitle
-import com.yangdai.opennote.presentation.component.WarningDialog
+import com.yangdai.opennote.presentation.component.dialog.WarningDialog
 import com.yangdai.opennote.presentation.viewmodel.SharedViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)

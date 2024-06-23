@@ -1,4 +1,4 @@
-package com.yangdai.opennote.presentation.component
+package com.yangdai.opennote.presentation.component.dialog
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
