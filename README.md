@@ -127,3 +127,4 @@ an issue. If you want to contribute code directly to this project, you can creat
 
 - [ ] Support WebDAV and Dropbox
 - [ ] Add more preference settings
+- [ ] Add in-note search function
