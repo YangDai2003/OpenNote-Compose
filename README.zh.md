@@ -112,5 +112,5 @@ git clone https://github.com/YangDai2003/OpenNote.git
 
 ## 待办
 
-- [] 添加对 WebDAV 和 Dropbox 的支持
-- [] 添加更多偏好设置
+- [ ] 添加对 WebDAV 和 Dropbox 的支持
+- [ ] 添加更多偏好设置

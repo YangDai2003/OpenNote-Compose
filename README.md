@@ -125,5 +125,5 @@ an issue. If you want to contribute code directly to this project, you can creat
 
 ## TODO
 
-- [] Support WebDAV and Dropbox
-- [] Add more preference settings
+- [ ] Support WebDAV and Dropbox
+- [ ] Add more preference settings
