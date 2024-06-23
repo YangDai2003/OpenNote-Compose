@@ -109,3 +109,8 @@ git clone https://github.com/YangDai2003/OpenNote.git
 ## 参考
 
 - [MaskAnim](https://github.com/setruth/MaskAnim)：用于使用遮罩动画来切换主题功能的实现。
+
+## 待办
+
+- [] 添加对 WebDAV 和 Dropbox 的支持
+- [] 添加更多偏好设置

@@ -122,3 +122,8 @@ an issue. If you want to contribute code directly to this project, you can creat
 
 - [MaskAnim](https://github.com/setruth/MaskAnim): Implementation of the theme switching function
   using mask animation.
+
+## TODO
+
+- [] Support WebDAV and Dropbox
+- [] Add more preference settings
