@@ -3,6 +3,7 @@ package com.yangdai.opennote.data.di
 import android.content.Context
 import androidx.room.Room
 import com.yangdai.opennote.data.local.Database
+import com.yangdai.opennote.data.local.MIGRATION_1_2
 import com.yangdai.opennote.data.repository.DataStoreRepositoryImpl
 import com.yangdai.opennote.data.repository.FolderRepositoryImpl
 import com.yangdai.opennote.data.repository.NoteRepositoryImpl
@@ -44,7 +45,7 @@ object AppModule {
             context,
             Database::class.java,
             Database.NAME
-        ).build()
+        ).addMigrations(MIGRATION_1_2).build()
 
     @Provides
     @Singleton
@@ -61,19 +62,17 @@ object AppModule {
     fun provideNoteUseCases(
         noteRepository: NoteRepository,
         folderRepository: FolderRepository
-    ): UseCases {
-        return UseCases(
-            getNotes = GetNotes(noteRepository),
-            getNoteById = GetNoteById(noteRepository),
-            deleteNote = DeleteNote(noteRepository),
-            addNote = AddNote(noteRepository),
-            searchNotes = SearchNotes(noteRepository),
-            updateNote = UpdateNote(noteRepository),
-            deleteNotesByFolderId = DeleteNotesByFolderId(noteRepository),
-            addFolder = AddFolder(folderRepository),
-            updateFolder = UpdateFolder(folderRepository),
-            deleteFolder = DeleteFolder(folderRepository),
-            getFolders = GetFolders(folderRepository)
-        )
-    }
+    ): UseCases = UseCases(
+        getNotes = GetNotes(noteRepository),
+        getNoteById = GetNoteById(noteRepository),
+        deleteNote = DeleteNote(noteRepository),
+        addNote = AddNote(noteRepository),
+        searchNotes = SearchNotes(noteRepository),
+        updateNote = UpdateNote(noteRepository),
+        deleteNotesByFolderId = DeleteNotesByFolderId(noteRepository),
+        addFolder = AddFolder(folderRepository),
+        updateFolder = UpdateFolder(folderRepository),
+        deleteFolder = DeleteFolder(folderRepository),
+        getFolders = GetFolders(folderRepository)
+    )
 }

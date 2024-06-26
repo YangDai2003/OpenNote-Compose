@@ -44,68 +44,64 @@ fun SettingsDetailPane(
     sharedViewModel: SharedViewModel = hiltViewModel(LocalContext.current as MainActivity),
     selectedSettingsItem: SettingsItem,
     navigateBackToList: () -> Unit
+) = Scaffold(
+    modifier = Modifier.fillMaxSize(),
+    topBar = {
+        if (currentWindowAdaptiveInfo().windowSizeClass.windowWidthSizeClass == WindowWidthSizeClass.EXPANDED)
+            TopAppBar(
+                title = {
+                    TopBarTitle(title = stringResource(selectedSettingsItem.titleId))
+                },
+                colors = TopAppBarDefaults.largeTopAppBarColors()
+                    .copy(scrolledContainerColor = TopAppBarDefaults.largeTopAppBarColors().containerColor)
+            )
+        else
+            LargeTopAppBar(
+                navigationIcon = {
+                    val haptic = LocalHapticFeedback.current
+                    IconButton(onClick = {
+                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                        navigateBackToList()
+                    }) {
+                        Icon(
+                            imageVector = Icons.Outlined.Close,
+                            contentDescription = "Close"
+                        )
+                    }
+                },
+                title = {
+                    TopBarTitle(title = stringResource(selectedSettingsItem.titleId))
+                },
+                colors = TopAppBarDefaults.largeTopAppBarColors()
+                    .copy(scrolledContainerColor = TopAppBarDefaults.largeTopAppBarColors().containerColor)
+            )
+    }
 ) {
-
-    val haptic = LocalHapticFeedback.current
-
-    Scaffold(
-        modifier = Modifier.fillMaxSize(),
-        topBar = {
-            if (currentWindowAdaptiveInfo().windowSizeClass.windowWidthSizeClass == WindowWidthSizeClass.EXPANDED)
-                TopAppBar(
-                    title = {
-                        TopBarTitle(title = stringResource(selectedSettingsItem.titleId))
-                    },
-                    colors = TopAppBarDefaults.largeTopAppBarColors()
-                        .copy(scrolledContainerColor = TopAppBarDefaults.largeTopAppBarColors().containerColor)
-                )
-            else
-                LargeTopAppBar(
-                    navigationIcon = {
-                        IconButton(onClick = {
-                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                            navigateBackToList()
-                        }) {
-                            Icon(
-                                imageVector = Icons.Outlined.Close,
-                                contentDescription = "Close"
-                            )
-                        }
-                    },
-                    title = {
-                        TopBarTitle(title = stringResource(selectedSettingsItem.titleId))
-                    },
-                    colors = TopAppBarDefaults.largeTopAppBarColors()
-                        .copy(scrolledContainerColor = TopAppBarDefaults.largeTopAppBarColors().containerColor)
-                )
-        }
+    Box(
+        Modifier
+            .fillMaxSize()
+            .padding(it),
+        contentAlignment = Alignment.Center
     ) {
-        Box(
-            Modifier
-                .fillMaxSize()
-                .padding(it),
-            contentAlignment = Alignment.Center
-        ) {
-            when (selectedSettingsItem.index) {
-                0 -> {
-                    StylePane(sharedViewModel = sharedViewModel)
-                }
+        when (selectedSettingsItem.index) {
+            0 -> {
+                StylePane(sharedViewModel = sharedViewModel)
+            }
 
-                1 -> {
-                    DataPane(sharedViewModel = sharedViewModel)
-                }
+            1 -> {
+                DataPane(sharedViewModel = sharedViewModel)
+            }
 
-                2 -> {
-                    AccountPane()
-                }
+            2 -> {
+                AccountPane()
+            }
 
-                3 -> {
-                    AboutPane()
-                }
+            3 -> {
+                AboutPane()
+            }
 
-                else -> {
-                    SettingsDetailPlaceHolder()
-                }
+            else -> {
+                SettingsDetailPlaceHolder()
             }
         }
     }

@@ -43,11 +43,10 @@ import com.yangdai.opennote.presentation.viewmodel.SharedViewModel
 @Composable
 fun DataPane(sharedViewModel: SharedViewModel) {
 
-    val settingsState by sharedViewModel.settingsStateFlow.collectAsStateWithLifecycle()
-
     val context = LocalContext.current
     val folderEntities by sharedViewModel.foldersStateFlow.collectAsStateWithLifecycle()
     val actionState by sharedViewModel.dataActionStateFlow.collectAsStateWithLifecycle()
+    val settingsState by sharedViewModel.settingsStateFlow.collectAsStateWithLifecycle()
 
     var showWarningDialog by rememberSaveable { mutableStateOf(false) }
     var showFolderDialog by rememberSaveable { mutableStateOf(false) }

@@ -81,10 +81,6 @@
     <string name="confirm">Bestätigen</string>
     <string name="confirm_msg">Die Notiz wurde nicht gespeichert. Sind Sie sicher, dass Sie nach oben navigieren möchten?</string>
     <string name="note_editing">Notizbearbeitung</string>
-    <string name="select_all">Alles auswählen</string>
-    <string name="cut">Ausschneiden</string>
-    <string name="copy">Kopieren</string>
-    <string name="paste">Einfügen</string>
     <string name="undo">Rückgängig</string>
     <string name="redo">Wiederholen</string>
     <string name="bold">Fett</string>
@@ -108,4 +104,5 @@
     <string name="account">Konto</string>
     <string name="pass">Passwort</string>
     <string name="color_picker">Farbwähler</string>
+    <string name="navigate_back">Zurück navigieren</string>
 </resources>

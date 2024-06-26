@@ -42,7 +42,6 @@ private fun createMarkdownStyles(colorScheme: ColorScheme) =
         hexBorderColor = colorScheme.outline.toArgb().toHexColor()
     )
 
-
 @SuppressLint("SetJavaScriptEnabled")
 @Composable
 fun MarkdownText(

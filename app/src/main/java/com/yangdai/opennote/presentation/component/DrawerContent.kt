@@ -47,82 +47,79 @@ fun DrawerContent(
     selectedDrawerIndex: Int,
     navigateTo: (Screen) -> Unit,
     onClick: (Int, FolderEntity) -> Unit
+) = Column(
+    modifier = Modifier
+        .fillMaxWidth()
+        .verticalScroll(rememberScrollState())
 ) {
+
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.End
+    ) {
+        IconButton(
+            modifier = Modifier.padding(12.dp),
+            onClick = { navigateTo(Settings) }
+        ) {
+            Icon(
+                imageVector = Icons.Outlined.Settings,
+                contentDescription = "Open Settings",
+                tint = MaterialTheme.colorScheme.onSurface
+            )
+        }
+    }
+
+    DrawerItem(
+        icon = Icons.Outlined.Book,
+        label = stringResource(R.string.all_notes),
+        isSelected = selectedDrawerIndex == 0
+    ) {
+        onClick(0, FolderEntity())
+    }
+
+    DrawerItem(
+        icon = Icons.Outlined.Delete,
+        label = stringResource(R.string.trash),
+        isSelected = selectedDrawerIndex == 1
+    ) {
+        onClick(1, FolderEntity())
+    }
+
+    HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp))
 
     // Record whether the folder list is expanded
     var isFoldersExpended by rememberSaveable { mutableStateOf(false) }
 
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .verticalScroll(rememberScrollState())
+    DrawerItem(
+        icon = if (!isFoldersExpended) Icons.AutoMirrored.Outlined.KeyboardArrowRight else Icons.Outlined.KeyboardArrowDown,
+        label = stringResource(R.string.folders),
+        badge = folderList.size.toString(),
+        isSelected = false
     ) {
+        isFoldersExpended = !isFoldersExpended
+    }
 
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.End
-        ) {
-            IconButton(
-                modifier = Modifier.padding(12.dp),
-                onClick = { navigateTo(Settings) }
-            ) {
-                Icon(
-                    imageVector = Icons.Outlined.Settings,
-                    contentDescription = "Open Settings",
-                    tint = MaterialTheme.colorScheme.onSurface
-                )
-            }
-        }
-
-        DrawerItem(
-            icon = Icons.Outlined.Book,
-            label = stringResource(R.string.all_notes),
-            isSelected = selectedDrawerIndex == 0
-        ) {
-            onClick(0, FolderEntity())
-        }
-
-        DrawerItem(
-            icon = Icons.Outlined.Delete,
-            label = stringResource(R.string.trash),
-            isSelected = selectedDrawerIndex == 1
-        ) {
-            onClick(1, FolderEntity())
-        }
-
-        HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp))
-
-        DrawerItem(
-            icon = if (!isFoldersExpended) Icons.AutoMirrored.Outlined.KeyboardArrowRight else Icons.Outlined.KeyboardArrowDown,
-            label = stringResource(R.string.folders),
-            badge = folderList.size.toString(),
-            isSelected = false
-        ) {
-            isFoldersExpended = !isFoldersExpended
-        }
-
-        AnimatedVisibility(visible = isFoldersExpended) {
-            Column {
-                folderList.forEachIndexed { index, folder ->
-                    DrawerItem(
-                        icon = Icons.Outlined.FolderOpen,
-                        iconTint = if (folder.color != null) Color(folder.color) else MaterialTheme.colorScheme.onSurface,
-                        label = folder.name,
-                        isSelected = selectedDrawerIndex == index + 2
-                    ) {
-                        onClick(index + 2, folder)
-                    }
+    AnimatedVisibility(visible = isFoldersExpended) {
+        Column {
+            folderList.forEachIndexed { index, folder ->
+                DrawerItem(
+                    icon = Icons.Outlined.FolderOpen,
+                    iconTint = if (folder.color != null) Color(folder.color) else MaterialTheme.colorScheme.onSurface,
+                    label = folder.name,
+                    isSelected = selectedDrawerIndex == index + 2
+                ) {
+                    onClick(index + 2, folder)
                 }
             }
         }
+    }
 
-        TextButton(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(NavigationDrawerItemDefaults.ItemPadding),
-            onClick = { navigateTo(Folders) }) {
-            Text(text = stringResource(R.string.manage_folders), textAlign = TextAlign.Center)
-        }
+    TextButton(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(NavigationDrawerItemDefaults.ItemPadding),
+        onClick = { navigateTo(Folders) }) {
+        Text(text = stringResource(R.string.manage_folders), textAlign = TextAlign.Center)
     }
 }
 

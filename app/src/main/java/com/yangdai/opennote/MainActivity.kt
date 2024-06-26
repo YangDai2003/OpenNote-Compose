@@ -66,10 +66,10 @@ class MainActivity : AppCompatActivity() {
         val noteEdit = KeyboardShortcutGroup(
             getString(R.string.note_editing),
             listOf(
-                KeyboardShortcutInfo(getString(R.string.select_all), KeyEvent.KEYCODE_A, KeyEvent.META_CTRL_ON),
-                KeyboardShortcutInfo(getString(R.string.cut), KeyEvent.KEYCODE_X, KeyEvent.META_CTRL_ON),
-                KeyboardShortcutInfo(getString(R.string.copy), KeyEvent.KEYCODE_C, KeyEvent.META_CTRL_ON),
-                KeyboardShortcutInfo(getString(R.string.paste), KeyEvent.KEYCODE_V, KeyEvent.META_CTRL_ON),
+                KeyboardShortcutInfo(getString(android.R.string.selectAll), KeyEvent.KEYCODE_A, KeyEvent.META_CTRL_ON),
+                KeyboardShortcutInfo(getString(android.R.string.cut), KeyEvent.KEYCODE_X, KeyEvent.META_CTRL_ON),
+                KeyboardShortcutInfo(getString(android.R.string.copy), KeyEvent.KEYCODE_C, KeyEvent.META_CTRL_ON),
+                KeyboardShortcutInfo(getString(android.R.string.paste), KeyEvent.KEYCODE_V, KeyEvent.META_CTRL_ON),
                 KeyboardShortcutInfo(getString(R.string.undo), KeyEvent.KEYCODE_Z, KeyEvent.META_CTRL_ON),
                 KeyboardShortcutInfo(getString(R.string.redo), KeyEvent.KEYCODE_Y, KeyEvent.META_CTRL_ON),
                 KeyboardShortcutInfo(getString(R.string.bold), KeyEvent.KEYCODE_B, KeyEvent.META_CTRL_ON),

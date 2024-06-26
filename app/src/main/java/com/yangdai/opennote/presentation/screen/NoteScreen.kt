@@ -131,7 +131,6 @@ fun NoteScreen(
     }
 
     val context = LocalContext.current
-    val lifecycleOwner = LocalLifecycleOwner.current
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current
 
@@ -220,6 +219,7 @@ fun NoteScreen(
         keyboardController?.hide()
     }
 
+    val lifecycleOwner = LocalLifecycleOwner.current
     DisposableEffect(lifecycleOwner) {
         onDispose {
             sharedViewModel.onNoteEvent(NoteEvent.Update)
@@ -319,7 +319,7 @@ fun NoteScreen(
                         }) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-                                contentDescription = "Back"
+                                contentDescription = stringResource(id = R.string.navigate_back)
                             )
                         }
                     },

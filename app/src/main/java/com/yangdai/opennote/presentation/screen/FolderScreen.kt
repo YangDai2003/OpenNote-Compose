@@ -11,7 +11,7 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
-import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material.icons.outlined.CreateNewFolder
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.DriveFileRenameOutline
 import androidx.compose.material.icons.outlined.FolderOpen
@@ -76,15 +76,15 @@ fun FolderScreen(
                     IconButton(onClick = navigateUp) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-                            contentDescription = "Back"
+                            contentDescription = stringResource(id = R.string.navigate_back)
                         )
                     }
                 },
                 actions = {
                     IconButton(onClick = { showAddFolderDialog = true }) {
                         Icon(
-                            imageVector = Icons.Outlined.Add,
-                            contentDescription = "Add"
+                            imageVector = Icons.Outlined.CreateNewFolder,
+                            contentDescription = "Create New Folder"
                         )
                     }
                 },

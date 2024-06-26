@@ -56,7 +56,6 @@ import com.yangdai.opennote.presentation.util.rememberCustomTabsIntent
 fun AboutPane() {
 
     val context = LocalContext.current
-    val haptic = LocalHapticFeedback.current
     val customTabsIntent = rememberCustomTabsIntent()
     var showRatingDialog by rememberSaveable { mutableStateOf(false) }
 
@@ -65,6 +64,7 @@ fun AboutPane() {
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
     ) {
+
         val packageInfo =
             context.packageManager.getPackageInfo(
                 context.packageName,
@@ -76,6 +76,7 @@ fun AboutPane() {
             targetValue = pressAMP,
             animationSpec = tween(), label = ""
         )
+
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -83,6 +84,9 @@ fun AboutPane() {
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+
+            val haptic = LocalHapticFeedback.current
+
             Box(
                 modifier = Modifier
                     .size(240.dp)

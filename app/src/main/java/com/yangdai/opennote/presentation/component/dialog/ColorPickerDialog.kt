@@ -25,6 +25,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.github.skydoves.colorpicker.compose.AlphaSlider
 import com.github.skydoves.colorpicker.compose.BrightnessSlider
 import com.github.skydoves.colorpicker.compose.ColorEnvelope
 import com.github.skydoves.colorpicker.compose.HsvColorPicker
@@ -70,7 +71,8 @@ fun ColorPickerDialog(
                 )
                 Text(
                     text = color?.toArgb()?.toHexColor() ?: "",
-                    color = color ?: Color.White
+                    color = color ?: Color.White,
+                    style = MaterialTheme.typography.headlineSmall
                 )
             }
 
@@ -82,6 +84,15 @@ fun ColorPickerDialog(
                 onColorChanged = { colorEnvelope: ColorEnvelope ->
                     color = colorEnvelope.color // ARGB color value.
                 },
+                initialColor = initialColor
+            )
+
+            AlphaSlider(
+                modifier = Modifier
+                    .fillMaxWidth(0.7f)
+                    .height(35.dp),
+                borderRadius = 16.dp,
+                controller = controller,
                 initialColor = initialColor
             )
 

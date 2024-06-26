@@ -52,8 +52,6 @@ fun SettingsListPane(
 
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
 
-    val scope = rememberCoroutineScope()
-
     Scaffold(
         modifier = Modifier
             .fillMaxSize()
@@ -64,7 +62,7 @@ fun SettingsListPane(
                     IconButton(onClick = navigateUp) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-                            contentDescription = "Back"
+                            contentDescription = stringResource(id = R.string.navigate_back)
                         )
                     }
                 },
@@ -72,6 +70,7 @@ fun SettingsListPane(
                     TopBarTitle(title = stringResource(id = R.string.settings))
                 },
                 actions = {
+                    val scope = rememberCoroutineScope()
                     IconButton(onClick = {
                         scope.launch {
                             GlanceAppWidgetManager(context).requestPinGlanceAppWidget(

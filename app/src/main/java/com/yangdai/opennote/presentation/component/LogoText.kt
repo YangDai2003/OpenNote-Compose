@@ -1,7 +1,6 @@
 package com.yangdai.opennote.presentation.component
 
 import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.AnimationVector1D
 import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.material3.MaterialTheme
@@ -30,25 +29,18 @@ fun LogoText() {
 
     LaunchedEffect(Unit) {
         while (true) {
-            doAnimation(animatable, animationDurationMillis)
+            animatable.stop()
+            animatable.snapTo(-1f)
+            animatable.animateTo(
+                targetValue = 0f,
+                animationSpec = tween(
+                    durationMillis = animationDurationMillis,
+                    easing = CubicBezierEasing(0.3f, 0f, 0.4f, 1f),
+                )
+            )
             delay(animationDelayMillis)
         }
     }
-}
-
-private suspend fun doAnimation(
-    animatable: Animatable<Float, AnimationVector1D>,
-    durationMillis: Int
-) {
-    animatable.stop()
-    animatable.snapTo(-1f)
-    animatable.animateTo(
-        targetValue = 0f,
-        animationSpec = tween(
-            durationMillis = durationMillis,
-            easing = CubicBezierEasing(0.3f, 0f, 0.4f, 1f),
-        )
-    )
 }
 
 @Composable

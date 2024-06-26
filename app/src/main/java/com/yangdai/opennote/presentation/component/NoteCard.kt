@@ -43,9 +43,6 @@ fun GridNoteCard(
     colors = CardDefaults.elevatedCardColors()
 ) {
 
-    val title = note.title
-    val content = note.content
-
     Box(modifier = Modifier
         .fillMaxWidth()
         .sizeIn(minHeight = 80.dp, maxHeight = 360.dp)
@@ -67,20 +64,20 @@ fun GridNoteCard(
                 .padding(vertical = 8.dp, horizontal = 10.dp)
         ) {
 
-            if (title.isNotEmpty())
+            if (note.title.isNotEmpty())
                 Text(
                     modifier = Modifier.basicMarquee(),
-                    text = title,
+                    text = note.title,
                     style = MaterialTheme.typography.titleMedium,
                     maxLines = 1
                 )
 
-            if (title.isNotEmpty() && content.isNotEmpty())
+            if (note.title.isNotEmpty() && note.content.isNotEmpty())
                 Spacer(modifier = Modifier.height(8.dp))
 
-            if (content.isNotEmpty())
+            if (note.content.isNotEmpty())
                 Text(
-                    text = content,
+                    text = note.content,
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     overflow = TextOverflow.Ellipsis
@@ -141,9 +138,6 @@ fun ColumnNoteCard(
         colors = CardDefaults.elevatedCardColors()
     ) {
 
-        val title = note.title
-        val content = note.content
-
         Box(modifier = Modifier
             .fillMaxWidth()
             .sizeIn(minHeight = 80.dp, maxHeight = 360.dp)
@@ -165,20 +159,20 @@ fun ColumnNoteCard(
                     .padding(vertical = 8.dp, horizontal = 10.dp)
             ) {
 
-                if (title.isNotEmpty())
+                if (note.title.isNotEmpty())
                     Text(
                         modifier = Modifier.basicMarquee(),
-                        text = title,
+                        text = note.title,
                         style = MaterialTheme.typography.titleMedium,
                         maxLines = 1
                     )
 
-                if (title.isNotEmpty() && content.isNotEmpty())
+                if (note.title.isNotEmpty() && note.content.isNotEmpty())
                     Spacer(modifier = Modifier.height(8.dp))
 
-                if (content.isNotEmpty())
+                if (note.content.isNotEmpty())
                     Text(
-                        text = content,
+                        text = note.content,
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         overflow = TextOverflow.Ellipsis

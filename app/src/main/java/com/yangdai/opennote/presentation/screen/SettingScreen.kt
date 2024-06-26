@@ -8,6 +8,8 @@ import androidx.compose.material3.adaptive.layout.ListDetailPaneScaffold
 import androidx.compose.material3.adaptive.layout.ListDetailPaneScaffoldRole
 import androidx.compose.material3.adaptive.navigation.rememberListDetailPaneScaffoldNavigator
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import com.yangdai.opennote.presentation.component.setting.SettingsDetailPane
 import com.yangdai.opennote.presentation.component.setting.SettingsListPane
 import kotlinx.parcelize.Parcelize
@@ -29,14 +31,16 @@ fun SettingsScreen(navigateUp: () -> Unit) {
         directive = navigator.scaffoldDirective,
         value = navigator.scaffoldValue,
         listPane = {
-            AnimatedPane {
+            AnimatedPane(
+                modifier = Modifier.preferredWidth(380.dp)
+            ) {
                 SettingsListPane(navigateUp = navigateUp) {
                     navigator.navigateTo(ListDetailPaneScaffoldRole.Detail, it)
                 }
             }
         },
         detailPane = {
-            AnimatedPane {
+            AnimatedPane(modifier = Modifier) {
                 navigator.currentDestination?.content?.let { item ->
                     SettingsDetailPane(selectedSettingsItem = item) {
                         if (navigator.canNavigateBack()) {

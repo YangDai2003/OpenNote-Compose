@@ -14,6 +14,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Colorize
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -126,7 +127,7 @@ fun ModifyFolderDialog(
         },
         onDismissRequest = onDismissRequest,
         confirmButton = {
-            TextButton(
+            Button(
                 onClick = {
 
                     color = when (selectedIndex) {
@@ -158,7 +159,7 @@ fun ModifyFolderDialog(
 
     if (showDialog) {
         ColorPickerDialog(
-            initialColor = if (custom) Color(color!!) else null,
+            initialColor = if (custom) Color(color!!) else Color.White,
             sheetState = bottomSheetState,
             onDismissRequest = { showDialog = false }
         ) {

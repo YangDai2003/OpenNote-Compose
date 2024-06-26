@@ -103,7 +103,7 @@ fun MainScreen(
     navigateToNote: (Long) -> Unit,
     navigateToScreen: (Screen) -> Unit
 ) {
-    val context = LocalContext.current
+
     val coroutineScope = rememberCoroutineScope()
 
     val dataState by sharedViewModel.dataStateFlow.collectAsStateWithLifecycle()
@@ -433,18 +433,27 @@ fun MainScreen(
 
             }) { innerPadding ->
 
-            // Add layoutDirection, displayCutout, startPadding, and endPadding.
             val layoutDirection = LocalLayoutDirection.current
             val displayCutout = WindowInsets.displayCutout.asPaddingValues()
-            val startPadding = displayCutout.calculateStartPadding(layoutDirection)
-            val endPadding = displayCutout.calculateEndPadding(layoutDirection)
+            val paddingValues = remember(layoutDirection, displayCutout) {
+                PaddingValues(
+                    top = 72.dp,
+                    start = displayCutout.calculateStartPadding(layoutDirection),
+                    end = displayCutout.calculateEndPadding(layoutDirection)
+                )
+            }
 
             Box(
                 modifier = Modifier
                     .fillMaxSize()
                     .statusBarsPadding()
-                    .padding(top = 72.dp, start = startPadding, end = endPadding)
+                    .padding(paddingValues)
             ) {
+
+                if (dataState.notes.isEmpty()) {
+                    return@Box
+                }
+
                 if (!settingsState.isListView) {
                     LazyVerticalStaggeredGrid(
                         modifier = Modifier
@@ -494,10 +503,6 @@ fun MainScreen(
                     )
                 } else {
 
-                    if (dataState.notes.isEmpty()) {
-                        return@Box
-                    }
-
                     VerticalDivider(
                         Modifier
                             .align(Alignment.TopStart)
@@ -505,6 +510,7 @@ fun MainScreen(
                             .padding(start = 15.dp),
                         thickness = 2.dp
                     )
+
                     LazyColumn(
                         modifier = Modifier
                             .align(Alignment.Center)
@@ -567,6 +573,7 @@ fun MainScreen(
             }
 
             if (isExportDialogVisible) {
+                val context = LocalContext.current
                 ExportDialog(onDismissRequest = { isExportDialogVisible = false }) {
                     sharedViewModel.onDatabaseEvent(
                         DatabaseEvent.Export(

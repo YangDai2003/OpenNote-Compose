@@ -1,12 +1,14 @@
 package com.yangdai.opennote.presentation.component.dialog
 
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import com.yangdai.opennote.R
 
 @Composable
@@ -19,12 +21,12 @@ fun WarningDialog(
     text = { Text(text = message) },
     onDismissRequest = onDismissRequest,
     confirmButton = {
-        TextButton(
+        Button(
             onClick = {
                 onConfirm()
                 onDismissRequest()
             },
-            colors = ButtonDefaults.textButtonColors().copy(
+            colors = ButtonDefaults.buttonColors().copy(
                 containerColor = MaterialTheme.colorScheme.errorContainer,
                 contentColor = MaterialTheme.colorScheme.error
             )
@@ -38,3 +40,13 @@ fun WarningDialog(
         }
     }
 )
+
+@Preview
+@Composable
+fun WarningDialogPreview() {
+    WarningDialog(
+        message = "This is a warning message",
+        onDismissRequest = {},
+        onConfirm = {}
+    )
+}

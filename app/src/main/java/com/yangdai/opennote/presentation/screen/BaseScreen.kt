@@ -107,7 +107,7 @@ fun BaseScreen(
                     )
             }
 
-            val blur by animateDpAsState(targetValue = if (!loggedIn) 16.dp else 0.dp, label = "")
+            val blur by animateDpAsState(targetValue = if (!loggedIn) 16.dp else 0.dp, label = "Blur")
 
             val windowSizeClass: WindowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
             val isLargeScreen by remember {

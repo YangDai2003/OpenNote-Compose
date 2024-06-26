@@ -279,7 +279,7 @@ fun AdaptiveSearchBar(
     // Animate search bar padding when active state changes
     val searchBarPadding by animateDpAsState(
         targetValue = if (expanded) 0.dp else 16.dp,
-        label = "searchBarPadding"
+        label = "SearchBar Padding"
     )
 
     SearchBar(

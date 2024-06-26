@@ -20,7 +20,7 @@
     <string name="dark">On</string>
     <string name="dynamic_only_android_12">Dynamic color</string>
     <string name="edited">"Edited: "</string>
-    <string name="search_history">Search History</string>
+    <string name="search_history">Search history</string>
     <string name="content">Content</string>
     <string name="delete">Delete</string>
     <string name="login">Login</string>
@@ -83,10 +83,6 @@
     <string name="confirm">Confirm</string>
     <string name="confirm_msg">The note has not been saved. Are you sure of navigating up?</string>
     <string name="note_editing">Note editing</string>
-    <string name="select_all">Select All</string>
-    <string name="cut">Cut</string>
-    <string name="copy">Copy</string>
-    <string name="paste">Paste</string>
     <string name="undo">Undo</string>
     <string name="redo">Redo</string>
     <string name="bold">Bold</string>
@@ -110,4 +106,5 @@
     <string name="account">Account</string>
     <string name="pass">Password</string>
     <string name="color_picker">Color Picker</string>
+    <string name="navigate_back">Navigate back</string>
 </resources>
