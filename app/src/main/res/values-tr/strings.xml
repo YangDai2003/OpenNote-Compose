@@ -1,5 +1,4 @@
 <resources>
-    <string name="app_name" translatable="false">Open Note</string>
     <string name="title">Başlık</string>
     <string name="search">Ara</string>
     <string name="all_notes">Tüm notlar</string>
@@ -41,7 +40,6 @@
     <string name="export">Dışa aktar</string>
     <string name="share">Paylaş</string>
     <string name="name">Ad</string>
-    <string name="uri_example" translatable="false">https://www.example.com</string>
     <string name="link">Bağlantı</string>
     <string name="reset">Sıfırla</string>
     <string name="reset_database_warning">Veritabanını sıfırlamak, tüm notları ve klasörleri tamamen silecek ve geri alınamaz hale getirecektir. Devam edip etmeyeceğinize karar verin?</string>
@@ -74,7 +72,6 @@
     <string name="column">Sütunlar</string>
     <string name="view_all_notes">Tüm notları görüntüle</string>
     <string name="incorrect_link_format">Yanlış bağlantı formatı.</string>
-    <string name="web_url" translatable="false">URL</string>
     <string name="share_note_as">Notu paylaş</string>
     <string name="file">Dosya</string>
     <string name="text">Metin</string>
