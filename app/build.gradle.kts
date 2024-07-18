@@ -11,12 +11,12 @@ plugins {
 
 android {
     namespace = "com.yangdai.opennote"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.yangdai.opennote"
         minSdk = 29
-        targetSdk = 34
+        targetSdk = 35
         versionCode = 133
         versionName = "1.3.3"
 
