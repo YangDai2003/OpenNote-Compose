@@ -95,7 +95,7 @@
     <string name="horizontal_rule">Yatay Çizgi</string>
     <string name="task_list">Görev Listesi</string>
     <string name="mermaid_diagram">Mermaid Diyagramı</string>
-    <string name="unlock_to_use_open_note">Open Note'u kullanmak için kilidi açın</string>
+    <string name="unlock_to_use_open_note">Open Note\'u kullanmak için kilidi açın</string>
     <string name="account_cloud">Hesap ve bulut hizmetleri</string>
     <string name="sync">Senkronizasyon</string>
     <string name="the_feature_is_still_under_construction_and_is_still_unavailable">Bu özellik hala yapım aşamasında ve henüz kullanılamaz.</string>

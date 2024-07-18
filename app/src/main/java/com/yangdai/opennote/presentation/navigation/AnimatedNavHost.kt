@@ -104,7 +104,7 @@ fun AnimatedNavHost(
     },
     popExitTransition = {
         sharedAxisXOut(targetOffsetX = { (it * INITIAL_OFFSET_FACTOR).toInt() })
-    },
+    }
 ) {
 
     composable<Home> {
