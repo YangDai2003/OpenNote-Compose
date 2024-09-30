@@ -17,8 +17,8 @@ android {
         applicationId = "com.yangdai.opennote"
         minSdk = 29
         targetSdk = 35
-        versionCode = 133
-        versionName = "1.3.3"
+        versionCode = 134
+        versionName = "1.3.4"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -82,6 +82,9 @@ dependencies {
     implementation(libs.kotlinx.serialization)
 
     // CommonMark, for markdown rendering and parsing
+    implementation(libs.commonmark.ext.autolink)
+    implementation(libs.commonmark.ext.footnotes)
+    implementation(libs.commonmark.ext.ins)
     implementation(libs.commonmark.ext.task.list.items)
     implementation(libs.commonmark.ext.gfm.strikethrough)
     implementation(libs.commonmark.ext.gfm.tables)

@@ -78,8 +78,13 @@ import kotlinx.coroutines.launch
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.commonmark.Extension
+import org.commonmark.ext.autolink.AutolinkExtension
+import org.commonmark.ext.footnotes.FootnotesExtension
 import org.commonmark.ext.gfm.strikethrough.StrikethroughExtension
 import org.commonmark.ext.gfm.tables.TablesExtension
+import org.commonmark.ext.heading.anchor.HeadingAnchorExtension
+import org.commonmark.ext.image.attributes.ImageAttributesExtension
+import org.commonmark.ext.ins.InsExtension
 import org.commonmark.ext.task.list.items.TaskListItemsExtension
 import org.commonmark.parser.Parser
 import org.commonmark.renderer.html.HtmlRenderer
@@ -146,6 +151,11 @@ class SharedViewModel @Inject constructor(
             // 延迟显示主屏幕，等待数据加载完成
             extensions = listOf(
                 TablesExtension.create(),
+                AutolinkExtension.create(),
+                FootnotesExtension.create(),
+                HeadingAnchorExtension.create(),
+                InsExtension.create(),
+                ImageAttributesExtension.create(),
                 StrikethroughExtension.create(),
                 TaskListItemsExtension.create()
             )

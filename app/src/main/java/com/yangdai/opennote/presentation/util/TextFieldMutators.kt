@@ -36,7 +36,7 @@ fun TextFieldBuffer.bold() = inlineWrap("**")
 
 fun TextFieldBuffer.italic() = inlineWrap("_")
 
-fun TextFieldBuffer.underline() = inlineWrap("<u>", "</u>")
+fun TextFieldBuffer.underline() = inlineWrap("++", "++")
 
 fun TextFieldBuffer.strikeThrough() = inlineWrap("~~")
 
