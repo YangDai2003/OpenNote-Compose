@@ -83,7 +83,6 @@ import java.util.concurrent.Executors
 @Composable
 fun CameraXScreen(
     sharedViewModel: SharedViewModel = hiltViewModel(LocalContext.current as MainActivity),
-    onCloseClick: () -> Unit,
     onDoneClick: (String) -> Unit
 ) {
     val context = LocalContext.current
@@ -128,14 +127,17 @@ fun CameraXScreen(
     var isLoading by rememberSaveable { mutableStateOf(false) }
 
     fun processImage(image: InputImage) {
+
         isLoading = true
+
         sharedViewModel.textRecognizer.process(image)
             .addOnCompleteListener { task ->
+
                 isLoading = false
+
                 scannedText =
                     if (!task.isSuccessful) {
-                        val msg =
-                            task.exception?.localizedMessage.toString()
+                        val msg = task.exception?.localizedMessage.toString()
                         Toast.makeText(
                             context,
                             msg,
@@ -153,9 +155,11 @@ fun CameraXScreen(
                         }
                         text
                     }
-                scope.launch {
-                    bottomSheetScaffoldState.bottomSheetState.expand()
-                }
+
+                if (scannedText.isNotEmpty())
+                    scope.launch {
+                        bottomSheetScaffoldState.bottomSheetState.expand()
+                    }
             }
     }
 
@@ -165,7 +169,6 @@ fun CameraXScreen(
             // Callback is invoked after the user selects a media item or closes the
             // photo picker.
             if (uri != null) {
-                isLoading = true
                 processImage(InputImage.fromFilePath(context, uri))
             } else {
                 Log.d("PhotoPicker", "No media selected")
@@ -185,7 +188,7 @@ fun CameraXScreen(
                     .imePadding()
                     .padding(horizontal = 12.dp)
             ) {
-                if (scannedText.isNotEmpty() && !isLoading) {
+                if (!isLoading) {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -210,14 +213,12 @@ fun CameraXScreen(
                     }
                 }
 
-                if (scannedText.isNotEmpty()) {
-                    OutlinedTextField(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .navigationBarsPadding(),
-                        value = scannedText,
-                        onValueChange = { scannedText = it })
-                }
+                OutlinedTextField(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .navigationBarsPadding(),
+                    value = scannedText,
+                    onValueChange = { scannedText = it })
             }
         }
     ) { padding ->
@@ -242,7 +243,7 @@ fun CameraXScreen(
                     .align(Alignment.TopStart)
                     .statusBarsPadding()
                     .padding(start = 32.dp, top = 32.dp),
-                onClick = onCloseClick
+                onClick = { onDoneClick("") }
             ) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
@@ -347,8 +348,6 @@ fun CameraXScreen(
                                 object : ImageCapture.OnImageCapturedCallback() {
                                     override fun onCaptureSuccess(imageProxy: ImageProxy) {
                                         super.onCaptureSuccess(imageProxy)
-
-                                        isLoading = true
 
                                         imageProxy.image?.let { image ->
                                             processImage(

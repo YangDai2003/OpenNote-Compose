@@ -71,8 +71,8 @@ fun MarkdownText(
                         src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
                     </script>
                     <script type="module">
-                        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
-                        mermaid.initialize({ startOnLoad: true });
+                      import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+                      mermaid.initialize({ startOnLoad: true });
                     </script>
                     <style type="text/css">
                         body { color: ${markdownStyles.hexTextColor}; padding: 0px; margin: 0px; }

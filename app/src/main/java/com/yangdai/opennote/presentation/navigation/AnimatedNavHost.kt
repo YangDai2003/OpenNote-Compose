@@ -170,10 +170,9 @@ fun AnimatedNavHost(
     }
 
     composable<CameraX> {
-        CameraXScreen(onCloseClick = {
-            navController.navigateBackWithHapticFeedback(hapticFeedback)
-        }) {
-            navController.previousBackStackEntry?.savedStateHandle?.set("scannedText", it)
+        CameraXScreen { scannedText ->
+            if (scannedText.isNotEmpty())
+                navController.previousBackStackEntry?.savedStateHandle?.set("scannedText", scannedText)
             navController.navigateBackWithHapticFeedback(hapticFeedback)
         }
     }

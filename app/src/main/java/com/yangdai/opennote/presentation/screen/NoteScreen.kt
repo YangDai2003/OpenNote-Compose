@@ -38,7 +38,6 @@ import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.EditNote
 import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material.icons.outlined.Save
-import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material.icons.outlined.SwapHoriz
 import androidx.compose.material.icons.outlined.Upload
@@ -109,7 +108,9 @@ import com.yangdai.opennote.presentation.event.UiEvent
 import com.yangdai.opennote.presentation.util.Constants
 import com.yangdai.opennote.presentation.util.timestampToFormatLocalDateTime
 import com.yangdai.opennote.presentation.viewmodel.SharedViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
 import kotlin.math.abs
 
@@ -176,13 +177,17 @@ fun NoteScreen(
 
     LaunchedEffect(sharedText) {
         if (!sharedText.isNullOrEmpty()) {
-            sharedViewModel.onNoteEvent(NoteEvent.Edit(Constants.Editor.TEXT, sharedText))
+            withContext(Dispatchers.Main) {
+                sharedViewModel.onNoteEvent(NoteEvent.Edit(Constants.Editor.TEXT, sharedText))
+            }
         }
     }
 
     LaunchedEffect(scannedText) {
         if (!scannedText.isNullOrEmpty()) {
-            sharedViewModel.onNoteEvent(NoteEvent.Edit(Constants.Editor.TEXT, scannedText))
+            withContext(Dispatchers.Main) {
+                sharedViewModel.onNoteEvent(NoteEvent.Edit(Constants.Editor.TEXT, scannedText))
+            }
         }
     }
 
@@ -435,7 +440,7 @@ fun NoteScreen(
 
                                     try {
                                         context.startActivity(intent)
-                                    } catch (e: Exception) {
+                                    } catch (_: Exception) {
                                         Toast.makeText(
                                             context,
                                             context.getString(R.string.no_calendar_app_found),
