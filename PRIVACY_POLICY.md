@@ -1,35 +1,46 @@
 ## Privacy Policy of Open Note
 
-This is an open source Android app developed by Yang Dai. The source code is available on GitHub
-under the Apache License (2.0 or later).
+Open Note is an open-source Android app developed by Yang Dai.  
+The source code is available on GitHub under the Apache License (2.0 or later).
 
-### Data collected by apps and third-party SDKs
+### Data Collection
 
-Open Note itself does not collect user confidential data and personal information such as address,
-name and E-Mail.
+Open Note does not collect any personal or confidential information such as addresses, names, or email addresses.
 
-Third-party SDKs will be explained in the following table:
+### Permissions Requested
 
-| SDK name |              Purpose of using SDK              |                      Data collected by SDK                      |
-|:--------:|:----------------------------------------------:|:---------------------------------------------------------------:|
-| Firebase | Analyze application crashes and ANR situations | Device model, OS version, code crash location and error message |
-
-[Firebase Terms of Service](https://firebase.google.com/terms)
-
-### Permissions requested in the app
-
-The list of permissions required by the app can be found in the `AndroidManifest.xml` file:
+The app requires the following permissions, as listed in the `AndroidManifest.xml` file:
 
 https://github.com/YangDai2003/OpenNote-Compose/blob/e04804999016469d47e61cd98c59a1a65832f2f1/app/src/main/AndroidManifest.xml#L5-L10
-<br/>
 
-|             Permission             |                          Purpose                           |
-|:----------------------------------:|:----------------------------------------------------------:|
-| `android.permission.USE_BIOMETRIC` |        Used to implement application login function        |
-|    `android.permission.CAMERA`     |       Used for OCR recognition and capturing images        |
-|   `android.permission.INTERNET`    | Used to access the internet for loading images in markdown |
+| Permission                         | Purpose                                                    |
+|------------------------------------|------------------------------------------------------------|
+| `android.permission.USE_BIOMETRIC` | Used for implementing the app's login functionality        |
+| `android.permission.CAMERA`        | Used for OCR recognition and capturing images              |
+| `android.permission.INTERNET`      | Used to access the internet for loading images in markdown |
 
- <hr style="border:1px solid gray">
+### Dependencies
 
-If you have any questions about this Policy or personal information protection, you can send your
-written questions, opinions, or suggestions to the following E-Mail address: dy15800837435@gmail.com
+The app uses the following dependencies:
+
+- **CameraX**: For camera functionalities.
+- **Room**: For local database management.
+- **Hilt**: For dependency injection.
+- **Compose**: For building the UI.
+- **CommonMark**: For markdown rendering and parsing.
+- **ML Kit**: For text recognition, including Latin and Chinese scripts.
+- **ColorPicker**: For color picking functionalities.
+- **Glance**: For creating app widgets.
+
+### Data Sharing
+
+Open Note does not share any personal or sensitive user data with third parties.
+
+### Data Deletion
+
+Usually all data is stored locally and can be cleared by the user at any time.  
+Users can also add personal cloud storage and upload data, in which case the application is not responsible for the actions of third parties.
+
+---
+
+If you have any questions about this policy or personal information protection, please send your inquiries, opinions, or suggestions to: dy15800837435@gmail.com

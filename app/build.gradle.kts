@@ -19,8 +19,8 @@ android {
         applicationId = "com.yangdai.opennote"
         minSdk = 29
         targetSdk = 35
-        versionCode = 135
-        versionName = "1.3.5"
+        versionCode = 136
+        versionName = "1.3.6"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -97,6 +97,7 @@ dependencies {
     // CameraX
     implementation(libs.androidx.camera.camera2)
     implementation(libs.androidx.camera.lifecycle)
+    implementation(libs.androidx.camera.compose)
     implementation(libs.androidx.camera.view)
 
     // To recognize Latin script
