@@ -24,6 +24,7 @@ import androidx.compose.material.icons.filled.BrightnessAuto
 import androidx.compose.material.icons.filled.Colorize
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.LightMode
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
@@ -146,6 +147,29 @@ fun StylePane(sharedViewModel: SharedViewModel) {
                 }
             }
             Spacer(modifier = Modifier.width(32.dp))
+        }
+
+        Row(
+            Modifier
+                .fillMaxWidth()
+                .height(56.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Checkbox(
+                modifier = Modifier.padding(start = 20.dp),
+                checked = settingsState.isAppInAmoledMode,
+                onCheckedChange = {
+                    sharedViewModel.putPreferenceValue(
+                        Constants.Preferences.IS_APP_IN_AMOLED_MODE,
+                        it
+                    )
+                }
+            )
+            Text(
+                text = "AMOLED" + " " + stringResource(R.string.mode),
+                style = MaterialTheme.typography.bodyLarge,
+                modifier = Modifier.padding(start = 16.dp)
+            )
         }
 
         SettingsHeader(text = stringResource(R.string.dark_mode))

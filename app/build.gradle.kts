@@ -1,5 +1,3 @@
-import org.jetbrains.kotlin.compose.compiler.gradle.ComposeFeatureFlag
-
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsKotlinAndroid)
@@ -19,8 +17,8 @@ android {
         applicationId = "com.yangdai.opennote"
         minSdk = 29
         targetSdk = 35
-        versionCode = 136
-        versionName = "1.3.6"
+        versionCode = 137
+        versionName = "1.3.7"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -67,8 +65,13 @@ android {
     buildFeatures {
         compose = true
     }
-    composeCompiler {
-        featureFlags = setOf(ComposeFeatureFlag.StrongSkipping)
+    kotlin {
+        compilerOptions {
+            extraWarnings.set(true)
+        }
+        sourceSets.all {
+            languageSettings.enableLanguageFeature("ExplicitBackingFields")
+        }
     }
     packaging {
         resources {

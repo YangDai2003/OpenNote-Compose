@@ -8,6 +8,7 @@ import android.content.res.Configuration
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -82,7 +83,7 @@ import java.util.concurrent.Executors
 @OptIn(ExperimentalGetImage::class)
 @Composable
 fun CameraXScreen(
-    sharedViewModel: SharedViewModel = hiltViewModel(LocalContext.current as MainActivity),
+    sharedViewModel: SharedViewModel = hiltViewModel(LocalActivity.current as MainActivity),
     onDoneClick: (String) -> Unit
 ) {
     val context = LocalContext.current

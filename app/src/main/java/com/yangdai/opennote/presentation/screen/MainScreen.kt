@@ -1,6 +1,7 @@
 package com.yangdai.opennote.presentation.screen
 
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.LocalActivity
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.slideInHorizontally
@@ -98,7 +99,7 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(
-    sharedViewModel: SharedViewModel = hiltViewModel(LocalContext.current as MainActivity),
+    sharedViewModel: SharedViewModel = hiltViewModel(LocalActivity.current as MainActivity),
     isLargeScreen: Boolean,
     navigateToNote: (Long) -> Unit,
     navigateToScreen: (Screen) -> Unit
@@ -139,7 +140,7 @@ fun MainScreen(
     // Whether to show the floating button, determined by the scroll state of the grid, the selected drawer, the search bar, and whether multi-select mode is enabled
     val isFloatingButtonVisible by remember {
         derivedStateOf {
-            selectedDrawerIndex == 0 && !isSearchBarActivated && !isMultiSelectionModeEnabled
+            selectedDrawerIndex != 1 && !isSearchBarActivated && !isMultiSelectionModeEnabled
                     && !staggeredGridState.isScrollInProgress && !lazyListState.isScrollInProgress
         }
     }
@@ -423,7 +424,7 @@ fun MainScreen(
                     exit = slideOutHorizontally { fullWidth -> fullWidth * 3 / 2 }) {
                     FloatingActionButton(
                         onClick = {
-                            sharedViewModel.onListEvent(ListEvent.AddNote)
+                            sharedViewModel.onListEvent(ListEvent.AddNoteToFolder(selectedFolder.id))
                             navigateToNote(-1)
                         }
                     ) {

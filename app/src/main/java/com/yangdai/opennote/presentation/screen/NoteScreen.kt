@@ -3,7 +3,10 @@ package com.yangdai.opennote.presentation.screen
 import android.content.Intent
 import android.provider.CalendarContract
 import android.widget.Toast
+import androidx.activity.BackEventCompat
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.LocalActivity
+import androidx.activity.compose.PredictiveBackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
@@ -106,22 +109,25 @@ import com.yangdai.opennote.presentation.event.DatabaseEvent
 import com.yangdai.opennote.presentation.event.NoteEvent
 import com.yangdai.opennote.presentation.event.UiEvent
 import com.yangdai.opennote.presentation.util.Constants
+import com.yangdai.opennote.presentation.util.SharedContent
 import com.yangdai.opennote.presentation.util.timestampToFormatLocalDateTime
 import com.yangdai.opennote.presentation.viewmodel.SharedViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
+import kotlin.coroutines.cancellation.CancellationException
 import kotlin.math.abs
 
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun NoteScreen(
-    sharedViewModel: SharedViewModel = hiltViewModel(LocalContext.current as MainActivity),
+    sharedViewModel: SharedViewModel = hiltViewModel(LocalActivity.current as MainActivity),
     id: Long,
     isLargeScreen: Boolean,
-    sharedText: String?,
+    sharedContent: SharedContent?,
     scannedText: String?,
     navigateUp: () -> Unit,
     onScanTextClick: () -> Unit
@@ -175,10 +181,21 @@ fun NoteScreen(
             else noteState.timestamp!!.timestampToFormatLocalDateTime()
     }
 
-    LaunchedEffect(sharedText) {
-        if (!sharedText.isNullOrEmpty()) {
+    LaunchedEffect(sharedContent) {
+        if (sharedContent != null) {
             withContext(Dispatchers.Main) {
-                sharedViewModel.onNoteEvent(NoteEvent.Edit(Constants.Editor.TEXT, sharedText))
+                sharedViewModel.onNoteEvent(
+                    NoteEvent.Edit(
+                        Constants.Editor.TITLE,
+                        sharedContent.fileName
+                    )
+                )
+                sharedViewModel.onNoteEvent(
+                    NoteEvent.Edit(
+                        Constants.Editor.TEXT,
+                        sharedContent.content
+                    )
+                )
             }
         }
     }
@@ -211,7 +228,7 @@ fun NoteScreen(
     }
 
     LaunchedEffect(true) {
-        sharedViewModel.event.collect { event ->
+        sharedViewModel.uiEventFlow.collect { event ->
             if (event is UiEvent.NavigateBack) navigateUp()
         }
     }
@@ -237,6 +254,7 @@ fun NoteScreen(
                 .showSnackbar(
                     message = context.getString(R.string.confirm_msg),
                     actionLabel = context.getString(R.string.confirm),
+                    withDismissAction = true,
                     duration = SnackbarDuration.Indefinite
                 )
             when (result) {
@@ -251,8 +269,17 @@ fun NoteScreen(
         }
     }
 
-    BackHandler(noteState.id == null && sharedViewModel.titleState.text.isNotBlank() && sharedViewModel.contentState.text.isNotBlank()) {
-        showSnackbar()
+    PredictiveBackHandler(noteState.id == null && sharedViewModel.titleState.text.isNotBlank() && sharedViewModel.contentState.text.isNotBlank()) { progress: Flow<BackEventCompat> ->
+        // code for gesture back started
+        try {
+            progress.collect { _ ->
+                // code for progress
+            }
+            showSnackbar()
+            // code for completion
+        } catch (_: CancellationException) {
+            // code for cancellation
+        }
     }
 
     Scaffold(

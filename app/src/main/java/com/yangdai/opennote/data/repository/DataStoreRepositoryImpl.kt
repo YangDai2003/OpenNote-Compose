@@ -83,7 +83,7 @@ class DataStoreRepositoryImpl @Inject constructor(
     override fun booleanFlow(key: String): Flow<Boolean> {
         val preferencesKey = booleanPreferencesKey(key)
         return context.dataStore.data.map { preferences ->
-            preferences[preferencesKey] ?: false
+            preferences[preferencesKey] == true
         }
     }
 

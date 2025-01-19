@@ -18,12 +18,12 @@ import com.google.mlkit.vision.text.TextRecognizer
 import com.google.mlkit.vision.text.chinese.ChineseTextRecognizerOptions
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 import com.yangdai.opennote.data.local.Database
+import com.yangdai.opennote.data.local.entity.BackupData
 import com.yangdai.opennote.data.local.entity.NoteEntity
-import com.yangdai.opennote.presentation.state.SettingsState
 import com.yangdai.opennote.domain.repository.DataStoreRepository
 import com.yangdai.opennote.domain.usecase.NoteOrder
-import com.yangdai.opennote.domain.usecase.UseCases
 import com.yangdai.opennote.domain.usecase.OrderType
+import com.yangdai.opennote.domain.usecase.UseCases
 import com.yangdai.opennote.presentation.component.dialog.ExportType
 import com.yangdai.opennote.presentation.component.dialog.TaskItem
 import com.yangdai.opennote.presentation.event.DatabaseEvent
@@ -36,14 +36,15 @@ import com.yangdai.opennote.presentation.state.AppTheme
 import com.yangdai.opennote.presentation.state.DataActionState
 import com.yangdai.opennote.presentation.state.DataState
 import com.yangdai.opennote.presentation.state.NoteState
+import com.yangdai.opennote.presentation.state.SettingsState
 import com.yangdai.opennote.presentation.util.Constants
 import com.yangdai.opennote.presentation.util.add
 import com.yangdai.opennote.presentation.util.addHeader
+import com.yangdai.opennote.presentation.util.addMermaid
 import com.yangdai.opennote.presentation.util.addRule
 import com.yangdai.opennote.presentation.util.addTable
 import com.yangdai.opennote.presentation.util.addTask
 import com.yangdai.opennote.presentation.util.bold
-import com.yangdai.opennote.presentation.util.addMermaid
 import com.yangdai.opennote.presentation.util.inlineBraces
 import com.yangdai.opennote.presentation.util.inlineBrackets
 import com.yangdai.opennote.presentation.util.inlineCode
@@ -61,9 +62,9 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
@@ -75,7 +76,6 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.commonmark.Extension
 import org.commonmark.ext.autolink.AutolinkExtension
@@ -100,24 +100,24 @@ class SharedViewModel @Inject constructor(
 ) : ViewModel() {
 
     // 起始页加载状态，初始值为 true
-    private val _isLoadingData = MutableStateFlow(true)
-    val isLoadingDate = _isLoadingData.asStateFlow()
+    val isLoading: StateFlow<Boolean>
+        field = MutableStateFlow(true)
 
     // 列表状态, 包含笔记列表、文件夹列表、排序方式等
-    private val _dataState = MutableStateFlow(DataState())
-    val dataStateFlow = _dataState.asStateFlow()
+    val dataStateFlow: StateFlow<DataState>
+        field = MutableStateFlow(DataState())
 
     // 笔记状态, 包含笔记的 id、文件夹 id、是否为 Markdown 笔记、时间戳等
-    private val _noteState = MutableStateFlow(NoteState())
-    val noteStateFlow = _noteState.asStateFlow()
+    val noteStateFlow: StateFlow<NoteState>
+        field = MutableStateFlow(NoteState())
 
     val foldersStateFlow = useCases.getFolders()
         .flowOn(Dispatchers.IO)
         .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
     // UI 事件
-    private val _event = MutableSharedFlow<UiEvent>()
-    val event = _event.asSharedFlow()
+    val uiEventFlow: SharedFlow<UiEvent>
+        field = MutableSharedFlow<UiEvent>()
 
     // 查询笔记的任务
     private var queryNotesJob: Job? = null
@@ -168,7 +168,7 @@ class SharedViewModel @Inject constructor(
             }
             delay(300)
             //任务完成后将 isLoading 设置为 false 以隐藏启动屏幕
-            _isLoadingData.value = false
+            isLoading.value = false
         }
         getNotes()
     }
@@ -181,7 +181,8 @@ class SharedViewModel @Inject constructor(
         dataStoreRepository.booleanFlow(Constants.Preferences.IS_APP_IN_DARK_MODE),
         dataStoreRepository.booleanFlow(Constants.Preferences.SHOULD_FOLLOW_SYSTEM),
         dataStoreRepository.booleanFlow(Constants.Preferences.IS_SWITCH_ACTIVE),
-        dataStoreRepository.booleanFlow(Constants.Preferences.IS_LIST_VIEW)
+        dataStoreRepository.booleanFlow(Constants.Preferences.IS_LIST_VIEW),
+        dataStoreRepository.booleanFlow(Constants.Preferences.IS_APP_IN_AMOLED_MODE)
     ) { values ->
         SettingsState(
             theme = AppTheme.fromInt(values[0] as Int),
@@ -190,7 +191,8 @@ class SharedViewModel @Inject constructor(
             isAppInDarkMode = values[3] as Boolean,
             shouldFollowSystem = values[4] as Boolean,
             isSwitchActive = values[5] as Boolean,
-            isListView = values[6] as Boolean
+            isListView = values[6] as Boolean,
+            isAppInAmoledMode = values[7] as Boolean
         )
     }.flowOn(Dispatchers.IO).stateIn(
         scope = viewModelScope,
@@ -310,16 +312,19 @@ class SharedViewModel @Inject constructor(
                 _oNote = event.noteEntity
             }
 
-            ListEvent.AddNote -> {
-                _oNote = NoteEntity(timestamp = System.currentTimeMillis())
-            }
-
             ListEvent.ToggleOrderSection -> {
-                _dataState.update {
+                dataStateFlow.update {
                     it.copy(
                         isOrderSectionVisible = it.isOrderSectionVisible.not()
                     )
                 }
+            }
+
+            is ListEvent.AddNoteToFolder -> {
+                _oNote = NoteEntity(
+                    folderId = event.folderId,
+                    timestamp = System.currentTimeMillis()
+                )
             }
         }
     }
@@ -357,7 +362,7 @@ class SharedViewModel @Inject constructor(
         queryNotesJob = useCases.getNotes(noteOrder, trash, filterFolder, folderId)
             .flowOn(Dispatchers.IO)
             .onEach { notes ->
-                _dataState.update {
+                dataStateFlow.update {
                     it.copy(
                         notes = notes,
                         noteOrder = noteOrder,
@@ -376,7 +381,7 @@ class SharedViewModel @Inject constructor(
         queryNotesJob = useCases.searchNotes(keyWord)
             .flowOn(Dispatchers.IO)
             .onEach { notes ->
-                _dataState.update {
+                dataStateFlow.update {
                     it.copy(
                         notes = notes
                     )
@@ -400,7 +405,7 @@ class SharedViewModel @Inject constructor(
         when (event) {
 
             is NoteEvent.FolderChanged -> {
-                _noteState.update {
+                noteStateFlow.update {
                     it.copy(
                         folderId = event.value
                     )
@@ -419,7 +424,7 @@ class SharedViewModel @Inject constructor(
                         timestamp = System.currentTimeMillis()
                     )
                     useCases.addNote(note)
-                    _event.emit(UiEvent.NavigateBack)
+                    uiEventFlow.emit(UiEvent.NavigateBack)
                 }
             }
 
@@ -439,12 +444,12 @@ class SharedViewModel @Inject constructor(
                             )
                         )
                     }
-                    _event.emit(UiEvent.NavigateBack)
+                    uiEventFlow.emit(UiEvent.NavigateBack)
                 }
             }
 
             NoteEvent.SwitchType -> {
-                _noteState.update {
+                noteStateFlow.update {
                     it.copy(
                         isMarkdown = it.isMarkdown.not()
                     )
@@ -474,6 +479,7 @@ class SharedViewModel @Inject constructor(
                     Constants.Editor.RULE -> contentState.edit { addRule() }
                     Constants.Editor.DIAGRAM -> contentState.edit { addMermaid() }
                     Constants.Editor.TEXT -> contentState.edit { add(event.value) }
+                    Constants.Editor.TITLE -> titleState.edit { add(event.value) }
                 }
             }
 
@@ -483,7 +489,7 @@ class SharedViewModel @Inject constructor(
                     if (event.id != (_oNote.id ?: -1L))
                         _oNote = useCases.getNoteById(event.id)
                             ?: NoteEntity(timestamp = System.currentTimeMillis())
-                    _noteState.update { noteState ->
+                    noteStateFlow.update { noteState ->
                         noteState.copy(
                             id = _oNote.id,
                             folderId = _oNote.folderId,
@@ -544,7 +550,6 @@ class SharedViewModel @Inject constructor(
         }
         return result
     }
-
 
     fun onDatabaseEvent(event: DatabaseEvent) {
         when (event) {
@@ -637,7 +642,7 @@ class SharedViewModel @Inject constructor(
                             }.onFailure { throwable ->
                                 _dataActionState.update {
                                     it.copy(
-                                        error = throwable.localizedMessage ?: "error"
+                                        error = "Failed to export note: ${throwable.localizedMessage ?: "error"}"
                                     )
                                 }
                             }
@@ -661,7 +666,9 @@ class SharedViewModel @Inject constructor(
                 }
                 dataActionJob = viewModelScope.launch(Dispatchers.IO) {
                     val notes = useCases.getNotes().first()
-                    val json = Json.encodeToString(notes)
+                    val folders = useCases.getFolders().first()
+                    val backupData = BackupData(notes, folders)
+                    val json = Json.encodeToString(backupData)
                     _dataActionState.update {
                         it.copy(progress = 0.5f)
                     }
@@ -715,18 +722,33 @@ class SharedViewModel @Inject constructor(
                     }
 
                     runCatching {
-                        val notes = Json.decodeFromString<List<NoteEntity>>(json ?: "")
+                        val backupData = Json.decodeFromString<BackupData>(json ?: "")
                         _dataActionState.update {
                             it.copy(progress = 0.6f)
                         }
-                        notes.forEachIndexed { _, noteEntity ->
+                        backupData.folders.forEach { folderEntity ->
+                            useCases.addFolder(folderEntity)
+                        }
+                        backupData.notes.forEach { noteEntity ->
                             useCases.addNote(noteEntity)
                         }
-                    }.onFailure { throwable ->
-                        _dataActionState.update {
-                            it.copy(
-                                error = throwable.localizedMessage ?: "error"
-                            )
+                    }.onFailure {
+                        // 兼容旧版本
+                        runCatching {
+                            val notes = Json.decodeFromString<List<NoteEntity>>(json ?: "")
+                            notes.forEachIndexed { _, noteEntity ->
+                                useCases.addNote(noteEntity)
+                            }
+                        }.onFailure { throwable ->
+                            _dataActionState.update {
+                                it.copy(
+                                    error = "Failed to decode backup data: ${throwable.localizedMessage ?: "error"}"
+                                )
+                            }
+                        }.onSuccess {
+                            _dataActionState.update {
+                                it.copy(progress = 1f)
+                            }
                         }
                     }.onSuccess {
                         _dataActionState.update {
@@ -744,14 +766,12 @@ class SharedViewModel @Inject constructor(
                         database.clearAllTables()
                     }.onSuccess {
                         _dataActionState.update {
-                            it.copy(
-                                progress = 1f
-                            )
+                            it.copy(progress = 1f)
                         }
                     }.onFailure { throwable ->
                         _dataActionState.update {
                             it.copy(
-                                error = throwable.localizedMessage ?: "error"
+                                error = "Failed to reset database: ${throwable.localizedMessage ?: "error"}"
                             )
                         }
                     }

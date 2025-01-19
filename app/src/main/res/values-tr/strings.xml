@@ -57,7 +57,7 @@
     <string name="data">Veri</string>
     <string name="security">Güvenlik</string>
     <string name="import_files_description">Metin dosyalarını (ör. .txt, .md, .html vb.) not olarak içe aktarın. Dosya adı başlık olarak kullanılacak ve MARKDOWN türü otomatik olarak belirlenecektir.</string>
-    <string name="backup_description">Tüm notları (klasörler hariç) bir JSON dosyası olarak yedekleyin ve {Downloads/OpenNote/Backup} içine kaydedin.</string>
+    <string name="backup_description">Tüm notları ve klasörler bir JSON dosyası olarak yedekleyin ve {Downloads/OpenNote/Backup} içine kaydedin.</string>
     <string name="restore_description">Seçilen JSON türü yedekleme dosyasındaki verileri veritabanına geri yükleyin. Veri çakışması varsa, yedekleme dosyası veritabanındaki notların üzerine yazacaktır.</string>
     <string name="reset_database_description">Veritabanındaki tüm verileri temizleyin (tüm notlar ve klasörler dahil).</string>
     <string name="backup">Yedekleme</string>
@@ -78,7 +78,7 @@
     <string name="export_as">Notu dışa aktar</string>
     <string name="empty_note">Boş not kaydedilemez.</string>
     <string name="confirm">Onayla</string>
-    <string name="confirm_msg">Not kaydedilmedi. Yukarı çıkmak istediğinizden emin misiniz?</string>
+    <string name="confirm_msg">Not kaydedilmedi. \nYukarı çıkmak istediğinizden emin misiniz?</string>
     <string name="note_editing">Not düzenleme</string>
     <string name="undo">Geri al</string>
     <string name="redo">Yinele</string>
@@ -104,4 +104,5 @@
     <string name="pass">Parola</string>
     <string name="color_picker">Renk Seçici</string>
     <string name="navigate_back">Geri dön</string>
+    <string name="mode">modu</string>
 </resources>

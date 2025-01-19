@@ -58,7 +58,7 @@
     <string name="data">Daten</string>
     <string name="security">Sicherheit</string>
     <string name="import_files_description">Importieren Sie Textdateien (z. B. .txt, .md, .html usw.) als Notizen. Der Dateiname wird als Titel verwendet und der MARKDOWN-Typ wird automatisch bestimmt.</string>
-    <string name="backup_description">Sichern Sie alle Notizen (ausgenommen Ordner) als JSON-Datei und speichern Sie sie unter {Downloads/OpenNote/Backup}.</string>
+    <string name="backup_description">Sichern Sie alle Ordner und darin enthaltenen Notizen als JSON-Datei und speichern Sie sie unter {Downloads/OpenNote/Backup}.</string>
     <string name="restore_description">Stellen Sie die Daten in der ausgewählten Sicherungsdatei vom Typ JSON in der Datenbank wieder her. Bei einem Datenkonflikt überschreibt die Sicherungsdatei die Notizen in der Datenbank.</string>
     <string name="reset_database_description">Löschen Sie alle Daten in der Datenbank (einschließlich aller Notizen und Ordner).</string>
     <string name="backup">Sichern</string>
@@ -79,7 +79,7 @@
     <string name="export_as">Notiz exportieren als</string>
     <string name="empty_note">Leere Notiz kann nicht gespeichert werden.</string>
     <string name="confirm">Bestätigen</string>
-    <string name="confirm_msg">Die Notiz wurde nicht gespeichert. Sind Sie sicher, dass Sie nach oben navigieren möchten?</string>
+    <string name="confirm_msg">Die Notiz wurde nicht gespeichert. \nSind Sie sicher, dass Sie nach oben navigieren möchten?</string>
     <string name="note_editing">Notizbearbeitung</string>
     <string name="undo">Rückgängig</string>
     <string name="redo">Wiederholen</string>
@@ -105,4 +105,5 @@
     <string name="pass">Passwort</string>
     <string name="color_picker">Farbwähler</string>
     <string name="navigate_back">Zurück navigieren</string>
+    <string name="mode">Modus</string>
 </resources>

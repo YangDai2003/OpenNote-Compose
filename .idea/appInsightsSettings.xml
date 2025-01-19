@@ -9,7 +9,7 @@
             <InsightsFilterSettings>
               <option name="connection">
                 <ConnectionSetting>
-                  <option name="appId" value="com.yangdai.calc" />
+                  <option name="appId" value="com.yangdai.opennote" />
                 </ConnectionSetting>
               </option>
               <option name="failureTypes">

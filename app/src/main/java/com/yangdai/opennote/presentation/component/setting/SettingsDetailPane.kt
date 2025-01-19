@@ -1,5 +1,6 @@
 package com.yangdai.opennote.presentation.component.setting
 
+import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -26,7 +27,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -41,7 +41,7 @@ import com.yangdai.opennote.presentation.viewmodel.SharedViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsDetailPane(
-    sharedViewModel: SharedViewModel = hiltViewModel(LocalContext.current as MainActivity),
+    sharedViewModel: SharedViewModel = hiltViewModel(LocalActivity.current as MainActivity),
     selectedSettingsItem: SettingsItem,
     navigateBackToList: () -> Unit
 ) = Scaffold(

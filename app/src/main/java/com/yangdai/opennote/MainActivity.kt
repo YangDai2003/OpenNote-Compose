@@ -26,7 +26,7 @@ class MainActivity : AppCompatActivity() {
         // Handle the splash screen transition.
         installSplashScreen().apply {
             setKeepOnScreenCondition {
-                sharedViewModel.isLoadingDate.value
+                sharedViewModel.isLoading.value
             }
             setOnExitAnimationListener { splashScreenView ->
                 val view = splashScreenView.view

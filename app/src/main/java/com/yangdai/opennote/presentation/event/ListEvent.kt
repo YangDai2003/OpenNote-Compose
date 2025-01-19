@@ -8,6 +8,7 @@ sealed interface ListEvent {
 
     data class OpenNote(val noteEntity: NoteEntity) : ListEvent
     data class Search(val key: String) : ListEvent
+    data class AddNoteToFolder(val folderId: Long?) : ListEvent
 
     data class Sort(
         val noteOrder: NoteOrder = NoteOrder.Date(OrderType.Descending),
@@ -22,5 +23,4 @@ sealed interface ListEvent {
 
     data object ToggleOrderSection : ListEvent
     data object ChangeViewMode : ListEvent
-    data object AddNote : ListEvent
 }

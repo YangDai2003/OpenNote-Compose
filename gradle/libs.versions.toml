@@ -6,9 +6,9 @@ kotlin = "2.1.0"
 ksp = "2.1.0-1.0.29"
 kotlinxSerialization = "1.8.0"
 
-composeBom = "2024.12.01"
+composeBom = "2025.01.00"
 composeAdaptive = "1.0.0"
-activityCompose = "1.9.3"
+activityCompose = "1.10.0"
 lifecycleRuntimeCompose = "2.8.7"
 navigationCompose = "2.8.5"
 
@@ -25,7 +25,7 @@ commonmark = "0.24.0"
 datastorePreferences = "1.1.2"
 textRecognition = "16.0.1"
 
-camerax_version = "1.5.0-alpha04"
+camerax_version = "1.5.0-alpha05"
 coreSplashscreen = "1.2.0-alpha02"
 biometricVersion = "1.2.0-alpha05"
 

@@ -59,7 +59,7 @@
     <string name="data">Data</string>
     <string name="security">Security</string>
     <string name="import_files_description">Import text files (such as .txt, .md, .html, etc.) as notes. The file name will be used as the title and the MARKDOWN type will be automatically determined.</string>
-    <string name="backup_description">Back up all notes (excluding folders) as a JSON file and save it to {Downloads/OpenNote/Backup}.</string>
+    <string name="backup_description">Back up all folders and notes in them as a JSON file and save it to {Downloads/OpenNote/Backup}.</string>
     <string name="restore_description">Restore the data in the selected JSON type backup file to the database. If there is a data conflict, the backup file will overwrite the notes in the database.</string>
     <string name="reset_database_description">Clear all data in the database (including all notes and folders).</string>
     <string name="backup">Backup</string>
@@ -81,7 +81,7 @@
     <string name="export_as">Export note as</string>
     <string name="empty_note">Cannot save empty note.</string>
     <string name="confirm">Confirm</string>
-    <string name="confirm_msg">The note has not been saved. Are you sure of navigating up?</string>
+    <string name="confirm_msg">The note has not been saved. \nAre you sure of navigating up?</string>
     <string name="note_editing">Note editing</string>
     <string name="undo">Undo</string>
     <string name="redo">Redo</string>
@@ -107,4 +107,5 @@
     <string name="pass">Password</string>
     <string name="color_picker">Color Picker</string>
     <string name="navigate_back">Navigate back</string>
+    <string name="mode">mode</string>
 </resources>

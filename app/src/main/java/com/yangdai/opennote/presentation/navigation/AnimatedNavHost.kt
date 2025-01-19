@@ -149,14 +149,18 @@ fun AnimatedNavHost(
     ) {
         val context = LocalContext.current
         val id = it.arguments?.getLong("id") ?: -1L
-        val sharedText = it.arguments?.getParcelable<Intent>(NavController.KEY_DEEP_LINK_INTENT)
-            ?.parseSharedContent(context.applicationContext)?.trim()
+        val sharedContent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            it.arguments?.getParcelable(NavController.KEY_DEEP_LINK_INTENT, Intent::class.java)
+        } else {
+            @Suppress("DEPRECATION")
+            it.arguments?.getParcelable<Intent>(NavController.KEY_DEEP_LINK_INTENT)
+        }?.parseSharedContent(context.applicationContext)
         val scannedText = navController.currentBackStackEntry
             ?.savedStateHandle?.get<String>("scannedText")?.trim()
         NoteScreen(
             id = id,
             isLargeScreen = isLargeScreen,
-            sharedText = sharedText,
+            sharedContent = sharedContent,
             scannedText = scannedText,
             navigateUp = { navController.navigateBackWithHapticFeedback(hapticFeedback) },
             onScanTextClick = { navController.navigate(CameraX) }

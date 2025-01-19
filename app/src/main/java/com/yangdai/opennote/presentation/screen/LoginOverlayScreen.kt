@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Build
 import android.provider.Settings
 import android.widget.Toast
+import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
@@ -34,7 +35,7 @@ fun LoginOverlayScreen(
     onAuthenticationNotEnrolled: () -> Unit
 ) {
 
-    val activity = LocalContext.current as AppCompatActivity
+    val activity = LocalActivity.current as AppCompatActivity
     val promptManager = BiometricPromptManager(activity)
 
     val biometricPromptResult by promptManager.promptResult.collectAsStateWithLifecycle(initialValue = null)

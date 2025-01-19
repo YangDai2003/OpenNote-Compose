@@ -1,5 +1,6 @@
 package com.yangdai.opennote.presentation.screen
 
+import androidx.activity.compose.LocalActivity
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.fadeIn
@@ -19,7 +20,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -27,7 +27,6 @@ import androidx.window.core.layout.WindowHeightSizeClass
 import androidx.window.core.layout.WindowSizeClass
 import androidx.window.core.layout.WindowWidthSizeClass
 import com.yangdai.opennote.MainActivity
-import com.yangdai.opennote.presentation.viewmodel.SharedViewModel
 import com.yangdai.opennote.presentation.component.MaskAnimModel
 import com.yangdai.opennote.presentation.component.MaskBox
 import com.yangdai.opennote.presentation.navigation.AnimatedNavHost
@@ -35,10 +34,11 @@ import com.yangdai.opennote.presentation.state.AppTheme
 import com.yangdai.opennote.presentation.state.AppTheme.Companion.toInt
 import com.yangdai.opennote.presentation.theme.OpenNoteTheme
 import com.yangdai.opennote.presentation.util.Constants
+import com.yangdai.opennote.presentation.viewmodel.SharedViewModel
 
 @Composable
 fun BaseScreen(
-    sharedViewModel: SharedViewModel = hiltViewModel(LocalContext.current as MainActivity)
+    sharedViewModel: SharedViewModel = hiltViewModel(LocalActivity.current as MainActivity)
 ) {
 
     val settingsState by sharedViewModel.settingsStateFlow.collectAsStateWithLifecycle()
@@ -68,7 +68,8 @@ fun BaseScreen(
 
     OpenNoteTheme(
         color = settingsState.color,
-        darkMode = settingsState.isAppInDarkMode
+        darkMode = settingsState.isAppInDarkMode,
+        amoledMode = settingsState.isAppInAmoledMode
     ) {
 
         // MaskBox is a custom composable that animates a mask over the screen
