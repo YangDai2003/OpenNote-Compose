@@ -32,7 +32,6 @@ import com.yangdai.opennote.R
 fun MarkdownEditField(
     modifier: Modifier,
     state: TextFieldState,
-    searchedWords: String,
     readMode: Boolean,
     onScanButtonClick: () -> Unit,
     onTableButtonClick: () -> Unit,

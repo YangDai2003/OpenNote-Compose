@@ -1,5 +1,6 @@
 package com.yangdai.opennote.presentation.component.text
 
+import android.annotation.SuppressLint
 import android.content.ClipData
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.slideInVertically
@@ -18,6 +19,7 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.SolidColor
@@ -34,11 +36,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.yangdai.opennote.R
 
+@SuppressLint("UnrememberedMutableState")
 @Preview(showBackground = true)
 @Composable
 fun RichTextFieldPreview() {
     RichTextField(
-        initialText = """
+        initialText = mutableStateOf(
+            """
             **bold**
             _italic_
             ++underline++
@@ -51,27 +55,51 @@ fun RichTextFieldPreview() {
             ~~++u in d++~~
 
             `~~++_**aabbccddee**_++~~`
-        """.trimIndent(),
+        """.trimIndent()
+        ),
         onTextChange = {},
         onFocusChanged = {},
         onPreviewButtonClick = {}
     )
 }
 
+/*
+    数据传递的逻辑是这样的：NoteScreen中通过监听viewmodel中的contentState获取初始化文本，
+    然后传递给RichTextField， RichTextField中通过initialText接收，
+    然后通过onTextChange将变化传递给viewmodel中的contentState，实现实时保存。
+    这样实现了两个模式共用一套viewmodel中的数据流。
+ */
+
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun RichTextField(
     modifier: Modifier = Modifier,
     readMode: Boolean = false,
-    initialText: String = "",
+    initialText: MutableState<String>,
     onTextChange: (String) -> Unit,
     onFocusChanged: (Boolean) -> Unit,
     onPreviewButtonClick: () -> Unit,
 ) {
+    var initialized by rememberSaveable { mutableStateOf(false) }
+    var textFieldValue by rememberSaveable(stateSaver = TextFieldValue.Saver) {
+        mutableStateOf(
+            TextFieldValue()
+        )
+    }
 
-    var textFieldValue by remember { mutableStateOf(TextFieldValue()) }
+    LaunchedEffect(initialText.value) {
+        if (!initialized) {
+            textFieldValue = textFieldValue.copy(text = initialText.value)
+            if (initialText.value.isNotEmpty()) {
+                initialized = true
+            }
+        }
+    }
 
-    textFieldValue = textFieldValue.copy(text = initialText)
+    fun applyChange(tfv: TextFieldValue) {
+        textFieldValue = tfv
+        onTextChange(textFieldValue.text)
+    }
 
     val receiveContentListener = remember {
         ReceiveContentListener { transferableContent ->
@@ -80,7 +108,7 @@ fun RichTextField(
                     transferableContent.consume { item: ClipData.Item ->
                         val hasText = item.text.isNotEmpty()
                         if (hasText) {
-                            textFieldValue = textFieldValue.add(item.text.toString())
+                            applyChange(textFieldValue.add(item.text.toString()))
                         }
                         hasText
                     }
@@ -89,11 +117,6 @@ fun RichTextField(
                 else -> transferableContent
             }
         }
-    }
-
-    fun applyChange(tfv: TextFieldValue) {
-        textFieldValue = tfv
-        onTextChange(textFieldValue.text)
     }
 
     Column(modifier = modifier) {

@@ -71,6 +71,7 @@ import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
@@ -131,6 +132,14 @@ class SharedViewModel @Inject constructor(
     // 笔记标题和内容的状态
     val titleState = TextFieldState()
     val contentState = TextFieldState()
+
+    val contentFlow =
+        snapshotFlow { contentState.text }.map { it.toString() }.flowOn(Dispatchers.Default)
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.Eagerly,
+                initialValue = ""
+            )
 
     @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
     val html = snapshotFlow { contentState.text }
@@ -429,6 +438,8 @@ class SharedViewModel @Inject constructor(
                     )
                     useCases.addNote(note)
                     uiEventFlow.emit(UiEvent.NavigateBack)
+                    titleState.setTextAndPlaceCursorAtEnd("")
+                    contentState.setTextAndPlaceCursorAtEnd("")
                 }
             }
 
@@ -449,6 +460,8 @@ class SharedViewModel @Inject constructor(
                         )
                     }
                     uiEventFlow.emit(UiEvent.NavigateBack)
+                    titleState.setTextAndPlaceCursorAtEnd("")
+                    contentState.setTextAndPlaceCursorAtEnd("")
                 }
             }
 
@@ -526,6 +539,8 @@ class SharedViewModel @Inject constructor(
                     if (note.id != null)
                         if (note.title != _oNote.title || note.content != _oNote.content || note.isMarkdown != _oNote.isMarkdown || note.folderId != _oNote.folderId)
                             useCases.updateNote(note)
+                    titleState.setTextAndPlaceCursorAtEnd("")
+                    contentState.setTextAndPlaceCursorAtEnd("")
                 }
             }
         }
