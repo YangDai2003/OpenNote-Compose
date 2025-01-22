@@ -40,13 +40,11 @@ the [Guide](Guide.md).
   versatile formatting options.
 - **LaTeX Math Support**: Supports LaTeX math syntax for mathematical equations.
 - **Mermaid Diagram Support**: Supports Mermaid syntax for creating diagrams and flowcharts.
-- **Rich Text Mode**: Offers a simplified writing experience with basic rich text editing
-  capabilities.
-- **Export Options**: Notes can be exported in various formats including TXT, MD (Markdown), and
-  HTML for versatile sharing and usage.
-- **Material 3 Design**: Adheres to Material Design guidelines for a modern and cohesive user
-  interface.
-- **Responsive Design**: Optimized for devices with different screen sizes and orientations.
+- **Light Mode**: Provides basic Markdown syntax and real-time preview.
+- **Standard Mode**: Offers comprehensive Markdown syntax and precise rendering, with separate editing and reading areas.
+- **Export Options**: Notes can be exported in various formats, including TXT, MD (Markdown), and HTML for versatile sharing and usage.
+- **Material 3 Design**: Adheres to Material Design guidelines, creating a modern and cohesive user interface.
+- **Responsive Design**: Optimized for devices with different screen sizes and orientations, providing a great experience on phones, tablets, and even foldable devices.
 
 ## Screenshots
 
@@ -122,9 +120,3 @@ an issue. If you want to contribute code directly to this project, you can creat
 
 - [MaskAnim](https://github.com/setruth/MaskAnim): Implementation of the theme switching function
   using mask animation.
-
-## TODO
-
-- [ ] Support WebDAV and Dropbox
-- [ ] Add more preference settings
-- [ ] Add in-note search function

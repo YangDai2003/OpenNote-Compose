@@ -36,10 +36,11 @@ OpenNote是一款完全使用Compose构建的现代化Android记事本应用程�
 - **Markdown 支持**：支持 CommonMark 和 GitHub Flavored Markdown (GFM) 语法，以实现多种格式选项。
 - **LaTeX Math 支持**：支持 LaTeX Math 语法，用于数学方程。
 - **Mermaid 支持**：支持 Mermaid 语法，用于创建图表和流程图。
-- **富文本模式**：通过基本的富文本编辑功能提供简化的书写体验。
+- **轻量模式**：提供基本的 Markdown 语法和实时效果预览。
+- **经典模式**：提供全面的 Markdown 语法和精准的渲染效果，分为编辑区域和阅读区域。
 - **导出选项**：笔记可以以各种格式导出，包括 TXT、MD (Markdown) 和 HTML，以实现多种共享和使用。
 - **Material 3 Design**：遵循 Material Design 指南，打造现代且具有凝聚力的用户界面。
-- **响应式设计**：针对不同屏幕尺寸和方向的设备进行了优化。
+- **响应式设计**：针对不同屏幕尺寸和方向的设备进行了优化，在手机、平板甚至折叠屏上都具有良好的体验。
 
 ## 屏幕截图
 
@@ -109,9 +110,3 @@ git clone https://github.com/YangDai2003/OpenNote.git
 ## 参考
 
 - [MaskAnim](https://github.com/setruth/MaskAnim)：用于使用遮罩动画来切换主题功能的实现。
-
-## 待办
-
-- [ ] 添加对 WebDAV 和 Dropbox 的支持
-- [ ] 添加更多偏好设置
-- [ ] 添加笔记内文本搜索功能
