@@ -31,7 +31,6 @@ biometricVersion = "1.2.0-alpha05"
 
 [libraries]
 
-androidx-camera-compose = { module = "androidx.camera:camera-compose", version.ref = "camerax_version" }
 androidx-camera-camera2 = { group = "androidx.camera", name = "camera-camera2", version.ref = "camerax_version" }
 androidx-camera-lifecycle = { group = "androidx.camera", name = "camera-lifecycle", version.ref = "camerax_version" }
 androidx-camera-view = { group = "androidx.camera", name = "camera-view", version.ref = "camerax_version" }

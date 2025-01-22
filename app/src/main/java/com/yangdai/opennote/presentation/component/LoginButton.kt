@@ -121,7 +121,7 @@ private class NeonNode(
         restingAnimation = coroutineScope.launch {
             // Wait for the existing press animation to finish if it is still ongoing
             pressedAnimation?.join()
-            animatedPressAlpha.animateTo(0f, tween(250))
+            animatedPressAlpha.animateTo(0f, tween(500))
             animatedProgress.snapTo(0f)
         }
     }

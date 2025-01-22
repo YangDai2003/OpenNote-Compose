@@ -100,7 +100,6 @@ dependencies {
     // CameraX
     implementation(libs.androidx.camera.camera2)
     implementation(libs.androidx.camera.lifecycle)
-    implementation(libs.androidx.camera.compose)
     implementation(libs.androidx.camera.view)
 
     // To recognize Latin script
