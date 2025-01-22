@@ -11,7 +11,9 @@ data class SettingsState(
     val shouldFollowSystem: Boolean = false,
     val isSwitchActive: Boolean = false,
     val isListView: Boolean = false,
-    val isAppInAmoledMode: Boolean = false
+    val isAppInAmoledMode: Boolean = false,
+    val isDefaultViewForReading: Boolean = false,
+    val isDefaultLiteMode: Boolean = false
 )
 
 enum class AppTheme(private val value: Int) {

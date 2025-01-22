@@ -11,6 +11,7 @@ import androidx.compose.ui.unit.LayoutDirection
 import kotlin.math.cos
 import kotlin.math.sin
 
+@Suppress("SameParameterValue")
 class CurlyCornerShape(
     private val amp: Double = 16.0,
     private val count: Int = 12,

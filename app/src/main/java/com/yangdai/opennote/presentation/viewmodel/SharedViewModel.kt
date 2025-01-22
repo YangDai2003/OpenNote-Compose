@@ -38,22 +38,22 @@ import com.yangdai.opennote.presentation.state.DataState
 import com.yangdai.opennote.presentation.state.NoteState
 import com.yangdai.opennote.presentation.state.SettingsState
 import com.yangdai.opennote.presentation.util.Constants
-import com.yangdai.opennote.presentation.util.add
-import com.yangdai.opennote.presentation.util.addHeader
-import com.yangdai.opennote.presentation.util.addMermaid
-import com.yangdai.opennote.presentation.util.addRule
-import com.yangdai.opennote.presentation.util.addTable
-import com.yangdai.opennote.presentation.util.addTask
-import com.yangdai.opennote.presentation.util.bold
-import com.yangdai.opennote.presentation.util.inlineBraces
-import com.yangdai.opennote.presentation.util.inlineBrackets
-import com.yangdai.opennote.presentation.util.inlineCode
-import com.yangdai.opennote.presentation.util.inlineMath
-import com.yangdai.opennote.presentation.util.italic
-import com.yangdai.opennote.presentation.util.mark
-import com.yangdai.opennote.presentation.util.quote
-import com.yangdai.opennote.presentation.util.strikeThrough
-import com.yangdai.opennote.presentation.util.underline
+import com.yangdai.opennote.presentation.component.text.add
+import com.yangdai.opennote.presentation.component.text.addHeader
+import com.yangdai.opennote.presentation.component.text.addMermaid
+import com.yangdai.opennote.presentation.component.text.addRule
+import com.yangdai.opennote.presentation.component.text.addTable
+import com.yangdai.opennote.presentation.component.text.addTask
+import com.yangdai.opennote.presentation.component.text.bold
+import com.yangdai.opennote.presentation.component.text.inlineBraces
+import com.yangdai.opennote.presentation.component.text.inlineBrackets
+import com.yangdai.opennote.presentation.component.text.inlineCode
+import com.yangdai.opennote.presentation.component.text.inlineMath
+import com.yangdai.opennote.presentation.component.text.italic
+import com.yangdai.opennote.presentation.component.text.mark
+import com.yangdai.opennote.presentation.component.text.quote
+import com.yangdai.opennote.presentation.component.text.strikeThrough
+import com.yangdai.opennote.presentation.component.text.underline
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -182,7 +182,9 @@ class SharedViewModel @Inject constructor(
         dataStoreRepository.booleanFlow(Constants.Preferences.SHOULD_FOLLOW_SYSTEM),
         dataStoreRepository.booleanFlow(Constants.Preferences.IS_SWITCH_ACTIVE),
         dataStoreRepository.booleanFlow(Constants.Preferences.IS_LIST_VIEW),
-        dataStoreRepository.booleanFlow(Constants.Preferences.IS_APP_IN_AMOLED_MODE)
+        dataStoreRepository.booleanFlow(Constants.Preferences.IS_APP_IN_AMOLED_MODE),
+        dataStoreRepository.booleanFlow(Constants.Preferences.IS_DEFAULT_VIEW_FOR_READING),
+        dataStoreRepository.booleanFlow(Constants.Preferences.IS_DEFAULT_LITE_MODE)
     ) { values ->
         SettingsState(
             theme = AppTheme.fromInt(values[0] as Int),
@@ -192,7 +194,9 @@ class SharedViewModel @Inject constructor(
             shouldFollowSystem = values[4] as Boolean,
             isSwitchActive = values[5] as Boolean,
             isListView = values[6] as Boolean,
-            isAppInAmoledMode = values[7] as Boolean
+            isAppInAmoledMode = values[7] as Boolean,
+            isDefaultViewForReading = values[8] as Boolean,
+            isDefaultLiteMode = values[9] as Boolean
         )
     }.flowOn(Dispatchers.IO).stateIn(
         scope = viewModelScope,
@@ -420,7 +424,7 @@ class SharedViewModel @Inject constructor(
                         title = titleState.text.toString(),
                         content = contentState.text.toString(),
                         folderId = noteState.folderId,
-                        isMarkdown = noteState.isMarkdown,
+                        isMarkdown = noteState.isStandard,
                         timestamp = System.currentTimeMillis()
                     )
                     useCases.addNote(note)
@@ -438,7 +442,7 @@ class SharedViewModel @Inject constructor(
                                 title = titleState.text.toString(),
                                 content = contentState.text.toString(),
                                 folderId = note.folderId,
-                                isMarkdown = note.isMarkdown,
+                                isMarkdown = note.isStandard,
                                 timestamp = System.currentTimeMillis(),
                                 isDeleted = true
                             )
@@ -451,7 +455,7 @@ class SharedViewModel @Inject constructor(
             NoteEvent.SwitchType -> {
                 noteStateFlow.update {
                     it.copy(
-                        isMarkdown = it.isMarkdown.not()
+                        isStandard = it.isStandard.not()
                     )
                 }
             }
@@ -480,20 +484,26 @@ class SharedViewModel @Inject constructor(
                     Constants.Editor.DIAGRAM -> contentState.edit { addMermaid() }
                     Constants.Editor.TEXT -> contentState.edit { add(event.value) }
                     Constants.Editor.TITLE -> titleState.edit { add(event.value) }
+                    Constants.Editor.NEW_TEXT -> contentState.setTextAndPlaceCursorAtEnd(event.value)
                 }
             }
 
             is NoteEvent.Load -> {
                 // 判断id是否与oNote的id相同，不同则从数据库获取笔记，并更新oNote。
                 viewModelScope.launch(Dispatchers.IO) {
-                    if (event.id != (_oNote.id ?: -1L))
+                    // 当数据库中不存在该笔记时，创建一个新的笔记
+                    if (event.id != (_oNote.id ?: -1L) || event.id == -1L)
                         _oNote = useCases.getNoteById(event.id)
-                            ?: NoteEntity(timestamp = System.currentTimeMillis())
+                            ?: NoteEntity(
+                                timestamp = System.currentTimeMillis(),
+                                isMarkdown = dataStoreRepository.booleanFlow(Constants.Preferences.IS_DEFAULT_LITE_MODE)
+                                    .first().not()
+                            )
                     noteStateFlow.update { noteState ->
                         noteState.copy(
                             id = _oNote.id,
                             folderId = _oNote.folderId,
-                            isMarkdown = _oNote.isMarkdown,
+                            isStandard = _oNote.isMarkdown,
                             timestamp = _oNote.timestamp
                         )
                     }
@@ -510,7 +520,7 @@ class SharedViewModel @Inject constructor(
                         title = titleState.text.toString(),
                         content = contentState.text.toString(),
                         folderId = noteState.folderId,
-                        isMarkdown = noteState.isMarkdown,
+                        isMarkdown = noteState.isStandard,
                         timestamp = System.currentTimeMillis()
                     )
                     if (note.id != null)

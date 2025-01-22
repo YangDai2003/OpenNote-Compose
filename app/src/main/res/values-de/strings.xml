@@ -23,7 +23,7 @@
     <string name="search_history">Suchverlauf</string>
     <string name="content">Inhalt</string>
     <string name="delete">Löschen</string>
-    <string name="login">Anmelden</string>
+    <string name="unlock">Entsperren</string>
     <string name="data_security">Daten und Sicherheit</string>
     <string name="reset_database">Datenbank zurücksetzen</string>
     <string name="shareContent">Willkommen bei \"Open Note\", einer leichtgewichtigen, ästhetisch ansprechenden Anwendung, die dem Material 3-Designstil folgt. Unsere App bietet lokalen Speicher, sodass Sie Ihre Gedanken jederzeit und überall festhalten können, auch ohne Internetverbindung. Die effiziente Suchfunktion hilft Ihnen, Ihre Notizen schnell zu finden, während die Ordnerkategorisierungsfunktion bei der besseren Organisation Ihrer Notizen hilft. Darüber hinaus bietet es eine Texterkennungsfunktion, mit der Text in Bildern in bearbeitbaren Text umgewandelt werden kann. Das Ziel ist es, Ihnen das bequemste und effizienteste Notizen-Erlebnis zu bieten. Herunterladen: https://play.google.com/store/apps/details?id=com.yangdai.opennote</string>
@@ -45,7 +45,7 @@
     <string name="reset">Zurücksetzen</string>
     <string name="reset_database_warning">Durch das Zurücksetzen der Datenbank werden alle Notizen und Ordner vollständig gelöscht und können nicht wiederhergestellt werden. Bitte entscheiden Sie, ob Sie fortfahren möchten.</string>
     <string name="task">Aufgabe</string>
-    <string name="rich_text">RTF</string>
+    <string name="lite_mode">Lite</string>
     <string name="guide">Benutzerhandbuch</string>
     <string name="no_text_found">Kein Text gefunden</string>
     <string name="no_password_set">Bitte legen Sie zuerst das Passwort für den Sperrbildschirm des Systems fest.</string>
@@ -54,7 +54,6 @@
     <string name="import_files">Textdateien importieren</string>
     <string name="destination_folder">Zielordner</string>
     <string name="language_description">Wählen Sie die App-Sprache</string>
-    <string name="settings_hint">Wählen Sie einen Abschnitt aus, um seine Details anzuzeigen.</string>
     <string name="data">Daten</string>
     <string name="security">Sicherheit</string>
     <string name="import_files_description">Importieren Sie Textdateien (z. B. .txt, .md, .html usw.) als Notizen. Der Dateiname wird als Titel verwendet und der MARKDOWN-Typ wird automatisch bestimmt.</string>
@@ -106,4 +105,13 @@
     <string name="color_picker">Farbwähler</string>
     <string name="navigate_back">Zurück navigieren</string>
     <string name="mode">Modus</string>
+    <string name="standard_mode">Standard</string>
+    <string name="editor">Editor</string>
+    <string name="editor_description">Standardansicht • Standardmodus zum Bearbeiten</string>
+    <string name="default_view_for_note">Die Standardansicht, in der Notizen geöffnet werden.</string>
+    <string name="default_view">Standardansicht</string>
+    <string name="default_editing_mode">Standardmodus zum Bearbeiten</string>
+    <string name="default_editing_mode_for_note">Der Standardbearbeitungsmodus, mit dem eine neue Notiz beginnt.</string>
+    <string name="editing_view">Bearbeitungs-Ansicht</string>
+    <string name="reading_view">Lese-Ansicht</string>
 </resources>

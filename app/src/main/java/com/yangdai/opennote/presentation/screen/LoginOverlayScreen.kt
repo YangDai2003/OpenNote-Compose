@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -24,8 +23,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.yangdai.opennote.R
+import com.yangdai.opennote.presentation.component.LoginButton
 import com.yangdai.opennote.presentation.component.LogoText
 import com.yangdai.opennote.presentation.util.BiometricPromptManager
 
@@ -80,6 +81,23 @@ fun LoginOverlayScreen(
         }
     }
 
+    val title = stringResource(R.string.unlock_to_use_open_note)
+    val negativeButtonText = stringResource(android.R.string.cancel)
+
+    LoginScreenContent(
+        onClick = {
+            promptManager.showBiometricPrompt(
+                title = title,
+                negativeButtonText = negativeButtonText
+            )
+        }
+    )
+}
+
+@Composable
+fun LoginScreenContent(
+    onClick: () -> Unit
+) {
     // 判断系统版本是否大于android 12
     val modifier: Modifier = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
         Modifier
@@ -98,16 +116,17 @@ fun LoginOverlayScreen(
 
         LogoText()
 
-        val title = stringResource(R.string.unlock_to_use_open_note)
-        val negativeButtonText = stringResource(android.R.string.cancel)
-
-        OutlinedButton(onClick = {
-            promptManager.showBiometricPrompt(
-                title = title,
-                negativeButtonText = negativeButtonText
+        LoginButton(onClick = onClick) {
+            Text(
+                color = MaterialTheme.colorScheme.onSurface,
+                text = stringResource(R.string.unlock)
             )
-        }) {
-            Text(text = stringResource(R.string.login))
         }
     }
+}
+
+@Preview
+@Composable
+fun LoginScreenPreview() {
+    LoginScreenContent(onClick = {})
 }

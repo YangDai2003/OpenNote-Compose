@@ -1,4 +1,4 @@
-package com.yangdai.opennote.presentation.component
+package com.yangdai.opennote.presentation.component.text
 
 import android.annotation.SuppressLint
 import android.graphics.Color
@@ -77,8 +77,8 @@ fun MarkdownText(
                     <style type="text/css">
                         body { color: ${markdownStyles.hexTextColor}; padding: 0px; margin: 0px; }
                         a { color: ${markdownStyles.hexLinkColor}; }
-                        p code { background-color: ${markdownStyles.hexCodeBackgroundColor}; padding: 4px 4px 2px 4px; margin: 4px; border-radius: 4px; }
-                        td code { background-color: ${markdownStyles.hexCodeBackgroundColor}; padding: 4px 4px 2px 4px; margin: 4px; border-radius: 4px; }
+                        p code { background-color: ${markdownStyles.hexCodeBackgroundColor}; padding: 4px 4px 2px 4px; margin: 4px; border-radius: 4px; font-family: monospace; }
+                        td code { background-color: ${markdownStyles.hexCodeBackgroundColor}; padding: 4px 4px 2px 4px; margin: 4px; border-radius: 4px; font-family: monospace; }
                         pre { background-color: ${markdownStyles.hexPreBackgroundColor}; display: block; padding: 16px; overflow-x: auto; }
                         blockquote { border-left: 4px solid ${markdownStyles.hexQuoteBackgroundColor}; padding-left: 0px; margin-left: 0px; padding-right: 0px; margin-right: 0px; }
                         blockquote > * { margin-left: 16px; padding: 0px; }

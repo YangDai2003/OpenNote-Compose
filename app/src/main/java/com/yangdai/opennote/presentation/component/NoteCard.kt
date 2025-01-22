@@ -124,7 +124,7 @@ fun ColumnNoteCard(
 
         Text(
             modifier = Modifier.align(Alignment.CenterEnd),
-            text = if (note.isMarkdown) "MARKDOWN" else stringResource(R.string.rich_text),
+            text = if (note.isMarkdown) stringResource(R.string.standard_mode) else stringResource(R.string.lite_mode),
             style = MaterialTheme.typography.bodyMedium,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis

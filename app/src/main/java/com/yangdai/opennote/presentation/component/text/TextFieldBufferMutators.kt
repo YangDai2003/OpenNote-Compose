@@ -1,4 +1,4 @@
-package com.yangdai.opennote.presentation.util
+package com.yangdai.opennote.presentation.component.text
 
 import androidx.compose.foundation.text.input.TextFieldBuffer
 import androidx.compose.ui.text.TextRange
@@ -36,7 +36,7 @@ fun TextFieldBuffer.bold() = inlineWrap("**")
 
 fun TextFieldBuffer.italic() = inlineWrap("_")
 
-fun TextFieldBuffer.underline() = inlineWrap("++", "++")
+fun TextFieldBuffer.underline() = inlineWrap("++")
 
 fun TextFieldBuffer.strikeThrough() = inlineWrap("~~")
 

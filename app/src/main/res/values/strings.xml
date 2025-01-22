@@ -23,7 +23,7 @@
     <string name="search_history">Search history</string>
     <string name="content">Content</string>
     <string name="delete">Delete</string>
-    <string name="login">Login</string>
+    <string name="unlock">Unlock</string>
     <string name="data_security">Data and security</string>
     <string name="reset_database">Reset database</string>
     <string name="shareContent">Welcome to \"Open Note\", a lightweight, aesthetically pleasing application that adheres to the Material 3 design style. Our app offers local storage, allowing you to jot down your thoughts anytime, anywhere, even without an internet connection. The efficient search function helps you quickly locate your notes, while the folder categorization feature aids in better organization of your notes. Additionally, it provides a text OCR feature, capable of converting text in images into editable text. The goal is to provide you with the most convenient and efficient note-taking experience. Download: https://play.google.com/store/apps/details?id=com.yangdai.opennote</string>
@@ -46,7 +46,7 @@
     <string name="reset">Reset</string>
     <string name="reset_database_warning">Resetting the database will cause all notes and folders to be completely deleted and irrecoverable. Please decide whether to continue?</string>
     <string name="task">Task</string>
-    <string name="rich_text">RTF</string>
+    <string name="lite_mode">Lite</string>
     <string name="guide">User guide</string>
     <string name="no_text_found">No text found</string>
     <string name="no_password_set">Please set the system lock screen password first</string>
@@ -55,7 +55,6 @@
     <string name="import_files">Import text files</string>
     <string name="destination_folder">Destination folder</string>
     <string name="language_description">Choose the app language</string>
-    <string name="settings_hint">Select a section to view its details</string>
     <string name="data">Data</string>
     <string name="security">Security</string>
     <string name="import_files_description">Import text files (such as .txt, .md, .html, etc.) as notes. The file name will be used as the title and the MARKDOWN type will be automatically determined.</string>
@@ -108,4 +107,13 @@
     <string name="color_picker">Color Picker</string>
     <string name="navigate_back">Navigate back</string>
     <string name="mode">mode</string>
+    <string name="standard_mode">Standard</string>
+    <string name="editor">Editor</string>
+    <string name="editor_description">Default view • Default editing mode</string>
+    <string name="default_view_for_note">The default view that notes get opened in.</string>
+    <string name="default_view">Default view</string>
+    <string name="default_editing_mode">Default editing mode</string>
+    <string name="default_editing_mode_for_note">The default editing mode a new note will start with.</string>
+    <string name="editing_view">Editing view</string>
+    <string name="reading_view">Reading view</string>
 </resources>

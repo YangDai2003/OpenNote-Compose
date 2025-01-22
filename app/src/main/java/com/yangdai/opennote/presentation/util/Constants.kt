@@ -22,6 +22,8 @@ object Constants {
         const val MASK_CLICK_X = 0f
         const val MASK_CLICK_Y = 0f
         const val IS_LIST_VIEW = "IS_List_VIEW"
+        const val IS_DEFAULT_VIEW_FOR_READING = "IS_DEFAULT_VIEW_FOR_READING"
+        const val IS_DEFAULT_LITE_MODE = "IS_DEFAULT_LITE_MODE"
     }
 
     object Editor {
@@ -52,6 +54,7 @@ object Constants {
 
         const val TEXT = "text"
         const val TITLE = "title"
+        const val NEW_TEXT = "newText"
     }
 
 }
