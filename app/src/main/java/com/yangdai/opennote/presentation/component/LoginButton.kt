@@ -63,7 +63,7 @@ fun LoginButton(
 ) {
     Row(
         modifier = modifier
-            .defaultMinSize(minWidth = 76.dp, minHeight = 40.dp)
+            .defaultMinSize(minWidth = 80.dp, minHeight = 48.dp)
             .clickable(
                 enabled = enabled,
                 indication = NeonIndication(shape, 2.dp),
@@ -113,7 +113,7 @@ private class NeonNode(
             currentPressPosition = pressPosition
             animatedPressAlpha.snapTo(1f)
             animatedProgress.snapTo(0f)
-            animatedProgress.animateTo(1f, tween(450))
+            animatedProgress.animateTo(1f, tween(1500))
         }
     }
 
