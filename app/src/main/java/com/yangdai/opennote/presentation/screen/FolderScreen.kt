@@ -1,22 +1,33 @@
 package com.yangdai.opennote.presentation.screen
 
 import androidx.activity.compose.LocalActivity
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyGridItemScope
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.outlined.CreateNewFolder
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.DriveFileRenameOutline
-import androidx.compose.material.icons.outlined.FolderOpen
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeTopAppBar
@@ -35,6 +46,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -55,11 +67,9 @@ fun FolderScreen(
     navigateUp: () -> Unit
 ) {
 
-    val folderList by sharedViewModel.foldersStateFlow.collectAsStateWithLifecycle()
+    val folderNoteCounts by sharedViewModel.folderWithNoteCountsFlow.collectAsStateWithLifecycle()
 
-    var showAddFolderDialog by rememberSaveable {
-        mutableStateOf(false)
-    }
+    var showAddFolderDialog by rememberSaveable { mutableStateOf(false) }
 
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
 
@@ -99,17 +109,19 @@ fun FolderScreen(
             columns = GridCells.Adaptive(360.dp),
             contentPadding = paddingValues
         ) {
-            items(folderList) {
+            items(folderNoteCounts, key = { it.first.id!! }) {
                 FolderItem(
-                    folder = it,
+                    folder = it.first,
+                    notesCountInFolder = it.second,
                     onModify = { folderEntity ->
                         sharedViewModel.onFolderEvent(
                             FolderEvent.UpdateFolder(folderEntity)
                         )
+                    },
+                    onDelete = {
+                        sharedViewModel.onFolderEvent(FolderEvent.DeleteFolder(it.first))
                     }
-                ) {
-                    sharedViewModel.onFolderEvent(FolderEvent.DeleteFolder(it))
-                }
+                )
             }
         }
 
@@ -127,79 +139,119 @@ fun FolderScreen(
 }
 
 @Composable
-private fun LazyGridItemScope.FolderItem(
+fun LazyGridItemScope.FolderItem(
     folder: FolderEntity,
+    notesCountInFolder: Int,
     onModify: (FolderEntity) -> Unit,
     onDelete: () -> Unit
 ) {
-
-    var showModifyDialog by remember {
-        mutableStateOf(false)
+    var isExpanded by remember { mutableStateOf(false) }
+    var showModifyDialog by remember { mutableStateOf(false) }
+    var showWarningDialog by remember { mutableStateOf(false) }
+    val defaultColor = MaterialTheme.colorScheme.primary
+    val folderColor by remember(folder, defaultColor) {
+        mutableStateOf(if (folder.color != null) Color(folder.color) else defaultColor)
+    }
+    val folderName by remember(folder) {
+        mutableStateOf(folder.name)
     }
 
-    var showWarningDialog by remember {
-        mutableStateOf(false)
-    }
-
-    Row(
-        Modifier
+    Card(
+        modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp)
+            .padding(horizontal = 16.dp, vertical = 8.dp)
             .animateItem(),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 4.dp
+        ),
+        shape = RoundedCornerShape(16.dp)
     ) {
-
-        Row(Modifier.weight(1f)) {
-            Icon(
-                modifier = Modifier.padding(horizontal = 16.dp),
-                imageVector = Icons.Outlined.FolderOpen,
-                tint = if (folder.color != null) Color(folder.color) else MaterialTheme.colorScheme.onSurface,
-                contentDescription = "Leading Icon"
-            )
-
-            Text(
-                text = folder.name,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-        }
-
-        Row {
-            IconButton(onClick = {
-                showModifyDialog = !showModifyDialog
-            }) {
+        Column(modifier = Modifier.clickable { isExpanded = !isExpanded }) {
+            // Folder Header
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(folderColor.copy(alpha = 0.1f))
+                    .padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Icon(
-                    imageVector = Icons.Outlined.DriveFileRenameOutline,
-                    contentDescription = "Modify"
+                    imageVector = Icons.Default.Folder,
+                    contentDescription = "Folder",
+                    tint = folderColor,
+                    modifier = Modifier.size(40.dp)
                 )
+                Spacer(modifier = Modifier.width(16.dp))
+                Column {
+                    Text(
+                        text = folderName,
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontWeight = FontWeight.Bold,
+                            color = folderColor
+                        ),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    val text =
+                        notesCountInFolder.toString() + if (notesCountInFolder == 1 || notesCountInFolder == 0) {
+                            stringResource(R.string.note)
+                        } else {
+                            stringResource(R.string.notes)
+                        }
+                    Text(
+                        text = text,
+                        style = MaterialTheme.typography.bodyMedium.copy(
+                            color = Color.Gray
+                        )
+                    )
+                }
             }
 
-            IconButton(onClick = {
-                showWarningDialog = !showWarningDialog
-            }) {
-                Icon(
-                    imageVector = Icons.Outlined.Delete,
-                    contentDescription = "Delete",
-                    tint = MaterialTheme.colorScheme.error
-                )
+            AnimatedVisibility(isExpanded) {
+                HorizontalDivider(color = Color.LightGray, thickness = 1.dp)
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(2.dp),
+                    horizontalArrangement = Arrangement.End,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    IconButton(onClick = {
+                        showModifyDialog = !showModifyDialog
+                    }) {
+                        Icon(
+                            imageVector = Icons.Outlined.DriveFileRenameOutline,
+                            contentDescription = "Modify"
+                        )
+                    }
+
+                    IconButton(onClick = {
+                        showWarningDialog = !showWarningDialog
+                    }) {
+                        Icon(
+                            imageVector = Icons.Outlined.Delete,
+                            contentDescription = "Delete",
+                            tint = MaterialTheme.colorScheme.error
+                        )
+                    }
+                }
             }
         }
+    }
 
-        if (showWarningDialog) {
-            WarningDialog(
-                message = stringResource(R.string.deleting_a_folder_will_also_delete_all_the_notes_it_contains_and_they_cannot_be_restored_do_you_want_to_continue),
-                onDismissRequest = { showWarningDialog = false },
-                onConfirm = onDelete
-            )
-        }
+    if (showWarningDialog) {
+        WarningDialog(
+            message = stringResource(R.string.deleting_a_folder_will_also_delete_all_the_notes_it_contains_and_they_cannot_be_restored_do_you_want_to_continue),
+            onDismissRequest = { showWarningDialog = false },
+            onConfirm = onDelete
+        )
+    }
 
-        if (showModifyDialog) {
-            ModifyFolderDialog(
-                folder = folder,
-                onDismissRequest = { showModifyDialog = false }) {
-                onModify(it)
-            }
+    if (showModifyDialog) {
+        ModifyFolderDialog(
+            folder = folder,
+            onDismissRequest = { showModifyDialog = false }) {
+            onModify(it)
         }
     }
 }

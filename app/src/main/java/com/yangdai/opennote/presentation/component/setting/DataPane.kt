@@ -44,7 +44,7 @@ import com.yangdai.opennote.presentation.viewmodel.SharedViewModel
 fun DataPane(sharedViewModel: SharedViewModel) {
 
     val context = LocalContext.current
-    val folderEntities by sharedViewModel.foldersStateFlow.collectAsStateWithLifecycle()
+    val folderNoteCountsState by sharedViewModel.folderWithNoteCountsFlow.collectAsStateWithLifecycle()
     val actionState by sharedViewModel.dataActionStateFlow.collectAsStateWithLifecycle()
     val settingsState by sharedViewModel.settingsStateFlow.collectAsStateWithLifecycle()
 
@@ -218,7 +218,7 @@ fun DataPane(sharedViewModel: SharedViewModel) {
         FolderListDialog(
             hint = stringResource(R.string.destination_folder),
             oFolderId = folderId,
-            folders = folderEntities,
+            folders = folderNoteCountsState.map { it.first },
             onDismissRequest = { showFolderDialog = false }
         ) { id ->
             folderId = id

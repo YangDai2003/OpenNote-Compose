@@ -113,4 +113,7 @@
     <string name="default_editing_mode_for_note">Yeni bir notun başlayacağı varsayılan düzenleme modu.</string>
     <string name="editing_view">Düzenleme görünümü</string>
     <string name="reading_view">Okuma görünümü</string>
+    <string name="donate">Bağış yapmak</string>
+    <string name="notes">" not"</string>
+    <string name="note">" not"</string>
 </resources>

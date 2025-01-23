@@ -93,11 +93,11 @@ import com.yangdai.opennote.data.local.entity.NoteEntity
 import com.yangdai.opennote.presentation.component.dialog.ExportDialog
 import com.yangdai.opennote.presentation.component.dialog.FolderListDialog
 import com.yangdai.opennote.presentation.component.dialog.LinkDialog
-import com.yangdai.opennote.presentation.component.text.MarkdownText
-import com.yangdai.opennote.presentation.component.text.MarkdownEditField
+import com.yangdai.opennote.presentation.component.text.ReadView
+import com.yangdai.opennote.presentation.component.text.StandardTextField
 import com.yangdai.opennote.presentation.component.text.MarkdownEditorRow
 import com.yangdai.opennote.presentation.component.dialog.ProgressDialog
-import com.yangdai.opennote.presentation.component.text.RichTextField
+import com.yangdai.opennote.presentation.component.text.LiteTextField
 import com.yangdai.opennote.presentation.component.dialog.ShareDialog
 import com.yangdai.opennote.presentation.component.dialog.ShareType
 import com.yangdai.opennote.presentation.component.dialog.TableDialog
@@ -125,7 +125,6 @@ fun NoteScreen(
     id: Long,
     isLargeScreen: Boolean,
     sharedContent: SharedContent?,
-    scannedText: String?,
     navigateUp: () -> Unit,
     onScanTextClick: () -> Unit
 ) {
@@ -139,17 +138,17 @@ fun NoteScreen(
     val focusManager = LocalFocusManager.current
 
     val noteState by sharedViewModel.noteStateFlow.collectAsStateWithLifecycle()
-    val folderList by sharedViewModel.foldersStateFlow.collectAsStateWithLifecycle()
+    val folderNoteCounts by sharedViewModel.folderWithNoteCountsFlow.collectAsStateWithLifecycle()
     val html by sharedViewModel.html.collectAsStateWithLifecycle()
     val actionState by sharedViewModel.dataActionStateFlow.collectAsStateWithLifecycle()
     val settingsState by sharedViewModel.settingsStateFlow.collectAsStateWithLifecycle()
-    val contentFlow by sharedViewModel.contentFlow.collectAsStateWithLifecycle()
+    val scannedText by sharedViewModel.scannedTextStateFlow.collectAsStateWithLifecycle()
 
     val pagerState = rememberPagerState(pageCount = { 2 })
     val snackbarHostState = remember { SnackbarHostState() }
     // Switch between read mode and edit mode
-    val initialReadMode = settingsState.isDefaultViewForReading
-    var isReadMode by rememberSaveable { mutableStateOf(initialReadMode) }
+    val initialReadView = settingsState.isDefaultViewForReading
+    var isReadView by remember { mutableStateOf(initialReadView) }
 
     val coroutineScope = rememberCoroutineScope()
     var showFolderDialog by rememberSaveable { mutableStateOf(false) }
@@ -159,26 +158,14 @@ fun NoteScreen(
     var showExportDialog by rememberSaveable { mutableStateOf(false) }
     var showShareDialog by rememberSaveable { mutableStateOf(false) }
 
-    // Whether to show the overflow menu
-    var showMenu by rememberSaveable { mutableStateOf(false) }
-
     // Folder name, default to "All Notes", or the name of the current folder the note is in
     var folderName by rememberSaveable { mutableStateOf("") }
     var timestamp by rememberSaveable { mutableStateOf("") }
-    // lite mode 的文本初始值
-    var initialText = rememberSaveable { mutableStateOf("") }
-
-    LaunchedEffect(contentFlow) {
-        if (initialText.value.isEmpty()) initialText.value = contentFlow
-    }
 
     LaunchedEffect(noteState) {
-        folderName = if (noteState.folderId == null) {
-            context.getString(R.string.all_notes)
-        } else {
-            val matchingFolder = folderList.find { it.id == noteState.folderId }
-            matchingFolder?.name ?: ""
-        }
+        folderName = noteState.folderId?.let { folderId ->
+            folderNoteCounts.find { it.first.id == folderId }?.first?.name
+        } ?: context.getString(R.string.all_notes)
         timestamp = if (noteState.timestamp == null) System.currentTimeMillis()
             .timestampToFormatLocalDateTime()
         else noteState.timestamp!!.timestampToFormatLocalDateTime()
@@ -202,29 +189,30 @@ fun NoteScreen(
     }
 
     LaunchedEffect(scannedText) {
-        if (!scannedText.isNullOrEmpty()) {
+        if (scannedText.isNotEmpty()) {
             withContext(Dispatchers.Main) {
                 sharedViewModel.onNoteEvent(NoteEvent.Edit(Constants.Editor.TEXT, scannedText))
+                sharedViewModel.scannedTextStateFlow.value = ""
             }
         }
     }
 
-    LaunchedEffect(isReadMode) {
-        if (isReadMode) {
+    LaunchedEffect(isReadView) {
+        if (isReadView) {
             keyboardController?.hide()
             focusManager.clearFocus()
         }
         if (!isLargeScreen) {
             coroutineScope.launch {
-                pagerState.animateScrollToPage(if (isReadMode) 1 else 0)
+                pagerState.animateScrollToPage(if (isReadView) 1 else 0)
             }
         }
     }
 
-    BackHandler(isReadMode) {
-        if (isReadMode) {
+    BackHandler(isReadView) {
+        if (isReadView) {
             focusManager.clearFocus()
-            isReadMode = false
+            isReadView = false
         }
     }
 
@@ -328,13 +316,15 @@ fun NoteScreen(
                 focusable = false,
                 enableUserInput = true
             ) {
-                IconButton(onClick = { isReadMode = !isReadMode }) {
+                IconButton(onClick = { isReadView = !isReadView }) {
                     Icon(
-                        imageVector = if (!isReadMode) Icons.AutoMirrored.Outlined.MenuBook
+                        imageVector = if (!isReadView) Icons.AutoMirrored.Outlined.MenuBook
                         else Icons.Outlined.EditNote, contentDescription = "Mode"
                     )
                 }
             }
+
+            var showMenu by remember { mutableStateOf(false) }
 
             IconButton(onClick = { showMenu = !showMenu }) {
                 Icon(
@@ -414,7 +404,7 @@ fun NoteScreen(
             }
         })
     }, bottomBar = {
-        AnimatedVisibility(visible = !isReadMode && noteState.isStandard,
+        AnimatedVisibility(visible = !isReadView && noteState.isStandard,
             enter = slideInVertically { fullHeight -> fullHeight },
             exit = slideOutVertically { fullHeight -> fullHeight }) {
             MarkdownEditorRow(canRedo = sharedViewModel.contentState.undoState.canRedo,
@@ -438,7 +428,7 @@ fun NoteScreen(
                 .padding(horizontal = 16.dp)
                 .onFocusChanged { isTitleFocused = it.isFocused },
                 state = sharedViewModel.titleState,
-                readOnly = isReadMode,
+                readOnly = isReadView,
                 lineLimits = TextFieldLineLimits.SingleLine,
                 textStyle = MaterialTheme.typography.headlineLarge.copy(color = MaterialTheme.colorScheme.onSurface),
                 cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
@@ -494,9 +484,10 @@ fun NoteScreen(
             /*-------------------------------------------------*/
 
             if (!noteState.isStandard) {
-                RichTextField(modifier = Modifier.fillMaxSize(),
-                    readMode = isReadMode,
-                    initialText = initialText,
+                LiteTextField(
+                    modifier = Modifier.fillMaxSize(),
+                    readMode = isReadView,
+                    content = sharedViewModel.contentState.text.toString(),
                     onTextChange = {
                         sharedViewModel.onNoteEvent(
                             NoteEvent.Edit(
@@ -505,7 +496,9 @@ fun NoteScreen(
                         )
                     },
                     onFocusChanged = { isContentFocused = it },
-                    onPreviewButtonClick = { isReadMode = !isReadMode })
+                    onPreviewButtonClick = { isReadView = !isReadView },
+                    onScanButtonClick = onScanTextClick
+                )
             } else {
                 if (isLargeScreen) {
 
@@ -518,16 +511,16 @@ fun NoteScreen(
                             .padding(horizontal = 16.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        MarkdownEditField(modifier = Modifier
+                        StandardTextField(modifier = Modifier
                             .fillMaxHeight()
                             .weight(textFieldWeight),
-                            readMode = isReadMode,
+                            readMode = isReadView,
                             state = sharedViewModel.contentState,
                             onScanButtonClick = onScanTextClick,
                             onTableButtonClick = { showTableDialog = true },
                             onTaskButtonClick = { showTaskDialog = true },
                             onLinkButtonClick = { showLinkDialog = true },
-                            onPreviewButtonClick = { isReadMode = !isReadMode },
+                            onPreviewButtonClick = { isReadView = !isReadView },
                             onFocusChanged = { isContentFocused = it })
 
                         Icon(
@@ -555,7 +548,7 @@ fun NoteScreen(
                                 .fillMaxHeight()
                                 .weight(1f - textFieldWeight)
                         ) {
-                            MarkdownText(html = html)
+                            ReadView(html = html)
                         }
                     }
                 } else {
@@ -569,19 +562,19 @@ fun NoteScreen(
                     ) { page: Int ->
                         when (page) {
                             0 -> {
-                                MarkdownEditField(modifier = Modifier.fillMaxSize(),
+                                StandardTextField(modifier = Modifier.fillMaxSize(),
                                     state = sharedViewModel.contentState,
-                                    readMode = isReadMode,
+                                    readMode = isReadView,
                                     onScanButtonClick = onScanTextClick,
                                     onTableButtonClick = { showTableDialog = true },
                                     onTaskButtonClick = { showTaskDialog = true },
                                     onLinkButtonClick = { showLinkDialog = true },
-                                    onPreviewButtonClick = { isReadMode = !isReadMode },
+                                    onPreviewButtonClick = { isReadView = !isReadView },
                                     onFocusChanged = { isContentFocused = it })
                             }
 
                             1 -> {
-                                MarkdownText(html = html)
+                                ReadView(html = html)
                             }
                         }
                     }
@@ -672,7 +665,7 @@ fun NoteScreen(
     if (showFolderDialog) {
         FolderListDialog(hint = stringResource(R.string.destination_folder),
             oFolderId = noteState.folderId,
-            folders = folderList,
+            folders = folderNoteCounts.map { it.first },
             onDismissRequest = { showFolderDialog = false }) {
             sharedViewModel.onNoteEvent(NoteEvent.FolderChanged(it))
         }

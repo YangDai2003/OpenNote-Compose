@@ -77,6 +77,7 @@ fun RichTextEditorRowPreview() {
         onScanButtonClick = {}
     )
 }
+
 @Preview(showBackground = true)
 @Composable
 fun MarkdownEditorRowPreview() {
@@ -198,7 +199,9 @@ fun RichTextEditorRow(
     Column(modifier = Modifier.fillMaxWidth()) {
 
         HorizontalDivider(
-            Modifier.fillMaxWidth().padding(bottom = 4.dp),
+            Modifier
+                .fillMaxWidth()
+                .padding(bottom = 4.dp),
             color = MaterialTheme.colorScheme.surfaceVariant,
             thickness = 2.dp
         )
@@ -316,12 +319,11 @@ fun RichTextEditorRow(
                 onClick = onBracesClick
             )
 
-//            IconButtonWithTooltip(
-//                imageVector = Icons.Outlined.DocumentScanner,
-//                contentDescription = stringResource(id = R.string.scan),
-//                shortCutDescription = "Ctrl + S",
-//                onClick = onScanButtonClick
-//            )
+            IconButtonWithTooltip(
+                imageVector = Icons.Outlined.DocumentScanner,
+                contentDescription = stringResource(id = R.string.scan),
+                onClick = onScanButtonClick
+            )
         }
     }
 }

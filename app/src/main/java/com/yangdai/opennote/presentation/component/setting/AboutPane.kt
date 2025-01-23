@@ -3,6 +3,8 @@ package com.yangdai.opennote.presentation.component.setting
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
+import android.widget.Toast
+import androidx.activity.compose.LocalActivity
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
@@ -19,6 +21,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.AttachMoney
 import androidx.compose.material.icons.outlined.IosShare
 import androidx.compose.material.icons.outlined.PrivacyTip
 import androidx.compose.material.icons.outlined.StarRate
@@ -50,12 +53,14 @@ import androidx.compose.ui.unit.dp
 import com.yangdai.opennote.R
 import com.yangdai.opennote.presentation.component.CurlyCornerShape
 import com.yangdai.opennote.presentation.component.dialog.RatingDialog
+import com.yangdai.opennote.presentation.util.PaymentUtil
 import com.yangdai.opennote.presentation.util.rememberCustomTabsIntent
 
 @Composable
 fun AboutPane() {
 
     val context = LocalContext.current
+    val activity = LocalActivity.current
     val customTabsIntent = rememberCustomTabsIntent()
     var showRatingDialog by rememberSaveable { mutableStateOf(false) }
 
@@ -65,16 +70,13 @@ fun AboutPane() {
             .verticalScroll(rememberScrollState())
     ) {
 
-        val packageInfo =
-            context.packageManager.getPackageInfo(
-                context.packageName,
-                0
-            )
+        val packageInfo = context.packageManager.getPackageInfo(
+            context.packageName, 0
+        )
         val version = packageInfo.versionName
         var pressAMP by remember { mutableFloatStateOf(16f) }
         val animatedPress by animateFloatAsState(
-            targetValue = pressAMP,
-            animationSpec = tween(), label = ""
+            targetValue = pressAMP, animationSpec = tween(), label = ""
         )
 
         Column(
@@ -101,15 +103,13 @@ fun AboutPane() {
                         spotColor = MaterialTheme.colorScheme.primaryContainer,
                     )
                     .pointerInput(Unit) {
-                        detectTapGestures(
-                            onPress = {
-                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                pressAMP = 0f
-                                tryAwaitRelease()
-                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                pressAMP = 16f
-                            }
-                        )
+                        detectTapGestures(onPress = {
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            pressAMP = 0f
+                            tryAwaitRelease()
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            pressAMP = 16f
+                        })
                     },
                 contentAlignment = Alignment.Center,
             ) {
@@ -136,77 +136,78 @@ fun AboutPane() {
             )
         }
 
-        ListItem(
-            modifier = Modifier.clickable {
-                customTabsIntent.launchUrl(
-                    context,
-                    Uri.parse("https://github.com/YangDai2003/OpenNote-Compose/blob/master/Guide.md")
-                )
-            },
-            leadingContent = {
-                Icon(
-                    imageVector = Icons.Outlined.TipsAndUpdates,
-                    contentDescription = "Guide"
-                )
-            },
-            headlineContent = {
-                Text(text = stringResource(R.string.guide))
-            })
+        ListItem(modifier = Modifier.clickable {
+            customTabsIntent.launchUrl(
+                context,
+                Uri.parse("https://github.com/YangDai2003/OpenNote-Compose/blob/master/Guide.md")
+            )
+        }, leadingContent = {
+            Icon(
+                imageVector = Icons.Outlined.TipsAndUpdates, contentDescription = "Guide"
+            )
+        }, headlineContent = {
+            Text(text = stringResource(R.string.guide))
+        })
 
-        ListItem(
-            modifier = Modifier.clickable {
-                customTabsIntent.launchUrl(
-                    context,
-                    Uri.parse("https://github.com/YangDai2003/OpenNote-Compose/blob/master/PRIVACY_POLICY.md")
-                )
-            },
-            leadingContent = {
-                Icon(
-                    imageVector = Icons.Outlined.PrivacyTip,
-                    contentDescription = "Privacy Policy"
-                )
-            },
-            headlineContent = { Text(text = stringResource(R.string.privacy_policy)) })
+        ListItem(modifier = Modifier.clickable {
+            customTabsIntent.launchUrl(
+                context,
+                Uri.parse("https://github.com/YangDai2003/OpenNote-Compose/blob/master/PRIVACY_POLICY.md")
+            )
+        }, leadingContent = {
+            Icon(
+                imageVector = Icons.Outlined.PrivacyTip, contentDescription = "Privacy Policy"
+            )
+        }, headlineContent = { Text(text = stringResource(R.string.privacy_policy)) })
 
-        ListItem(
-            modifier = Modifier.clickable {
-                showRatingDialog = true
-            },
-            leadingContent = {
-                Icon(
-                    imageVector = Icons.Outlined.StarRate,
-                    contentDescription = "Rate"
-                )
-            },
-            headlineContent = { Text(text = stringResource(R.string.rate_this_app)) })
+        ListItem(modifier = Modifier.clickable {
+            showRatingDialog = true
+        }, leadingContent = {
+            Icon(
+                imageVector = Icons.Outlined.StarRate, contentDescription = "Rate"
+            )
+        }, headlineContent = { Text(text = stringResource(R.string.rate_this_app)) })
 
-        ListItem(
-            modifier = Modifier.clickable {
-                val sendIntent = Intent(Intent.ACTION_SEND)
-                sendIntent.setType("text/plain")
-                sendIntent.putExtra(
-                    Intent.EXTRA_TITLE,
-                    context.getString(R.string.app_name)
-                )
-                sendIntent.putExtra(
-                    Intent.EXTRA_TEXT,
-                    context.getString(R.string.shareContent)
-                )
-                context.startActivity(Intent.createChooser(sendIntent, null))
-            },
-            leadingContent = {
-                Icon(
-                    imageVector = Icons.Outlined.IosShare,
-                    contentDescription = "Share"
-                )
-            },
-            headlineContent = { Text(text = stringResource(R.string.share_this_app)) })
+        ListItem(modifier = Modifier.clickable {
+            val sendIntent = Intent(Intent.ACTION_SEND)
+            sendIntent.setType("text/plain")
+            sendIntent.putExtra(
+                Intent.EXTRA_TITLE, context.getString(R.string.app_name)
+            )
+            sendIntent.putExtra(
+                Intent.EXTRA_TEXT, context.getString(R.string.shareContent)
+            )
+            context.startActivity(Intent.createChooser(sendIntent, null))
+        }, leadingContent = {
+            Icon(
+                imageVector = Icons.Outlined.IosShare, contentDescription = "Share"
+            )
+        }, headlineContent = { Text(text = stringResource(R.string.share_this_app)) })
+
+        ListItem(modifier = Modifier.clickable {
+            runCatching {
+                if (PaymentUtil.isInstalledPackage(context.applicationContext)) {
+                    PaymentUtil.startAlipayClient(activity, "fkx17585uzuubvggq3eij18")
+                } else {
+                    val donateIntent = Intent(
+                        Intent.ACTION_VIEW,
+                        Uri.parse("https://paypal.me/YangDaiDevelpoer?country.x=DE&locale.x=de_DE")
+                    )
+                    context.startActivity(donateIntent)
+                }
+            }.onFailure {
+                Toast.makeText(context, "Please install Paypal or Alipay.", Toast.LENGTH_SHORT)
+                    .show()
+            }
+        }, leadingContent = {
+            Icon(
+                imageVector = Icons.Outlined.AttachMoney, contentDescription = "Donate"
+            )
+        }, headlineContent = { Text(text = stringResource(R.string.donate)) })
     }
 
     if (showRatingDialog) {
-        RatingDialog(
-            onDismissRequest = { showRatingDialog = false }
-        ) { stars ->
+        RatingDialog(onDismissRequest = { showRatingDialog = false }) { stars ->
             if (stars > 3) {
                 customTabsIntent.launchUrl(
                     context,
@@ -215,8 +216,7 @@ fun AboutPane() {
             } else {
                 if (stars == 0) return@RatingDialog
                 // 获取当前应用的版本号
-                val packageInfo =
-                    context.packageManager.getPackageInfo(context.packageName, 0)
+                val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
                 val appVersion = packageInfo.versionName
                 val deviceModel = Build.MODEL
                 val systemVersion = Build.VERSION.SDK_INT
@@ -232,8 +232,7 @@ fun AboutPane() {
                 }
                 context.startActivity(
                     Intent.createChooser(
-                        emailIntent,
-                        "Feedback (E-mail)"
+                        emailIntent, "Feedback (E-mail)"
                     )
                 )
             }

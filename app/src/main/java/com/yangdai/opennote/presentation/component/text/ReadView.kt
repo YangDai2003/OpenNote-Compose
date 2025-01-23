@@ -44,7 +44,7 @@ private fun createMarkdownStyles(colorScheme: ColorScheme) =
 
 @SuppressLint("SetJavaScriptEnabled")
 @Composable
-fun MarkdownText(
+fun ReadView(
     html: String,
     colorScheme: ColorScheme = MaterialTheme.colorScheme
 ) {

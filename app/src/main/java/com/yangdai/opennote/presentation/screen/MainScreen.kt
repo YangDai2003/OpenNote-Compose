@@ -4,10 +4,13 @@ import androidx.activity.compose.BackHandler
 import androidx.activity.compose.LocalActivity
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -70,7 +73,10 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -105,11 +111,9 @@ fun MainScreen(
     navigateToScreen: (Screen) -> Unit
 ) {
 
-    val coroutineScope = rememberCoroutineScope()
-
-    val dataState by sharedViewModel.dataStateFlow.collectAsStateWithLifecycle()
+    val dataState by sharedViewModel.mainScreenDataStateFlow.collectAsStateWithLifecycle()
     val settingsState by sharedViewModel.settingsStateFlow.collectAsStateWithLifecycle()
-    val folderList by sharedViewModel.foldersStateFlow.collectAsStateWithLifecycle()
+    val folderNoteCounts by sharedViewModel.folderWithNoteCountsFlow.collectAsStateWithLifecycle()
     val dataActionState by sharedViewModel.dataActionStateFlow.collectAsStateWithLifecycle()
 
     val staggeredGridState = rememberLazyStaggeredGridState()
@@ -175,13 +179,15 @@ fun MainScreen(
         mutableStateOf(false)
     }
 
+    val coroutineScope = rememberCoroutineScope()
+
     AdaptiveNavigationScreen(
         isLargeScreen = isLargeScreen,
         drawerState = drawerState,
         gesturesEnabled = !isMultiSelectionModeEnabled && !isSearchBarActivated,
         drawerContent = {
             DrawerContent(
-                folderList = folderList,
+                folderNoteCounts = folderNoteCounts,
                 selectedDrawerIndex = selectedDrawerIndex,
                 navigateTo = { navigateToScreen(it) }
             ) { position, folderEntity ->
@@ -418,15 +424,27 @@ fun MainScreen(
                 }
             },
             floatingActionButton = {
+
+                val hapticFeedback = LocalHapticFeedback.current
+                val interactionSource = remember { MutableInteractionSource() }
+                val isPressed by interactionSource.collectIsPressedAsState()
+                val scale by animateFloatAsState(
+                    targetValue = if (isPressed) 0.9f else 1f,
+                    label = "scale"
+                )
+
                 AnimatedVisibility(
                     visible = isFloatingButtonVisible,
                     enter = slideInHorizontally { fullWidth -> fullWidth * 3 / 2 },
                     exit = slideOutHorizontally { fullWidth -> fullWidth * 3 / 2 }) {
                     FloatingActionButton(
+                        modifier = Modifier.scale(scale),
                         onClick = {
+                            hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
                             sharedViewModel.onListEvent(ListEvent.AddNoteToFolder(selectedFolder.id))
                             navigateToNote(-1)
-                        }
+                        },
+                        interactionSource = interactionSource
                     ) {
                         Icon(imageVector = Icons.Outlined.Add, contentDescription = "Add")
                     }
@@ -434,6 +452,7 @@ fun MainScreen(
 
             }) { innerPadding ->
 
+            // 确保不被遮挡
             val layoutDirection = LocalLayoutDirection.current
             val displayCutout = WindowInsets.displayCutout.asPaddingValues()
             val paddingValues = remember(layoutDirection, displayCutout) {
@@ -451,14 +470,14 @@ fun MainScreen(
                     .padding(paddingValues)
             ) {
 
+                // 如果没有笔记，不显示，性能优化
                 if (dataState.notes.isEmpty()) {
                     return@Box
                 }
 
                 if (!settingsState.isListView) {
                     LazyVerticalStaggeredGrid(
-                        modifier = Modifier
-                            .fillMaxSize(),
+                        modifier = Modifier.fillMaxSize(),
                         state = staggeredGridState,
                         // The staggered grid layout is adaptive, with a minimum column width of 160dp(mdpi)
                         columns = StaggeredGridCells.Adaptive(160.dp),
@@ -504,6 +523,7 @@ fun MainScreen(
                     )
                 } else {
 
+                    // 时间线
                     VerticalDivider(
                         Modifier
                             .align(Alignment.TopStart)
@@ -591,7 +611,7 @@ fun MainScreen(
                 FolderListDialog(
                     hint = stringResource(R.string.destination_folder),
                     oFolderId = selectedFolder.id,
-                    folders = folderList,
+                    folders = folderNoteCounts.map { it.first },
                     onDismissRequest = { isFolderDialogVisible = false }
                 ) {
                     sharedViewModel.onListEvent(ListEvent.MoveNotes(selectedNotes, it))

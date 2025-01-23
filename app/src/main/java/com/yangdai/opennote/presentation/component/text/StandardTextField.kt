@@ -29,7 +29,7 @@ import com.yangdai.opennote.R
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun MarkdownEditField(
+fun StandardTextField(
     modifier: Modifier,
     state: TextFieldState,
     readMode: Boolean,

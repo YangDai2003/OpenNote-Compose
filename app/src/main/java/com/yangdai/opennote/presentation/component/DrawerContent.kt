@@ -25,6 +25,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -43,7 +44,7 @@ import com.yangdai.opennote.presentation.navigation.Screen.*
 
 @Composable
 fun DrawerContent(
-    folderList: List<FolderEntity>,
+    folderNoteCounts: List<Pair<FolderEntity, Int>>,
     selectedDrawerIndex: Int,
     navigateTo: (Screen) -> Unit,
     onClick: (Int, FolderEntity) -> Unit
@@ -93,7 +94,7 @@ fun DrawerContent(
     DrawerItem(
         icon = if (!isFoldersExpended) Icons.AutoMirrored.Outlined.KeyboardArrowRight else Icons.Outlined.KeyboardArrowDown,
         label = stringResource(R.string.folders),
-        badge = folderList.size.toString(),
+        badge = folderNoteCounts.size.toString(),
         isSelected = false
     ) {
         isFoldersExpended = !isFoldersExpended
@@ -101,14 +102,18 @@ fun DrawerContent(
 
     AnimatedVisibility(visible = isFoldersExpended) {
         Column {
-            folderList.forEachIndexed { index, folder ->
-                DrawerItem(
-                    icon = Icons.Outlined.FolderOpen,
-                    iconTint = if (folder.color != null) Color(folder.color) else MaterialTheme.colorScheme.onSurface,
-                    label = folder.name,
-                    isSelected = selectedDrawerIndex == index + 2
-                ) {
-                    onClick(index + 2, folder)
+            folderNoteCounts.forEachIndexed { index, pair ->
+                key(pair.first.id) {
+                    DrawerItem(
+                        icon = Icons.Outlined.FolderOpen,
+                        iconTint = pair.first.color?.let { Color(it) }
+                            ?: MaterialTheme.colorScheme.primary,
+                        label = pair.first.name,
+                        badge = pair.second.toString(),
+                        isSelected = selectedDrawerIndex == index + 2
+                    ) {
+                        onClick(index + 2, pair.first)
+                    }
                 }
             }
         }

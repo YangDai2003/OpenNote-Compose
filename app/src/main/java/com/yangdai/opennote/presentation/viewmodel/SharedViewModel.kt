@@ -9,6 +9,7 @@ import android.provider.MediaStore
 import android.provider.OpenableColumns
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.foundation.text.input.clearText
 import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
@@ -69,6 +70,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
@@ -104,19 +106,35 @@ class SharedViewModel @Inject constructor(
     val isLoading: StateFlow<Boolean>
         field = MutableStateFlow(true)
 
-    // 列表状态, 包含笔记列表、文件夹列表、排序方式等
-    val dataStateFlow: StateFlow<DataState>
+    // 主屏幕展示的笔记列表状态, 包含笔记列表、排序方式
+    val mainScreenDataStateFlow: StateFlow<DataState>
         field = MutableStateFlow(DataState())
 
-    // 笔记状态, 包含笔记的 id、文件夹 id、是否为 Markdown 笔记、时间戳等
+    // 文件夹和文件夹内笔记数量为一个Pair的列表
+    @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
+    val folderWithNoteCountsFlow = useCases.getFolders()
+        .debounce(300)
+        .flatMapLatest { folders ->
+            combine(
+                folders.map { folder ->
+                    useCases.getNotesCountByFolderId(folder.id)
+                        .map { count -> folder to count }
+                }
+            ) { countPairs ->
+                countPairs.toList()
+            }
+        }
+        .flowOn(Dispatchers.IO)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000L), emptyList())
+
+    // 编辑时的笔记状态, 包含笔记的 id、所属文件夹 id、格式、时间戳
     val noteStateFlow: StateFlow<NoteState>
         field = MutableStateFlow(NoteState())
 
-    val foldersStateFlow = useCases.getFolders()
-        .flowOn(Dispatchers.IO)
-        .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+    // OCR扫描文本的状态
+    val scannedTextStateFlow = MutableStateFlow("")
 
-    // UI 事件
+    // UI 事件，用于导航
     val uiEventFlow: SharedFlow<UiEvent>
         field = MutableSharedFlow<UiEvent>()
 
@@ -129,18 +147,11 @@ class SharedViewModel @Inject constructor(
     private lateinit var renderer: HtmlRenderer
     lateinit var textRecognizer: TextRecognizer
 
-    // 笔记标题和内容的状态
+    // 被打开的笔记的标题和内容的状态，唯一的数据源
     val titleState = TextFieldState()
     val contentState = TextFieldState()
 
-    val contentFlow =
-        snapshotFlow { contentState.text }.map { it.toString() }.flowOn(Dispatchers.Default)
-            .stateIn(
-                scope = viewModelScope,
-                started = SharingStarted.Eagerly,
-                initialValue = ""
-            )
-
+    // Markdown 渲染后的 HTML 内容
     @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
     val html = snapshotFlow { contentState.text }
         .debounce(100)
@@ -182,7 +193,6 @@ class SharedViewModel @Inject constructor(
         getNotes()
     }
 
-    // Setting Section
     val settingsStateFlow: StateFlow<SettingsState> = combine(
         dataStoreRepository.intFlow(Constants.Preferences.APP_THEME),
         dataStoreRepository.intFlow(Constants.Preferences.APP_COLOR),
@@ -238,7 +248,9 @@ class SharedViewModel @Inject constructor(
                 initialValue = setOf()
             )
 
-    // Event Section
+
+
+
 
     fun onListEvent(event: ListEvent) {
         when (event) {
@@ -326,7 +338,7 @@ class SharedViewModel @Inject constructor(
             }
 
             ListEvent.ToggleOrderSection -> {
-                dataStateFlow.update {
+                mainScreenDataStateFlow.update {
                     it.copy(
                         isOrderSectionVisible = it.isOrderSectionVisible.not()
                     )
@@ -341,6 +353,9 @@ class SharedViewModel @Inject constructor(
             }
         }
     }
+
+
+
 
     fun onFolderEvent(event: FolderEvent) {
         when (event) {
@@ -365,6 +380,9 @@ class SharedViewModel @Inject constructor(
         }
     }
 
+
+
+
     private fun getNotes(
         noteOrder: NoteOrder = NoteOrder.Date(OrderType.Descending),
         trash: Boolean = false,
@@ -375,7 +393,7 @@ class SharedViewModel @Inject constructor(
         queryNotesJob = useCases.getNotes(noteOrder, trash, filterFolder, folderId)
             .flowOn(Dispatchers.IO)
             .onEach { notes ->
-                dataStateFlow.update {
+                mainScreenDataStateFlow.update {
                     it.copy(
                         notes = notes,
                         noteOrder = noteOrder,
@@ -388,13 +406,12 @@ class SharedViewModel @Inject constructor(
             .launchIn(viewModelScope)
     }
 
-
     private fun searchNotes(keyWord: String) {
         queryNotesJob?.cancel()
         queryNotesJob = useCases.searchNotes(keyWord)
             .flowOn(Dispatchers.IO)
             .onEach { notes ->
-                dataStateFlow.update {
+                mainScreenDataStateFlow.update {
                     it.copy(
                         notes = notes
                     )
@@ -438,8 +455,8 @@ class SharedViewModel @Inject constructor(
                     )
                     useCases.addNote(note)
                     uiEventFlow.emit(UiEvent.NavigateBack)
-                    titleState.setTextAndPlaceCursorAtEnd("")
-                    contentState.setTextAndPlaceCursorAtEnd("")
+                    titleState.clearText()
+                    contentState.clearText()
                 }
             }
 
@@ -460,8 +477,8 @@ class SharedViewModel @Inject constructor(
                         )
                     }
                     uiEventFlow.emit(UiEvent.NavigateBack)
-                    titleState.setTextAndPlaceCursorAtEnd("")
-                    contentState.setTextAndPlaceCursorAtEnd("")
+                    titleState.clearText()
+                    contentState.clearText()
                 }
             }
 
@@ -539,12 +556,15 @@ class SharedViewModel @Inject constructor(
                     if (note.id != null)
                         if (note.title != _oNote.title || note.content != _oNote.content || note.isMarkdown != _oNote.isMarkdown || note.folderId != _oNote.folderId)
                             useCases.updateNote(note)
-                    titleState.setTextAndPlaceCursorAtEnd("")
-                    contentState.setTextAndPlaceCursorAtEnd("")
+                    titleState.clearText()
+                    contentState.clearText()
                 }
             }
         }
     }
+
+
+
 
     private val _dataActionState = MutableStateFlow(DataActionState())
     val dataActionStateFlow = _dataActionState.asStateFlow()

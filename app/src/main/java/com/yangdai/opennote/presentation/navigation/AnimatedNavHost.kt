@@ -155,13 +155,10 @@ fun AnimatedNavHost(
             @Suppress("DEPRECATION")
             it.arguments?.getParcelable<Intent>(NavController.KEY_DEEP_LINK_INTENT)
         }?.parseSharedContent(context.applicationContext)
-        val scannedText = navController.currentBackStackEntry
-            ?.savedStateHandle?.get<String>("scannedText")?.trim()
         NoteScreen(
             id = id,
             isLargeScreen = isLargeScreen,
             sharedContent = sharedContent,
-            scannedText = scannedText,
             navigateUp = { navController.navigateBackWithHapticFeedback(hapticFeedback) },
             onScanTextClick = { navController.navigate(CameraX) }
         )
@@ -174,9 +171,7 @@ fun AnimatedNavHost(
     }
 
     composable<CameraX> {
-        CameraXScreen { scannedText ->
-            if (scannedText.isNotEmpty())
-                navController.previousBackStackEntry?.savedStateHandle?.set("scannedText", scannedText)
+        CameraXScreen {
             navController.navigateBackWithHapticFeedback(hapticFeedback)
         }
     }

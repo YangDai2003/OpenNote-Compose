@@ -101,7 +101,7 @@ fun AdaptiveTopSearchbar(
         } else {
             viewModel.onListEvent(
                 ListEvent.Sort(
-                    viewModel.dataStateFlow.value.noteOrder,
+                    viewModel.mainScreenDataStateFlow.value.noteOrder,
                     false,
                     null,
                     false

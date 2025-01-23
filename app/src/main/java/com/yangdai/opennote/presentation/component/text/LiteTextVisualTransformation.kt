@@ -16,7 +16,7 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextIndent
 import androidx.compose.ui.unit.sp
 
-class RichTextVisualTransformation(private val readMode: Boolean) : VisualTransformation {
+class LiteTextVisualTransformation(private val readMode: Boolean) : VisualTransformation {
     override fun filter(text: AnnotatedString): TransformedText {
         val annotatedString = buildAnnotatedString {
             // 应用所有样式

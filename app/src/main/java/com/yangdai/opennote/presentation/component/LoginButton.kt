@@ -66,7 +66,7 @@ fun LoginButton(
             .defaultMinSize(minWidth = 80.dp, minHeight = 48.dp)
             .clickable(
                 enabled = enabled,
-                indication = NeonIndication(shape, 2.dp),
+                indication = NeonIndication(shape, 3.dp),
                 interactionSource = interactionSource,
                 onClick = onClick
             )

@@ -84,7 +84,7 @@ import java.util.concurrent.Executors
 @Composable
 fun CameraXScreen(
     sharedViewModel: SharedViewModel = hiltViewModel(LocalActivity.current as MainActivity),
-    onDoneClick: (String) -> Unit
+    navigateUp: () -> Unit
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -205,7 +205,10 @@ fun CameraXScreen(
                         }) {
                             Icon(imageVector = Icons.Outlined.Close, contentDescription = "Cancel")
                         }
-                        IconButton(onClick = { onDoneClick(scannedText) }) {
+                        IconButton(onClick = {
+                            sharedViewModel.scannedTextStateFlow.value = scannedText
+                            navigateUp()
+                        }) {
                             Icon(
                                 imageVector = Icons.Outlined.Done,
                                 contentDescription = "Confirm"
@@ -244,7 +247,7 @@ fun CameraXScreen(
                     .align(Alignment.TopStart)
                     .statusBarsPadding()
                     .padding(start = 32.dp, top = 32.dp),
-                onClick = { onDoneClick("") }
+                onClick = navigateUp
             ) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,

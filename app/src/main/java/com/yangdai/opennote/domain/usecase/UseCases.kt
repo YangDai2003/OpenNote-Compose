@@ -11,5 +11,6 @@ data class UseCases(
     val addFolder: AddFolder,
     val updateFolder: UpdateFolder,
     val deleteFolder: DeleteFolder,
-    val getFolders: GetFolders
+    val getFolders: GetFolders,
+    val getNotesCountByFolderId: GetNotesCountByFolderId
 )
