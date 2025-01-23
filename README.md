@@ -50,6 +50,7 @@ the [Guide](Guide.md).
 
 <div style="overflow-x: auto; white-space: nowrap;">
 
+<img src="screenshots/Unlock_anim.gif" width="15%" alt=""/>
 <img src="screenshots/MainScreen.png" width="15%" alt=""/>
 <img src="screenshots/Drawer.png" width="15%" alt=""/>
 <img src="screenshots/Folders.png" width="15%" alt=""/>
