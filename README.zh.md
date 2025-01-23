@@ -46,21 +46,24 @@ OpenNote是一款完全使用Compose构建的现代化Android记事本应用程�
 
 <div style="overflow-x: auto; white-space: nowrap;">
 
-<img src="screenshots/Screenshot_Login.PNG" width="15%" alt=""/>
-<img src="screenshots/Screenshot_Grid.PNG" width="15%" alt=""/>
-<img src="screenshots/Screenshot_List.PNG" width="15%" alt=""/>
-<img src="screenshots/Screenshot_Drawer.PNG" width="15%" alt=""/>
-<img src="screenshots/Screenshot_Edit.PNG" width="15%" alt=""/>
-<img src="screenshots/Screenshot_Preview.PNG" width="15%" alt=""/>
-<img src="screenshots/Screenshot_Style.PNG" width="15%" alt=""/>
-<img src="screenshots/Screenshot_Data.PNG" width="15%" alt=""/>
-<img src="screenshots/Screenshot_Widget.PNG" width="15%" alt=""/>
+<video width="15%" controls>
+  <source src="screenshots/Unlock_anim.webm" type="video/webm">
+  Your browser does not support the video tag.
+</video>
+<img src="screenshots/MainScreen.png" width="15%" alt=""/>
+<img src="screenshots/Drawer.png" width="15%" alt=""/>
+<img src="screenshots/Folders.png" width="15%" alt=""/>
+<img src="screenshots/Editor.png" width="15%" alt=""/>
+<img src="screenshots/ReadView.png" width="15%" alt=""/>
+<img src="screenshots/Setings.png" width="15%" alt=""/>
+<img src="screenshots/Widget.png" width="15%" alt=""/>
+<img src="screenshots/MainScreen_Large.png" width="15%" alt=""/>
+<img src="screenshots/Editor_Large.png" width="15%" alt=""/>
+<img src="screenshots/Settings_Large.png" width="15%" alt=""/>
 <img src="screenshots/Screenshot_Math_Edit.png" width="15%" alt=""/>
 <img src="screenshots/Screenshot_Math_Preview.png" width="15%" alt=""/>
 <img src="screenshots/Screenshot_Mermaid_Edit.png" width="15%" alt=""/>
 <img src="screenshots/Screenshot_Mermaid_Preview.png" width="15%" alt=""/>
-<img src="screenshots/Screenshot_Large_Screen.png" width="32%" alt=""/>
-<img src="screenshots/Screenshot_Large_Screen_Edit_Preview.png" width="32%" alt=""/>
 
 </div>
 
