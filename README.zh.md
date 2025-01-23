@@ -45,6 +45,7 @@ OpenNote是一款完全使用Compose构建的现代化Android记事本应用程�
 ## 屏幕截图
 
 <div style="overflow-x: auto; white-space: nowrap;">
+
 [!(renamed webm)](https://github.com/YangDai2003/OpenNote-Compose/blob/master/screenshots/Unlock_anim.webm.mp4)
 <img src="screenshots/MainScreen.png" width="15%" alt=""/>
 <img src="screenshots/Drawer.png" width="15%" alt=""/>
@@ -60,6 +61,7 @@ OpenNote是一款完全使用Compose构建的现代化Android记事本应用程�
 <img src="screenshots/MainScreen_Large.png" width="30%" alt=""/>
 <img src="screenshots/Editor_Large.png" width="30%" alt=""/>
 <img src="screenshots/Settings_Large.png" width="30%" alt=""/>
+
 </div>
 
 ## 技术细节
