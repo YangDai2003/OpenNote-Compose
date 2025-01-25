@@ -27,6 +27,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.input.TextFieldLineLimits
@@ -79,6 +80,7 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.LineHeightStyle
@@ -109,10 +111,8 @@ import com.yangdai.opennote.presentation.util.Constants
 import com.yangdai.opennote.presentation.util.SharedContent
 import com.yangdai.opennote.presentation.util.timestampToFormatLocalDateTime
 import com.yangdai.opennote.presentation.viewmodel.SharedViewModel
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.io.File
 import kotlin.coroutines.cancellation.CancellationException
 import kotlin.math.abs
@@ -149,6 +149,7 @@ fun NoteScreen(
     // Switch between read mode and edit mode
     val initialReadView = settingsState.isDefaultViewForReading
     var isReadView by remember { mutableStateOf(initialReadView) }
+    var isEditorAndPreviewSynced by remember { mutableStateOf(false) }
 
     val coroutineScope = rememberCoroutineScope()
     var showFolderDialog by rememberSaveable { mutableStateOf(false) }
@@ -173,27 +174,24 @@ fun NoteScreen(
 
     LaunchedEffect(sharedContent) {
         if (sharedContent != null) {
-            withContext(Dispatchers.Main) {
-                sharedViewModel.onNoteEvent(
-                    NoteEvent.Edit(
-                        Constants.Editor.TITLE, sharedContent.fileName
-                    )
+
+            sharedViewModel.onNoteEvent(
+                NoteEvent.Edit(
+                    Constants.Editor.TITLE, sharedContent.fileName
                 )
-                sharedViewModel.onNoteEvent(
-                    NoteEvent.Edit(
-                        Constants.Editor.TEXT, sharedContent.content
-                    )
+            )
+            sharedViewModel.onNoteEvent(
+                NoteEvent.Edit(
+                    Constants.Editor.TEXT, sharedContent.content
                 )
-            }
+            )
         }
     }
 
     LaunchedEffect(scannedText) {
         if (scannedText.isNotEmpty()) {
-            withContext(Dispatchers.Main) {
-                sharedViewModel.onNoteEvent(NoteEvent.Edit(Constants.Editor.TEXT, scannedText))
-                sharedViewModel.scannedTextStateFlow.value = ""
-            }
+            sharedViewModel.onNoteEvent(NoteEvent.Edit(Constants.Editor.TEXT, scannedText))
+            sharedViewModel.scannedTextStateFlow.value = ""
         }
     }
 
@@ -318,10 +316,19 @@ fun NoteScreen(
             ) {
                 IconButton(onClick = { isReadView = !isReadView }) {
                     Icon(
-                        imageVector = if (!isReadView) Icons.AutoMirrored.Outlined.MenuBook
-                        else Icons.Outlined.EditNote, contentDescription = "Mode"
+                        imageVector = if (isReadView) Icons.Outlined.EditNote
+                        else Icons.AutoMirrored.Outlined.MenuBook, contentDescription = "Mode"
                     )
                 }
+            }
+
+            if (noteState.isStandard) IconButton(onClick = {
+                isEditorAndPreviewSynced = !isEditorAndPreviewSynced
+            }) {
+                Icon(
+                    painter = painterResource(if (isEditorAndPreviewSynced) R.drawable.link_off else R.drawable.link),
+                    contentDescription = "Mode"
+                )
             }
 
             var showMenu by remember { mutableStateOf(false) }
@@ -348,8 +355,7 @@ fun NoteScreen(
 
                 DropdownMenuItem(leadingIcon = {
                     Icon(
-                        imageVector = Icons.Outlined.Delete,
-                        contentDescription = "Delete"
+                        imageVector = Icons.Outlined.Delete, contentDescription = "Delete"
                     )
                 },
                     text = { Text(text = stringResource(id = R.string.delete)) },
@@ -357,38 +363,34 @@ fun NoteScreen(
 
                 DropdownMenuItem(leadingIcon = {
                     Icon(
-                        imageVector = Icons.Outlined.Alarm,
-                        contentDescription = "Remind"
+                        imageVector = Icons.Outlined.Alarm, contentDescription = "Remind"
                     )
-                },
-                    text = { Text(text = stringResource(id = R.string.remind)) },
-                    onClick = {
+                }, text = { Text(text = stringResource(id = R.string.remind)) }, onClick = {
 
-                        val intent =
-                            Intent(Intent.ACTION_INSERT).setData(CalendarContract.Events.CONTENT_URI)
-                                .putExtra(
-                                    CalendarContract.Events.TITLE,
-                                    sharedViewModel.titleState.text.toString()
-                                ).putExtra(
-                                    CalendarContract.Events.DESCRIPTION,
-                                    sharedViewModel.contentState.text.toString()
-                                )
+                    val intent =
+                        Intent(Intent.ACTION_INSERT).setData(CalendarContract.Events.CONTENT_URI)
+                            .putExtra(
+                                CalendarContract.Events.TITLE,
+                                sharedViewModel.titleState.text.toString()
+                            ).putExtra(
+                                CalendarContract.Events.DESCRIPTION,
+                                sharedViewModel.contentState.text.toString()
+                            )
 
-                        try {
-                            context.startActivity(intent)
-                        } catch (_: Exception) {
-                            Toast.makeText(
-                                context,
-                                context.getString(R.string.no_calendar_app_found),
-                                Toast.LENGTH_SHORT
-                            ).show()
-                        }
-                    })
+                    try {
+                        context.startActivity(intent)
+                    } catch (_: Exception) {
+                        Toast.makeText(
+                            context,
+                            context.getString(R.string.no_calendar_app_found),
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                })
 
                 DropdownMenuItem(leadingIcon = {
                     Icon(
-                        imageVector = Icons.Outlined.Upload,
-                        contentDescription = "Export"
+                        imageVector = Icons.Outlined.Upload, contentDescription = "Export"
                     )
                 },
                     text = { Text(text = stringResource(R.string.export)) },
@@ -404,7 +406,7 @@ fun NoteScreen(
             }
         })
     }, bottomBar = {
-        AnimatedVisibility(visible = !isReadView && noteState.isStandard,
+        if (noteState.isStandard) AnimatedVisibility(visible = !isReadView,
             enter = slideInVertically { fullHeight -> fullHeight },
             exit = slideOutVertically { fullHeight -> fullHeight }) {
             MarkdownEditorRow(canRedo = sharedViewModel.contentState.undoState.canRedo,
@@ -500,10 +502,12 @@ fun NoteScreen(
                     onScanButtonClick = onScanTextClick
                 )
             } else {
+
                 if (isLargeScreen) {
 
                     var textFieldWeight by remember { mutableFloatStateOf(0.5f) }
                     val windowWidth = currentWindowSize().width.toFloat()
+                    val scrollState = rememberScrollState()
 
                     Row(
                         modifier = Modifier
@@ -516,6 +520,7 @@ fun NoteScreen(
                             .weight(textFieldWeight),
                             readMode = isReadView,
                             state = sharedViewModel.contentState,
+                            scrollState = scrollState,
                             onScanButtonClick = onScanTextClick,
                             onTableButtonClick = { showTableDialog = true },
                             onTaskButtonClick = { showTaskDialog = true },
@@ -543,18 +548,22 @@ fun NoteScreen(
                             contentDescription = "DragIndicator"
                         )
 
-                        Box(
-                            Modifier
+                        ReadView(
+                            modifier = Modifier
                                 .fillMaxHeight()
-                                .weight(1f - textFieldWeight)
-                        ) {
-                            ReadView(html = html)
-                        }
+                                .weight(1f - textFieldWeight),
+                            html = html,
+                            scrollState = scrollState,
+                            scrollSynchronized = isEditorAndPreviewSynced
+                        )
                     }
                 } else {
+
+                    val scrollState = rememberScrollState()
+
                     HorizontalPager(
                         state = pagerState,
-                        beyondViewportPageCount = 1,
+                        beyondViewportPageCount = 2,
                         userScrollEnabled = false,
                         modifier = Modifier
                             .fillMaxSize()
@@ -565,6 +574,7 @@ fun NoteScreen(
                                 StandardTextField(modifier = Modifier.fillMaxSize(),
                                     state = sharedViewModel.contentState,
                                     readMode = isReadView,
+                                    scrollState = scrollState,
                                     onScanButtonClick = onScanTextClick,
                                     onTableButtonClick = { showTableDialog = true },
                                     onTaskButtonClick = { showTaskDialog = true },
@@ -574,7 +584,12 @@ fun NoteScreen(
                             }
 
                             1 -> {
-                                ReadView(html = html)
+                                ReadView(
+                                    modifier = Modifier.fillMaxSize(),
+                                    html = html,
+                                    scrollSynchronized = isEditorAndPreviewSynced,
+                                    scrollState = scrollState
+                                )
                             }
                         }
                     }

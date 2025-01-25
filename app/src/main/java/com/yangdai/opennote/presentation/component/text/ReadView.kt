@@ -7,14 +7,18 @@ import android.view.ViewGroup
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.dp
@@ -45,7 +49,10 @@ private fun createMarkdownStyles(colorScheme: ColorScheme) =
 @SuppressLint("SetJavaScriptEnabled")
 @Composable
 fun ReadView(
+    modifier: Modifier = Modifier,
     html: String,
+    scrollSynchronized: Boolean,
+    scrollState: ScrollState = rememberScrollState(),
     colorScheme: ColorScheme = MaterialTheme.colorScheme
 ) {
 
@@ -98,10 +105,39 @@ fun ReadView(
 
     val customTabsIntent = rememberCustomTabsIntent()
 
+    var webView by remember { mutableStateOf<WebView?>(null) }
+
+    LaunchedEffect(scrollState.value) {
+        if (!scrollSynchronized) return@LaunchedEffect
+
+        val totalHeight = scrollState.maxValue
+        val currentScrollPercent = when {
+            totalHeight <= 0 -> 0f
+            scrollState.value >= totalHeight -> 1f
+            else -> (scrollState.value.toFloat() / totalHeight).coerceIn(0f, 1f)
+        }
+
+        webView?.evaluateJavascript(
+            """
+        (function() {
+            var d = document.documentElement;
+            var b = document.body;
+            var maxHeight = Math.max(
+                d.scrollHeight, d.offsetHeight, d.clientHeight,
+                b.scrollHeight, b.offsetHeight
+            );
+            var targetScrollTop = maxHeight * $currentScrollPercent;
+            window.scrollTo({ top: targetScrollTop, behavior: 'auto' });
+        })();
+        """.trimIndent(),
+            null
+        )
+    }
+
     AndroidView(
-        modifier = Modifier.fillMaxSize(),
+        modifier = modifier.fillMaxSize(),
         factory = {
-            WebView(it).apply {
+            WebView(it).also { webView = it }.apply {
                 layoutParams = ViewGroup.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT,
                     ViewGroup.LayoutParams.MATCH_PARENT

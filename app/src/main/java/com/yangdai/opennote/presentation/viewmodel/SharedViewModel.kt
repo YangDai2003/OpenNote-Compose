@@ -249,9 +249,6 @@ class SharedViewModel @Inject constructor(
             )
 
 
-
-
-
     fun onListEvent(event: ListEvent) {
         when (event) {
 
@@ -314,6 +311,7 @@ class SharedViewModel @Inject constructor(
             }
 
             is ListEvent.Search -> searchNotes(event.key)
+
             is ListEvent.MoveNotes -> {
                 viewModelScope.launch(Dispatchers.IO) {
                     val folderId = event.folderId
@@ -333,10 +331,6 @@ class SharedViewModel @Inject constructor(
                 }
             }
 
-            is ListEvent.OpenNote -> {
-                _oNote = event.noteEntity
-            }
-
             ListEvent.ToggleOrderSection -> {
                 mainScreenDataStateFlow.update {
                     it.copy(
@@ -345,42 +339,37 @@ class SharedViewModel @Inject constructor(
                 }
             }
 
-            is ListEvent.AddNoteToFolder -> {
-                _oNote = NoteEntity(
-                    folderId = event.folderId,
-                    timestamp = System.currentTimeMillis()
-                )
+            is ListEvent.OpenOrCreateNote -> {
+                titleState.clearText()
+                contentState.clearText()
+                _oNote = event.noteEntity
+                    ?: NoteEntity(
+                        folderId = event.folderId,
+                        timestamp = System.currentTimeMillis()
+                    )
             }
         }
     }
 
 
-
-
     fun onFolderEvent(event: FolderEvent) {
-        when (event) {
-            is FolderEvent.AddFolder -> {
-                viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch(Dispatchers.IO) {
+            when (event) {
+                is FolderEvent.AddFolder -> {
                     useCases.addFolder(event.folder)
                 }
-            }
 
-            is FolderEvent.DeleteFolder -> {
-                viewModelScope.launch(Dispatchers.IO) {
+                is FolderEvent.DeleteFolder -> {
                     useCases.deleteNotesByFolderId(event.folder.id)
                     useCases.deleteFolder(event.folder)
                 }
-            }
 
-            is FolderEvent.UpdateFolder -> {
-                viewModelScope.launch(Dispatchers.IO) {
+                is FolderEvent.UpdateFolder -> {
                     useCases.updateFolder(event.folder)
                 }
             }
         }
     }
-
-
 
 
     private fun getNotes(
@@ -455,8 +444,6 @@ class SharedViewModel @Inject constructor(
                     )
                     useCases.addNote(note)
                     uiEventFlow.emit(UiEvent.NavigateBack)
-                    titleState.clearText()
-                    contentState.clearText()
                 }
             }
 
@@ -477,8 +464,6 @@ class SharedViewModel @Inject constructor(
                         )
                     }
                     uiEventFlow.emit(UiEvent.NavigateBack)
-                    titleState.clearText()
-                    contentState.clearText()
                 }
             }
 
@@ -556,14 +541,10 @@ class SharedViewModel @Inject constructor(
                     if (note.id != null)
                         if (note.title != _oNote.title || note.content != _oNote.content || note.isMarkdown != _oNote.isMarkdown || note.folderId != _oNote.folderId)
                             useCases.updateNote(note)
-                    titleState.clearText()
-                    contentState.clearText()
                 }
             }
         }
     }
-
-
 
 
     private val _dataActionState = MutableStateFlow(DataActionState())

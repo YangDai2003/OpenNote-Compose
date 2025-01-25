@@ -6,9 +6,8 @@ import com.yangdai.opennote.domain.usecase.OrderType
 
 sealed interface ListEvent {
 
-    data class OpenNote(val noteEntity: NoteEntity) : ListEvent
     data class Search(val key: String) : ListEvent
-    data class AddNoteToFolder(val folderId: Long?) : ListEvent
+    data class OpenOrCreateNote(val noteEntity: NoteEntity?, val folderId: Long?) : ListEvent
 
     data class Sort(
         val noteOrder: NoteOrder = NoteOrder.Date(OrderType.Descending),

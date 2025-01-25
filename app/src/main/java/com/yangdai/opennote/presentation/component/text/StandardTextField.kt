@@ -2,12 +2,14 @@ package com.yangdai.opennote.presentation.component.text
 
 import android.content.ClipData
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.content.MediaType
 import androidx.compose.foundation.content.ReceiveContentListener
 import androidx.compose.foundation.content.consume
 import androidx.compose.foundation.content.contentReceiver
 import androidx.compose.foundation.content.hasMediaType
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.material3.MaterialTheme
@@ -32,6 +34,7 @@ import com.yangdai.opennote.R
 fun StandardTextField(
     modifier: Modifier,
     state: TextFieldState,
+    scrollState: ScrollState = rememberScrollState(),
     readMode: Boolean,
     onScanButtonClick: () -> Unit,
     onTableButtonClick: () -> Unit,
@@ -201,6 +204,7 @@ fun StandardTextField(
                     false
                 }
             },
+        scrollState = scrollState,
         readOnly = readMode,
         state = state,
         textStyle = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface),

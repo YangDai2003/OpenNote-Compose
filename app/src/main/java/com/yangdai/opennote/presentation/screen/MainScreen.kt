@@ -441,7 +441,10 @@ fun MainScreen(
                         modifier = Modifier.scale(scale),
                         onClick = {
                             hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
-                            sharedViewModel.onListEvent(ListEvent.AddNoteToFolder(selectedFolder.id))
+                            sharedViewModel.onListEvent(ListEvent.OpenOrCreateNote(
+                                null,
+                                selectedFolder.id
+                            ))
                             navigateToNote(-1)
                         },
                         interactionSource = interactionSource
@@ -510,7 +513,7 @@ fun MainScreen(
                                                 else selectedNotes.plus(it)
                                         } else {
                                             if (selectedDrawerIndex != 1) {
-                                                sharedViewModel.onListEvent(ListEvent.OpenNote(it))
+                                                sharedViewModel.onListEvent(ListEvent.OpenOrCreateNote(it, null))
                                                 navigateToNote(it.id!!)
                                             } else {
                                                 Unit
@@ -563,7 +566,7 @@ fun MainScreen(
                                             else selectedNotes.plus(it)
                                     } else {
                                         if (selectedDrawerIndex != 1) {
-                                            sharedViewModel.onListEvent(ListEvent.OpenNote(it))
+                                            sharedViewModel.onListEvent(ListEvent.OpenOrCreateNote(it, null))
                                             navigateToNote(it.id!!)
                                         } else {
                                             Unit
