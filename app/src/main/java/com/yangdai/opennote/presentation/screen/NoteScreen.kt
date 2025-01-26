@@ -87,7 +87,6 @@ import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.yangdai.opennote.MainActivity
 import com.yangdai.opennote.R
@@ -131,27 +130,38 @@ fun NoteScreen(
     onScanTextClick: () -> Unit
 ) {
 
-    LaunchedEffect(Unit) {
-        sharedViewModel.onNoteEvent(NoteEvent.Load(id))
-        if (sharedContent != null) {
-            withContext(Dispatchers.Main) {
-                sharedViewModel.onNoteEvent(
-                    NoteEvent.Edit(
-                        Constants.Editor.TITLE, sharedContent.fileName
-                    )
-                )
-                sharedViewModel.onNoteEvent(
-                    NoteEvent.Edit(
-                        Constants.Editor.TEXT, sharedContent.content
-                    )
-                )
+    val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
+
+    // 确保屏幕旋转等配置变更时，不会重复加载笔记
+    var previousId by rememberSaveable { mutableStateOf<Long?>(null) }
+
+    DisposableEffect(Unit) {
+        if (id != previousId) {
+            previousId = id
+            coroutineScope.launch {
+                sharedViewModel.onNoteEvent(NoteEvent.Load(id))
+                if (sharedContent != null) {
+                    withContext(Dispatchers.Main) {
+                        sharedViewModel.onNoteEvent(
+                            NoteEvent.Edit(
+                                Constants.Editor.TITLE, sharedContent.fileName
+                            )
+                        )
+                        sharedViewModel.onNoteEvent(
+                            NoteEvent.Edit(
+                                Constants.Editor.TEXT, sharedContent.content
+                            )
+                        )
+                    }
+                }
             }
         }
-    }
 
-    val context = LocalContext.current
-    val keyboardController = LocalSoftwareKeyboardController.current
-    val focusManager = LocalFocusManager.current
+        onDispose {
+            sharedViewModel.onNoteEvent(NoteEvent.Update)
+        }
+    }
 
     val noteState by sharedViewModel.noteStateFlow.collectAsStateWithLifecycle()
     val folderNoteCounts by sharedViewModel.folderWithNoteCountsFlow.collectAsStateWithLifecycle()
@@ -167,7 +177,6 @@ fun NoteScreen(
     var isReadView by remember { mutableStateOf(initialReadView) }
     var isEditorAndPreviewSynced by remember { mutableStateOf(false) }
 
-    val coroutineScope = rememberCoroutineScope()
     var showFolderDialog by rememberSaveable { mutableStateOf(false) }
     var showTableDialog by rememberSaveable { mutableStateOf(false) }
     var showLinkDialog by rememberSaveable { mutableStateOf(false) }
@@ -196,6 +205,9 @@ fun NoteScreen(
             }
         }
     }
+
+    val keyboardController = LocalSoftwareKeyboardController.current
+    val focusManager = LocalFocusManager.current
 
     LaunchedEffect(isReadView) {
         if (isReadView) {
@@ -228,13 +240,6 @@ fun NoteScreen(
     BackHandler(isTitleFocused || isContentFocused) {
         focusManager.clearFocus()
         keyboardController?.hide()
-    }
-
-    val lifecycleOwner = LocalLifecycleOwner.current
-    DisposableEffect(lifecycleOwner) {
-        onDispose {
-            sharedViewModel.onNoteEvent(NoteEvent.Update)
-        }
     }
 
     fun showSnackbar() {
@@ -272,9 +277,10 @@ fun NoteScreen(
         }
     }
 
-    Scaffold(modifier = Modifier
-        .fillMaxSize()
-        .imePadding(), topBar = {
+    Scaffold(
+        modifier = Modifier
+            .fillMaxSize()
+            .imePadding(), topBar = {
         TopAppBar(title = {
             FilledTonalButton(modifier = Modifier.sizeIn(maxWidth = 160.dp), onClick = {
                 showFolderDialog = true
@@ -357,10 +363,10 @@ fun NoteScreen(
 
                 DropdownMenuItem(
                     leadingIcon = {
-                    Icon(
-                        imageVector = Icons.Outlined.Delete, contentDescription = "Delete"
-                    )
-                },
+                        Icon(
+                            imageVector = Icons.Outlined.Delete, contentDescription = "Delete"
+                        )
+                    },
                     text = { Text(text = stringResource(id = R.string.delete)) },
                     onClick = { sharedViewModel.onNoteEvent(NoteEvent.Delete) })
 
@@ -393,19 +399,19 @@ fun NoteScreen(
 
                 DropdownMenuItem(
                     leadingIcon = {
-                    Icon(
-                        imageVector = Icons.Outlined.Upload, contentDescription = "Export"
-                    )
-                },
+                        Icon(
+                            imageVector = Icons.Outlined.Upload, contentDescription = "Export"
+                        )
+                    },
                     text = { Text(text = stringResource(R.string.export)) },
                     onClick = { showExportDialog = true })
 
                 DropdownMenuItem(
                     leadingIcon = {
-                    Icon(
-                        imageVector = Icons.Outlined.Share, contentDescription = "Share"
-                    )
-                },
+                        Icon(
+                            imageVector = Icons.Outlined.Share, contentDescription = "Share"
+                        )
+                    },
                     text = { Text(text = stringResource(R.string.share)) },
                     onClick = { showShareDialog = true })
             }
