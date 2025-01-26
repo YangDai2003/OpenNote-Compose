@@ -111,8 +111,10 @@ import com.yangdai.opennote.presentation.util.Constants
 import com.yangdai.opennote.presentation.util.SharedContent
 import com.yangdai.opennote.presentation.util.timestampToFormatLocalDateTime
 import com.yangdai.opennote.presentation.viewmodel.SharedViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
 import kotlin.coroutines.cancellation.CancellationException
 import kotlin.math.abs
@@ -131,6 +133,20 @@ fun NoteScreen(
 
     LaunchedEffect(Unit) {
         sharedViewModel.onNoteEvent(NoteEvent.Load(id))
+        if (sharedContent != null) {
+            withContext(Dispatchers.Main) {
+                sharedViewModel.onNoteEvent(
+                    NoteEvent.Edit(
+                        Constants.Editor.TITLE, sharedContent.fileName
+                    )
+                )
+                sharedViewModel.onNoteEvent(
+                    NoteEvent.Edit(
+                        Constants.Editor.TEXT, sharedContent.content
+                    )
+                )
+            }
+        }
     }
 
     val context = LocalContext.current
@@ -172,26 +188,12 @@ fun NoteScreen(
         else noteState.timestamp!!.timestampToFormatLocalDateTime()
     }
 
-    LaunchedEffect(sharedContent) {
-        if (sharedContent != null) {
-
-            sharedViewModel.onNoteEvent(
-                NoteEvent.Edit(
-                    Constants.Editor.TITLE, sharedContent.fileName
-                )
-            )
-            sharedViewModel.onNoteEvent(
-                NoteEvent.Edit(
-                    Constants.Editor.TEXT, sharedContent.content
-                )
-            )
-        }
-    }
-
     LaunchedEffect(scannedText) {
         if (scannedText.isNotEmpty()) {
-            sharedViewModel.onNoteEvent(NoteEvent.Edit(Constants.Editor.TEXT, scannedText))
-            sharedViewModel.scannedTextStateFlow.value = ""
+            withContext(Dispatchers.Main) {
+                sharedViewModel.onNoteEvent(NoteEvent.Edit(Constants.Editor.TEXT, scannedText))
+                sharedViewModel.scannedTextStateFlow.value = ""
+            }
         }
     }
 
@@ -348,12 +350,13 @@ fun NoteScreen(
                     )
                 }, text = {
                     Text(
-                        text = if (!noteState.isStandard) stringResource(R.string.standard_mode)
-                        else stringResource(R.string.lite_mode)
+                        text = if (noteState.isStandard) stringResource(R.string.lite_mode)
+                        else stringResource(R.string.standard_mode)
                     )
                 }, onClick = { sharedViewModel.onNoteEvent(NoteEvent.SwitchType) })
 
-                DropdownMenuItem(leadingIcon = {
+                DropdownMenuItem(
+                    leadingIcon = {
                     Icon(
                         imageVector = Icons.Outlined.Delete, contentDescription = "Delete"
                     )
@@ -388,7 +391,8 @@ fun NoteScreen(
                     }
                 })
 
-                DropdownMenuItem(leadingIcon = {
+                DropdownMenuItem(
+                    leadingIcon = {
                     Icon(
                         imageVector = Icons.Outlined.Upload, contentDescription = "Export"
                     )
@@ -396,7 +400,8 @@ fun NoteScreen(
                     text = { Text(text = stringResource(R.string.export)) },
                     onClick = { showExportDialog = true })
 
-                DropdownMenuItem(leadingIcon = {
+                DropdownMenuItem(
+                    leadingIcon = {
                     Icon(
                         imageVector = Icons.Outlined.Share, contentDescription = "Share"
                     )
@@ -406,10 +411,12 @@ fun NoteScreen(
             }
         })
     }, bottomBar = {
-        if (noteState.isStandard) AnimatedVisibility(visible = !isReadView,
+        if (noteState.isStandard) AnimatedVisibility(
+            visible = !isReadView,
             enter = slideInVertically { fullHeight -> fullHeight },
             exit = slideOutVertically { fullHeight -> fullHeight }) {
-            MarkdownEditorRow(canRedo = sharedViewModel.contentState.undoState.canRedo,
+            MarkdownEditorRow(
+                canRedo = sharedViewModel.contentState.undoState.canRedo,
                 canUndo = sharedViewModel.contentState.undoState.canUndo,
                 onEdit = { sharedViewModel.onNoteEvent(NoteEvent.Edit(it)) },
                 onScanButtonClick = onScanTextClick,
@@ -425,10 +432,11 @@ fun NoteScreen(
         ) {
 
             // 标题文本
-            BasicTextField(modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp)
-                .onFocusChanged { isTitleFocused = it.isFocused },
+            BasicTextField(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+                    .onFocusChanged { isTitleFocused = it.isFocused },
                 state = sharedViewModel.titleState,
                 readOnly = isReadView,
                 lineLimits = TextFieldLineLimits.SingleLine,
@@ -515,9 +523,10 @@ fun NoteScreen(
                             .padding(horizontal = 16.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        StandardTextField(modifier = Modifier
-                            .fillMaxHeight()
-                            .weight(textFieldWeight),
+                        StandardTextField(
+                            modifier = Modifier
+                                .fillMaxHeight()
+                                .weight(textFieldWeight),
                             readMode = isReadView,
                             state = sharedViewModel.contentState,
                             scrollState = scrollState,
@@ -563,7 +572,7 @@ fun NoteScreen(
 
                     HorizontalPager(
                         state = pagerState,
-                        beyondViewportPageCount = 2,
+                        beyondViewportPageCount = 1,
                         userScrollEnabled = false,
                         modifier = Modifier
                             .fillMaxSize()
@@ -571,7 +580,8 @@ fun NoteScreen(
                     ) { page: Int ->
                         when (page) {
                             0 -> {
-                                StandardTextField(modifier = Modifier.fillMaxSize(),
+                                StandardTextField(
+                                    modifier = Modifier.fillMaxSize(),
                                     state = sharedViewModel.contentState,
                                     readMode = isReadView,
                                     scrollState = scrollState,
@@ -678,7 +688,8 @@ fun NoteScreen(
     }
 
     if (showFolderDialog) {
-        FolderListDialog(hint = stringResource(R.string.destination_folder),
+        FolderListDialog(
+            hint = stringResource(R.string.destination_folder),
             oFolderId = noteState.folderId,
             folders = folderNoteCounts.map { it.first },
             onDismissRequest = { showFolderDialog = false }) {

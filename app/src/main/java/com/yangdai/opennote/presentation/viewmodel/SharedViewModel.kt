@@ -79,6 +79,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import org.commonmark.Extension
 import org.commonmark.ext.autolink.AutolinkExtension
@@ -112,19 +113,14 @@ class SharedViewModel @Inject constructor(
 
     // 文件夹和文件夹内笔记数量为一个Pair的列表
     @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
-    val folderWithNoteCountsFlow = useCases.getFolders()
-        .debounce(300)
-        .flatMapLatest { folders ->
+    val folderWithNoteCountsFlow = useCases.getFolders().debounce(300).flatMapLatest { folders ->
             combine(
                 folders.map { folder ->
-                    useCases.getNotesCountByFolderId(folder.id)
-                        .map { count -> folder to count }
-                }
-            ) { countPairs ->
+                    useCases.getNotesCountByFolderId(folder.id).map { count -> folder to count }
+                }) { countPairs ->
                 countPairs.toList()
             }
-        }
-        .flowOn(Dispatchers.IO)
+        }.flowOn(Dispatchers.IO)
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000L), emptyList())
 
     // 编辑时的笔记状态, 包含笔记的 id、所属文件夹 id、格式、时间戳
@@ -153,10 +149,8 @@ class SharedViewModel @Inject constructor(
 
     // Markdown 渲染后的 HTML 内容
     @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
-    val html = snapshotFlow { contentState.text }
-        .debounce(100)
-        .mapLatest { renderer.render(parser.parse(it.toString())) }
-        .flowOn(Dispatchers.Default)
+    val html = snapshotFlow { contentState.text }.debounce(100)
+        .mapLatest { renderer.render(parser.parse(it.toString())) }.flowOn(Dispatchers.Default)
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5_000L),
@@ -193,6 +187,7 @@ class SharedViewModel @Inject constructor(
         getNotes()
     }
 
+    @Suppress("TYPE_INTERSECTION_AS_REIFIED_WARNING")
     val settingsStateFlow: StateFlow<SettingsState> = combine(
         dataStoreRepository.intFlow(Constants.Preferences.APP_THEME),
         dataStoreRepository.intFlow(Constants.Preferences.APP_COLOR),
@@ -218,9 +213,7 @@ class SharedViewModel @Inject constructor(
             isDefaultLiteMode = values[9] as Boolean
         )
     }.flowOn(Dispatchers.IO).stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.Eagerly,
-        initialValue = SettingsState()
+        scope = viewModelScope, started = SharingStarted.Eagerly, initialValue = SettingsState()
     )
 
     fun <T> putPreferenceValue(key: String, value: T) {
@@ -231,8 +224,7 @@ class SharedViewModel @Inject constructor(
                 is Boolean -> dataStoreRepository.putBoolean(key, value)
                 is String -> dataStoreRepository.putString(key, value)
                 is Set<*> -> dataStoreRepository.putStringSet(
-                    key,
-                    value.filterIsInstance<String>().toSet()
+                    key, value.filterIsInstance<String>().toSet()
                 )
 
                 else -> throw IllegalArgumentException("Unsupported value type")
@@ -241,8 +233,7 @@ class SharedViewModel @Inject constructor(
     }
 
     val historyStateFlow: StateFlow<Set<String>> =
-        dataStoreRepository.stringSetFlow(Constants.Preferences.SEARCH_HISTORY)
-            .stateIn(
+        dataStoreRepository.stringSetFlow(Constants.Preferences.SEARCH_HISTORY).stateIn(
                 scope = viewModelScope,
                 started = SharingStarted.WhileSubscribed(5_000),
                 initialValue = setOf()
@@ -253,10 +244,7 @@ class SharedViewModel @Inject constructor(
         when (event) {
 
             is ListEvent.Sort -> getNotes(
-                event.noteOrder,
-                event.trash,
-                event.filterFolder,
-                event.folderId
+                event.noteOrder, event.trash, event.filterFolder, event.folderId
             )
 
             is ListEvent.DeleteNotes -> {
@@ -304,8 +292,7 @@ class SharedViewModel @Inject constructor(
             is ListEvent.ChangeViewMode -> {
                 viewModelScope.launch(Dispatchers.IO) {
                     dataStoreRepository.putBoolean(
-                        Constants.Preferences.IS_LIST_VIEW,
-                        settingsStateFlow.value.isListView.not()
+                        Constants.Preferences.IS_LIST_VIEW, settingsStateFlow.value.isListView.not()
                     )
                 }
             }
@@ -342,11 +329,9 @@ class SharedViewModel @Inject constructor(
             is ListEvent.OpenOrCreateNote -> {
                 titleState.clearText()
                 contentState.clearText()
-                _oNote = event.noteEntity
-                    ?: NoteEntity(
-                        folderId = event.folderId,
-                        timestamp = System.currentTimeMillis()
-                    )
+                _oNote = event.noteEntity ?: NoteEntity(
+                    folderId = event.folderId, timestamp = System.currentTimeMillis()
+                )
             }
         }
     }
@@ -379,34 +364,30 @@ class SharedViewModel @Inject constructor(
         folderId: Long? = null,
     ) {
         queryNotesJob?.cancel()
-        queryNotesJob = useCases.getNotes(noteOrder, trash, filterFolder, folderId)
-            .flowOn(Dispatchers.IO)
-            .onEach { notes ->
-                mainScreenDataStateFlow.update {
-                    it.copy(
-                        notes = notes,
-                        noteOrder = noteOrder,
-                        filterTrash = trash,
-                        filterFolder = filterFolder,
-                        folderId = folderId
-                    )
-                }
-            }
-            .launchIn(viewModelScope)
+        queryNotesJob =
+            useCases.getNotes(noteOrder, trash, filterFolder, folderId).flowOn(Dispatchers.IO)
+                .onEach { notes ->
+                    mainScreenDataStateFlow.update {
+                        it.copy(
+                            notes = notes,
+                            noteOrder = noteOrder,
+                            filterTrash = trash,
+                            filterFolder = filterFolder,
+                            folderId = folderId
+                        )
+                    }
+                }.launchIn(viewModelScope)
     }
 
     private fun searchNotes(keyWord: String) {
         queryNotesJob?.cancel()
-        queryNotesJob = useCases.searchNotes(keyWord)
-            .flowOn(Dispatchers.IO)
-            .onEach { notes ->
+        queryNotesJob = useCases.searchNotes(keyWord).flowOn(Dispatchers.IO).onEach { notes ->
                 mainScreenDataStateFlow.update {
                     it.copy(
                         notes = notes
                     )
                 }
-            }
-            .launchIn(viewModelScope)
+            }.launchIn(viewModelScope)
     }
 
     fun addTable(row: Int, column: Int) {
@@ -507,13 +488,12 @@ class SharedViewModel @Inject constructor(
                 // 判断id是否与oNote的id相同，不同则从数据库获取笔记，并更新oNote。
                 viewModelScope.launch(Dispatchers.IO) {
                     // 当数据库中不存在该笔记时，创建一个新的笔记
-                    if (event.id != (_oNote.id ?: -1L) || event.id == -1L)
-                        _oNote = useCases.getNoteById(event.id)
-                            ?: NoteEntity(
-                                timestamp = System.currentTimeMillis(),
-                                isMarkdown = dataStoreRepository.booleanFlow(Constants.Preferences.IS_DEFAULT_LITE_MODE)
-                                    .first().not()
-                            )
+                    if (event.id != (_oNote.id ?: -1L) || event.id == -1L) _oNote =
+                        useCases.getNoteById(event.id) ?: NoteEntity(
+                            timestamp = System.currentTimeMillis(),
+                            isMarkdown = dataStoreRepository.booleanFlow(Constants.Preferences.IS_DEFAULT_LITE_MODE)
+                                .first().not()
+                        )
                     noteStateFlow.update { noteState ->
                         noteState.copy(
                             id = _oNote.id,
@@ -522,8 +502,10 @@ class SharedViewModel @Inject constructor(
                             timestamp = _oNote.timestamp
                         )
                     }
-                    titleState.setTextAndPlaceCursorAtEnd(_oNote.title)
-                    contentState.setTextAndPlaceCursorAtEnd(_oNote.content)
+                    withContext(Dispatchers.Default) {
+                        titleState.setTextAndPlaceCursorAtEnd(_oNote.title)
+                        contentState.setTextAndPlaceCursorAtEnd(_oNote.content)
+                    }
                 }
             }
 
@@ -538,9 +520,9 @@ class SharedViewModel @Inject constructor(
                         isMarkdown = noteState.isStandard,
                         timestamp = System.currentTimeMillis()
                     )
-                    if (note.id != null)
-                        if (note.title != _oNote.title || note.content != _oNote.content || note.isMarkdown != _oNote.isMarkdown || note.folderId != _oNote.folderId)
-                            useCases.updateNote(note)
+                    if (note.id != null) if (note.title != _oNote.title || note.content != _oNote.content || note.isMarkdown != _oNote.isMarkdown || note.folderId != _oNote.folderId) useCases.updateNote(
+                        note
+                    )
                 }
             }
         }
@@ -603,9 +585,9 @@ class SharedViewModel @Inject constructor(
                                     title = fileName?.substringBeforeLast(".") ?: "",
                                     content = content ?: "",
                                     folderId = folderId,
-                                    isMarkdown = (fileName?.endsWith(".md") == true)
-                                            || (fileName?.endsWith(".markdown") == true
-                                            || (fileName?.endsWith(".html") == true)),
+                                    isMarkdown = (fileName?.endsWith(".md") == true) || (fileName?.endsWith(
+                                        ".markdown"
+                                    ) == true || (fileName?.endsWith(".html") == true)),
                                     timestamp = System.currentTimeMillis()
                                 )
                                 useCases.addNote(note)
@@ -640,9 +622,8 @@ class SharedViewModel @Inject constructor(
                         }
 
                         val fileName = noteEntity.title
-                        val content =
-                            if (".html" != extension) noteEntity.content
-                            else renderer.render(parser.parse(noteEntity.content))
+                        val content = if (".html" != extension) noteEntity.content
+                        else renderer.render(parser.parse(noteEntity.content))
 
                         val values = ContentValues().apply {
                             put(MediaStore.Downloads.DISPLAY_NAME, "$fileName$extension")
@@ -654,8 +635,7 @@ class SharedViewModel @Inject constructor(
                         }
 
                         val uri = contentResolver.insert(
-                            MediaStore.Downloads.EXTERNAL_CONTENT_URI,
-                            values
+                            MediaStore.Downloads.EXTERNAL_CONTENT_URI, values
                         )
 
                         uri?.let { uri1 ->
