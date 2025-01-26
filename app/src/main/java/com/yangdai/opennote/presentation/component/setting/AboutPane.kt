@@ -1,7 +1,6 @@
 package com.yangdai.opennote.presentation.component.setting
 
 import android.content.Intent
-import android.net.Uri
 import android.os.Build
 import android.widget.Toast
 import androidx.activity.compose.LocalActivity
@@ -49,7 +48,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-
+import androidx.core.net.toUri
 import com.yangdai.opennote.R
 import com.yangdai.opennote.presentation.component.CurlyCornerShape
 import com.yangdai.opennote.presentation.component.dialog.RatingDialog
@@ -139,7 +138,7 @@ fun AboutPane() {
         ListItem(modifier = Modifier.clickable {
             customTabsIntent.launchUrl(
                 context,
-                Uri.parse("https://github.com/YangDai2003/OpenNote-Compose/blob/master/Guide.md")
+                "https://github.com/YangDai2003/OpenNote-Compose/blob/master/Guide.md".toUri()
             )
         }, leadingContent = {
             Icon(
@@ -152,7 +151,7 @@ fun AboutPane() {
         ListItem(modifier = Modifier.clickable {
             customTabsIntent.launchUrl(
                 context,
-                Uri.parse("https://github.com/YangDai2003/OpenNote-Compose/blob/master/PRIVACY_POLICY.md")
+                "https://github.com/YangDai2003/OpenNote-Compose/blob/master/PRIVACY_POLICY.md".toUri()
             )
         }, leadingContent = {
             Icon(
@@ -191,7 +190,7 @@ fun AboutPane() {
                 } else {
                     val donateIntent = Intent(
                         Intent.ACTION_VIEW,
-                        Uri.parse("https://paypal.me/YangDaiDevelpoer?country.x=DE&locale.x=de_DE")
+                        "https://paypal.me/YangDaiDevelpoer?country.x=DE&locale.x=de_DE".toUri()
                     )
                     context.startActivity(donateIntent)
                 }
@@ -211,7 +210,7 @@ fun AboutPane() {
             if (stars > 3) {
                 customTabsIntent.launchUrl(
                     context,
-                    Uri.parse("https://play.google.com/store/apps/details?id=com.yangdai.opennote")
+                    "https://play.google.com/store/apps/details?id=com.yangdai.opennote".toUri()
                 )
             } else {
                 if (stars == 0) return@RatingDialog
@@ -222,7 +221,7 @@ fun AboutPane() {
                 val systemVersion = Build.VERSION.SDK_INT
 
                 val emailIntent = Intent(Intent.ACTION_SENDTO).apply {
-                    data = Uri.parse("mailto:")
+                    data = "mailto:".toUri()
                     putExtra(Intent.EXTRA_EMAIL, arrayOf("dy15800837435@gmail.com"))
                     putExtra(Intent.EXTRA_SUBJECT, "Feedback - Open Note")
                     putExtra(

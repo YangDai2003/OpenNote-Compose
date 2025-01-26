@@ -17,9 +17,16 @@ fun TextFieldBuffer.moveCursorRight() {
 
 private fun TextFieldBuffer.inlineWrap(
     startWrappedString: String,
-    endWrappedString: String = startWrappedString
-) {
-    val initialSelection = selection
+    endWrappedString: String = startWrappedString,
+    initialSelection: TextRange = selection
+) = if (initialSelection.collapsed) {
+    // No text selected, insert at cursor position and place cursor in the middle
+    replace(initialSelection.min, initialSelection.min, startWrappedString + endWrappedString)
+    selection = TextRange(
+        initialSelection.min + startWrappedString.length,
+        initialSelection.min + startWrappedString.length
+    )
+} else {
     replace(initialSelection.min, initialSelection.min, startWrappedString)
     replace(
         initialSelection.max + startWrappedString.length,

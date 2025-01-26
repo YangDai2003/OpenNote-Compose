@@ -4,8 +4,8 @@ import android.app.Activity
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
 import android.util.Log
+import androidx.core.net.toUri
 import java.net.URISyntaxException
 
 /**
@@ -60,7 +60,7 @@ object PaymentUtil {
      * @return 支付宝客户端是否已安装
      */
     fun isInstalledPackage(context: Context): Boolean {
-        val uri = Uri.parse("alipays://platformapi/startApp")
+        val uri = "alipays://platformapi/startApp".toUri()
         val intent = Intent(Intent.ACTION_VIEW, uri)
         val componentName = intent.resolveActivity(context.packageManager)
         return componentName != null

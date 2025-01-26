@@ -2,7 +2,6 @@ package com.yangdai.opennote.presentation.component.text
 
 import android.annotation.SuppressLint
 import android.graphics.Color
-import android.net.Uri
 import android.view.ViewGroup
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
@@ -23,6 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.net.toUri
 import com.yangdai.opennote.presentation.theme.linkColor
 import com.yangdai.opennote.presentation.util.rememberCustomTabsIntent
 import com.yangdai.opennote.presentation.util.toHexColor
@@ -149,7 +149,7 @@ fun ReadView(
                     ): Boolean {
                         val url = request.url.toString()
                         if (url.startsWith("http://") || url.startsWith("https://")) {
-                            customTabsIntent.launchUrl(it, Uri.parse(url))
+                            customTabsIntent.launchUrl(it, url.toUri())
                         }
                         return true
                     }

@@ -32,7 +32,7 @@ fun Intent.parseSharedContent(context: Context): SharedContent {
         Intent.ACTION_VIEW -> {
             if (isTextMimeType()) {
                 var text = ""
-                var fileName: String = ""
+                var fileName = ""
                 try {
                     context.contentResolver.openInputStream(data!!)?.use { inputStream ->
 

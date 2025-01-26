@@ -27,6 +27,7 @@ import androidx.core.animation.addListener
 import androidx.core.graphics.applyCanvas
 import kotlin.math.hypot
 import kotlin.math.roundToInt
+import androidx.core.graphics.createBitmap
 
 /**
  * 激活遮罩动画，
@@ -78,12 +79,8 @@ fun MaskBox(
             )
         }
         maskAnimModel = animModel
-        viewScreenshot = Bitmap
-            .createBitmap(
-                bitmapBound.width.roundToInt(),
-                bitmapBound.height.roundToInt(),
-                Bitmap.Config.ARGB_8888
-            )
+        viewScreenshot =
+            createBitmap(bitmapBound.width.roundToInt(), bitmapBound.height.roundToInt())
             .applyCanvas {
                 translate(-bitmapBound.left, -bitmapBound.top)
                 rootView.draw(this)
