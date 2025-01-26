@@ -543,10 +543,10 @@ fun NoteScreen(
                                 .draggable(state = rememberDraggableState { delta ->
                                     textFieldWeight =
                                         (textFieldWeight + delta / windowWidth).coerceIn(
-                                            0.2f, 0.8f
+                                            0.3f, 0.7f
                                         )
                                 }, orientation = Orientation.Horizontal, onDragStopped = {
-                                    val positions = listOf(0.25f, 0.5f, 0.75f)
+                                    val positions = listOf(1f / 3f, 0.5f, 2f / 3f)
                                     val closest =
                                         positions.minByOrNull { abs(it - textFieldWeight) }
                                     if (closest != null) {
