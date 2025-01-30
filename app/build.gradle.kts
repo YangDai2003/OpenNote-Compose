@@ -17,8 +17,8 @@ android {
         applicationId = "com.yangdai.opennote"
         minSdk = 29
         targetSdk = 35
-        versionCode = 141
-        versionName = "1.4.1"
+        versionCode = 143
+        versionName = "1.4.3"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {

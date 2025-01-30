@@ -27,6 +27,7 @@ import androidx.compose.material.icons.outlined.FormatQuote
 import androidx.compose.material.icons.outlined.FormatStrikethrough
 import androidx.compose.material.icons.outlined.FormatUnderlined
 import androidx.compose.material.icons.outlined.HorizontalRule
+import androidx.compose.material.icons.outlined.Image
 import androidx.compose.material.icons.outlined.Link
 import androidx.compose.material.icons.outlined.TableChart
 import androidx.compose.material.icons.outlined.Title
@@ -88,7 +89,8 @@ fun MarkdownEditorRowPreview() {
         onTableButtonClick = {},
         onScanButtonClick = {},
         onTaskButtonClick = {},
-        onLinkButtonClick = {}
+        onLinkButtonClick = {},
+        onImageButtonClick = {}
     )
 }
 
@@ -336,7 +338,8 @@ fun MarkdownEditorRow(
     onTableButtonClick: () -> Unit,
     onScanButtonClick: () -> Unit,
     onTaskButtonClick: () -> Unit,
-    onLinkButtonClick: () -> Unit
+    onLinkButtonClick: () -> Unit,
+    onImageButtonClick: () -> Unit
 ) {
 
     var isExpanded by rememberSaveable { mutableStateOf(false) }
@@ -560,9 +563,16 @@ fun MarkdownEditorRow(
             )
 
             IconButtonWithTooltip(
+                imageVector = Icons.Outlined.Image,
+                contentDescription = stringResource(id = R.string.image),
+                shortCutDescription = "Ctrl + Shift + I",
+                onClick = onImageButtonClick
+            )
+
+            IconButtonWithTooltip(
                 imageVector = Icons.Outlined.DocumentScanner,
                 contentDescription = stringResource(id = R.string.scan),
-                shortCutDescription = "Ctrl + S",
+                shortCutDescription = "Ctrl + Shift + S",
                 onClick = onScanButtonClick
             )
         }

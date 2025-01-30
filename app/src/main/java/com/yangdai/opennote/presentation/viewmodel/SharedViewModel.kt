@@ -3,7 +3,9 @@ package com.yangdai.opennote.presentation.viewmodel
 import android.annotation.SuppressLint
 import android.content.ContentResolver
 import android.content.ContentValues
+import android.media.MediaScannerConnection
 import android.net.Uri
+import android.os.Build
 import android.os.Environment
 import android.provider.MediaStore
 import android.provider.OpenableColumns
@@ -12,6 +14,7 @@ import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.clearText
 import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.ui.util.fastJoinToString
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.mlkit.vision.text.TextRecognition
@@ -27,18 +30,6 @@ import com.yangdai.opennote.domain.usecase.OrderType
 import com.yangdai.opennote.domain.usecase.UseCases
 import com.yangdai.opennote.presentation.component.dialog.ExportType
 import com.yangdai.opennote.presentation.component.dialog.TaskItem
-import com.yangdai.opennote.presentation.event.DatabaseEvent
-import com.yangdai.opennote.presentation.event.FolderEvent
-import com.yangdai.opennote.presentation.event.ListEvent
-import com.yangdai.opennote.presentation.event.NoteEvent
-import com.yangdai.opennote.presentation.event.UiEvent
-import com.yangdai.opennote.presentation.state.AppColor
-import com.yangdai.opennote.presentation.state.AppTheme
-import com.yangdai.opennote.presentation.state.DataActionState
-import com.yangdai.opennote.presentation.state.DataState
-import com.yangdai.opennote.presentation.state.NoteState
-import com.yangdai.opennote.presentation.state.SettingsState
-import com.yangdai.opennote.presentation.util.Constants
 import com.yangdai.opennote.presentation.component.text.add
 import com.yangdai.opennote.presentation.component.text.addHeader
 import com.yangdai.opennote.presentation.component.text.addMermaid
@@ -55,6 +46,18 @@ import com.yangdai.opennote.presentation.component.text.mark
 import com.yangdai.opennote.presentation.component.text.quote
 import com.yangdai.opennote.presentation.component.text.strikeThrough
 import com.yangdai.opennote.presentation.component.text.underline
+import com.yangdai.opennote.presentation.event.DatabaseEvent
+import com.yangdai.opennote.presentation.event.FolderEvent
+import com.yangdai.opennote.presentation.event.ListEvent
+import com.yangdai.opennote.presentation.event.NoteEvent
+import com.yangdai.opennote.presentation.event.UiEvent
+import com.yangdai.opennote.presentation.state.AppColor
+import com.yangdai.opennote.presentation.state.AppTheme
+import com.yangdai.opennote.presentation.state.DataActionState
+import com.yangdai.opennote.presentation.state.DataState
+import com.yangdai.opennote.presentation.state.NoteState
+import com.yangdai.opennote.presentation.state.SettingsState
+import com.yangdai.opennote.presentation.util.Constants
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -92,6 +95,8 @@ import org.commonmark.ext.ins.InsExtension
 import org.commonmark.ext.task.list.items.TaskListItemsExtension
 import org.commonmark.parser.Parser
 import org.commonmark.renderer.html.HtmlRenderer
+import java.io.File
+import java.io.FileOutputStream
 import java.io.OutputStreamWriter
 import java.util.Locale
 import javax.inject.Inject
@@ -114,13 +119,13 @@ class SharedViewModel @Inject constructor(
     // 文件夹和文件夹内笔记数量为一个Pair的列表
     @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
     val folderWithNoteCountsFlow = useCases.getFolders().debounce(300).flatMapLatest { folders ->
-            combine(
-                folders.map { folder ->
-                    useCases.getNotesCountByFolderId(folder.id).map { count -> folder to count }
-                }) { countPairs ->
-                countPairs.toList()
-            }
-        }.flowOn(Dispatchers.IO)
+        combine(
+            folders.map { folder ->
+                useCases.getNotesCountByFolderId(folder.id).map { count -> folder to count }
+            }) { countPairs ->
+            countPairs.toList()
+        }
+    }.flowOn(Dispatchers.IO)
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000L), emptyList())
 
     // 编辑时的笔记状态, 包含笔记的 id、所属文件夹 id、格式、时间戳
@@ -234,10 +239,10 @@ class SharedViewModel @Inject constructor(
 
     val historyStateFlow: StateFlow<Set<String>> =
         dataStoreRepository.stringSetFlow(Constants.Preferences.SEARCH_HISTORY).stateIn(
-                scope = viewModelScope,
-                started = SharingStarted.WhileSubscribed(5_000),
-                initialValue = setOf()
-            )
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = setOf()
+        )
 
 
     fun onListEvent(event: ListEvent) {
@@ -382,12 +387,12 @@ class SharedViewModel @Inject constructor(
     private fun searchNotes(keyWord: String) {
         queryNotesJob?.cancel()
         queryNotesJob = useCases.searchNotes(keyWord).flowOn(Dispatchers.IO).onEach { notes ->
-                mainScreenDataStateFlow.update {
-                    it.copy(
-                        notes = notes
-                    )
-                }
-            }.launchIn(viewModelScope)
+            mainScreenDataStateFlow.update {
+                it.copy(
+                    notes = notes
+                )
+            }
+        }.launchIn(viewModelScope)
     }
 
     fun addTable(row: Int, column: Int) {
@@ -532,9 +537,14 @@ class SharedViewModel @Inject constructor(
     private val _dataActionState = MutableStateFlow(DataActionState())
     val dataActionStateFlow = _dataActionState.asStateFlow()
     private var dataActionJob: Job? = null
+
     fun cancelDataAction() {
         dataActionJob?.cancel()
         _dataActionState.value = DataActionState()
+    }
+    fun startDataAction(infinite: Boolean = false) {
+        cancelDataAction()
+        _dataActionState.update { it.copy(loading = true, infinite = infinite) }
     }
 
     // 获取文件名的函数
@@ -548,6 +558,8 @@ class SharedViewModel @Inject constructor(
                     result = it.getString(it.getColumnIndex(OpenableColumns.DISPLAY_NAME))
                 }
             }
+        } else if (uri.scheme == "file") {
+            result = uri.path?.let { path -> File(path).name }
         }
         if (result == null) {
             result = uri.path
@@ -562,14 +574,81 @@ class SharedViewModel @Inject constructor(
     fun onDatabaseEvent(event: DatabaseEvent) {
         when (event) {
 
-            is DatabaseEvent.Import -> {
+            is DatabaseEvent.ImportImages -> {
+                val context = event.context
+                val contentResolver = event.contentResolver
+                val uriList = event.uriList
+
+                startDataAction()
+                dataActionJob = viewModelScope.launch(Dispatchers.IO) {
+                    val savedUriList = mutableListOf<String>()
+
+                    uriList.forEachIndexed { index, uri ->
+                        _dataActionState.update {
+                            it.copy(progress = index.toFloat() / uriList.size)
+                        }
+
+                        val timestamp = System.currentTimeMillis()
+                        val fileName = getFileName(contentResolver, uri)?.substringBeforeLast(".") +
+                                "_" + timestamp + "." +
+                                getFileName(contentResolver, uri)?.substringAfterLast(".")
+
+                        val downloadsDir = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+                        } else {
+                            // Android 10 及以下使用应用专属目录
+                            context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)
+                        }
+
+                        // 创建OpenNote/Images目录结构
+                        val openNoteImagesDir = File(downloadsDir, Constants.File.OPENNOTE_IMAGES).apply {
+                            if (!exists()) {
+                                mkdirs()
+                            }
+                        }
+
+                        val file = File(openNoteImagesDir, fileName)
+
+                        try {
+                            contentResolver.openInputStream(uri)?.use { input ->
+                                FileOutputStream(file).use { output ->
+                                    input.copyTo(output)
+                                }
+                            }
+
+                            // 确保媒体库能够扫描到新文件
+                            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+                                MediaScannerConnection.scanFile(
+                                    context,
+                                    arrayOf(file.absolutePath),
+                                    null,
+                                    null
+                                )
+                            }
+
+                            savedUriList.add("![](file://${file.absolutePath})")
+                        } catch (e: Exception) {
+                            // 处理异常
+                            e.printStackTrace()
+                        }
+                    }
+
+                    withContext(Dispatchers.Main) {
+                        contentState.edit { add(savedUriList.fastJoinToString(separator = "\n")) }
+                    }
+                    _dataActionState.update {
+                        it.copy(progress = 1f)
+                    }
+                }
+            }
+
+            is DatabaseEvent.ImportFile -> {
 
                 val contentResolver = event.contentResolver
                 val folderId = event.folderId
                 val uriList = event.uriList
 
-                dataActionJob?.cancel()
-                _dataActionState.update { it.copy(loading = true) }
+                startDataAction()
                 dataActionJob = viewModelScope.launch(Dispatchers.IO) {
                     uriList.forEachIndexed { index, uri ->
                         _dataActionState.update {
@@ -585,9 +664,9 @@ class SharedViewModel @Inject constructor(
                                     title = fileName?.substringBeforeLast(".") ?: "",
                                     content = content ?: "",
                                     folderId = folderId,
-                                    isMarkdown = (fileName?.endsWith(".md") == true) || (fileName?.endsWith(
-                                        ".markdown"
-                                    ) == true || (fileName?.endsWith(".html") == true)),
+                                    isMarkdown = (fileName?.endsWith(".md") == true) ||
+                                            (fileName?.endsWith(".markdown") == true ||
+                                                    (fileName?.endsWith(".html") == true)),
                                     timestamp = System.currentTimeMillis()
                                 )
                                 useCases.addNote(note)
@@ -600,14 +679,13 @@ class SharedViewModel @Inject constructor(
                 }
             }
 
-            is DatabaseEvent.Export -> {
+            is DatabaseEvent.ExportFile -> {
 
                 val contentResolver = event.contentResolver
                 val notes = event.notes
                 val type = event.type
 
-                dataActionJob?.cancel()
-                _dataActionState.update { it.copy(loading = true) }
+                startDataAction()
 
                 val extension = when (type) {
                     ExportType.TXT -> ".txt"
@@ -648,7 +726,7 @@ class SharedViewModel @Inject constructor(
                             }.onFailure { throwable ->
                                 _dataActionState.update {
                                     it.copy(
-                                        error = "Failed to export note: ${throwable.localizedMessage ?: "error"}"
+                                        message = "Failed to export note: ${throwable.localizedMessage ?: "error"}"
                                     )
                                 }
                             }
@@ -664,8 +742,7 @@ class SharedViewModel @Inject constructor(
 
                 val contentResolver = event.contentResolver
 
-                dataActionJob?.cancel()
-                _dataActionState.update { it.copy(loading = true) }
+                startDataAction()
 
                 _dataActionState.update {
                     it.copy(progress = 0.2f)
@@ -680,7 +757,10 @@ class SharedViewModel @Inject constructor(
                     }
                     // 创建 ContentValues 对象
                     val values = ContentValues().apply {
-                        put(MediaStore.Downloads.DISPLAY_NAME, "${System.currentTimeMillis()}.json")
+                        put(
+                            MediaStore.Downloads.DISPLAY_NAME,
+                            "${System.currentTimeMillis()}.json"
+                        )
                         put(MediaStore.Downloads.MIME_TYPE, "application/json")
                         put(
                             MediaStore.Downloads.RELATIVE_PATH,
@@ -689,8 +769,9 @@ class SharedViewModel @Inject constructor(
                     }
 
                     // 获取 Uri
-                    val uri =
-                        contentResolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values)
+                    val uri = contentResolver.insert(
+                        MediaStore.Downloads.EXTERNAL_CONTENT_URI, values
+                    )
 
                     // 将 JSON 字符串写入到文件中
                     uri?.let {
@@ -711,8 +792,7 @@ class SharedViewModel @Inject constructor(
                 val contentResolver = event.contentResolver
                 val uri = event.uri
 
-                dataActionJob?.cancel()
-                _dataActionState.update { it.copy(loading = true) }
+                startDataAction()
 
                 _dataActionState.update {
                     it.copy(progress = 0.2f)
@@ -748,7 +828,7 @@ class SharedViewModel @Inject constructor(
                         }.onFailure { throwable ->
                             _dataActionState.update {
                                 it.copy(
-                                    error = "Failed to decode backup data: ${throwable.localizedMessage ?: "error"}"
+                                    message = "Failed to decode backup data: ${throwable.localizedMessage ?: "error"}"
                                 )
                             }
                         }.onSuccess {
@@ -765,8 +845,7 @@ class SharedViewModel @Inject constructor(
             }
 
             DatabaseEvent.Reset -> {
-                dataActionJob?.cancel()
-                _dataActionState.update { it.copy(loading = true, infinite = true) }
+                startDataAction(true)
                 dataActionJob = viewModelScope.launch(Dispatchers.IO) {
                     runCatching {
                         database.clearAllTables()
@@ -777,7 +856,7 @@ class SharedViewModel @Inject constructor(
                     }.onFailure { throwable ->
                         _dataActionState.update {
                             it.copy(
-                                error = "Failed to reset database: ${throwable.localizedMessage ?: "error"}"
+                                message = "Failed to reset database: ${throwable.localizedMessage ?: "error"}"
                             )
                         }
                     }

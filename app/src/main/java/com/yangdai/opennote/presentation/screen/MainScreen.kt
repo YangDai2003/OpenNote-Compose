@@ -600,7 +600,7 @@ fun MainScreen(
                 val context = LocalContext.current
                 ExportDialog(onDismissRequest = { isExportDialogVisible = false }) {
                     sharedViewModel.onDatabaseEvent(
-                        DatabaseEvent.Export(
+                        DatabaseEvent.ExportFile(
                             context.contentResolver,
                             selectedNotes.toList(),
                             it
@@ -625,6 +625,7 @@ fun MainScreen(
             ProgressDialog(
                 isLoading = dataActionState.loading,
                 progress = dataActionState.progress,
+                message = dataActionState.message,
                 onDismissRequest = sharedViewModel::cancelDataAction
             )
         }

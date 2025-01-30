@@ -41,6 +41,7 @@ fun StandardTextField(
     onTaskButtonClick: () -> Unit,
     onLinkButtonClick: () -> Unit,
     onPreviewButtonClick: () -> Unit,
+    onImageButtonClick: () -> Unit,
     onFocusChanged: (Boolean) -> Unit
 ) {
 
@@ -102,6 +103,16 @@ fun StandardTextField(
                                     true
                                 }
 
+                                Key.S -> {
+                                    onScanButtonClick()
+                                    true
+                                }
+
+                                Key.I -> {
+                                    onImageButtonClick()
+                                    true
+                                }
+
                                 else -> false
                             }
                         } else {
@@ -138,11 +149,6 @@ fun StandardTextField(
 
                                 Key.K -> {
                                     onLinkButtonClick()
-                                    true
-                                }
-
-                                Key.S -> {
-                                    onScanButtonClick()
                                     true
                                 }
 

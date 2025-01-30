@@ -3,6 +3,7 @@ package com.yangdai.opennote.presentation.component.text
 import android.annotation.SuppressLint
 import android.graphics.Color
 import android.view.ViewGroup
+import android.webkit.JavascriptInterface
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
@@ -23,6 +24,7 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.net.toUri
+import com.yangdai.opennote.presentation.component.image.NetworkImageDialog
 import com.yangdai.opennote.presentation.theme.linkColor
 import com.yangdai.opennote.presentation.util.rememberCustomTabsIntent
 import com.yangdai.opennote.presentation.util.toHexColor
@@ -34,17 +36,18 @@ data class MarkdownStyles(
     val hexQuoteBackgroundColor: String,
     val hexLinkColor: String,
     val hexBorderColor: String
-)
-
-private fun createMarkdownStyles(colorScheme: ColorScheme) =
-    MarkdownStyles(
-        hexTextColor = colorScheme.onSurface.toArgb().toHexColor(),
-        hexCodeBackgroundColor = colorScheme.surfaceVariant.toArgb().toHexColor(),
-        hexPreBackgroundColor = colorScheme.surfaceColorAtElevation(1.dp).toArgb().toHexColor(),
-        hexQuoteBackgroundColor = colorScheme.secondaryContainer.toArgb().toHexColor(),
-        hexLinkColor = linkColor.toArgb().toHexColor(),
-        hexBorderColor = colorScheme.outline.toArgb().toHexColor()
-    )
+) {
+    companion object {
+        fun fromColorScheme(colorScheme: ColorScheme) = MarkdownStyles(
+            hexTextColor = colorScheme.onSurface.toArgb().toHexColor(),
+            hexCodeBackgroundColor = colorScheme.surfaceVariant.toArgb().toHexColor(),
+            hexPreBackgroundColor = colorScheme.surfaceColorAtElevation(1.dp).toArgb().toHexColor(),
+            hexQuoteBackgroundColor = colorScheme.secondaryContainer.toArgb().toHexColor(),
+            hexLinkColor = linkColor.toArgb().toHexColor(),
+            hexBorderColor = colorScheme.outline.toArgb().toHexColor()
+        )
+    }
+}
 
 @SuppressLint("SetJavaScriptEnabled")
 @Composable
@@ -57,7 +60,7 @@ fun ReadView(
 ) {
 
     val markdownStyles = remember(colorScheme) {
-        createMarkdownStyles(colorScheme)
+        MarkdownStyles.fromColorScheme(colorScheme)
     }
 
     val data by remember(html, markdownStyles) {
@@ -67,6 +70,42 @@ fun ReadView(
                     <html>
                     <head>
                     <meta name="viewport" content="width=device-width, initial-scale=1">
+                    <script>
+                        function handleImageClick(src) {
+                            window.imageInterface.onImageClick(src);
+                        }
+                        function setupImageHandlers() {
+                            document.querySelectorAll('img').forEach(img => {
+                                let touchTimeout;
+                                let touchStartTime;
+                                
+                                img.onclick = function() {
+                                    handleImageClick(this.src);
+                                };
+                                
+                                img.oncontextmenu = function(e) {
+                                    return false;
+                                };
+                                
+                                img.addEventListener('touchstart', function(e) {
+                                    touchStartTime = Date.now();
+                                });
+                                
+                                img.addEventListener('touchend', function(e) {
+                                    // 如果触摸时间小于500ms,认为是点击操作
+                                    if (Date.now() - touchStartTime < 500) {
+                                        return; // 允许点击事件继续传播
+                                    }
+                                    e.preventDefault(); // 阻止长按操作
+                                });
+                                
+                                // 禁用拖拽
+                                img.draggable = false;
+                            });
+                        }
+                        
+                        document.addEventListener('DOMContentLoaded', setupImageHandlers);
+                    </script>
                     <script>
                         MathJax = {
                             tex: {
@@ -83,6 +122,11 @@ fun ReadView(
                     </script>
                     <style type="text/css">
                         body { color: ${markdownStyles.hexTextColor}; padding: 0px; margin: 0px; }
+                        img { max-width: 100%; height: auto; }
+                        img {
+                            -webkit-touch-callout: none; /* 禁用长按呼出菜单 */
+                            pointer-events: auto !important; /* 确保点击事件可以工作 */
+                        }
                         a { color: ${markdownStyles.hexLinkColor}; }
                         p code { background-color: ${markdownStyles.hexCodeBackgroundColor}; padding: 4px 4px 2px 4px; margin: 4px; border-radius: 4px; font-family: monospace; }
                         td code { background-color: ${markdownStyles.hexCodeBackgroundColor}; padding: 4px 4px 2px 4px; margin: 4px; border-radius: 4px; font-family: monospace; }
@@ -107,6 +151,9 @@ fun ReadView(
 
     var webView by remember { mutableStateOf<WebView?>(null) }
 
+    var showDialog by remember { mutableStateOf(false) }
+    var url by remember { mutableStateOf("") }
+
     LaunchedEffect(scrollState.value) {
         if (!scrollSynchronized) return@LaunchedEffect
 
@@ -120,14 +167,16 @@ fun ReadView(
         webView?.evaluateJavascript(
             """
         (function() {
-            var d = document.documentElement;
-            var b = document.body;
-            var maxHeight = Math.max(
+            const d = document.documentElement;
+            const b = document.body;
+            const maxHeight = Math.max(
                 d.scrollHeight, d.offsetHeight, d.clientHeight,
                 b.scrollHeight, b.offsetHeight
             );
-            var targetScrollTop = maxHeight * $currentScrollPercent;
-            window.scrollTo({ top: targetScrollTop, behavior: 'auto' });
+            window.scrollTo({ 
+                top: maxHeight * $currentScrollPercent, 
+                behavior: 'auto' 
+            });
         })();
         """.trimIndent(),
             null
@@ -154,6 +203,19 @@ fun ReadView(
                         return true
                     }
                 }
+                addJavascriptInterface(
+                    object {
+                        @JavascriptInterface
+                        fun onImageClick(urlStr: String) {
+                            url = urlStr
+                            showDialog = true
+                        }
+                    },
+                    "imageInterface"
+                )
+                settings.allowFileAccess = true
+                settings.allowContentAccess = true
+                settings.domStorageEnabled = true
                 settings.javaScriptEnabled = true
                 settings.loadsImagesAutomatically = true
                 settings.defaultTextEncodingName = "UTF-8"
@@ -176,8 +238,11 @@ fun ReadView(
                 null
             )
         },
-        onReset = {
-            it.stopLoading()
-            it.clearHistory()
-        })
+        onReset = { it.stopLoading() })
+
+    if (showDialog)
+        NetworkImageDialog(
+            onDismiss = { showDialog = false },
+            imageUrl = url,
+        )
 }

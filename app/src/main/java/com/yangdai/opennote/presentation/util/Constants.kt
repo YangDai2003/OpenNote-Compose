@@ -8,6 +8,7 @@ object Constants {
     object File {
         const val OPENNOTE = "OpenNote"
         const val OPENNOTE_BACKUP = "OpenNote/Backup"
+        const val OPENNOTE_IMAGES = "OpenNote/Images"
     }
 
     object Preferences {

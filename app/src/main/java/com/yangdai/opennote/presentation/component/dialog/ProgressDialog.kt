@@ -30,7 +30,7 @@ fun ProgressDialog(
     isLoading: Boolean,
     progress: Float,
     infinite: Boolean = false,
-    errorMessage: String = "",
+    message: String = "",
     onDismissRequest: () -> Unit
 ) {
 
@@ -74,9 +74,9 @@ fun ProgressDialog(
                                 Text(text = "${(progress * 100).toInt()}%")
                     }
                 }
-                if (errorMessage.isNotEmpty()) {
+                if (message.isNotEmpty()) {
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text(text = errorMessage)
+                    Text(text = message)
                 }
             }
         },
@@ -102,7 +102,7 @@ fun ProgressDialogPreview2() {
     ProgressDialog(
         isLoading = true,
         progress = 0.3f,
-        errorMessage = "exception",
+        message = "exception",
         onDismissRequest = {})
 }
 

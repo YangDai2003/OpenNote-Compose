@@ -52,13 +52,13 @@ fun DataPane(sharedViewModel: SharedViewModel) {
     var showFolderDialog by rememberSaveable { mutableStateOf(false) }
 
     var folderId: Long? by rememberSaveable { mutableStateOf(null) }
-    val importLauncher = rememberLauncherForActivityResult(
+    val importFileLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenMultipleDocuments()
     ) { uriList ->
         if (uriList.isNotEmpty()) {
             val contentResolver = context.contentResolver
             sharedViewModel.onDatabaseEvent(
-                DatabaseEvent.Import(
+                DatabaseEvent.ImportFile(
                     contentResolver,
                     folderId,
                     uriList
@@ -222,7 +222,7 @@ fun DataPane(sharedViewModel: SharedViewModel) {
             onDismissRequest = { showFolderDialog = false }
         ) { id ->
             folderId = id
-            importLauncher.launch(arrayOf("text/*"))
+            importFileLauncher.launch(arrayOf("text/*"))
         }
     }
 
@@ -230,7 +230,7 @@ fun DataPane(sharedViewModel: SharedViewModel) {
         isLoading = actionState.loading,
         progress = actionState.progress,
         infinite = actionState.infinite,
-        errorMessage = actionState.error,
+        message = actionState.message,
         onDismissRequest = sharedViewModel::cancelDataAction
     )
 }

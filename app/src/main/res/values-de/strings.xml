@@ -117,4 +117,5 @@
     <string name="donate">Spenden</string>
     <string name="notes">" Notizen"</string>
     <string name="note">" Notiz"</string>
+    <string name="image">Foto</string>
 </resources>
