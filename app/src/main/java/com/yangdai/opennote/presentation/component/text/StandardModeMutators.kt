@@ -74,6 +74,44 @@ fun TextFieldBuffer.quote() {
     )
 }
 
+fun TextFieldBuffer.tab() {
+    val text = toString()
+    val lineStart = text.take(selection.min)
+        .lastIndexOf('\n')
+        .takeIf { it != -1 }
+        ?.let { it + 1 }
+        ?: 0
+
+    val initialSelection = selection
+
+    replace(lineStart, lineStart, "\t")
+    selection = TextRange(
+        initialSelection.min + "\t".length,
+        initialSelection.max + "\t".length
+    )
+}
+
+fun TextFieldBuffer.unTab() {
+    val text = toString()
+    val lineStart = text.take(selection.min)
+        .lastIndexOf('\n')
+        .takeIf { it != -1 }
+        ?.let { it + 1 }
+        ?: 0
+
+    val tabIndex = text.indexOf('\t', lineStart)
+    val initialSelection = selection
+
+    if (tabIndex != -1 && tabIndex < selection.min) {
+        replace(tabIndex, tabIndex + 1, "")
+        val tabLength = 1
+        selection = TextRange(
+            initialSelection.min - tabLength,
+            initialSelection.max - tabLength
+        )
+    }
+}
+
 fun TextFieldBuffer.add(str: String) {
     val initialSelection = selection
     replace(initialSelection.min, initialSelection.max, str)

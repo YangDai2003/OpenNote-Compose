@@ -4,7 +4,7 @@
     <selectionStates>
       <SelectionState runConfigName="OpenNote.app">
         <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2025-01-30T20:31:39.683613100Z">
+        <DropdownSelection timestamp="2025-01-30T22:40:02.842528700Z">
           <Target type="DEFAULT_BOOT">
             <handle>
               <DeviceId pluginId="LocalEmulator" identifier="path=C:\Users\30415\.android\avd\Pixel_9_Pro_Fold.avd" />

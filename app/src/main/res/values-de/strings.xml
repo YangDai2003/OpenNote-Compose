@@ -114,8 +114,11 @@
     <string name="default_editing_mode_for_note">Der Standardbearbeitungsmodus, mit dem eine neue Notiz beginnt.</string>
     <string name="editing_view">Bearbeitungs-Ansicht</string>
     <string name="reading_view">Lese-Ansicht</string>
-    <string name="donate">Spenden</string>
+    <string name="sponsor">Spenden</string>
     <string name="notes">" Notizen"</string>
     <string name="note">" Notiz"</string>
     <string name="image">Foto</string>
+    <string name="list">Liste</string>
+    <string name="find">Finden</string>
+    <string name="replace">Ersetzen</string>
 </resources>

@@ -24,7 +24,7 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.net.toUri
-import com.yangdai.opennote.presentation.component.image.NetworkImageDialog
+import com.yangdai.opennote.presentation.component.image.FullscreenImageDialog
 import com.yangdai.opennote.presentation.theme.linkColor
 import com.yangdai.opennote.presentation.util.rememberCustomTabsIntent
 import com.yangdai.opennote.presentation.util.toHexColor
@@ -241,7 +241,7 @@ fun ReadView(
         onReset = { it.stopLoading() })
 
     if (showDialog)
-        NetworkImageDialog(
+        FullscreenImageDialog(
             onDismiss = { showDialog = false },
             imageUrl = url,
         )

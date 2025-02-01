@@ -1,6 +1,8 @@
 package com.yangdai.opennote.presentation.screen
 
+import android.content.ClipData
 import android.content.Intent
+import android.os.Build
 import android.provider.CalendarContract
 import android.widget.Toast
 import androidx.activity.BackEventCompat
@@ -10,6 +12,7 @@ import androidx.activity.compose.PredictiveBackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
@@ -25,6 +28,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.sizeIn
@@ -43,6 +47,8 @@ import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.EditNote
 import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material.icons.outlined.Save
+import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material.icons.outlined.SearchOff
 import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material.icons.outlined.SwapHoriz
 import androidx.compose.material.icons.outlined.Upload
@@ -69,6 +75,7 @@ import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -86,6 +93,8 @@ import androidx.compose.ui.input.key.isCtrlPressed
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
+import androidx.compose.ui.platform.ClipEntry
+import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
@@ -93,16 +102,20 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.LineHeightStyle
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.util.fastJoinToString
 import androidx.core.content.FileProvider
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.yangdai.opennote.MainActivity
 import com.yangdai.opennote.R
 import com.yangdai.opennote.data.local.entity.NoteEntity
+import com.yangdai.opennote.presentation.component.FindAndReplaceField
 import com.yangdai.opennote.presentation.component.dialog.ExportDialog
 import com.yangdai.opennote.presentation.component.dialog.FolderListDialog
 import com.yangdai.opennote.presentation.component.dialog.LinkDialog
+import com.yangdai.opennote.presentation.component.dialog.ListDialog
 import com.yangdai.opennote.presentation.component.dialog.ProgressDialog
 import com.yangdai.opennote.presentation.component.dialog.ShareDialog
 import com.yangdai.opennote.presentation.component.dialog.ShareType
@@ -185,8 +198,18 @@ fun NoteScreen(
     val initialReadView = settingsState.isDefaultViewForReading
     var isReadView by remember { mutableStateOf(initialReadView) }
     var isEditorAndPreviewSynced by remember { mutableStateOf(false) }
+    var isSearching by remember { mutableStateOf(false) }
+    var searchWord by remember { mutableStateOf("") }
+    var replaceWord by remember { mutableStateOf("") }
+    val matchCount by remember(searchWord, sharedViewModel.contentState.text) {
+        derivedStateOf {
+            if (searchWord.isNotBlank()) searchWord.toRegex()
+                .findAll(sharedViewModel.contentState.text).count() else 0
+        }
+    }
 
     var showFolderDialog by rememberSaveable { mutableStateOf(false) }
+    var showListDialog by rememberSaveable { mutableStateOf(false) }
     var showTableDialog by rememberSaveable { mutableStateOf(false) }
     var showLinkDialog by rememberSaveable { mutableStateOf(false) }
     var showTaskDialog by rememberSaveable { mutableStateOf(false) }
@@ -222,6 +245,7 @@ fun NoteScreen(
         if (isReadView) {
             keyboardController?.hide()
             focusManager.clearFocus()
+            isSearching = false
         }
         if (!isLargeScreen) {
             coroutineScope.launch {
@@ -289,20 +313,23 @@ fun NoteScreen(
     val photoPicker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickMultipleVisualMedia(maxItems = 10)
     ) { uris ->
-        if (uris.isNotEmpty())
-            sharedViewModel.onDatabaseEvent(
-                DatabaseEvent.ImportImages(
-                    context.applicationContext,
-                    context.applicationContext.contentResolver,
-                    uris
-                )
+        if (uris.isNotEmpty()) sharedViewModel.onDatabaseEvent(
+            DatabaseEvent.ImportImages(
+                context.applicationContext, context.applicationContext.contentResolver, uris
             )
+        )
     }
 
     Scaffold(
         modifier = Modifier
             .fillMaxSize()
-            .imePadding(), topBar = {
+            .imePadding()
+            .onPreviewKeyEvent { keyEvent ->
+                if (keyEvent.type == KeyEventType.KeyDown && keyEvent.isCtrlPressed && keyEvent.key == Key.P) {
+                    isReadView = !isReadView
+                    true
+                } else false
+            }, topBar = {
             TopAppBar(title = {
                 FilledTonalButton(modifier = Modifier.sizeIn(maxWidth = 160.dp), onClick = {
                     showFolderDialog = true
@@ -324,45 +351,24 @@ fun NoteScreen(
                 }
             }, actions = {
 
-                if (noteState.id == null)
-                    TooltipBox(
-                        positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
-                        tooltip = {
-                            PlainTooltip(content = { Text("Ctrl + S") })
-                        },
-                        state = rememberTooltipState(),
-                        focusable = false,
-                        enableUserInput = true
-                    ) {
-                        IconButton(
-                            modifier = Modifier.onPreviewKeyEvent { keyEvent ->
-                                if (keyEvent.type == KeyEventType.KeyDown) {
-                                    if (keyEvent.isCtrlPressed) {
-                                        if (keyEvent.key == Key.S) {
-                                            if (sharedViewModel.titleState.text.isBlank() && sharedViewModel.contentState.text.isBlank()) Toast.makeText(
-                                                context,
-                                                context.getString(R.string.empty_note),
-                                                Toast.LENGTH_SHORT
-                                            ).show()
-                                            else sharedViewModel.onNoteEvent(NoteEvent.Save)
-                                            true
-                                        } else false
-                                    } else false
-                                } else false
-                            },
-                            onClick = {
-                                if (sharedViewModel.titleState.text.isBlank() && sharedViewModel.contentState.text.isBlank()) Toast.makeText(
-                                    context,
-                                    context.getString(R.string.empty_note),
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                                else sharedViewModel.onNoteEvent(NoteEvent.Save)
-                            }) {
-                            Icon(
-                                imageVector = Icons.Outlined.Save, contentDescription = "Save"
-                            )
-                        }
-                    }
+                if (noteState.id == null) IconButton(
+                    onClick = {
+                        if (sharedViewModel.titleState.text.isBlank() && sharedViewModel.contentState.text.isBlank()) Toast.makeText(
+                            context, context.getString(R.string.empty_note), Toast.LENGTH_SHORT
+                        ).show()
+                        else sharedViewModel.onNoteEvent(NoteEvent.Save)
+                    }) {
+                    Icon(
+                        imageVector = Icons.Outlined.Save, contentDescription = "Save"
+                    )
+                }
+
+                if (!isReadView) IconButton(onClick = { isSearching = !isSearching }) {
+                    Icon(
+                        imageVector = if (isSearching) Icons.Outlined.SearchOff
+                        else Icons.Outlined.Search, contentDescription = "Search"
+                    )
+                }
 
                 TooltipBox(
                     positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
@@ -398,7 +404,10 @@ fun NoteScreen(
                     )
                 }
 
-                DropdownMenu(expanded = showMenu, onDismissRequest = { showMenu = false }) {
+                DropdownMenu(
+                    expanded = showMenu,
+                    offset = DpOffset(if (noteState.isStandard) 64.dp else 8.dp, 0.dp),
+                    onDismissRequest = { showMenu = false }) {
 
                     DropdownMenuItem(leadingIcon = {
                         Icon(
@@ -478,6 +487,7 @@ fun NoteScreen(
                     onEdit = { sharedViewModel.onNoteEvent(NoteEvent.Edit(it)) },
                     onScanButtonClick = onScanTextClick,
                     onTableButtonClick = { showTableDialog = true },
+                    onListButtonClick = { showListDialog = true },
                     onTaskButtonClick = { showTaskDialog = true },
                     onLinkButtonClick = { showLinkDialog = true },
                     onImageButtonClick = {
@@ -495,91 +505,119 @@ fun NoteScreen(
                 .padding(paddingValues)
         ) {
 
-            // 标题文本
-            BasicTextField(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
-                    .onFocusChanged { isTitleFocused = it.isFocused },
-                state = sharedViewModel.titleState,
-                readOnly = isReadView,
-                lineLimits = TextFieldLineLimits.SingleLine,
-                textStyle = MaterialTheme.typography.headlineLarge.copy(color = MaterialTheme.colorScheme.onSurface),
-                cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
-                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-                decorator = { innerTextField ->
-                    Box {
-                        if (sharedViewModel.titleState.text.isEmpty()) {
-                            Text(
-                                text = stringResource(id = R.string.title),
-                                style = MaterialTheme.typography.headlineLarge.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
-                            )
-                        }
-                        innerTextField()
+            AnimatedContent(targetState = isSearching, contentAlignment = Alignment.TopCenter) {
+                if (it) FindAndReplaceField(
+                    searchWord = searchWord,
+                    replaceWord = replaceWord,
+                    matchCount = matchCount,
+                    onSearchWordChange = { searchWord = it },
+                    onReplaceWordChange = { replaceWord = it },
+                    replaceFirst = {
+                        sharedViewModel.replaceFirstSearchWordByReplaceWord(
+                            searchWord, replaceWord
+                        )
+                    },
+                    replaceAll = {
+                        sharedViewModel.replaceSearchWordByReplaceWord(
+                            searchWord, replaceWord
+                        )
+                    })
+                else Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(64.dp)
+                        .padding(horizontal = 16.dp)
+                ) {
+                    // 标题文本
+                    BasicTextField(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .onFocusChanged { isTitleFocused = it.isFocused },
+                        state = sharedViewModel.titleState,
+                        readOnly = isReadView,
+                        lineLimits = TextFieldLineLimits.SingleLine,
+                        textStyle = MaterialTheme.typography.headlineLarge.copy(color = MaterialTheme.colorScheme.onSurface),
+                        cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                        decorator = { innerTextField ->
+                            Box {
+                                if (sharedViewModel.titleState.text.isEmpty()) {
+                                    Text(
+                                        text = stringResource(id = R.string.title),
+                                        style = MaterialTheme.typography.headlineLarge.copy(
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    )
+                                }
+                                innerTextField()
+                            }
+                        })
+
+                    // 笔记信息
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+
+                        Text(
+                            text = """${stringResource(R.string.edited)}$timestamp""",
+                            style = MaterialTheme.typography.titleSmall.copy(
+                                lineHeightStyle = LineHeightStyle(
+                                    trim = LineHeightStyle.Trim.None,
+                                    alignment = LineHeightStyle.Alignment.Proportional
+                                )
+                            ),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+
+                        Text(
+                            text = if (noteState.isStandard) stringResource(R.string.standard_mode) else stringResource(
+                                R.string.lite_mode
+                            ),
+                            style = MaterialTheme.typography.titleSmall.copy(
+                                lineHeightStyle = LineHeightStyle(
+                                    trim = LineHeightStyle.Trim.None,
+                                    alignment = LineHeightStyle.Alignment.Proportional
+                                )
+                            ),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
                     }
-                })
-
-            // 笔记信息
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 4.dp, horizontal = 16.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-
-                Text(
-                    text = """${stringResource(R.string.edited)}$timestamp""",
-                    style = MaterialTheme.typography.titleSmall.copy(
-                        lineHeightStyle = LineHeightStyle(
-                            trim = LineHeightStyle.Trim.None,
-                            alignment = LineHeightStyle.Alignment.Proportional
-                        )
-                    ),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-
-                Text(
-                    text = if (noteState.isStandard) stringResource(R.string.standard_mode) else stringResource(
-                        R.string.lite_mode
-                    ),
-                    style = MaterialTheme.typography.titleSmall.copy(
-                        lineHeightStyle = LineHeightStyle(
-                            trim = LineHeightStyle.Trim.None,
-                            alignment = LineHeightStyle.Alignment.Proportional
-                        )
-                    ),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+                }
             }
 
-            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp, horizontal = 16.dp))
+            HorizontalDivider(
+                modifier = Modifier
+                    .padding(horizontal = 16.dp)
+                    .padding(bottom = 8.dp)
+            )
 
             /*-------------------------------------------------*/
 
-            if (!noteState.isStandard) {
-                LiteTextField(
-                    modifier = Modifier.fillMaxSize(),
-                    readMode = isReadView,
-                    content = sharedViewModel.contentState.text.toString(),
-                    onTextChange = {
-                        sharedViewModel.onNoteEvent(
-                            NoteEvent.Edit(
-                                Constants.Editor.NEW_TEXT, it
-                            )
+            if (!noteState.isStandard) LiteTextField(
+                modifier = Modifier.fillMaxSize(),
+                readMode = isReadView,
+                content = sharedViewModel.contentState.text.toString(),
+                searchWord = searchWord,
+                onTextChange = {
+                    sharedViewModel.onNoteEvent(
+                        NoteEvent.Edit(
+                            Constants.Editor.NEW_TEXT, it
                         )
-                    },
-                    onFocusChanged = { isContentFocused = it },
-                    onPreviewButtonClick = { isReadView = !isReadView },
-                    onScanButtonClick = onScanTextClick
-                )
-            } else {
+                    )
+                },
+                onFocusChanged = { isContentFocused = it },
+                onScanButtonClick = onScanTextClick
+            )
+            else {
+
+                val scrollState = rememberScrollState()
 
                 if (isLargeScreen) {
 
                     var textFieldWeight by remember { mutableFloatStateOf(0.5f) }
                     val windowWidth = currentWindowSize().width.toFloat()
-                    val scrollState = rememberScrollState()
 
                     Row(
                         modifier = Modifier
@@ -594,11 +632,12 @@ fun NoteScreen(
                             readMode = isReadView,
                             state = sharedViewModel.contentState,
                             scrollState = scrollState,
+                            searchWord = searchWord,
                             onScanButtonClick = onScanTextClick,
                             onTableButtonClick = { showTableDialog = true },
+                            onListButtonClick = { showListDialog = true },
                             onTaskButtonClick = { showTaskDialog = true },
                             onLinkButtonClick = { showLinkDialog = true },
-                            onPreviewButtonClick = { isReadView = !isReadView },
                             onImageButtonClick = {
                                 photoPicker.launch(
                                     PickVisualMediaRequest(
@@ -637,48 +676,44 @@ fun NoteScreen(
                             scrollSynchronized = isEditorAndPreviewSynced
                         )
                     }
-                } else {
-
-                    val scrollState = rememberScrollState()
-
-                    HorizontalPager(
-                        state = pagerState,
-                        beyondViewportPageCount = 1,
-                        userScrollEnabled = false,
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(horizontal = 16.dp)
-                    ) { page: Int ->
-                        when (page) {
-                            0 -> {
-                                StandardTextField(
-                                    modifier = Modifier.fillMaxSize(),
-                                    state = sharedViewModel.contentState,
-                                    readMode = isReadView,
-                                    scrollState = scrollState,
-                                    onScanButtonClick = onScanTextClick,
-                                    onTableButtonClick = { showTableDialog = true },
-                                    onTaskButtonClick = { showTaskDialog = true },
-                                    onLinkButtonClick = { showLinkDialog = true },
-                                    onPreviewButtonClick = { isReadView = !isReadView },
-                                    onImageButtonClick = {
-                                        photoPicker.launch(
-                                            PickVisualMediaRequest(
-                                                ActivityResultContracts.PickVisualMedia.ImageOnly
-                                            )
+                } else HorizontalPager(
+                    state = pagerState,
+                    beyondViewportPageCount = 1,
+                    userScrollEnabled = false,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 16.dp)
+                ) { page: Int ->
+                    when (page) {
+                        0 -> {
+                            StandardTextField(
+                                modifier = Modifier.fillMaxSize(),
+                                state = sharedViewModel.contentState,
+                                readMode = isReadView,
+                                scrollState = scrollState,
+                                searchWord = searchWord,
+                                onScanButtonClick = onScanTextClick,
+                                onTableButtonClick = { showTableDialog = true },
+                                onListButtonClick = { showListDialog = true },
+                                onTaskButtonClick = { showTaskDialog = true },
+                                onLinkButtonClick = { showLinkDialog = true },
+                                onImageButtonClick = {
+                                    photoPicker.launch(
+                                        PickVisualMediaRequest(
+                                            ActivityResultContracts.PickVisualMedia.ImageOnly
                                         )
-                                    },
-                                    onFocusChanged = { isContentFocused = it })
-                            }
+                                    )
+                                },
+                                onFocusChanged = { isContentFocused = it })
+                        }
 
-                            1 -> {
-                                ReadView(
-                                    modifier = Modifier.fillMaxSize(),
-                                    html = html,
-                                    scrollSynchronized = isEditorAndPreviewSynced,
-                                    scrollState = scrollState
-                                )
-                            }
+                        1 -> {
+                            ReadView(
+                                modifier = Modifier.fillMaxSize(),
+                                html = html,
+                                scrollSynchronized = isEditorAndPreviewSynced,
+                                scrollState = scrollState
+                            )
                         }
                     }
                 }
@@ -704,8 +739,21 @@ fun NoteScreen(
     }
 
     if (showShareDialog) {
+        val clipboardManager = LocalClipboardManager.current
         ShareDialog(onDismissRequest = { showShareDialog = false }, onConfirm = {
             when (it) {
+                ShareType.COPY -> {
+                    val clipData = ClipData.newPlainText(
+                        "Markdown", sharedViewModel.contentState.text.toString()
+                    )
+                    val clipEntry = ClipEntry(clipData)
+                    clipboardManager.setClip(clipEntry)
+                    // Only show a toast for Android 12 and lower.
+                    if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.S_V2) Toast.makeText(
+                        context, "Markdown 📋", Toast.LENGTH_SHORT
+                    ).show()
+                }
+
                 ShareType.TEXT -> {
                     val sendIntent: Intent = Intent().apply {
                         action = Intent.ACTION_SEND
@@ -748,7 +796,17 @@ fun NoteScreen(
 
     if (showTableDialog) {
         TableDialog(onDismissRequest = { showTableDialog = false }) { row, column ->
-            sharedViewModel.addTable(row, column)
+            sharedViewModel.onNoteEvent(NoteEvent.Edit(Constants.Editor.TABLE, "$row,$column"))
+        }
+    }
+
+    if (showListDialog) {
+        ListDialog(onDismissRequest = { showListDialog = false }) {
+            sharedViewModel.onNoteEvent(
+                NoteEvent.Edit(
+                    Constants.Editor.LIST, it.fastJoinToString(separator = "\n")
+                )
+            )
         }
     }
 

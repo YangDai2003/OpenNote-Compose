@@ -26,8 +26,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.yangdai.opennote.R
-import com.yangdai.opennote.presentation.component.LoginButton
-import com.yangdai.opennote.presentation.component.LogoText
+import com.yangdai.opennote.presentation.component.login.LoginButton
+import com.yangdai.opennote.presentation.component.login.LogoText
 import com.yangdai.opennote.presentation.util.BiometricPromptManager
 
 @Composable

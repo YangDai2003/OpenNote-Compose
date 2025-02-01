@@ -1,4 +1,4 @@
-package com.yangdai.opennote.presentation.component
+package com.yangdai.opennote.presentation.component.login
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.CubicBezierEasing

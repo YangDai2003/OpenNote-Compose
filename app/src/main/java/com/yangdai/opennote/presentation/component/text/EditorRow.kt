@@ -12,6 +12,9 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.FormatIndentDecrease
+import androidx.compose.material.icons.automirrored.outlined.FormatIndentIncrease
+import androidx.compose.material.icons.automirrored.outlined.List
 import androidx.compose.material.icons.automirrored.outlined.Redo
 import androidx.compose.material.icons.automirrored.outlined.Undo
 import androidx.compose.material.icons.outlined.AddChart
@@ -35,7 +38,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.PlainTooltip
 import androidx.compose.material3.Text
@@ -49,7 +51,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -62,12 +63,9 @@ import com.yangdai.opennote.presentation.util.Constants
 @Composable
 fun RichTextEditorRowPreview() {
     RichTextEditorRow(
-        onTitle1Click = {},
-        onTitle2Click = {},
-        onTitle3Click = {},
-        onTitle4Click = {},
-        onTitle5Click = {},
-        onTitle6Click = {},
+        onTabIClick = {},
+        onTabDClick = {},
+        onHeaderClick = {},
         onBoldClick = {},
         onItalicClick = {},
         onUnderlineClick = {},
@@ -88,6 +86,7 @@ fun MarkdownEditorRowPreview() {
         onEdit = {},
         onTableButtonClick = {},
         onScanButtonClick = {},
+        onListButtonClick = {},
         onTaskButtonClick = {},
         onLinkButtonClick = {},
         onImageButtonClick = {}
@@ -131,68 +130,18 @@ fun IconButtonWithTooltip(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun SelectableButtonWithTooltip(
-    enabled: Boolean = true,
-    imageVector: ImageVector? = null,
-    painter: Int? = null,
-    contentDescription: String,
-    shortCutDescription: String? = null,
-    onClick: (Boolean) -> Unit
-) = TooltipBox(
-    positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
-    tooltip = {
-        if (shortCutDescription != null) {
-            PlainTooltip(
-                content = { Text(shortCutDescription) }
-            )
-        }
-    },
-    state = rememberTooltipState(),
-    focusable = false,
-    enableUserInput = true
-) {
-
-    var selected by rememberSaveable { mutableStateOf(false) }
-
-    IconButton(
-        onClick = {
-            onClick(selected)
-            selected = !selected
-        }, enabled = enabled, colors = IconButtonDefaults.iconButtonColors(
-            containerColor = if (selected) MaterialTheme.colorScheme.primaryContainer else Color.Unspecified
-        )
-    ) {
-        if (imageVector != null) {
-            Icon(
-                imageVector = imageVector,
-                contentDescription = contentDescription
-            )
-        } else {
-            Icon(
-                painter = painterResource(id = painter!!),
-                contentDescription = contentDescription
-            )
-        }
-    }
-}
-
 @Composable
 fun RichTextEditorRow(
-    onTitle1Click: (Boolean) -> Unit,
-    onTitle2Click: (Boolean) -> Unit,
-    onTitle3Click: (Boolean) -> Unit,
-    onTitle4Click: (Boolean) -> Unit,
-    onTitle5Click: (Boolean) -> Unit,
-    onTitle6Click: (Boolean) -> Unit,
-    onBoldClick: (Boolean) -> Unit,
-    onItalicClick: (Boolean) -> Unit,
-    onUnderlineClick: (Boolean) -> Unit,
-    onStrikeThroughClick: (Boolean) -> Unit,
-    onCodeClick: (Boolean) -> Unit,
-    onBracketsClick: (Boolean) -> Unit,
-    onBracesClick: (Boolean) -> Unit,
+    onTabIClick: () -> Unit,
+    onTabDClick: () -> Unit,
+    onHeaderClick: (Int) -> Unit,
+    onBoldClick: () -> Unit,
+    onItalicClick: () -> Unit,
+    onUnderlineClick: () -> Unit,
+    onStrikeThroughClick: () -> Unit,
+    onCodeClick: () -> Unit,
+    onBracketsClick: () -> Unit,
+    onBracesClick: () -> Unit,
     onScanButtonClick: () -> Unit
 ) {
 
@@ -231,94 +180,106 @@ fun RichTextEditorRow(
                     horizontalArrangement = Arrangement.Start
                 ) {
 
-                    SelectableButtonWithTooltip(
+                    IconButtonWithTooltip(
                         painter = R.drawable.format_h1,
                         contentDescription = "H1",
                         shortCutDescription = "Ctrl + 1",
-                        onClick = onTitle1Click
+                        onClick = { onHeaderClick(1) }
                     )
 
-                    SelectableButtonWithTooltip(
+                    IconButtonWithTooltip(
                         painter = R.drawable.format_h2,
                         contentDescription = "H2",
                         shortCutDescription = "Ctrl + 2",
-                        onClick = onTitle2Click
+                        onClick = { onHeaderClick(2) }
                     )
 
-                    SelectableButtonWithTooltip(
+                    IconButtonWithTooltip(
                         painter = R.drawable.format_h3,
                         contentDescription = "H3",
                         shortCutDescription = "Ctrl + 3",
-                        onClick = onTitle3Click
+                        onClick = { onHeaderClick(3) }
                     )
 
-                    SelectableButtonWithTooltip(
+                    IconButtonWithTooltip(
                         painter = R.drawable.format_h4,
                         contentDescription = "H4",
                         shortCutDescription = "Ctrl + 4",
-                        onClick = onTitle4Click
+                        onClick = { onHeaderClick(4) }
                     )
 
-                    SelectableButtonWithTooltip(
+                    IconButtonWithTooltip(
                         painter = R.drawable.format_h5,
                         contentDescription = "H5",
                         shortCutDescription = "Ctrl + 5",
-                        onClick = onTitle5Click
+                        onClick = { onHeaderClick(5) }
                     )
 
-                    SelectableButtonWithTooltip(
+                    IconButtonWithTooltip(
                         painter = R.drawable.format_h6,
                         contentDescription = "H6",
                         shortCutDescription = "Ctrl + 6",
-                        onClick = onTitle6Click
+                        onClick = { onHeaderClick(6) }
                     )
                 }
             }
 
-            SelectableButtonWithTooltip(
+            IconButtonWithTooltip(
                 imageVector = Icons.Outlined.FormatBold,
                 contentDescription = stringResource(id = R.string.bold),
                 shortCutDescription = "Ctrl + B",
                 onClick = onBoldClick
             )
-            SelectableButtonWithTooltip(
+            IconButtonWithTooltip(
                 imageVector = Icons.Outlined.FormatItalic,
                 contentDescription = stringResource(id = R.string.italic),
                 shortCutDescription = "Ctrl + I",
                 onClick = onItalicClick
             )
 
-            SelectableButtonWithTooltip(
+            IconButtonWithTooltip(
                 imageVector = Icons.Outlined.FormatUnderlined,
                 contentDescription = stringResource(id = R.string.underline),
                 shortCutDescription = "Ctrl + U",
                 onClick = onUnderlineClick
             )
 
-            SelectableButtonWithTooltip(
+            IconButtonWithTooltip(
                 imageVector = Icons.Outlined.FormatStrikethrough,
                 contentDescription = stringResource(id = R.string.strikethrough),
                 shortCutDescription = "Ctrl + D",
                 onClick = onStrikeThroughClick
             )
 
-            SelectableButtonWithTooltip(
+            IconButtonWithTooltip(
                 imageVector = Icons.Outlined.Code,
                 contentDescription = stringResource(id = R.string.code),
                 shortCutDescription = "Ctrl + Shift + K",
                 onClick = onCodeClick
             )
 
-            SelectableButtonWithTooltip(
+            IconButtonWithTooltip(
                 imageVector = Icons.Outlined.DataArray,
                 contentDescription = "Brackets",
                 onClick = onBracketsClick
             )
 
-            SelectableButtonWithTooltip(
+            IconButtonWithTooltip(
                 imageVector = Icons.Outlined.DataObject,
                 contentDescription = "Braces",
                 onClick = onBracesClick
+            )
+
+            IconButtonWithTooltip(
+                imageVector = Icons.AutoMirrored.Outlined.FormatIndentIncrease,
+                contentDescription = "Tab+",
+                onClick = onTabIClick
+            )
+
+            IconButtonWithTooltip(
+                imageVector = Icons.AutoMirrored.Outlined.FormatIndentDecrease,
+                contentDescription = "Tab-",
+                onClick = onTabDClick
             )
 
             IconButtonWithTooltip(
@@ -337,6 +298,7 @@ fun MarkdownEditorRow(
     onEdit: (String) -> Unit,
     onTableButtonClick: () -> Unit,
     onScanButtonClick: () -> Unit,
+    onListButtonClick: () -> Unit,
     onTaskButtonClick: () -> Unit,
     onLinkButtonClick: () -> Unit,
     onImageButtonClick: () -> Unit
@@ -381,7 +343,6 @@ fun MarkdownEditorRow(
             ) {
                 onEdit(Constants.Editor.REDO)
             }
-
 
             IconButtonWithTooltip(
                 imageVector = Icons.Outlined.Title,
@@ -510,6 +471,20 @@ fun MarkdownEditorRow(
             }
 
             IconButtonWithTooltip(
+                imageVector = Icons.AutoMirrored.Outlined.FormatIndentIncrease,
+                contentDescription = "Tab"
+            ) {
+                onEdit(Constants.Editor.TAB)
+            }
+
+            IconButtonWithTooltip(
+                imageVector = Icons.AutoMirrored.Outlined.FormatIndentDecrease,
+                contentDescription = "unTab"
+            ) {
+                onEdit(Constants.Editor.UN_TAB)
+            }
+
+            IconButtonWithTooltip(
                 painter = R.drawable.function,
                 contentDescription = stringResource(id = R.string.math),
                 shortCutDescription = "Ctrl + Shift + M"
@@ -547,6 +522,13 @@ fun MarkdownEditorRow(
             ) {
                 onEdit(Constants.Editor.DIAGRAM)
             }
+
+            IconButtonWithTooltip(
+                imageVector = Icons.AutoMirrored.Outlined.List,
+                contentDescription = stringResource(id = R.string.list),
+                shortCutDescription = "Ctrl + Shift + L",
+                onClick = onListButtonClick
+            )
 
             IconButtonWithTooltip(
                 imageVector = Icons.Outlined.CheckBox,

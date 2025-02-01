@@ -9,6 +9,7 @@ import androidx.compose.foundation.gestures.rememberTransformableState
 import androidx.compose.foundation.gestures.transformable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Download
@@ -35,6 +36,7 @@ import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.core.net.toUri
@@ -70,7 +72,6 @@ fun ZoomableImage(
         rotation += rotationChange
     }
 
-
     Image(
         painter = painter,
         contentDescription = contentDescription,
@@ -86,11 +87,10 @@ fun ZoomableImage(
             .onSizeChanged { imageSize = Size(it.width.toFloat(), it.height.toFloat()) }
             .fillMaxSize()
     )
-
 }
 
 @Composable
-fun NetworkImageDialog(
+fun FullscreenImageDialog(
     imageUrl: String,
     onDismiss: () -> Unit
 ) {
@@ -126,7 +126,8 @@ fun NetworkImageDialog(
                     if (!state.isLocalFile) {
                         FilledTonalIconButton(
                             modifier = Modifier
-                                .align(Alignment.TopEnd),
+                                .align(Alignment.TopEnd)
+                                .padding(end = 16.dp),
                             onClick = {
                                 downloadImage(context.applicationContext, imageUrl)
                             }
@@ -143,7 +144,6 @@ fun NetworkImageDialog(
                         painter = rememberImagePainter(File(state.imagePath)),
                         contentDescription = null
                     )
-
                 }
 
                 is ImageState.Error -> onDismiss()
@@ -156,6 +156,7 @@ fun NetworkImageDialog(
                 onClick = onDismiss,
                 modifier = Modifier
                     .align(Alignment.TopStart)
+                    .padding(start = 16.dp)
             ) {
                 Icon(
                     imageVector = Icons.Default.Close,

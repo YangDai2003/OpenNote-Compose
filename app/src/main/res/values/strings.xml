@@ -116,8 +116,11 @@
     <string name="default_editing_mode_for_note">The default editing mode a new note will start with.</string>
     <string name="editing_view">Editing view</string>
     <string name="reading_view">Reading view</string>
-    <string name="donate">Donate</string>
+    <string name="sponsor">Sponsor</string>
     <string name="notes">" notes"</string>
     <string name="note">" note"</string>
     <string name="image">Image</string>
+    <string name="list">List</string>
+    <string name="find">Find</string>
+    <string name="replace">Replace</string>
 </resources>

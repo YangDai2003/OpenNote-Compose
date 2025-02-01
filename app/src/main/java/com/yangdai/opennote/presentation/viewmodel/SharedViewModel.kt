@@ -32,6 +32,7 @@ import com.yangdai.opennote.presentation.component.dialog.ExportType
 import com.yangdai.opennote.presentation.component.dialog.TaskItem
 import com.yangdai.opennote.presentation.component.text.add
 import com.yangdai.opennote.presentation.component.text.addHeader
+import com.yangdai.opennote.presentation.component.text.addInNewLine
 import com.yangdai.opennote.presentation.component.text.addMermaid
 import com.yangdai.opennote.presentation.component.text.addRule
 import com.yangdai.opennote.presentation.component.text.addTable
@@ -45,6 +46,8 @@ import com.yangdai.opennote.presentation.component.text.italic
 import com.yangdai.opennote.presentation.component.text.mark
 import com.yangdai.opennote.presentation.component.text.quote
 import com.yangdai.opennote.presentation.component.text.strikeThrough
+import com.yangdai.opennote.presentation.component.text.tab
+import com.yangdai.opennote.presentation.component.text.unTab
 import com.yangdai.opennote.presentation.component.text.underline
 import com.yangdai.opennote.presentation.event.DatabaseEvent
 import com.yangdai.opennote.presentation.event.FolderEvent
@@ -395,14 +398,30 @@ class SharedViewModel @Inject constructor(
         }.launchIn(viewModelScope)
     }
 
-    fun addTable(row: Int, column: Int) {
-        contentState.edit { addTable(row, column) }
-    }
-
     fun addTasks(taskList: List<TaskItem>) {
         taskList.forEach {
             contentState.edit { addTask(it.task, it.checked) }
         }
+    }
+
+    fun replaceFirstSearchWordByReplaceWord(searchWord: String, replaceWord: String) {
+        if (searchWord.isBlank()) return
+        val currentText = contentState.text
+        val startIndex = currentText.indexOf(searchWord, ignoreCase = false)
+
+        if (startIndex != -1) {
+            val endIndex = startIndex + searchWord.length
+            contentState.edit {
+                replace(startIndex, endIndex, replaceWord)
+            }
+        }
+    }
+
+    fun replaceSearchWordByReplaceWord(searchWord: String, replaceWord: String) {
+        if (searchWord.isBlank()) return
+        val currentText = contentState.text.toString()
+        val newText = currentText.replace(searchWord, replaceWord, ignoreCase = false)
+        contentState.setTextAndPlaceCursorAtEnd(newText)
     }
 
     @OptIn(ExperimentalFoundationApi::class)
@@ -481,8 +500,20 @@ class SharedViewModel @Inject constructor(
                     Constants.Editor.INLINE_BRACES -> contentState.edit { inlineBraces() }
                     Constants.Editor.INLINE_MATH -> contentState.edit { inlineMath() }
                     Constants.Editor.QUOTE -> contentState.edit { quote() }
+                    Constants.Editor.TAB -> contentState.edit { tab() }
+                    Constants.Editor.UN_TAB -> contentState.edit { unTab() }
                     Constants.Editor.RULE -> contentState.edit { addRule() }
                     Constants.Editor.DIAGRAM -> contentState.edit { addMermaid() }
+                    Constants.Editor.TABLE -> contentState.edit {
+                        addTable(
+                            event.value.substringBefore(
+                                ",",
+                                "1"
+                            ).toInt(), event.value.substringAfter(",", "1").toInt()
+                        )
+                    }
+
+                    Constants.Editor.LIST -> contentState.edit { addInNewLine(event.value) }
                     Constants.Editor.TEXT -> contentState.edit { add(event.value) }
                     Constants.Editor.TITLE -> titleState.edit { add(event.value) }
                     Constants.Editor.NEW_TEXT -> contentState.setTextAndPlaceCursorAtEnd(event.value)
@@ -542,6 +573,7 @@ class SharedViewModel @Inject constructor(
         dataActionJob?.cancel()
         _dataActionState.value = DataActionState()
     }
+
     fun startDataAction(infinite: Boolean = false) {
         cancelDataAction()
         _dataActionState.update { it.copy(loading = true, infinite = infinite) }
@@ -589,9 +621,9 @@ class SharedViewModel @Inject constructor(
                         }
 
                         val timestamp = System.currentTimeMillis()
-                        val fileName = getFileName(contentResolver, uri)?.substringBeforeLast(".") +
-                                "_" + timestamp + "." +
-                                getFileName(contentResolver, uri)?.substringAfterLast(".")
+                        val name = getFileName(contentResolver, uri)
+                        val fileName = name?.substringBeforeLast(".") +
+                                "_" + timestamp + "." + name?.substringAfterLast(".")
 
                         val downloadsDir = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                             Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
@@ -601,11 +633,12 @@ class SharedViewModel @Inject constructor(
                         }
 
                         // 创建OpenNote/Images目录结构
-                        val openNoteImagesDir = File(downloadsDir, Constants.File.OPENNOTE_IMAGES).apply {
-                            if (!exists()) {
-                                mkdirs()
+                        val openNoteImagesDir =
+                            File(downloadsDir, Constants.File.OPENNOTE_IMAGES).apply {
+                                if (!exists()) {
+                                    mkdirs()
+                                }
                             }
-                        }
 
                         val file = File(openNoteImagesDir, fileName)
 

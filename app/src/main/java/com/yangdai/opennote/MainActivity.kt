@@ -92,6 +92,10 @@ class MainActivity : AppCompatActivity() {
 
 
                 KeyboardShortcutInfo(
+                    getString(R.string.list),
+                    KeyEvent.KEYCODE_L,
+                    KeyEvent.META_CTRL_ON or KeyEvent.META_SHIFT_ON
+                ), KeyboardShortcutInfo(
                     getString(R.string.scan),
                     KeyEvent.KEYCODE_S,
                     KeyEvent.META_CTRL_ON or KeyEvent.META_SHIFT_ON

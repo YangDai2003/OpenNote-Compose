@@ -17,8 +17,8 @@ android {
         applicationId = "com.yangdai.opennote"
         minSdk = 29
         targetSdk = 35
-        versionCode = 143
-        versionName = "1.4.3"
+        versionCode = 145
+        versionName = "1.4.5"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -30,7 +30,7 @@ android {
         abi {
             isEnable = true
             reset()
-            include("x86", "x86_64", "armeabi-v7a", "arm64-v8a")
+            include("armeabi-v7a", "arm64-v8a")
             isUniversalApk = true
         }
     }

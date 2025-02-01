@@ -3,6 +3,7 @@ package com.yangdai.opennote.presentation.component.text
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.ParagraphStyle
+import androidx.compose.ui.text.PlatformParagraphStyle
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontFamily
@@ -17,7 +18,8 @@ import androidx.compose.ui.text.style.TextIndent
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.sp
 
-class LiteTextVisualTransformation(private val readMode: Boolean) : VisualTransformation {
+class LiteTextVisualTransformation(private val readMode: Boolean, private val searchWord: String) :
+    VisualTransformation {
 
     // 缓存找到的范围结果
     private data class StyleRanges(
@@ -26,12 +28,18 @@ class LiteTextVisualTransformation(private val readMode: Boolean) : VisualTransf
         val italicRanges: List<IntRange>,
         val strikethroughRanges: List<IntRange>,
         val underlineRanges: List<IntRange>,
-        val headerRanges: List<Pair<IntRange, Int>>
+        val headerRanges: List<Pair<IntRange, Int>>,
+        val searchWordRanges: List<IntRange>
     ) {
         companion object {
             val EMPTY = StyleRanges(
-                emptyList(), emptyList(), emptyList(),
-                emptyList(), emptyList(), emptyList()
+                emptyList(),
+                emptyList(),
+                emptyList(),
+                emptyList(),
+                emptyList(),
+                emptyList(),
+                emptyList()
             )
         }
     }
@@ -43,6 +51,7 @@ class LiteTextVisualTransformation(private val readMode: Boolean) : VisualTransf
         val annotatedString = buildAnnotatedString {
             applyTextStyles(styleRanges)
             applySymbols(styleRanges, readMode)
+            applySearchWordStyle(styleRanges.searchWordRanges)
             append(text)
         }
 
@@ -52,28 +61,25 @@ class LiteTextVisualTransformation(private val readMode: Boolean) : VisualTransf
     }
 
     private fun findAllRanges(text: AnnotatedString): StyleRanges {
-
         if (text.isEmpty()) return StyleRanges.EMPTY
 
-        val codeRanges = CODE_REGEX.findAll(text).map { it.range }.toList()
+        val codeRanges = REGEX_PATTERNS[StyleType.CODE]!!.findAll(text).map { it.range }.toList()
 
-        val boldRanges = BOLD_REGEX.findAll(text).map { it.range }
-            .filterNot { range -> codeRanges.any { it.overlaps(range) } }.toList()
-
-        val italicRanges = ITALIC_REGEX.findAll(text).map { it.range }
-            .filterNot { range -> codeRanges.any { it.overlaps(range) } }.toList()
-
-        val strikethroughRanges = STRIKETHROUGH_REGEX.findAll(text).map { it.range }
-            .filterNot { range -> codeRanges.any { it.overlaps(range) } }.toList()
-
-        val underlineRanges = UNDERLINE_REGEX.findAll(text).map { it.range }
-            .filterNot { range -> codeRanges.any { it.overlaps(range) } }.toList()
-
-        val headerRanges = HEADER_REGEX.findAll(text)
-            .map { it.range to it.groupValues[1].length }.toList()
+        fun findNonCodeRanges(pattern: Regex) = pattern.findAll(text)
+            .map { it.range }
+            .filterNot { range -> codeRanges.any { it.overlaps(range) } }
+            .toList()
 
         return StyleRanges(
-            codeRanges, boldRanges, italicRanges, strikethroughRanges, underlineRanges, headerRanges
+            codeRanges = codeRanges,
+            boldRanges = findNonCodeRanges(REGEX_PATTERNS[StyleType.BOLD]!!),
+            italicRanges = findNonCodeRanges(REGEX_PATTERNS[StyleType.ITALIC]!!),
+            strikethroughRanges = findNonCodeRanges(REGEX_PATTERNS[StyleType.STRIKETHROUGH]!!),
+            underlineRanges = findNonCodeRanges(REGEX_PATTERNS[StyleType.UNDERLINE]!!),
+            headerRanges = REGEX_PATTERNS[StyleType.HEADER]!!.findAll(text)
+                .map { it.range to it.groupValues[1].length }
+                .toList(),
+            searchWordRanges = findSearchWordRanges(text.text)
         )
     }
 
@@ -150,18 +156,41 @@ class LiteTextVisualTransformation(private val readMode: Boolean) : VisualTransf
         }
     }
 
+    private fun AnnotatedString.Builder.applySearchWordStyle(ranges: List<IntRange>) {
+        ranges.forEach { range ->
+            addStyle(SEARCH_WORD_STYLE, range.first, range.last + 1)
+        }
+    }
+
     private fun IntRange.overlaps(other: IntRange): Boolean {
         return this.first <= other.last && other.first <= this.last
     }
 
+    private fun findSearchWordRanges(text: String): List<IntRange> {
+        if (searchWord.isBlank()) return emptyList()
+        val ranges = mutableListOf<IntRange>()
+        var index = text.indexOf(searchWord, ignoreCase = false)
+        while (index >= 0) {
+            ranges.add(index until index + searchWord.length)
+            index = text.indexOf(searchWord, index + 1, ignoreCase = false)
+        }
+        return ranges
+    }
+
+    private enum class StyleType {
+        CODE, BOLD, ITALIC, STRIKETHROUGH, UNDERLINE, HEADER
+    }
+
     companion object {
         // 正则表达式
-        private val BOLD_REGEX = """\*\*(?!\s*\*\*)\s*\S[\s\S]*?\*\*""".toRegex()
-        private val ITALIC_REGEX = """_(?!\s*_)\s*\S[\s\S]*?_""".toRegex()
-        private val STRIKETHROUGH_REGEX = """~~(?!\s*~~)\s*\S[\s\S]*?~~""".toRegex()
-        private val UNDERLINE_REGEX = """\+\+(?!\s*\+\+)\s*\S[\s\S]*?\+\+""".toRegex()
-        private val CODE_REGEX = "`.+?`".toRegex(RegexOption.DOT_MATCHES_ALL)
-        private val HEADER_REGEX = "^(#{1,6})\\s+\\S.*\n".toRegex(RegexOption.MULTILINE)
+        private val REGEX_PATTERNS = mapOf(
+            StyleType.BOLD to """\*\*(?!\s*\*\*)\s*\S[\s\S]*?\*\*""".toRegex(),
+            StyleType.ITALIC to """_(?!\s*_)\s*\S[\s\S]*?_""".toRegex(),
+            StyleType.STRIKETHROUGH to """~~(?!\s*~~)\s*\S[\s\S]*?~~""".toRegex(),
+            StyleType.UNDERLINE to """\+\+(?!\s*\+\+)\s*\S[\s\S]*?\+\+""".toRegex(),
+            StyleType.CODE to "`.+?`".toRegex(RegexOption.DOT_MATCHES_ALL),
+            StyleType.HEADER to "^(#{1,6})\\s+\\S.*\n".toRegex(RegexOption.MULTILINE)
+        )
 
         // 语法符号样式定义
         private val SYMBOL_STYLE = SpanStyle(
@@ -173,8 +202,10 @@ class LiteTextVisualTransformation(private val readMode: Boolean) : VisualTransf
             fontFamily = FontFamily.Default,
             background = Color.Transparent
         )
-        private val BOLD_STYLE = SpanStyle(fontWeight = FontWeight.Bold)
-        private val ITALIC_STYLE = SpanStyle(fontStyle = FontStyle.Italic)
+        private val BOLD_STYLE =
+            SpanStyle(fontWeight = FontWeight.Bold, fontSynthesis = FontSynthesis.Weight)
+        private val ITALIC_STYLE =
+            SpanStyle(fontStyle = FontStyle.Italic, fontSynthesis = FontSynthesis.Style)
         private val STRIKETHROUGH_STYLE = SpanStyle(textDecoration = TextDecoration.LineThrough)
         private val UNDERLINE_STYLE = SpanStyle(textDecoration = TextDecoration.Underline)
         private val STRIKETHROUGH_AND_UNDERLINE_STYLE =
@@ -182,14 +213,39 @@ class LiteTextVisualTransformation(private val readMode: Boolean) : VisualTransf
         private val CODE_STYLE = SpanStyle(
             fontFamily = FontFamily.Monospace, background = Color.LightGray.copy(alpha = 0.3f)
         )
+        private val SEARCH_WORD_STYLE = SpanStyle(background = Color.Cyan.copy(alpha = 0.5f))
 
         private val HEADER_LINE_STYLES = listOf(
-            ParagraphStyle(lineHeight = 26.sp, textIndent = TextIndent.None),
-            ParagraphStyle(lineHeight = 24.sp, textIndent = TextIndent.None),
-            ParagraphStyle(lineHeight = 22.sp, textIndent = TextIndent.None),
-            ParagraphStyle(lineHeight = 20.sp, textIndent = TextIndent.None),
-            ParagraphStyle(lineHeight = 20.sp, textIndent = TextIndent.None),
-            ParagraphStyle(lineHeight = 20.sp, textIndent = TextIndent.None)
+            ParagraphStyle(
+                lineHeight = 26.sp,
+                textIndent = TextIndent.None,
+                platformStyle = PlatformParagraphStyle(includeFontPadding = true)
+            ),
+            ParagraphStyle(
+                lineHeight = 24.sp,
+                textIndent = TextIndent.None,
+                platformStyle = PlatformParagraphStyle(includeFontPadding = true)
+            ),
+            ParagraphStyle(
+                lineHeight = 22.sp,
+                textIndent = TextIndent.None,
+                platformStyle = PlatformParagraphStyle(includeFontPadding = true)
+            ),
+            ParagraphStyle(
+                lineHeight = 20.sp,
+                textIndent = TextIndent.None,
+                platformStyle = PlatformParagraphStyle(includeFontPadding = true)
+            ),
+            ParagraphStyle(
+                lineHeight = 20.sp,
+                textIndent = TextIndent.None,
+                platformStyle = PlatformParagraphStyle(includeFontPadding = true)
+            ),
+            ParagraphStyle(
+                lineHeight = 20.sp,
+                textIndent = TextIndent.None,
+                platformStyle = PlatformParagraphStyle(includeFontPadding = true)
+            )
         )
 
         // 标题样式
@@ -203,9 +259,13 @@ class LiteTextVisualTransformation(private val readMode: Boolean) : VisualTransf
                 fontWeight = FontWeight.ExtraBold,
                 fontSynthesis = FontSynthesis.Weight
             ), SpanStyle(
-                fontSize = 24.sp, fontWeight = FontWeight.Bold, fontSynthesis = FontSynthesis.Weight
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Bold,
+                fontSynthesis = FontSynthesis.Weight
             ), SpanStyle(
-                fontSize = 20.sp, fontWeight = FontWeight.Bold, fontSynthesis = FontSynthesis.Weight
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold,
+                fontSynthesis = FontSynthesis.Weight
             ), SpanStyle(
                 fontSize = 16.sp,
                 fontWeight = FontWeight.SemiBold,

@@ -49,7 +49,11 @@ object Constants {
         const val INLINE_BRACES = "inlineBraces"
         const val INLINE_MATH = "inlineMath"
 
+        const val TABLE = "table"
+        const val LIST = "list"
         const val QUOTE = "quote"
+        const val TAB = "tab"
+        const val UN_TAB = "unTab"
         const val RULE = "rule"
         const val DIAGRAM = "diagram"
 

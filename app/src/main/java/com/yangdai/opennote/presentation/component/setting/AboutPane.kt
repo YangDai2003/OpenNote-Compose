@@ -202,7 +202,7 @@ fun AboutPane() {
             Icon(
                 imageVector = Icons.Outlined.AttachMoney, contentDescription = "Donate"
             )
-        }, headlineContent = { Text(text = stringResource(R.string.donate)) })
+        }, headlineContent = { Text(text = stringResource(R.string.sponsor)) })
     }
 
     if (showRatingDialog) {

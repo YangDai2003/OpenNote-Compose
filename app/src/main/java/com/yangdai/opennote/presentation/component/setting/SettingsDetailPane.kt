@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.HelpOutline
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -35,10 +36,22 @@ fun SettingsDetailPane(
     navigateBackToList: () -> Unit
 ) = Scaffold(
     topBar = {
+        val activity = LocalActivity.current
         if (currentWindowAdaptiveInfo().windowSizeClass.windowWidthSizeClass == WindowWidthSizeClass.EXPANDED)
             TopAppBar(
                 title = {
                     TopBarTitle(title = stringResource(selectedSettingsItem.titleId))
+                },
+                actions = {
+                    if (selectedSettingsItem.index == 4)
+                        IconButton(onClick = {
+                            activity?.requestShowKeyboardShortcuts()
+                        }) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Outlined.HelpOutline,
+                                contentDescription = "Helper"
+                            )
+                        }
                 },
                 colors = TopAppBarDefaults.largeTopAppBarColors()
                     .copy(scrolledContainerColor = TopAppBarDefaults.largeTopAppBarColors().containerColor)
@@ -59,6 +72,17 @@ fun SettingsDetailPane(
                 },
                 title = {
                     TopBarTitle(title = stringResource(selectedSettingsItem.titleId))
+                },
+                actions = {
+                    if (selectedSettingsItem.index == 4)
+                        IconButton(onClick = {
+                            activity?.requestShowKeyboardShortcuts()
+                        }) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Outlined.HelpOutline,
+                                contentDescription = "Helper"
+                            )
+                        }
                 },
                 colors = TopAppBarDefaults.largeTopAppBarColors()
                     .copy(scrolledContainerColor = TopAppBarDefaults.largeTopAppBarColors().containerColor)

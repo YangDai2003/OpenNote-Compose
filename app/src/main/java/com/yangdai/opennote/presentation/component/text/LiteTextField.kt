@@ -46,9 +46,9 @@ fun LiteTextField(
     modifier: Modifier = Modifier,
     readMode: Boolean = false,
     content: String,
+    searchWord: String,
     onTextChange: (String) -> Unit,
     onFocusChanged: (Boolean) -> Unit,
-    onPreviewButtonClick: () -> Unit,
     onScanButtonClick: () -> Unit
 ) {
 
@@ -84,110 +84,106 @@ fun LiteTextField(
     }
 
     Column(modifier = modifier) {
-        BasicTextField(modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp)
-            .weight(1f)
-            .contentReceiver(receiveContentListener)
-            .onFocusChanged { onFocusChanged(it.isFocused) }
-            .onPreviewKeyEvent { keyEvent ->
-                if (keyEvent.type == KeyEventType.KeyDown) {
-                    if (keyEvent.isCtrlPressed) {
-                        if (keyEvent.isShiftPressed) {
-                            when (keyEvent.key) {
-                                Key.K -> {
-                                    applyChange(textFieldValue.inlineCode())
-                                    true
-                                }
+        BasicTextField(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp)
+                .weight(1f)
+                .contentReceiver(receiveContentListener)
+                .onFocusChanged { onFocusChanged(it.isFocused) }
+                .onPreviewKeyEvent { keyEvent ->
+                    if (keyEvent.type == KeyEventType.KeyDown) {
+                        if (keyEvent.isCtrlPressed) {
+                            if (keyEvent.isShiftPressed) {
+                                when (keyEvent.key) {
+                                    Key.K -> {
+                                        applyChange(textFieldValue.inlineCode())
+                                        true
+                                    }
 
-                                else -> false
+                                    else -> false
+                                }
+                            } else {
+                                when (keyEvent.key) {
+                                    Key.B -> {
+                                        applyChange(textFieldValue.bold())
+                                        true
+                                    }
+
+                                    Key.I -> {
+                                        applyChange(textFieldValue.italic())
+                                        true
+                                    }
+
+                                    Key.U -> {
+                                        applyChange(textFieldValue.underline())
+                                        true
+                                    }
+
+                                    Key.S -> {
+                                        applyChange(textFieldValue.strikeThrough())
+                                        true
+                                    }
+
+                                    Key.NumPad1 -> {
+                                        applyChange(textFieldValue.header(1))
+                                        true
+                                    }
+
+                                    Key.NumPad2 -> {
+                                        applyChange(textFieldValue.header(2))
+                                        true
+                                    }
+
+                                    Key.NumPad3 -> {
+                                        applyChange(textFieldValue.header(3))
+                                        true
+                                    }
+
+                                    Key.NumPad4 -> {
+                                        applyChange(textFieldValue.header(4))
+                                        true
+                                    }
+
+                                    Key.NumPad5 -> {
+                                        applyChange(textFieldValue.header(5))
+                                        true
+                                    }
+
+                                    Key.NumPad6 -> {
+                                        applyChange(textFieldValue.header(6))
+                                        true
+                                    }
+
+                                    else -> false
+                                }
                             }
+
                         } else {
                             when (keyEvent.key) {
-                                Key.B -> {
-                                    applyChange(textFieldValue.bold())
+                                Key.DirectionLeft -> {
+                                    textFieldValue = textFieldValue.moveCursorLeft()
                                     true
                                 }
 
-                                Key.I -> {
-                                    applyChange(textFieldValue.italic())
-                                    true
-                                }
-
-                                Key.U -> {
-                                    applyChange(textFieldValue.underline())
-                                    true
-                                }
-
-                                Key.S -> {
-                                    applyChange(textFieldValue.strikeThrough())
-                                    true
-                                }
-
-                                Key.P -> {
-                                    onPreviewButtonClick()
-                                    true
-                                }
-
-                                Key.NumPad1 -> {
-                                    applyChange(textFieldValue.header(1))
-                                    true
-                                }
-
-                                Key.NumPad2 -> {
-                                    applyChange(textFieldValue.header(2))
-                                    true
-                                }
-
-                                Key.NumPad3 -> {
-                                    applyChange(textFieldValue.header(3))
-                                    true
-                                }
-
-                                Key.NumPad4 -> {
-                                    applyChange(textFieldValue.header(4))
-                                    true
-                                }
-
-                                Key.NumPad5 -> {
-                                    applyChange(textFieldValue.header(5))
-                                    true
-                                }
-
-                                Key.NumPad6 -> {
-                                    applyChange(textFieldValue.header(6))
+                                Key.DirectionRight -> {
+                                    textFieldValue = textFieldValue.moveCursorRight()
                                     true
                                 }
 
                                 else -> false
                             }
                         }
-
                     } else {
-                        when (keyEvent.key) {
-                            Key.DirectionLeft -> {
-                                textFieldValue = textFieldValue.moveCursorLeft()
-                                true
-                            }
-
-                            Key.DirectionRight -> {
-                                textFieldValue = textFieldValue.moveCursorRight()
-                                true
-                            }
-
-                            else -> false
-                        }
+                        false
                     }
-                } else {
-                    false
-                }
-            },
+                },
             value = textFieldValue,
             onValueChange = { newText ->
                 applyChange(newText)
             },
             readOnly = readMode,
-            visualTransformation = remember(readMode) { LiteTextVisualTransformation(readMode) },
+            visualTransformation = remember(readMode, searchWord) { LiteTextVisualTransformation(readMode, searchWord) },
             textStyle = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface),
             cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
             decorationBox = { innerTextField ->
@@ -202,36 +198,32 @@ fun LiteTextField(
                 }
             })
 
-        AnimatedVisibility(visible = !readMode,
+        AnimatedVisibility(
+            visible = !readMode,
             enter = slideInVertically { fullHeight -> fullHeight },
             exit = slideOutVertically { fullHeight -> fullHeight }) {
-            RichTextEditorRow(onTitle1Click = { selected ->
-                applyChange(textFieldValue.add(if (!selected) "# " else "\n"))
-            }, onTitle2Click = { selected ->
-                applyChange(textFieldValue.add(if (!selected) "## " else "\n"))
-            }, onTitle3Click = { selected ->
-                applyChange(textFieldValue.add(if (!selected) "### " else "\n"))
-            }, onTitle4Click = { selected ->
-                applyChange(textFieldValue.add(if (!selected) "#### " else "\n"))
-            }, onTitle5Click = { selected ->
-                applyChange(textFieldValue.add(if (!selected) "##### " else "\n"))
-            }, onTitle6Click = { selected ->
-                applyChange(textFieldValue.add(if (!selected) "###### " else "\n"))
-            }, onBoldClick = {
-                applyChange(textFieldValue.add("**"))
-            }, onItalicClick = {
-                applyChange(textFieldValue.add("_"))
-            }, onUnderlineClick = {
-                applyChange(textFieldValue.add("++"))
-            }, onStrikeThroughClick = {
-                applyChange(textFieldValue.add("~~"))
-            }, onCodeClick = {
-                applyChange(textFieldValue.add("`"))
-            }, onBracketsClick = { selected ->
-                applyChange(textFieldValue.add(if (!selected) "[" else "]"))
-            }, onBracesClick = { selected ->
-                applyChange(textFieldValue.add(if (!selected) "{" else "}"))
-            }, onScanButtonClick = onScanButtonClick
+            RichTextEditorRow(
+                onTabIClick = {
+                    applyChange(textFieldValue.tab())
+                }, onTabDClick = {
+                    applyChange(textFieldValue.unTab())
+                }, onHeaderClick = { level ->
+                    applyChange(textFieldValue.header(level))
+                }, onBoldClick = {
+                    applyChange(textFieldValue.bold())
+                }, onItalicClick = {
+                    applyChange(textFieldValue.italic())
+                }, onUnderlineClick = {
+                    applyChange(textFieldValue.underline())
+                }, onStrikeThroughClick = {
+                    applyChange(textFieldValue.strikeThrough())
+                }, onCodeClick = {
+                    applyChange(textFieldValue.inlineCode())
+                }, onBracketsClick = {
+                    applyChange(textFieldValue.brackets())
+                }, onBracesClick = {
+                    applyChange(textFieldValue.braces())
+                }, onScanButtonClick = onScanButtonClick
             )
         }
     }
