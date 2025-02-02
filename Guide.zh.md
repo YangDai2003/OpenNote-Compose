@@ -164,6 +164,13 @@ TXT、MD (Markdown) 和 HTML。
 
 |     元素     |      快捷键       |
 |:----------:|:--------------:|
+|     全选     |    `Ctrl+A`    |
+|     剪切     |    `Ctrl+X`    |
+|     复制     |    `Ctrl+C`    |
+|     粘贴     |    `Ctrl+V`    |
+|     撤回     |    `Ctrl+Z`    |
+|     重做     |    `Ctrl+Y`    |
+|   查找与替换    |    `Ctrl+F`    |
 |     粗体     |    `Ctrl+B`    |
 |     斜体     |    `Ctrl+I`    |
 |    下划线     |    `Ctrl+U`    |
@@ -171,9 +178,11 @@ TXT、MD (Markdown) 和 HTML。
 |     标记     |    `Ctrl+M`    |
 |     表格     |    `Ctrl+T`    |
 |     链接     |    `Ctrl+K`    |
-|     扫描     |    `Ctrl+S`    |
 |     预览     |    `Ctrl+P`    |
 |     标题     |   `Ctrl+1~6`   |
+|     图片     | `Ctrl+Shift+I` |
+|     列表     | `Ctrl+Shift+L` |
+|     扫描     | `Ctrl+Shift+S` |
 |     代码     | `Ctrl+Shift+K` |
 |     引用     | `Ctrl+Shift+Q` |
 |     数学     | `Ctrl+Shift+M` |

@@ -177,24 +177,33 @@ various formats including TXT, MD (Markdown), and HTML.
 
 # Keyboard Shortcuts
 
-|     Element     |    Shortcut    |
-|:---------------:|:--------------:|
-|      Bold       |    `Ctrl+B`    |
-|     Italic      |    `Ctrl+I`    |
-|    Underline    |    `Ctrl+U`    |
-|  Strikethrough  |    `Ctrl+D`    |
-|      Mark       |    `Ctrl+M`    |
-|      Table      |    `Ctrl+T`    |
-|      Link       |    `Ctrl+K`    |
-|      Scan       |    `Ctrl+S`    |
-|     Preview     |    `Ctrl+P`    |
-|     Heading     |   `Ctrl+1~6`   |
-|      Code       | `Ctrl+Shift+K` |
-|      Quote      | `Ctrl+Shift+Q` |
-|      Math       | `Ctrl+Shift+M` |
-| Horizontal Rule | `Ctrl+Shift+R` |
-|      Task       | `Ctrl+Shift+T` |
-| Mermaid Diagram | `Ctrl+Shift+D` |
+|     Element      |    Shortcut    |
+|:----------------:|:--------------:|
+|    Select All    |    `Ctrl+A`    |
+|       Cut        |    `Ctrl+X`    |
+|       Copy       |    `Ctrl+C`    |
+|      Paste       |    `Ctrl+V`    |
+|       Undo       |    `Ctrl+Z`    |
+|       Redo       |    `Ctrl+Y`    |
+| Find and Replace |    `Ctrl+F`    |
+|       Bold       |    `Ctrl+B`    |
+|      Italic      |    `Ctrl+I`    |
+|    Underline     |    `Ctrl+U`    |
+|  Strikethrough   |    `Ctrl+D`    |
+|       Mark       |    `Ctrl+M`    |
+|      Table       |    `Ctrl+T`    |
+|       Link       |    `Ctrl+K`    |
+|     Preview      |    `Ctrl+P`    |
+|     Heading      |   `Ctrl+1~6`   |
+|      Image       | `Ctrl+Shift+I` |
+|       List       | `Ctrl+Shift+L` |
+|       Scan       | `Ctrl+Shift+S` |
+|       Code       | `Ctrl+Shift+K` |
+|      Quote       | `Ctrl+Shift+Q` |
+|       Math       | `Ctrl+Shift+M` |
+| Horizontal Rule  | `Ctrl+Shift+R` |
+|       Task       | `Ctrl+Shift+T` |
+| Mermaid Diagram  | `Ctrl+Shift+D` |
 
 # References
 
