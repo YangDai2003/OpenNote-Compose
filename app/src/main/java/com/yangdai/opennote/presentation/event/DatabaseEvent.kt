@@ -26,7 +26,6 @@ sealed interface DatabaseEvent {
 
     data class ImportImages(
         val context: Context,
-        val contentResolver: ContentResolver,
         val uriList: List<Uri>
     ) : DatabaseEvent
 }

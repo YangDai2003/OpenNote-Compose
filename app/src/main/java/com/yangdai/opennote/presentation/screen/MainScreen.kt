@@ -2,7 +2,6 @@ package com.yangdai.opennote.presentation.screen
 
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.LocalActivity
-import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.slideInHorizontally
@@ -25,7 +24,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -57,7 +56,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.VerticalDivider
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -79,6 +77,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.isTraversalGroup
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.traversalIndex
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -88,16 +89,17 @@ import com.yangdai.opennote.R
 import com.yangdai.opennote.data.local.entity.FolderEntity
 import com.yangdai.opennote.data.local.entity.NoteEntity
 import com.yangdai.opennote.presentation.component.AdaptiveNavigationScreen
+import com.yangdai.opennote.presentation.component.AdaptiveTopSearchbar
 import com.yangdai.opennote.presentation.component.ColumnNoteCard
 import com.yangdai.opennote.presentation.component.DrawerContent
+import com.yangdai.opennote.presentation.component.GridNoteCard
+import com.yangdai.opennote.presentation.component.Timeline
 import com.yangdai.opennote.presentation.component.dialog.ExportDialog
 import com.yangdai.opennote.presentation.component.dialog.FolderListDialog
-import com.yangdai.opennote.presentation.component.GridNoteCard
-import com.yangdai.opennote.presentation.event.ListEvent
-import com.yangdai.opennote.presentation.component.dialog.ProgressDialog
-import com.yangdai.opennote.presentation.component.AdaptiveTopSearchbar
 import com.yangdai.opennote.presentation.component.dialog.OrderSectionDialog
+import com.yangdai.opennote.presentation.component.dialog.ProgressDialog
 import com.yangdai.opennote.presentation.event.DatabaseEvent
+import com.yangdai.opennote.presentation.event.ListEvent
 import com.yangdai.opennote.presentation.navigation.Screen
 import com.yangdai.opennote.presentation.viewmodel.SharedViewModel
 import kotlinx.coroutines.launch
@@ -219,112 +221,94 @@ fun MainScreen(
     ) {
         Scaffold(
             topBar = {
-                AnimatedContent(targetState = selectedDrawerIndex == 0, label = "") {
-                    if (it) {
-                        AdaptiveTopSearchbar(
-                            enabled = !isMultiSelectionModeEnabled,
-                            isLargeScreen = isLargeScreen,
-                            onSearchBarActivationChange = { activated ->
-                                isSearchBarActivated = activated
-                            },
-                            onDrawerStateChange = {
-                                coroutineScope.launch {
-                                    drawerState.apply {
-                                        if (isClosed) open() else close()
-                                    }
-                                }
-                            }
-                        )
-                    } else {
+                if (selectedDrawerIndex != 0) {
+                    var showMenu by remember {
+                        mutableStateOf(false)
+                    }
 
-                        var showMenu by remember {
-                            mutableStateOf(false)
-                        }
-
-                        TopAppBar(
-                            title = {
-                                Text(
-                                    text = if (selectedDrawerIndex == 1) stringResource(id = R.string.trash)
-                                    else selectedFolder.name,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
-                                )
-                            },
-                            navigationIcon = {
-                                if (!isLargeScreen) {
-                                    IconButton(
-                                        enabled = !isMultiSelectionModeEnabled,
-                                        onClick = {
-                                            coroutineScope.launch {
-                                                drawerState.apply {
-                                                    if (isClosed) open() else close()
-                                                }
+                    TopAppBar(
+                        title = {
+                            Text(
+                                text = if (selectedDrawerIndex == 1) stringResource(id = R.string.trash)
+                                else selectedFolder.name,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        },
+                        navigationIcon = {
+                            if (!isLargeScreen) {
+                                IconButton(
+                                    enabled = !isMultiSelectionModeEnabled,
+                                    onClick = {
+                                        coroutineScope.launch {
+                                            drawerState.apply {
+                                                if (isClosed) open() else close()
                                             }
                                         }
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Outlined.Menu,
-                                            contentDescription = "Open Menu"
-                                        )
                                     }
-                                }
-                            },
-                            actions = {
-                                IconButton(onClick = { sharedViewModel.onListEvent(ListEvent.ChangeViewMode) }) {
+                                ) {
                                     Icon(
-                                        imageVector = if (!settingsState.isListView) Icons.Outlined.ViewAgenda else Icons.Outlined.GridView,
-                                        contentDescription = "View Mode"
+                                        imageVector = Icons.Outlined.Menu,
+                                        contentDescription = "Open Menu"
                                     )
-                                }
-                                IconButton(onClick = { sharedViewModel.onListEvent(ListEvent.ToggleOrderSection) }) {
-                                    Icon(
-                                        imageVector = Icons.Outlined.SortByAlpha,
-                                        contentDescription = "Sort"
-                                    )
-                                }
-                                if (selectedDrawerIndex == 1) {
-                                    IconButton(onClick = { showMenu = !showMenu }) {
-                                        Icon(
-                                            imageVector = Icons.Outlined.MoreVert,
-                                            contentDescription = "More"
-                                        )
-                                    }
-
-                                    DropdownMenu(
-                                        expanded = showMenu,
-                                        onDismissRequest = { showMenu = false }) {
-                                        DropdownMenuItem(
-                                            leadingIcon = {
-                                                Icon(
-                                                    imageVector = Icons.Outlined.RestartAlt,
-                                                    contentDescription = "Restore"
-                                                )
-                                            },
-                                            text = { Text(text = stringResource(id = R.string.restore_all)) },
-                                            onClick = {
-                                                sharedViewModel.onListEvent(
-                                                    ListEvent.RestoreNotes(dataState.notes)
-                                                )
-                                            })
-
-                                        DropdownMenuItem(
-                                            leadingIcon = {
-                                                Icon(
-                                                    imageVector = Icons.Outlined.Delete,
-                                                    contentDescription = "Delete"
-                                                )
-                                            },
-                                            text = { Text(text = stringResource(id = R.string.delete_all)) },
-                                            onClick = {
-                                                sharedViewModel.onListEvent(
-                                                    ListEvent.DeleteNotes(dataState.notes, false)
-                                                )
-                                            })
-                                    }
                                 }
                             }
-                        )
-                    }
+                        },
+                        actions = {
+                            IconButton(onClick = { sharedViewModel.onListEvent(ListEvent.ChangeViewMode) }) {
+                                Icon(
+                                    imageVector = if (!settingsState.isListView) Icons.Outlined.ViewAgenda else Icons.Outlined.GridView,
+                                    contentDescription = "View Mode"
+                                )
+                            }
+                            IconButton(onClick = { sharedViewModel.onListEvent(ListEvent.ToggleOrderSection) }) {
+                                Icon(
+                                    imageVector = Icons.Outlined.SortByAlpha,
+                                    contentDescription = "Sort"
+                                )
+                            }
+                            if (selectedDrawerIndex == 1) {
+                                IconButton(onClick = { showMenu = !showMenu }) {
+                                    Icon(
+                                        imageVector = Icons.Outlined.MoreVert,
+                                        contentDescription = "More"
+                                    )
+                                }
+
+                                DropdownMenu(
+                                    expanded = showMenu,
+                                    onDismissRequest = { showMenu = false }) {
+                                    DropdownMenuItem(
+                                        leadingIcon = {
+                                            Icon(
+                                                imageVector = Icons.Outlined.RestartAlt,
+                                                contentDescription = "Restore"
+                                            )
+                                        },
+                                        text = { Text(text = stringResource(id = R.string.restore_all)) },
+                                        onClick = {
+                                            sharedViewModel.onListEvent(
+                                                ListEvent.RestoreNotes(dataState.notes)
+                                            )
+                                        })
+
+                                    DropdownMenuItem(
+                                        leadingIcon = {
+                                            Icon(
+                                                imageVector = Icons.Outlined.Delete,
+                                                contentDescription = "Delete"
+                                            )
+                                        },
+                                        text = { Text(text = stringResource(id = R.string.delete_all)) },
+                                        onClick = {
+                                            sharedViewModel.onListEvent(
+                                                ListEvent.DeleteNotes(dataState.notes, false)
+                                            )
+                                        })
+                                }
+                            }
+                        }
+                    )
                 }
             },
             bottomBar = {
@@ -441,10 +425,12 @@ fun MainScreen(
                         modifier = Modifier.scale(scale),
                         onClick = {
                             hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
-                            sharedViewModel.onListEvent(ListEvent.OpenOrCreateNote(
-                                null,
-                                selectedFolder.id
-                            ))
+                            sharedViewModel.onListEvent(
+                                ListEvent.OpenOrCreateNote(
+                                    null,
+                                    selectedFolder.id
+                                )
+                            )
                             navigateToNote(-1)
                         },
                         interactionSource = interactionSource
@@ -460,7 +446,6 @@ fun MainScreen(
             val displayCutout = WindowInsets.displayCutout.asPaddingValues()
             val paddingValues = remember(layoutDirection, displayCutout) {
                 PaddingValues(
-                    top = 72.dp,
                     start = displayCutout.calculateStartPadding(layoutDirection),
                     end = displayCutout.calculateEndPadding(layoutDirection)
                 )
@@ -469,9 +454,29 @@ fun MainScreen(
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .statusBarsPadding()
                     .padding(paddingValues)
+                    .semantics { isTraversalGroup = true }
             ) {
+
+                if (selectedDrawerIndex == 0) {
+                    AdaptiveTopSearchbar(
+                        modifier = Modifier
+                            .align(Alignment.TopCenter)
+                            .semantics { traversalIndex = 0f },
+                        enabled = !isMultiSelectionModeEnabled,
+                        isLargeScreen = isLargeScreen,
+                        onSearchBarActivationChange = { activated ->
+                            isSearchBarActivated = activated
+                        },
+                        onDrawerStateChange = {
+                            coroutineScope.launch {
+                                drawerState.apply {
+                                    if (isClosed) open() else close()
+                                }
+                            }
+                        }
+                    )
+                }
 
                 // 如果没有笔记，不显示，性能优化
                 if (dataState.notes.isEmpty()) {
@@ -480,7 +485,9 @@ fun MainScreen(
 
                 if (!settingsState.isListView) {
                     LazyVerticalStaggeredGrid(
-                        modifier = Modifier.fillMaxSize(),
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .semantics { traversalIndex = 1f },
                         state = staggeredGridState,
                         // The staggered grid layout is adaptive, with a minimum column width of 160dp(mdpi)
                         columns = StaggeredGridCells.Adaptive(160.dp),
@@ -488,6 +495,8 @@ fun MainScreen(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         // for better edgeToEdge experience
                         contentPadding = PaddingValues(
+                            top = WindowInsets.statusBars.asPaddingValues()
+                                .calculateTopPadding() + 78.dp,
                             start = 16.dp,
                             end = 16.dp,
                             bottom = innerPadding.calculateBottomPadding()
@@ -513,7 +522,12 @@ fun MainScreen(
                                                 else selectedNotes.plus(it)
                                         } else {
                                             if (selectedDrawerIndex != 1) {
-                                                sharedViewModel.onListEvent(ListEvent.OpenOrCreateNote(it, null))
+                                                sharedViewModel.onListEvent(
+                                                    ListEvent.OpenOrCreateNote(
+                                                        it,
+                                                        null
+                                                    )
+                                                )
                                                 navigateToNote(it.id!!)
                                             } else {
                                                 Unit
@@ -526,22 +540,23 @@ fun MainScreen(
                     )
                 } else {
 
-                    // 时间线
-                    VerticalDivider(
-                        Modifier
-                            .align(Alignment.TopStart)
+                    Timeline(
+                        modifier = Modifier
+                            .align(Alignment.CenterStart)
                             .fillMaxHeight()
-                            .padding(start = 15.dp),
+                            .padding(start = 8.dp),
                         thickness = 2.dp
                     )
 
                     LazyColumn(
                         modifier = Modifier
-                            .align(Alignment.Center)
-                            .fillMaxSize(),
+                            .fillMaxSize()
+                            .semantics { traversalIndex = 1f },
                         state = lazyListState,
                         contentPadding = PaddingValues(
-                            start = 12.dp,
+                            top = WindowInsets.statusBars.asPaddingValues()
+                                .calculateTopPadding() + 74.dp,
+                            start = 5.dp,
                             end = 16.dp,
                             bottom = innerPadding.calculateBottomPadding()
                         )
@@ -566,7 +581,12 @@ fun MainScreen(
                                             else selectedNotes.plus(it)
                                     } else {
                                         if (selectedDrawerIndex != 1) {
-                                            sharedViewModel.onListEvent(ListEvent.OpenOrCreateNote(it, null))
+                                            sharedViewModel.onListEvent(
+                                                ListEvent.OpenOrCreateNote(
+                                                    it,
+                                                    null
+                                                )
+                                            )
                                             navigateToNote(it.id!!)
                                         } else {
                                             Unit

@@ -25,6 +25,7 @@ object Constants {
         const val IS_LIST_VIEW = "IS_List_VIEW"
         const val IS_DEFAULT_VIEW_FOR_READING = "IS_DEFAULT_VIEW_FOR_READING"
         const val IS_DEFAULT_LITE_MODE = "IS_DEFAULT_LITE_MODE"
+        const val IS_LINT_ACTIVE = "IS_LINT_ACTIVE"
     }
 
     object Editor {

@@ -28,7 +28,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.sizeIn
@@ -111,7 +110,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.yangdai.opennote.MainActivity
 import com.yangdai.opennote.R
 import com.yangdai.opennote.data.local.entity.NoteEntity
-import com.yangdai.opennote.presentation.component.FindAndReplaceField
+import com.yangdai.opennote.presentation.component.text.FindAndReplaceField
 import com.yangdai.opennote.presentation.component.dialog.ExportDialog
 import com.yangdai.opennote.presentation.component.dialog.FolderListDialog
 import com.yangdai.opennote.presentation.component.dialog.LinkDialog
@@ -315,7 +314,7 @@ fun NoteScreen(
     ) { uris ->
         if (uris.isNotEmpty()) sharedViewModel.onDatabaseEvent(
             DatabaseEvent.ImportImages(
-                context.applicationContext, context.applicationContext.contentResolver, uris
+                context.applicationContext, uris
             )
         )
     }
@@ -325,9 +324,20 @@ fun NoteScreen(
             .fillMaxSize()
             .imePadding()
             .onPreviewKeyEvent { keyEvent ->
-                if (keyEvent.type == KeyEventType.KeyDown && keyEvent.isCtrlPressed && keyEvent.key == Key.P) {
-                    isReadView = !isReadView
-                    true
+                if (keyEvent.type == KeyEventType.KeyDown && keyEvent.isCtrlPressed) {
+                    when (keyEvent.key) {
+                        Key.P -> {
+                            isReadView = !isReadView
+                            true
+                        }
+
+                        Key.F -> {
+                            isSearching = !isSearching
+                            true
+                        }
+
+                        else -> false
+                    }
                 } else false
             }, topBar = {
             TopAppBar(title = {
@@ -363,12 +373,23 @@ fun NoteScreen(
                     )
                 }
 
-                if (!isReadView) IconButton(onClick = { isSearching = !isSearching }) {
-                    Icon(
-                        imageVector = if (isSearching) Icons.Outlined.SearchOff
-                        else Icons.Outlined.Search, contentDescription = "Search"
-                    )
+                if (!isReadView) TooltipBox(
+                    positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
+                    tooltip = {
+                        PlainTooltip(content = { Text("Ctrl + F") })
+                    },
+                    state = rememberTooltipState(),
+                    focusable = false,
+                    enableUserInput = true
+                ) {
+                    IconButton(onClick = { isSearching = !isSearching }) {
+                        Icon(
+                            imageVector = if (isSearching) Icons.Outlined.SearchOff
+                            else Icons.Outlined.Search, contentDescription = "Search"
+                        )
+                    }
                 }
+
 
                 TooltipBox(
                     positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
@@ -525,7 +546,6 @@ fun NoteScreen(
                 else Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(64.dp)
                         .padding(horizontal = 16.dp)
                 ) {
                     // 标题文本
@@ -590,7 +610,7 @@ fun NoteScreen(
             HorizontalDivider(
                 modifier = Modifier
                     .padding(horizontal = 16.dp)
-                    .padding(bottom = 8.dp)
+                    .padding(top = 4.dp, bottom = 8.dp)
             )
 
             /*-------------------------------------------------*/
@@ -598,15 +618,8 @@ fun NoteScreen(
             if (!noteState.isStandard) LiteTextField(
                 modifier = Modifier.fillMaxSize(),
                 readMode = isReadView,
-                content = sharedViewModel.contentState.text.toString(),
+                state = sharedViewModel.contentState,
                 searchWord = searchWord,
-                onTextChange = {
-                    sharedViewModel.onNoteEvent(
-                        NoteEvent.Edit(
-                            Constants.Editor.NEW_TEXT, it
-                        )
-                    )
-                },
                 onFocusChanged = { isContentFocused = it },
                 onScanButtonClick = onScanTextClick
             )
@@ -633,6 +646,7 @@ fun NoteScreen(
                             state = sharedViewModel.contentState,
                             scrollState = scrollState,
                             searchWord = searchWord,
+                            isLintActive = settingsState.isLintActive,
                             onScanButtonClick = onScanTextClick,
                             onTableButtonClick = { showTableDialog = true },
                             onListButtonClick = { showListDialog = true },
@@ -692,6 +706,7 @@ fun NoteScreen(
                                 readMode = isReadView,
                                 scrollState = scrollState,
                                 searchWord = searchWord,
+                                isLintActive = settingsState.isLintActive,
                                 onScanButtonClick = onScanTextClick,
                                 onTableButtonClick = { showTableDialog = true },
                                 onListButtonClick = { showListDialog = true },

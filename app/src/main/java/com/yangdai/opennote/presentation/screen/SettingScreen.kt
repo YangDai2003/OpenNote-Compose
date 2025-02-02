@@ -8,8 +8,13 @@ import androidx.compose.material3.adaptive.layout.ListDetailPaneScaffold
 import androidx.compose.material3.adaptive.layout.ListDetailPaneScaffoldRole
 import androidx.compose.material3.adaptive.navigation.rememberListDetailPaneScaffoldNavigator
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import com.yangdai.opennote.presentation.component.setting.SettingsDetailPane
 import com.yangdai.opennote.presentation.component.setting.SettingsListPane
+import com.yangdai.opennote.presentation.navigation.INITIAL_OFFSET_FACTOR
+import com.yangdai.opennote.presentation.navigation.sharedAxisXIn
+import com.yangdai.opennote.presentation.navigation.sharedAxisXOut
+import kotlinx.coroutines.launch
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
@@ -19,28 +24,67 @@ class SettingsItem(val index: Int, val titleId: Int) : Parcelable
 @Composable
 fun SettingsScreen(navigateUp: () -> Unit) {
 
-    val navigator = rememberListDetailPaneScaffoldNavigator<SettingsItem>()
+    val scaffoldNavigator = rememberListDetailPaneScaffoldNavigator<SettingsItem>()
+    val coroutineScope = rememberCoroutineScope()
+//    val backBehavior = remember { BackNavigationBehavior.PopUntilContentChange }
 
-    BackHandler(navigator.canNavigateBack()) {
-        navigator.navigateBack()
+//    key(scaffoldNavigator, backBehavior) {
+//        PredictiveBackHandler(enabled = scaffoldNavigator.canNavigateBack(backBehavior)) { progress ->
+//            // code for gesture back started
+//            try {
+//                progress.collect { backEvent ->
+//                    scaffoldNavigator.seekBack(
+//                        backBehavior,
+//                        fraction = backEvent.progress,
+//                    )
+//                }
+//                // code for completion
+//                scaffoldNavigator.navigateBack(backBehavior)
+//            } catch (_: CancellationException) {
+//                // code for cancellation
+//                withContext(NonCancellable) {
+//                    scaffoldNavigator.seekBack(
+//                        backBehavior,
+//                        fraction = 0f
+//                    )
+//                }
+//            }
+//        }
+//    }
+
+    BackHandler(enabled = scaffoldNavigator.canNavigateBack()) {
+        coroutineScope.launch {
+            scaffoldNavigator.navigateBack()
+        }
     }
 
     ListDetailPaneScaffold(
-        directive = navigator.scaffoldDirective,
-        value = navigator.scaffoldValue,
+        directive = scaffoldNavigator.scaffoldDirective,
+        scaffoldState = scaffoldNavigator.scaffoldState,
         listPane = {
-            AnimatedPane {
+            AnimatedPane(
+                enterTransition = sharedAxisXIn(initialOffsetX = { -(it * INITIAL_OFFSET_FACTOR).toInt() }),
+                exitTransition = sharedAxisXOut(targetOffsetX = { (it * INITIAL_OFFSET_FACTOR).toInt() }),
+            ) {
                 SettingsListPane(navigateUp = navigateUp) {
-                    navigator.navigateTo(ListDetailPaneScaffoldRole.Detail, it)
+                    coroutineScope.launch {
+                        scaffoldNavigator.navigateTo(
+                            ListDetailPaneScaffoldRole.Detail,
+                            it
+                        )
+                    }
                 }
             }
         },
         detailPane = {
-            AnimatedPane {
-                navigator.currentDestination?.content?.let { item ->
+            AnimatedPane(
+                enterTransition = sharedAxisXIn(initialOffsetX = { (it * INITIAL_OFFSET_FACTOR).toInt() }),
+                exitTransition = sharedAxisXOut(targetOffsetX = { -(it * INITIAL_OFFSET_FACTOR).toInt() }),
+            ) {
+                scaffoldNavigator.currentDestination?.contentKey?.let { item ->
                     SettingsDetailPane(selectedSettingsItem = item) {
-                        if (navigator.canNavigateBack()) {
-                            navigator.navigateBack()
+                        if (scaffoldNavigator.canNavigateBack()) {
+                            coroutineScope.launch { scaffoldNavigator.navigateBack() }
                         }
                     }
                 }

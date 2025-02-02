@@ -121,4 +121,6 @@
     <string name="list">Liste</string>
     <string name="find">Finden</string>
     <string name="replace">Ersetzen</string>
+    <string name="lint">Lint</string>
+    <string name="lint_description">Wenn aktiviert, werden im Standard Modus das Markdown-Textformat und die Syntax auf die Einhaltung der Spezifikation überprüft und Fehler mit roten Wellenlinien markiert.</string>
 </resources>

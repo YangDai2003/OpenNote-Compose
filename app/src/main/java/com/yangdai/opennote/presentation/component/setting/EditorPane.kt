@@ -1,6 +1,6 @@
 package com.yangdai.opennote.presentation.component.setting
 
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -13,12 +13,14 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.MenuBook
 import androidx.compose.material.icons.outlined.EditNote
+import androidx.compose.material.icons.outlined.Spellcheck
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -44,9 +46,6 @@ fun EditorPane(sharedViewModel: SharedViewModel) {
     ) {
 
         ListItem(
-            modifier = Modifier.clickable {
-
-            },
             headlineContent = { Text(text = stringResource(R.string.default_view)) },
             supportingContent = {
                 Text(
@@ -81,7 +80,7 @@ fun EditorPane(sharedViewModel: SharedViewModel) {
                         imageVector = Icons.Outlined.EditNote, contentDescription = "EditNote"
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text(viewOptions[0])
+                    Text(viewOptions[0], maxLines = 1, modifier = Modifier.basicMarquee())
                 }
             }
             SegmentedButton(
@@ -103,7 +102,7 @@ fun EditorPane(sharedViewModel: SharedViewModel) {
                         contentDescription = "ReadMode"
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text(viewOptions[1])
+                    Text(viewOptions[1], maxLines = 1, modifier = Modifier.basicMarquee())
                 }
             }
         }
@@ -111,9 +110,6 @@ fun EditorPane(sharedViewModel: SharedViewModel) {
         HorizontalDivider()
 
         ListItem(
-            modifier = Modifier.clickable {
-
-            },
             headlineContent = { Text(text = stringResource(R.string.default_editing_mode)) },
             supportingContent = {
                 Text(
@@ -149,7 +145,7 @@ fun EditorPane(sharedViewModel: SharedViewModel) {
                         contentDescription = "StandardMode"
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text(modeOptions[0])
+                    Text(modeOptions[0], maxLines = 1, modifier = Modifier.basicMarquee())
                 }
             }
             SegmentedButton(
@@ -171,9 +167,37 @@ fun EditorPane(sharedViewModel: SharedViewModel) {
                         contentDescription = "LiteMode"
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text(modeOptions[1])
+                    Text(modeOptions[1], maxLines = 1, modifier = Modifier.basicMarquee())
                 }
             }
         }
+
+        HorizontalDivider()
+
+        ListItem(
+            leadingContent = {
+                Icon(
+                    imageVector = Icons.Outlined.Spellcheck,
+                    contentDescription = "Lint"
+                )
+            },
+            headlineContent = { Text(text = "Markdown " + stringResource(R.string.lint)) },
+            trailingContent = {
+                Switch(
+                    checked = settingsState.isLintActive,
+                    onCheckedChange = { checked ->
+                        sharedViewModel.putPreferenceValue(
+                            Constants.Preferences.IS_LINT_ACTIVE,
+                            checked
+                        )
+                    }
+                )
+            },
+            supportingContent = {
+                Text(
+                    text = stringResource(R.string.lint_description)
+                )
+            }
+        )
     }
 }

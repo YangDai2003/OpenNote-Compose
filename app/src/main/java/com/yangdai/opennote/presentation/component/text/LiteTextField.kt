@@ -15,6 +15,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
@@ -35,7 +37,7 @@ import androidx.compose.ui.unit.dp
 import com.yangdai.opennote.R
 
 /* LiteTextField采用TextFieldValue作为内部状态，初始化文本仍旧采用StandardMode所使用的contentState:TextFieldState(),
- * applyChange函数用于更新文本内容，onTextChange函数用于将更新后的文本内容传递给外部,达到了同步contentState的目的，循环往复。
+ * applyChange函数用于更新文本内容，达到了同步contentState的目的，循环往复。
  * 虽然造成了额外的内存开销，但是在实现上更加简洁，易于维护，确保了数据一致性和单一数据来源，也便于模式之间的切换。
  * 不过也是无奈之举，TextFieldState无法实现富文本样式，只能采用TextFieldValue作为替代，而TextFieldValue提升状态很困难，只能两者配合使用。
  */
@@ -45,25 +47,26 @@ import com.yangdai.opennote.R
 fun LiteTextField(
     modifier: Modifier = Modifier,
     readMode: Boolean = false,
-    content: String,
+    state: TextFieldState,
     searchWord: String,
-    onTextChange: (String) -> Unit,
     onFocusChanged: (Boolean) -> Unit,
     onScanButtonClick: () -> Unit
 ) {
 
     var textFieldValue by rememberSaveable(stateSaver = TextFieldValue.Saver) {
         mutableStateOf(
-            TextFieldValue(content)
+            TextFieldValue(state.text.toString())
         )
     }
 
     fun applyChange(tfv: TextFieldValue) {
         textFieldValue = tfv
-        onTextChange(textFieldValue.text)
+        state.setTextAndPlaceCursorAtEnd(textFieldValue.text)
     }
 
-    textFieldValue = textFieldValue.copy(text = content)
+    LaunchedEffect(state.text) {
+        textFieldValue = textFieldValue.copy(text = state.text.toString())
+    }
 
     val receiveContentListener = remember {
         ReceiveContentListener { transferableContent ->
@@ -120,37 +123,37 @@ fun LiteTextField(
                                         true
                                     }
 
-                                    Key.S -> {
+                                    Key.D -> {
                                         applyChange(textFieldValue.strikeThrough())
                                         true
                                     }
 
-                                    Key.NumPad1 -> {
+                                    Key.NumPad1, Key.One -> {
                                         applyChange(textFieldValue.header(1))
                                         true
                                     }
 
-                                    Key.NumPad2 -> {
+                                    Key.NumPad2, Key.Two -> {
                                         applyChange(textFieldValue.header(2))
                                         true
                                     }
 
-                                    Key.NumPad3 -> {
+                                    Key.NumPad3, Key.Three -> {
                                         applyChange(textFieldValue.header(3))
                                         true
                                     }
 
-                                    Key.NumPad4 -> {
+                                    Key.NumPad4, Key.Four -> {
                                         applyChange(textFieldValue.header(4))
                                         true
                                     }
 
-                                    Key.NumPad5 -> {
+                                    Key.NumPad5, Key.Five -> {
                                         applyChange(textFieldValue.header(5))
                                         true
                                     }
 
-                                    Key.NumPad6 -> {
+                                    Key.NumPad6, Key.Six -> {
                                         applyChange(textFieldValue.header(6))
                                         true
                                     }
@@ -183,7 +186,11 @@ fun LiteTextField(
                 applyChange(newText)
             },
             readOnly = readMode,
-            visualTransformation = remember(readMode, searchWord) { LiteTextVisualTransformation(readMode, searchWord) },
+            visualTransformation = remember(readMode, searchWord) {
+                LiteTextVisualTransformation(
+                    readMode, searchWord
+                )
+            },
             textStyle = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface),
             cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
             decorationBox = { innerTextField ->

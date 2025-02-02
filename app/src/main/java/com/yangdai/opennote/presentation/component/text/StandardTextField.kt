@@ -1,6 +1,12 @@
 package com.yangdai.opennote.presentation.component.text
 
 import android.content.ClipData
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.content.MediaType
@@ -15,6 +21,7 @@ import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -26,7 +33,10 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.PointMode
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.isCtrlPressed
@@ -37,6 +47,10 @@ import androidx.compose.ui.input.key.type
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextLayoutResult
 import com.yangdai.opennote.R
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import kotlin.math.PI
+import kotlin.math.sin
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -46,6 +60,7 @@ fun StandardTextField(
     scrollState: ScrollState = rememberScrollState(),
     readMode: Boolean,
     searchWord: String,
+    isLintActive: Boolean,
     onScanButtonClick: () -> Unit,
     onListButtonClick: () -> Unit,
     onTableButtonClick: () -> Unit,
@@ -72,6 +87,36 @@ fun StandardTextField(
 
                 else -> transferableContent
             }
+        }
+    }
+
+    val cursorState = rememberCursorState()
+
+    val infiniteTransition = rememberInfiniteTransition(label = "wavy-line")
+    val phase by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 2f * PI.toFloat(),
+        animationSpec = infiniteRepeatable(
+            animation = tween(1000, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "wave-phase"
+    )
+
+    var indices by remember { mutableStateOf(emptyList<Pair<Int, Int>>()) }
+    var lintErrors by remember { mutableStateOf(emptyList<Pair<Int, Int>>()) }
+
+    LaunchedEffect(state.text, searchWord, isLintActive, readMode) {
+        withContext(Dispatchers.Default) {
+            lintErrors = if (isLintActive)
+                MarkdownLint().validate(state.text.toString())
+            else
+                emptyList()
+
+            indices = if (!readMode)
+                findAllIndices(state.text.toString(), searchWord)
+            else
+                emptyList()
         }
     }
 
@@ -169,32 +214,32 @@ fun StandardTextField(
                                     true
                                 }
 
-                                Key.NumPad1 -> {
+                                Key.NumPad1, Key.One -> {
                                     state.edit { addHeader(1) }
                                     true
                                 }
 
-                                Key.NumPad2 -> {
+                                Key.NumPad2, Key.Two -> {
                                     state.edit { addHeader(2) }
                                     true
                                 }
 
-                                Key.NumPad3 -> {
+                                Key.NumPad3, Key.Three -> {
                                     state.edit { addHeader(3) }
                                     true
                                 }
 
-                                Key.NumPad4 -> {
+                                Key.NumPad4, Key.Four -> {
                                     state.edit { addHeader(4) }
                                     true
                                 }
 
-                                Key.NumPad5 -> {
+                                Key.NumPad5, Key.Five -> {
                                     state.edit { addHeader(5) }
                                     true
                                 }
 
-                                Key.NumPad6 -> {
+                                Key.NumPad6, Key.Six -> {
                                     state.edit { addHeader(6) }
                                     true
                                 }
@@ -206,12 +251,22 @@ fun StandardTextField(
                     } else {
                         when (keyEvent.key) {
                             Key.DirectionLeft -> {
-                                state.edit { moveCursorLeft() }
+                                state.edit { moveCursorLeft(cursorState) }
                                 true
                             }
 
                             Key.DirectionRight -> {
-                                state.edit { moveCursorRight() }
+                                state.edit { moveCursorRight(cursorState) }
+                                true
+                            }
+
+                            Key.DirectionUp -> {
+                                state.edit { moveCursorUpWithState(cursorState) }
+                                true
+                            }
+
+                            Key.DirectionDown -> {
+                                state.edit { moveCursorDownWithState(cursorState) }
                                 true
                             }
 
@@ -236,10 +291,11 @@ fun StandardTextField(
                     .clipToBounds()
                     .drawBehind {
                         textLayoutResult?.let { layoutResult ->
-                            if (searchWord.isNotEmpty()) {
-                                val text = state.text.toString()
+                            val text = state.text.toString()
 
-                                findAllIndices(text, searchWord).forEach { (start, end) ->
+                            if (searchWord.isNotEmpty()) {
+
+                                indices.forEach { (start, end) ->
                                     if (start < end && end <= text.length) {
                                         // 获取整个范围的Path
                                         val path: Path = layoutResult.getPathForRange(start, end)
@@ -253,6 +309,23 @@ fun StandardTextField(
                                             alpha = 0.5f,
                                         )
                                     }
+                                }
+                            }
+
+                            lintErrors.forEach { (start, end) ->
+                                if (start < end && end <= text.length) {
+                                    val path: Path = layoutResult.getPathForRange(start, end)
+                                    // 调整滚动偏移
+                                    val scrollOffset = scrollState.value.toFloat()
+                                    path.translate(Offset(0f, -scrollOffset))
+
+                                    // 绘制波浪线
+                                    drawWavyUnderline(
+                                        drawScope = this,
+                                        path = path,
+                                        phase = phase,
+                                        color = Color.Red
+                                    )
                                 }
                             }
                         }
@@ -282,4 +355,37 @@ private fun findAllIndices(text: String, word: String): List<Pair<Int, Int>> {
         startIndex = index + word.length
     }
     return indices
+}
+
+private fun drawWavyUnderline(
+    drawScope: DrawScope,
+    path: Path,
+    phase: Float,
+    color: Color,
+    amplitude: Float = 3f,
+    wavelength: Float = 25f
+) {
+    val bounds = path.getBounds()
+    val startX = bounds.left
+    val y = bounds.bottom + 2f
+
+    val pathPoints = mutableListOf<Offset>()
+    var x = startX
+
+    while (x < bounds.right) {
+        // 添加相位偏移使波浪动起来
+        val yOffset = (amplitude * sin((x * (2f * PI / wavelength)) + phase)).toFloat()
+        pathPoints.add(Offset(x, y + yOffset))
+        x += 0.5f // 减小步长使波浪更平滑
+    }
+
+    if (pathPoints.size > 1) {
+        drawScope.drawPoints(
+            points = pathPoints,
+            pointMode = PointMode.Polygon,
+            color = color,
+            strokeWidth = 1.5f,
+            cap = StrokeCap.Round // 添加圆角端点使线条更平滑
+        )
+    }
 }

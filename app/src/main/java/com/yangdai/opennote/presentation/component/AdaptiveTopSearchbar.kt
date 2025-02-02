@@ -4,6 +4,7 @@ import android.content.res.Configuration
 import androidx.activity.compose.LocalActivity
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -53,6 +54,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.yangdai.opennote.MainActivity
@@ -65,9 +67,10 @@ import com.yangdai.opennote.presentation.viewmodel.SharedViewModel
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun AdaptiveTopSearchbar(
-    viewModel: SharedViewModel = hiltViewModel(LocalActivity.current as MainActivity),
+    modifier: Modifier = Modifier,
     isLargeScreen: Boolean,
     enabled: Boolean,
+    viewModel: SharedViewModel = hiltViewModel(LocalActivity.current as MainActivity),
     onSearchBarActivationChange: (Boolean) -> Unit,
     onDrawerStateChange: () -> Unit
 ) {
@@ -112,6 +115,7 @@ fun AdaptiveTopSearchbar(
     }
 
     AdaptiveSearchBar(
+        modifier = modifier,
         isDocked = orientation != Configuration.ORIENTATION_PORTRAIT || isLargeScreen,
         expanded = expanded,
         onExpandedChange = { expanded = it },
@@ -269,6 +273,7 @@ fun AdaptiveTopSearchbar(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AdaptiveSearchBar(
+    modifier: Modifier = Modifier,
     isDocked: Boolean,
     expanded: Boolean,
     onExpandedChange: (Boolean) -> Unit,
@@ -282,26 +287,60 @@ fun AdaptiveSearchBar(
         label = "SearchBar Padding"
     )
 
+    val searchBarAlpha by animateFloatAsState(
+        targetValue = if (expanded) 1f else 0.9f,
+        label = "SearchBar Alpha"
+    )
+
+    val searchBarShadowElevation by animateDpAsState(
+        targetValue = if (expanded) 8.dp else 0.dp,
+        label = "SearchBar Shadow Elevation"
+    )
+
     SearchBar(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = searchBarPadding),
+            .padding(horizontal = searchBarPadding)
+            .zIndex(1f),
         inputField = inputField,
         expanded = expanded,
+        shadowElevation = searchBarShadowElevation,
+        colors = SearchBarDefaults.colors(
+            containerColor = SearchBarDefaults.colors().containerColor.copy(
+                alpha = searchBarAlpha
+            )
+        ),
         onExpandedChange = onExpandedChange,
         content = content
     )
 } else {
+
+    val searchBarAlpha by animateFloatAsState(
+        targetValue = if (expanded) 1f else 0.9f,
+        label = "SearchBar Alpha"
+    )
+    val searchBarShadowElevation by animateDpAsState(
+        targetValue = if (expanded) 8.dp else 0.dp,
+        label = "SearchBar Shadow Elevation"
+    )
+
     Box(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .statusBarsPadding()
-            .padding(top = 8.dp),
+            .padding(top = 8.dp)
+            .zIndex(1f),
         contentAlignment = Alignment.Center
     ) {
         DockedSearchBar(
             inputField = inputField,
             expanded = expanded,
+            shadowElevation = searchBarShadowElevation,
+            colors = SearchBarDefaults.colors(
+                containerColor = SearchBarDefaults.colors().containerColor.copy(
+                    alpha = searchBarAlpha
+                )
+            ),
             onExpandedChange = onExpandedChange,
             content = content
         )

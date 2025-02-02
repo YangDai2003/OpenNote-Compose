@@ -27,11 +27,11 @@ import androidx.compose.material.icons.outlined.FormatBold
 import androidx.compose.material.icons.outlined.FormatItalic
 import androidx.compose.material.icons.outlined.FormatPaint
 import androidx.compose.material.icons.outlined.FormatQuote
-import androidx.compose.material.icons.outlined.FormatStrikethrough
 import androidx.compose.material.icons.outlined.FormatUnderlined
 import androidx.compose.material.icons.outlined.HorizontalRule
 import androidx.compose.material.icons.outlined.Image
 import androidx.compose.material.icons.outlined.Link
+import androidx.compose.material.icons.outlined.StrikethroughS
 import androidx.compose.material.icons.outlined.TableChart
 import androidx.compose.material.icons.outlined.Title
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -245,7 +245,7 @@ fun RichTextEditorRow(
             )
 
             IconButtonWithTooltip(
-                imageVector = Icons.Outlined.FormatStrikethrough,
+                imageVector = Icons.Outlined.StrikethroughS,
                 contentDescription = stringResource(id = R.string.strikethrough),
                 shortCutDescription = "Ctrl + D",
                 onClick = onStrikeThroughClick
@@ -433,7 +433,7 @@ fun MarkdownEditorRow(
             }
 
             IconButtonWithTooltip(
-                imageVector = Icons.Outlined.FormatStrikethrough,
+                imageVector = Icons.Outlined.StrikethroughS,
                 contentDescription = stringResource(id = R.string.strikethrough),
                 shortCutDescription = "Ctrl + D"
             ) {

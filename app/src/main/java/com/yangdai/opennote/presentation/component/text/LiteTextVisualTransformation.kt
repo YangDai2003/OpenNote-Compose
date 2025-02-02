@@ -51,7 +51,8 @@ class LiteTextVisualTransformation(private val readMode: Boolean, private val se
         val annotatedString = buildAnnotatedString {
             applyTextStyles(styleRanges)
             applySymbols(styleRanges, readMode)
-            applySearchWordStyle(styleRanges.searchWordRanges)
+            if (!readMode)
+                applySearchWordStyle(styleRanges.searchWordRanges)
             append(text)
         }
 

@@ -123,4 +123,6 @@
     <string name="list">List</string>
     <string name="find">Find</string>
     <string name="replace">Replace</string>
+    <string name="lint">Lint</string>
+    <string name="lint_description" >When enabled, the Markdown text format and syntax will be checked in Standard mode to see if they meet the specification, and errors will be marked with red wavy lines.</string>
 </resources>

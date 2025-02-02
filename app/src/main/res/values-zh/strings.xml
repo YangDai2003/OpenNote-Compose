@@ -121,4 +121,6 @@
     <string name="list">列表</string>
     <string name="find">查找</string>
     <string name="replace">替换</string>
+    <string name="lint">规范检查</string>
+    <string name="lint_description">开启后，将在经典模式中检测 Markdown 文本格式和语法是否符合规范，错误会被红色波浪线标记。</string>
 </resources>

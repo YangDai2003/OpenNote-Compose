@@ -2,16 +2,6 @@ package com.yangdai.opennote.presentation.navigation
 
 import android.content.Intent
 import android.os.Build
-import androidx.compose.animation.EnterTransition
-import androidx.compose.animation.ExitTransition
-import androidx.compose.animation.core.FastOutLinearInEasing
-import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.LinearOutSlowInEasing
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedback
@@ -26,57 +16,18 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import androidx.navigation.navDeepLink
+import com.yangdai.opennote.presentation.navigation.Screen.CameraX
+import com.yangdai.opennote.presentation.navigation.Screen.Folders
+import com.yangdai.opennote.presentation.navigation.Screen.Home
+import com.yangdai.opennote.presentation.navigation.Screen.Note
+import com.yangdai.opennote.presentation.navigation.Screen.Settings
 import com.yangdai.opennote.presentation.screen.CameraXScreen
 import com.yangdai.opennote.presentation.screen.FolderScreen
 import com.yangdai.opennote.presentation.screen.MainScreen
 import com.yangdai.opennote.presentation.screen.NoteScreen
 import com.yangdai.opennote.presentation.screen.SettingsScreen
-import com.yangdai.opennote.presentation.util.Constants.NAV_ANIMATION_TIME
 import com.yangdai.opennote.presentation.util.Constants.LINK
 import com.yangdai.opennote.presentation.util.parseSharedContent
-import com.yangdai.opennote.presentation.navigation.Screen.*
-
-private const val ProgressThreshold = 0.35f
-private const val INITIAL_OFFSET_FACTOR = 0.10f
-private val Int.ForOutgoing: Int
-    get() = (this * ProgressThreshold).toInt()
-
-private val Int.ForIncoming: Int
-    get() = this - this.ForOutgoing
-
-private fun sharedAxisXIn(
-    initialOffsetX: (fullWidth: Int) -> Int,
-    durationMillis: Int = NAV_ANIMATION_TIME,
-): EnterTransition = slideInHorizontally(
-    animationSpec = tween(
-        durationMillis = durationMillis,
-        easing = FastOutSlowInEasing
-    ),
-    initialOffsetX = initialOffsetX
-) + fadeIn(
-    animationSpec = tween(
-        durationMillis = durationMillis.ForIncoming,
-        delayMillis = durationMillis.ForOutgoing,
-        easing = LinearOutSlowInEasing
-    )
-)
-
-private fun sharedAxisXOut(
-    targetOffsetX: (fullWidth: Int) -> Int,
-    durationMillis: Int = NAV_ANIMATION_TIME,
-): ExitTransition = slideOutHorizontally(
-    animationSpec = tween(
-        durationMillis = durationMillis,
-        easing = FastOutSlowInEasing
-    ),
-    targetOffsetX = targetOffsetX
-) + fadeOut(
-    animationSpec = tween(
-        durationMillis = durationMillis.ForOutgoing,
-        delayMillis = 0,
-        easing = FastOutLinearInEasing
-    )
-)
 
 private fun NavHostController.navigateBackWithHapticFeedback(hapticFeedback: HapticFeedback) {
     hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)

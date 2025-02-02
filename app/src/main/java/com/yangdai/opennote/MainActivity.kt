@@ -88,6 +88,8 @@ class MainActivity : AppCompatActivity() {
                     getString(R.string.link), KeyEvent.KEYCODE_K, KeyEvent.META_CTRL_ON
                 ), KeyboardShortcutInfo(
                     getString(R.string.preview), KeyEvent.KEYCODE_P, KeyEvent.META_CTRL_ON
+                ), KeyboardShortcutInfo(
+                    getString(R.string.find), KeyEvent.KEYCODE_F, KeyEvent.META_CTRL_ON
                 ),
 
 

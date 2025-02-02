@@ -206,7 +206,8 @@ class SharedViewModel @Inject constructor(
         dataStoreRepository.booleanFlow(Constants.Preferences.IS_LIST_VIEW),
         dataStoreRepository.booleanFlow(Constants.Preferences.IS_APP_IN_AMOLED_MODE),
         dataStoreRepository.booleanFlow(Constants.Preferences.IS_DEFAULT_VIEW_FOR_READING),
-        dataStoreRepository.booleanFlow(Constants.Preferences.IS_DEFAULT_LITE_MODE)
+        dataStoreRepository.booleanFlow(Constants.Preferences.IS_DEFAULT_LITE_MODE),
+        dataStoreRepository.booleanFlow(Constants.Preferences.IS_LINT_ACTIVE)
     ) { values ->
         SettingsState(
             theme = AppTheme.fromInt(values[0] as Int),
@@ -218,7 +219,8 @@ class SharedViewModel @Inject constructor(
             isListView = values[6] as Boolean,
             isAppInAmoledMode = values[7] as Boolean,
             isDefaultViewForReading = values[8] as Boolean,
-            isDefaultLiteMode = values[9] as Boolean
+            isDefaultLiteMode = values[9] as Boolean,
+            isLintActive = values[10] as Boolean
         )
     }.flowOn(Dispatchers.IO).stateIn(
         scope = viewModelScope, started = SharingStarted.Eagerly, initialValue = SettingsState()
@@ -538,7 +540,7 @@ class SharedViewModel @Inject constructor(
                             timestamp = _oNote.timestamp
                         )
                     }
-                    withContext(Dispatchers.Default) {
+                    withContext(Dispatchers.Main) {
                         titleState.setTextAndPlaceCursorAtEnd(_oNote.title)
                         contentState.setTextAndPlaceCursorAtEnd(_oNote.content)
                     }
@@ -608,7 +610,7 @@ class SharedViewModel @Inject constructor(
 
             is DatabaseEvent.ImportImages -> {
                 val context = event.context
-                val contentResolver = event.contentResolver
+                val contentResolver = context.contentResolver
                 val uriList = event.uriList
 
                 startDataAction()

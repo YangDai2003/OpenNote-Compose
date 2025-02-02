@@ -17,8 +17,8 @@ android {
         applicationId = "com.yangdai.opennote"
         minSdk = 29
         targetSdk = 35
-        versionCode = 145
-        versionName = "1.4.5"
+        versionCode = 147
+        versionName = "1.4.7"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -72,6 +72,10 @@ android {
         sourceSets.all {
             languageSettings.enableLanguageFeature("ExplicitBackingFields")
         }
+    }
+    composeCompiler {
+        reportsDestination = layout.buildDirectory.dir("compose_compiler")
+        metricsDestination = layout.buildDirectory.dir("compose_compiler")
     }
     packaging {
         resources {

@@ -62,10 +62,22 @@ fun OpenNoteTheme(
             surface = darkenColor(colorScheme.surface, backgroundDimmingFactor),
             surfaceContainer = darkenColor(colorScheme.surfaceContainer, backgroundDimmingFactor),
             surfaceVariant = darkenColor(colorScheme.surfaceVariant, contentDimmingFactor),
-            surfaceContainerLowest = darkenColor(colorScheme.surfaceContainerLowest, contentDimmingFactor),
-            surfaceContainerLow = darkenColor(colorScheme.surfaceContainerLow, contentDimmingFactor),
-            surfaceContainerHigh = darkenColor(colorScheme.surfaceContainerHigh, contentDimmingFactor),
-            surfaceContainerHighest = darkenColor(colorScheme.surfaceContainerHighest, contentDimmingFactor),
+            surfaceContainerLowest = darkenColor(
+                colorScheme.surfaceContainerLowest,
+                contentDimmingFactor
+            ),
+            surfaceContainerLow = darkenColor(
+                colorScheme.surfaceContainerLow,
+                contentDimmingFactor
+            ),
+            surfaceContainerHigh = darkenColor(
+                colorScheme.surfaceContainerHigh,
+                contentDimmingFactor
+            ),
+            surfaceContainerHighest = darkenColor(
+                colorScheme.surfaceContainerHighest,
+                contentDimmingFactor
+            ),
             surfaceDim = darkenColor(colorScheme.surfaceDim, contentDimmingFactor),
             surfaceBright = darkenColor(colorScheme.surfaceBright, contentDimmingFactor),
             scrim = darkenColor(colorScheme.scrim, contentDimmingFactor),
@@ -85,30 +97,29 @@ fun OpenNoteTheme(
         }
     }
 
-    /*   val factor = 0.6f
-
-       val openNoteTypography = MaterialTheme.typography.copy(
-           displayLarge = MaterialTheme.typography.displayLarge.copy(fontSize = MaterialTheme.typography.displayLarge.fontSize * factor),
-           displayMedium = MaterialTheme.typography.displayMedium.copy(fontSize = MaterialTheme.typography.displayMedium.fontSize * factor),
-           displaySmall = MaterialTheme.typography.displaySmall.copy(fontSize = MaterialTheme.typography.displaySmall.fontSize * factor),
-           headlineLarge = MaterialTheme.typography.headlineLarge.copy(fontSize = MaterialTheme.typography.headlineLarge.fontSize * factor),
-           headlineMedium = MaterialTheme.typography.headlineMedium.copy(fontSize = MaterialTheme.typography.headlineMedium.fontSize * factor),
-           headlineSmall = MaterialTheme.typography.headlineSmall.copy(fontSize = MaterialTheme.typography.headlineSmall.fontSize * factor),
-           titleLarge = MaterialTheme.typography.titleLarge.copy(fontSize = MaterialTheme.typography.titleLarge.fontSize * factor),
-           titleMedium = MaterialTheme.typography.titleMedium.copy(fontSize = MaterialTheme.typography.titleMedium.fontSize * factor),
-           titleSmall = MaterialTheme.typography.titleSmall.copy(fontSize = MaterialTheme.typography.titleSmall.fontSize * factor),
-           bodyLarge = MaterialTheme.typography.bodyLarge.copy(fontSize = MaterialTheme.typography.bodyLarge.fontSize * factor),
-           bodyMedium = MaterialTheme.typography.bodyMedium.copy(fontSize = MaterialTheme.typography.bodyMedium.fontSize * factor),
-           bodySmall = MaterialTheme.typography.bodySmall.copy(fontSize = MaterialTheme.typography.bodySmall.fontSize * factor),
-           labelLarge = MaterialTheme.typography.labelLarge.copy(fontSize = MaterialTheme.typography.labelLarge.fontSize * factor),
-           labelMedium = MaterialTheme.typography.labelMedium.copy(fontSize = MaterialTheme.typography.labelMedium.fontSize * factor),
-           labelSmall = MaterialTheme.typography.labelSmall.copy(fontSize = MaterialTheme.typography.labelSmall.fontSize * factor)
-       )
-
-     */
+//    val factor = 0.8f
+//
+//    val typography = MaterialTheme.typography.copy(
+//        displayLarge = MaterialTheme.typography.displayLarge.copy(fontSize = MaterialTheme.typography.displayLarge.fontSize * factor),
+//        displayMedium = MaterialTheme.typography.displayMedium.copy(fontSize = MaterialTheme.typography.displayMedium.fontSize * factor),
+//        displaySmall = MaterialTheme.typography.displaySmall.copy(fontSize = MaterialTheme.typography.displaySmall.fontSize * factor),
+//        headlineLarge = MaterialTheme.typography.headlineLarge.copy(fontSize = MaterialTheme.typography.headlineLarge.fontSize * factor),
+//        headlineMedium = MaterialTheme.typography.headlineMedium.copy(fontSize = MaterialTheme.typography.headlineMedium.fontSize * factor),
+//        headlineSmall = MaterialTheme.typography.headlineSmall.copy(fontSize = MaterialTheme.typography.headlineSmall.fontSize * factor),
+//        titleLarge = MaterialTheme.typography.titleLarge.copy(fontSize = MaterialTheme.typography.titleLarge.fontSize * factor),
+//        titleMedium = MaterialTheme.typography.titleMedium.copy(fontSize = MaterialTheme.typography.titleMedium.fontSize * factor),
+//        titleSmall = MaterialTheme.typography.titleSmall.copy(fontSize = MaterialTheme.typography.titleSmall.fontSize * factor),
+//        bodyLarge = MaterialTheme.typography.bodyLarge.copy(fontSize = MaterialTheme.typography.bodyLarge.fontSize * factor),
+//        bodyMedium = MaterialTheme.typography.bodyMedium.copy(fontSize = MaterialTheme.typography.bodyMedium.fontSize * factor),
+//        bodySmall = MaterialTheme.typography.bodySmall.copy(fontSize = MaterialTheme.typography.bodySmall.fontSize * factor),
+//        labelLarge = MaterialTheme.typography.labelLarge.copy(fontSize = MaterialTheme.typography.labelLarge.fontSize * factor),
+//        labelMedium = MaterialTheme.typography.labelMedium.copy(fontSize = MaterialTheme.typography.labelMedium.fontSize * factor),
+//        labelSmall = MaterialTheme.typography.labelSmall.copy(fontSize = MaterialTheme.typography.labelSmall.fontSize * factor)
+//    )
 
     MaterialTheme(
         colorScheme = colorScheme,
+//        typography = typography,
         content = content
     )
 }
