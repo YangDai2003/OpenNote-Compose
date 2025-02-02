@@ -69,7 +69,7 @@ OpenNote是一款完全使用Compose构建的现代化Android记事本应用程�
 - **编程语言**：Kotlin
 - **构建工具**：Gradle和Kotlin DSL
 - **Android版本**：应用程序目标为Android SDK版本35，并且与运行Android SDK版本29及以上的设备兼容。
-- **Kotlin版本**：应用程序使用Kotlin版本2.1.0。
+- **Kotlin版本**：应用程序使用Kotlin版本2.1.10。
 - **Java版本**：应用程序使用Java版本17。
 
 ## 架构
