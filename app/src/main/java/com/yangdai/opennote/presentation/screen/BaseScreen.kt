@@ -14,10 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.unit.dp
@@ -42,16 +39,12 @@ fun BaseScreen(
 ) {
 
     val settingsState by sharedViewModel.settingsStateFlow.collectAsStateWithLifecycle()
-
-    // Biometric authentication
-    var authenticated by rememberSaveable {
-        mutableStateOf(false)
-    }
+    val authState by sharedViewModel.authenticated.collectAsStateWithLifecycle()
 
     // Check if the user is logged in
     val loggedIn by remember {
         derivedStateOf {
-            !settingsState.needPassword || authenticated
+            !settingsState.needPassword || authState
         }
     }
 
@@ -129,10 +122,18 @@ fun BaseScreen(
             AnimatedVisibility(visible = !loggedIn, enter = fadeIn(), exit = fadeOut()) {
                 LoginOverlayScreen(
                     onAuthenticated = {
-                        authenticated = true
+                        sharedViewModel.authenticated.value = true
                     },
                     onAuthenticationNotEnrolled = {
                         sharedViewModel.putPreferenceValue(Constants.Preferences.NEED_PASSWORD, false)
+                    }
+                )
+            }
+
+            AnimatedVisibility(visible = settingsState.storagePath.isEmpty(), enter = fadeIn(), exit = fadeOut()) {
+                PermissionScreen(
+                    onPermissionResult = {
+                        sharedViewModel.putPreferenceValue(Constants.Preferences.STORAGE_PATH, it)
                     }
                 )
             }

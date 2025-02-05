@@ -53,8 +53,8 @@ fun SettingsDetailPane(
                             )
                         }
                 },
-                colors = TopAppBarDefaults.largeTopAppBarColors()
-                    .copy(scrolledContainerColor = TopAppBarDefaults.largeTopAppBarColors().containerColor)
+                colors = TopAppBarDefaults.topAppBarColors()
+                    .copy(scrolledContainerColor = TopAppBarDefaults.topAppBarColors().containerColor)
             )
         else
             LargeTopAppBar(
@@ -84,8 +84,8 @@ fun SettingsDetailPane(
                             )
                         }
                 },
-                colors = TopAppBarDefaults.largeTopAppBarColors()
-                    .copy(scrolledContainerColor = TopAppBarDefaults.largeTopAppBarColors().containerColor)
+                colors = TopAppBarDefaults.topAppBarColors()
+                    .copy(scrolledContainerColor = TopAppBarDefaults.topAppBarColors().containerColor)
             )
     }
 ) {

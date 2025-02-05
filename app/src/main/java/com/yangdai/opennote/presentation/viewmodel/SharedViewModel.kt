@@ -2,12 +2,7 @@ package com.yangdai.opennote.presentation.viewmodel
 
 import android.annotation.SuppressLint
 import android.content.ContentResolver
-import android.content.ContentValues
-import android.media.MediaScannerConnection
 import android.net.Uri
-import android.os.Build
-import android.os.Environment
-import android.provider.MediaStore
 import android.provider.OpenableColumns
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.text.input.TextFieldState
@@ -15,6 +10,7 @@ import androidx.compose.foundation.text.input.clearText
 import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.util.fastJoinToString
+import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.mlkit.vision.text.TextRecognition
@@ -61,6 +57,7 @@ import com.yangdai.opennote.presentation.state.DataState
 import com.yangdai.opennote.presentation.state.NoteState
 import com.yangdai.opennote.presentation.state.SettingsState
 import com.yangdai.opennote.presentation.util.Constants
+import com.yangdai.opennote.presentation.util.getOrCreateDirectory
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -77,6 +74,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
@@ -99,7 +97,6 @@ import org.commonmark.ext.task.list.items.TaskListItemsExtension
 import org.commonmark.parser.Parser
 import org.commonmark.renderer.html.HtmlRenderer
 import java.io.File
-import java.io.FileOutputStream
 import java.io.OutputStreamWriter
 import java.util.Locale
 import javax.inject.Inject
@@ -110,6 +107,8 @@ class SharedViewModel @Inject constructor(
     private val dataStoreRepository: DataStoreRepository,
     private val useCases: UseCases
 ) : ViewModel() {
+
+    val authenticated = MutableStateFlow(false)
 
     // 起始页加载状态，初始值为 true
     val isLoading: StateFlow<Boolean>
@@ -122,7 +121,8 @@ class SharedViewModel @Inject constructor(
     // 文件夹和文件夹内笔记数量为一个Pair的列表
     @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
     val folderWithNoteCountsFlow = useCases.getFolders().debounce(300).flatMapLatest { folders ->
-        combine(
+        if (folders.isEmpty()) return@flatMapLatest flowOf(emptyList())
+        else combine(
             folders.map { folder ->
                 useCases.getNotesCountByFolderId(folder.id).map { count -> folder to count }
             }) { countPairs ->
@@ -207,7 +207,8 @@ class SharedViewModel @Inject constructor(
         dataStoreRepository.booleanFlow(Constants.Preferences.IS_APP_IN_AMOLED_MODE),
         dataStoreRepository.booleanFlow(Constants.Preferences.IS_DEFAULT_VIEW_FOR_READING),
         dataStoreRepository.booleanFlow(Constants.Preferences.IS_DEFAULT_LITE_MODE),
-        dataStoreRepository.booleanFlow(Constants.Preferences.IS_LINT_ACTIVE)
+        dataStoreRepository.booleanFlow(Constants.Preferences.IS_LINT_ACTIVE),
+        dataStoreRepository.stringFlow(Constants.Preferences.STORAGE_PATH)
     ) { values ->
         SettingsState(
             theme = AppTheme.fromInt(values[0] as Int),
@@ -220,7 +221,8 @@ class SharedViewModel @Inject constructor(
             isAppInAmoledMode = values[7] as Boolean,
             isDefaultViewForReading = values[8] as Boolean,
             isDefaultLiteMode = values[9] as Boolean,
-            isLintActive = values[10] as Boolean
+            isLintActive = values[10] as Boolean,
+            storagePath = values[11] as String
         )
     }.flowOn(Dispatchers.IO).stateIn(
         scope = viewModelScope, started = SharingStarted.Eagerly, initialValue = SettingsState()
@@ -509,16 +511,13 @@ class SharedViewModel @Inject constructor(
                     Constants.Editor.TABLE -> contentState.edit {
                         addTable(
                             event.value.substringBefore(
-                                ",",
-                                "1"
+                                ",", "1"
                             ).toInt(), event.value.substringAfter(",", "1").toInt()
                         )
                     }
 
                     Constants.Editor.LIST -> contentState.edit { addInNewLine(event.value) }
                     Constants.Editor.TEXT -> contentState.edit { add(event.value) }
-                    Constants.Editor.TITLE -> titleState.edit { add(event.value) }
-                    Constants.Editor.NEW_TEXT -> contentState.setTextAndPlaceCursorAtEnd(event.value)
                 }
             }
 
@@ -540,10 +539,11 @@ class SharedViewModel @Inject constructor(
                             timestamp = _oNote.timestamp
                         )
                     }
-                    withContext(Dispatchers.Main) {
-                        titleState.setTextAndPlaceCursorAtEnd(_oNote.title)
-                        contentState.setTextAndPlaceCursorAtEnd(_oNote.content)
-                    }
+                    val sharedContentName = event.sharedContent?.fileName ?: ""
+                    val sharedContent = event.sharedContent?.content ?: ""
+
+                    titleState.setTextAndPlaceCursorAtEnd(_oNote.title + sharedContentName)
+                    contentState.setTextAndPlaceCursorAtEnd(_oNote.content + sharedContent)
                 }
             }
 
@@ -615,56 +615,45 @@ class SharedViewModel @Inject constructor(
 
                 startDataAction()
                 dataActionJob = viewModelScope.launch(Dispatchers.IO) {
+                    val rootUri =
+                        dataStoreRepository.getStringValue(Constants.Preferences.STORAGE_PATH, "")
+                            .toUri()
+                    // 获取Open Note目录
+                    val openNoteDir =
+                        getOrCreateDirectory(context, rootUri, Constants.File.OPENNOTE)
+                    // 获取Backup目录
+                    val imagesDir = openNoteDir?.let { dir ->
+                        getOrCreateDirectory(context, dir.uri, Constants.File.OPENNOTE_IMAGES)
+                    }
                     val savedUriList = mutableListOf<String>()
+                    imagesDir?.let { dir ->
+                        uriList.forEachIndexed { index, uri ->
+                            _dataActionState.update {
+                                it.copy(progress = index.toFloat() / uriList.size)
+                            }
 
-                    uriList.forEachIndexed { index, uri ->
-                        _dataActionState.update {
-                            it.copy(progress = index.toFloat() / uriList.size)
-                        }
+                            val timestamp = System.currentTimeMillis()
+                            val name = getFileName(contentResolver, uri)
+                            val fileName = "${name?.substringBeforeLast(".")}_${timestamp}.${
+                                name?.substringAfterLast(".")
+                            }"
 
-                        val timestamp = System.currentTimeMillis()
-                        val name = getFileName(contentResolver, uri)
-                        val fileName = name?.substringBeforeLast(".") +
-                                "_" + timestamp + "." + name?.substringAfterLast(".")
+                            try {
+                                // 复制文件
+                                contentResolver.openInputStream(uri)?.use { input ->
+                                    val mimeType = contentResolver.getType(uri) ?: "image/*"
+                                    val newFile = dir.createFile(mimeType, fileName)
 
-                        val downloadsDir = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
-                        } else {
-                            // Android 10 及以下使用应用专属目录
-                            context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)
-                        }
-
-                        // 创建OpenNote/Images目录结构
-                        val openNoteImagesDir =
-                            File(downloadsDir, Constants.File.OPENNOTE_IMAGES).apply {
-                                if (!exists()) {
-                                    mkdirs()
+                                    newFile?.let { file ->
+                                        contentResolver.openOutputStream(file.uri)?.use { output ->
+                                            input.copyTo(output)
+                                        }
+                                        savedUriList.add("![](${fileName})")
+                                    }
                                 }
+                            } catch (e: Exception) {
+                                e.printStackTrace()
                             }
-
-                        val file = File(openNoteImagesDir, fileName)
-
-                        try {
-                            contentResolver.openInputStream(uri)?.use { input ->
-                                FileOutputStream(file).use { output ->
-                                    input.copyTo(output)
-                                }
-                            }
-
-                            // 确保媒体库能够扫描到新文件
-                            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
-                                MediaScannerConnection.scanFile(
-                                    context,
-                                    arrayOf(file.absolutePath),
-                                    null,
-                                    null
-                                )
-                            }
-
-                            savedUriList.add("![](file://${file.absolutePath})")
-                        } catch (e: Exception) {
-                            // 处理异常
-                            e.printStackTrace()
                         }
                     }
 
@@ -677,7 +666,7 @@ class SharedViewModel @Inject constructor(
                 }
             }
 
-            is DatabaseEvent.ImportFile -> {
+            is DatabaseEvent.ImportFiles -> {
 
                 val contentResolver = event.contentResolver
                 val folderId = event.folderId
@@ -699,9 +688,9 @@ class SharedViewModel @Inject constructor(
                                     title = fileName?.substringBeforeLast(".") ?: "",
                                     content = content ?: "",
                                     folderId = folderId,
-                                    isMarkdown = (fileName?.endsWith(".md") == true) ||
-                                            (fileName?.endsWith(".markdown") == true ||
-                                                    (fileName?.endsWith(".html") == true)),
+                                    isMarkdown = (fileName?.endsWith(".md") == true) || (fileName?.endsWith(
+                                        ".markdown"
+                                    ) == true || (fileName?.endsWith(".html") == true)),
                                     timestamp = System.currentTimeMillis()
                                 )
                                 useCases.addNote(note)
@@ -714,9 +703,9 @@ class SharedViewModel @Inject constructor(
                 }
             }
 
-            is DatabaseEvent.ExportFile -> {
+            is DatabaseEvent.ExportFiles -> {
 
-                val contentResolver = event.contentResolver
+                val context = event.context
                 val notes = event.notes
                 val type = event.type
 
@@ -729,44 +718,42 @@ class SharedViewModel @Inject constructor(
                 }
 
                 dataActionJob = viewModelScope.launch(Dispatchers.IO) {
-                    notes.forEachIndexed { index, noteEntity ->
-                        _dataActionState.update {
-                            it.copy(progress = index.toFloat() / notes.size)
-                        }
+                    val rootUri =
+                        dataStoreRepository.getStringValue(Constants.Preferences.STORAGE_PATH, "")
+                            .toUri()
+                    // 获取Open Note目录
+                    val openNoteDir =
+                        getOrCreateDirectory(context, rootUri, Constants.File.OPENNOTE)
 
-                        val fileName = noteEntity.title
-                        val content = if (".html" != extension) noteEntity.content
-                        else renderer.render(parser.parse(noteEntity.content))
+                    openNoteDir?.let { dir ->
+                        notes.forEachIndexed { index, noteEntity ->
+                            _dataActionState.update {
+                                it.copy(progress = index.toFloat() / notes.size)
+                            }
 
-                        val values = ContentValues().apply {
-                            put(MediaStore.Downloads.DISPLAY_NAME, "$fileName$extension")
-                            put(MediaStore.Downloads.MIME_TYPE, "text/*")
-                            put(
-                                MediaStore.Downloads.RELATIVE_PATH,
-                                "${Environment.DIRECTORY_DOWNLOADS}/${Constants.File.OPENNOTE}"
-                            )
-                        }
+                            val fileName = "${noteEntity.title}$extension"
+                            val content = if (".html" != extension) noteEntity.content
+                            else renderer.render(parser.parse(noteEntity.content))
 
-                        val uri = contentResolver.insert(
-                            MediaStore.Downloads.EXTERNAL_CONTENT_URI, values
-                        )
-
-                        uri?.let { uri1 ->
-                            runCatching {
-                                contentResolver.openOutputStream(uri1)?.use { outputStream ->
-                                    OutputStreamWriter(outputStream).use { writer ->
-                                        writer.write(content)
-                                    }
+                            try {
+                                // 创建文件
+                                val file = dir.createFile("text/*", fileName)
+                                file?.let { docFile ->
+                                    context.contentResolver.openOutputStream(docFile.uri)
+                                        ?.use { outputStream ->
+                                            OutputStreamWriter(outputStream).use { writer ->
+                                                writer.write(content)
+                                            }
+                                        }
                                 }
-                            }.onFailure { throwable ->
+                            } catch (e: Exception) {
                                 _dataActionState.update {
-                                    it.copy(
-                                        message = "Failed to export note: ${throwable.localizedMessage ?: "error"}"
-                                    )
+                                    it.copy(message = "Failed to export note: ${e.localizedMessage}")
                                 }
                             }
                         }
                     }
+
                     _dataActionState.update {
                         it.copy(progress = 1f)
                     }
@@ -775,7 +762,7 @@ class SharedViewModel @Inject constructor(
 
             is DatabaseEvent.Backup -> {
 
-                val contentResolver = event.contentResolver
+                val context = event.context
 
                 startDataAction()
 
@@ -783,36 +770,39 @@ class SharedViewModel @Inject constructor(
                     it.copy(progress = 0.2f)
                 }
                 dataActionJob = viewModelScope.launch(Dispatchers.IO) {
-                    val notes = useCases.getNotes().first()
-                    val folders = useCases.getFolders().first()
-                    val backupData = BackupData(notes, folders)
-                    val json = Json.encodeToString(backupData)
-                    _dataActionState.update {
-                        it.copy(progress = 0.5f)
+                    val rootUri =
+                        dataStoreRepository.getStringValue(Constants.Preferences.STORAGE_PATH, "")
+                            .toUri()
+                    // 获取Open Note目录
+                    val openNoteDir =
+                        getOrCreateDirectory(context, rootUri, Constants.File.OPENNOTE)
+                    // 获取Backup目录
+                    val backupDir = openNoteDir?.let { dir ->
+                        getOrCreateDirectory(context, dir.uri, Constants.File.OPENNOTE_BACKUP)
                     }
-                    // 创建 ContentValues 对象
-                    val values = ContentValues().apply {
-                        put(
-                            MediaStore.Downloads.DISPLAY_NAME,
-                            "${System.currentTimeMillis()}.json"
-                        )
-                        put(MediaStore.Downloads.MIME_TYPE, "application/json")
-                        put(
-                            MediaStore.Downloads.RELATIVE_PATH,
-                            "${Environment.DIRECTORY_DOWNLOADS}/${Constants.File.OPENNOTE_BACKUP}"
-                        )
-                    }
+                    backupDir?.let { dir ->
+                        val notes = useCases.getNotes().first()
+                        val folders = useCases.getFolders().first()
+                        val backupData = BackupData(notes, folders)
+                        val json = Json.encodeToString(backupData)
+                        _dataActionState.update {
+                            it.copy(progress = 0.5f)
+                        }
+                        try {
+                            val fileName = "${System.currentTimeMillis()}.json"
+                            val file = dir.createFile("application/json", fileName)
 
-                    // 获取 Uri
-                    val uri = contentResolver.insert(
-                        MediaStore.Downloads.EXTERNAL_CONTENT_URI, values
-                    )
-
-                    // 将 JSON 字符串写入到文件中
-                    uri?.let {
-                        contentResolver.openOutputStream(it)?.use { outputStream ->
-                            OutputStreamWriter(outputStream).use { writer ->
-                                writer.write(json)
+                            file?.let { docFile ->
+                                context.contentResolver.openOutputStream(docFile.uri)
+                                    ?.use { outputStream ->
+                                        OutputStreamWriter(outputStream).use { writer ->
+                                            writer.write(json)
+                                        }
+                                    }
+                            }
+                        } catch (e: Exception) {
+                            _dataActionState.update {
+                                it.copy(message = "Failed to backup data: ${e.localizedMessage}")
                             }
                         }
                     }

@@ -103,7 +103,7 @@ fun IconButtonWithTooltip(
     shortCutDescription: String? = null,
     onClick: () -> Unit
 ) = TooltipBox(
-    positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
+    positionProvider = TooltipDefaults.rememberTooltipPositionProvider(),
     tooltip = {
         if (shortCutDescription != null) {
             PlainTooltip(

@@ -15,4 +15,6 @@ interface DataStoreRepository {
     fun stringFlow(key: String): Flow<String>
     fun booleanFlow(key: String): Flow<Boolean>
     fun stringSetFlow(key: String): Flow<Set<String>>
+
+    fun getStringValue(key: String, defaultValue: String): String
 }

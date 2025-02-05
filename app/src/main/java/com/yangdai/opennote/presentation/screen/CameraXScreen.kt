@@ -63,6 +63,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
@@ -328,7 +329,7 @@ fun CameraXScreen(
                         .align(Alignment.Center)
                 )
             } else {
-                val orientation = context.resources.configuration.orientation
+                val orientation = LocalConfiguration.current.orientation
 
                 val modifier = if (orientation == Configuration.ORIENTATION_PORTRAIT) {
                     Modifier

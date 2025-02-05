@@ -4,6 +4,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
@@ -14,6 +15,7 @@ import androidx.compose.material.icons.outlined.Book
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.FolderOpen
 import androidx.compose.material.icons.outlined.KeyboardArrowDown
+import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -24,6 +26,7 @@ import androidx.compose.material3.NavigationDrawerItemDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
@@ -45,7 +48,9 @@ import com.yangdai.opennote.presentation.navigation.Screen.*
 @Composable
 fun DrawerContent(
     folderNoteCounts: List<Pair<FolderEntity, Int>>,
+    showLock: Boolean,
     selectedDrawerIndex: Int,
+    onLockClick: () -> Unit,
     navigateTo: (Screen) -> Unit,
     onClick: (Int, FolderEntity) -> Unit
 ) = Column(
@@ -56,8 +61,22 @@ fun DrawerContent(
 
     Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.End
+        horizontalArrangement = Arrangement.SpaceBetween
     ) {
+        if (showLock)
+            IconButton(
+                modifier = Modifier.padding(12.dp),
+                onClick = onLockClick
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.Lock,
+                    contentDescription = "lock",
+                    tint = MaterialTheme.colorScheme.onSurface
+                )
+            }
+
+        Spacer(modifier = Modifier.weight(1f))
+
         IconButton(
             modifier = Modifier.padding(12.dp),
             onClick = { navigateTo(Settings) }
@@ -90,6 +109,10 @@ fun DrawerContent(
 
     // Record whether the folder list is expanded
     var isFoldersExpended by rememberSaveable { mutableStateOf(false) }
+
+    LaunchedEffect(folderNoteCounts) {
+        isFoldersExpended = folderNoteCounts.isNotEmpty()
+    }
 
     DrawerItem(
         icon = if (!isFoldersExpended) Icons.AutoMirrored.Outlined.KeyboardArrowRight else Icons.Outlined.KeyboardArrowDown,

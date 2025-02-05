@@ -4,14 +4,12 @@ import android.content.res.Configuration
 import androidx.activity.compose.LocalActivity
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.foundation.layout.ContextualFlowRow
-import androidx.compose.foundation.layout.ContextualFlowRowOverflow
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -22,8 +20,6 @@ import androidx.compose.material.icons.outlined.Clear
 import androidx.compose.material.icons.outlined.DeleteForever
 import androidx.compose.material.icons.outlined.GridView
 import androidx.compose.material.icons.outlined.History
-import androidx.compose.material.icons.outlined.KeyboardArrowDown
-import androidx.compose.material.icons.outlined.KeyboardArrowUp
 import androidx.compose.material.icons.outlined.Menu
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.SortByAlpha
@@ -54,7 +50,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.yangdai.opennote.MainActivity
@@ -98,6 +93,15 @@ fun AdaptiveTopSearchbar(
     fun search(text: String) {
         if (text.isNotEmpty()) {
             val newSet = historySet.toMutableSet()
+            while (newSet.size > 30) {
+                val iterator = newSet.iterator()
+                if (iterator.hasNext()) {
+                    iterator.next()
+                    iterator.remove()
+                } else {
+                    break
+                }
+            }
             newSet.add(text)
             viewModel.putPreferenceValue(Constants.Preferences.SEARCH_HISTORY, newSet.toSet())
             viewModel.onListEvent(ListEvent.Search(text))
@@ -221,42 +225,24 @@ fun AdaptiveTopSearchbar(
             }
         )
 
-        ContextualFlowRow(
-            itemCount = historySet.size,
+        FlowRow(
             modifier = Modifier.padding(horizontal = 12.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
-            maxLines = maxLines,
-            overflow = ContextualFlowRowOverflow.expandOrCollapseIndicator(
-                minRowsToShowCollapse = DEFAULT_MAX_LINES + 1,
-                expandIndicator = {
-                    IconButton(onClick = { maxLines = Int.MAX_VALUE }) {
-                        Icon(
-                            imageVector = Icons.Outlined.KeyboardArrowDown,
-                            contentDescription = "Expand"
+            maxLines = maxLines
+        ) {
+            historySet.reversed().forEach {
+                SuggestionChip(
+                    modifier = Modifier.defaultMinSize(48.dp),
+                    onClick = { inputText = it },
+                    label = {
+                        Text(
+                            text = it,
+                            textAlign = TextAlign.Center,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
                         )
-                    }
-                },
-                collapseIndicator = {
-                    IconButton(onClick = { maxLines = DEFAULT_MAX_LINES }) {
-                        Icon(
-                            imageVector = Icons.Outlined.KeyboardArrowUp,
-                            contentDescription = "Collapse"
-                        )
-                    }
-                }
-            )
-        ) { index ->
-            SuggestionChip(
-                modifier = Modifier.defaultMinSize(48.dp),
-                onClick = { inputText = historySet.elementAt(index) },
-                label = {
-                    Text(
-                        text = historySet.elementAt(index),
-                        textAlign = TextAlign.Center,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                })
+                    })
+            }
         }
     }
 }
@@ -287,11 +273,6 @@ fun AdaptiveSearchBar(
         label = "SearchBar Padding"
     )
 
-    val searchBarAlpha by animateFloatAsState(
-        targetValue = if (expanded) 1f else 0.9f,
-        label = "SearchBar Alpha"
-    )
-
     val searchBarShadowElevation by animateDpAsState(
         targetValue = if (expanded) 8.dp else 0.dp,
         label = "SearchBar Shadow Elevation"
@@ -300,25 +281,15 @@ fun AdaptiveSearchBar(
     SearchBar(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = searchBarPadding)
-            .zIndex(1f),
+            .padding(horizontal = searchBarPadding),
         inputField = inputField,
         expanded = expanded,
         shadowElevation = searchBarShadowElevation,
-        colors = SearchBarDefaults.colors(
-            containerColor = SearchBarDefaults.colors().containerColor.copy(
-                alpha = searchBarAlpha
-            )
-        ),
         onExpandedChange = onExpandedChange,
         content = content
     )
 } else {
 
-    val searchBarAlpha by animateFloatAsState(
-        targetValue = if (expanded) 1f else 0.9f,
-        label = "SearchBar Alpha"
-    )
     val searchBarShadowElevation by animateDpAsState(
         targetValue = if (expanded) 8.dp else 0.dp,
         label = "SearchBar Shadow Elevation"
@@ -328,19 +299,13 @@ fun AdaptiveSearchBar(
         modifier = modifier
             .fillMaxWidth()
             .statusBarsPadding()
-            .padding(top = 8.dp)
-            .zIndex(1f),
+            .padding(top = 8.dp),
         contentAlignment = Alignment.Center
     ) {
         DockedSearchBar(
             inputField = inputField,
             expanded = expanded,
             shadowElevation = searchBarShadowElevation,
-            colors = SearchBarDefaults.colors(
-                containerColor = SearchBarDefaults.colors().containerColor.copy(
-                    alpha = searchBarAlpha
-                )
-            ),
             onExpandedChange = onExpandedChange,
             content = content
         )

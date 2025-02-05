@@ -2,7 +2,6 @@ package com.yangdai.opennote.presentation.screen
 
 import android.content.ClipData
 import android.content.Intent
-import android.os.Build
 import android.provider.CalendarContract
 import android.widget.Toast
 import androidx.activity.BackEventCompat
@@ -40,7 +39,6 @@ import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.automirrored.outlined.MenuBook
-import androidx.compose.material.icons.filled.DragIndicator
 import androidx.compose.material.icons.outlined.Alarm
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.EditNote
@@ -69,6 +67,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TooltipBox
 import androidx.compose.material3.TooltipDefaults
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.VerticalDragHandle
 import androidx.compose.material3.adaptive.currentWindowSize
 import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
@@ -93,7 +92,7 @@ import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.ClipEntry
-import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
@@ -105,12 +104,12 @@ import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastJoinToString
 import androidx.core.content.FileProvider
+import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.yangdai.opennote.MainActivity
 import com.yangdai.opennote.R
 import com.yangdai.opennote.data.local.entity.NoteEntity
-import com.yangdai.opennote.presentation.component.text.FindAndReplaceField
 import com.yangdai.opennote.presentation.component.dialog.ExportDialog
 import com.yangdai.opennote.presentation.component.dialog.FolderListDialog
 import com.yangdai.opennote.presentation.component.dialog.LinkDialog
@@ -120,6 +119,7 @@ import com.yangdai.opennote.presentation.component.dialog.ShareDialog
 import com.yangdai.opennote.presentation.component.dialog.ShareType
 import com.yangdai.opennote.presentation.component.dialog.TableDialog
 import com.yangdai.opennote.presentation.component.dialog.TaskDialog
+import com.yangdai.opennote.presentation.component.text.FindAndReplaceField
 import com.yangdai.opennote.presentation.component.text.LiteTextField
 import com.yangdai.opennote.presentation.component.text.MarkdownEditorRow
 import com.yangdai.opennote.presentation.component.text.ReadView
@@ -160,25 +160,8 @@ fun NoteScreen(
     DisposableEffect(Unit) {
         if (id != previousId) {
             previousId = id
-            coroutineScope.launch {
-                sharedViewModel.onNoteEvent(NoteEvent.Load(id))
-                if (sharedContent != null) {
-                    withContext(Dispatchers.Main) {
-                        sharedViewModel.onNoteEvent(
-                            NoteEvent.Edit(
-                                Constants.Editor.TITLE, sharedContent.fileName
-                            )
-                        )
-                        sharedViewModel.onNoteEvent(
-                            NoteEvent.Edit(
-                                Constants.Editor.TEXT, sharedContent.content
-                            )
-                        )
-                    }
-                }
-            }
+            sharedViewModel.onNoteEvent(NoteEvent.Load(id, sharedContent))
         }
-
         onDispose {
             sharedViewModel.onNoteEvent(NoteEvent.Update)
         }
@@ -374,7 +357,7 @@ fun NoteScreen(
                 }
 
                 if (!isReadView) TooltipBox(
-                    positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
+                    positionProvider = TooltipDefaults.rememberTooltipPositionProvider(),
                     tooltip = {
                         PlainTooltip(content = { Text("Ctrl + F") })
                     },
@@ -392,7 +375,7 @@ fun NoteScreen(
 
 
                 TooltipBox(
-                    positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
+                    positionProvider = TooltipDefaults.rememberTooltipPositionProvider(),
                     tooltip = {
                         PlainTooltip(content = { Text("Ctrl + P") })
                     },
@@ -661,7 +644,7 @@ fun NoteScreen(
                             },
                             onFocusChanged = { isContentFocused = it })
 
-                        Icon(
+                        VerticalDragHandle(
                             modifier = Modifier
                                 .padding(horizontal = 4.dp)
                                 .draggable(state = rememberDraggableState { delta ->
@@ -677,8 +660,6 @@ fun NoteScreen(
                                         textFieldWeight = closest
                                     }
                                 }),
-                            imageVector = Icons.Default.DragIndicator,
-                            contentDescription = "DragIndicator"
                         )
 
                         ReadView(
@@ -686,6 +667,7 @@ fun NoteScreen(
                                 .fillMaxHeight()
                                 .weight(1f - textFieldWeight),
                             html = html,
+                            rootUri = settingsState.storagePath.toUri(),
                             scrollState = scrollState,
                             scrollSynchronized = isEditorAndPreviewSynced
                         )
@@ -726,6 +708,7 @@ fun NoteScreen(
                             ReadView(
                                 modifier = Modifier.fillMaxSize(),
                                 html = html,
+                                rootUri = settingsState.storagePath.toUri(),
                                 scrollSynchronized = isEditorAndPreviewSynced,
                                 scrollState = scrollState
                             )
@@ -739,8 +722,8 @@ fun NoteScreen(
     if (showExportDialog) {
         ExportDialog(onDismissRequest = { showExportDialog = false }, onConfirm = {
             sharedViewModel.onDatabaseEvent(
-                DatabaseEvent.ExportFile(
-                    context.contentResolver, listOf(
+                DatabaseEvent.ExportFiles(
+                    context.applicationContext, listOf(
                         NoteEntity(
                             title = sharedViewModel.titleState.text.toString(),
                             content = sharedViewModel.contentState.text.toString(),
@@ -754,7 +737,7 @@ fun NoteScreen(
     }
 
     if (showShareDialog) {
-        val clipboardManager = LocalClipboardManager.current
+        val clipboard = LocalClipboard.current
         ShareDialog(onDismissRequest = { showShareDialog = false }, onConfirm = {
             when (it) {
                 ShareType.COPY -> {
@@ -762,11 +745,10 @@ fun NoteScreen(
                         "Markdown", sharedViewModel.contentState.text.toString()
                     )
                     val clipEntry = ClipEntry(clipData)
-                    clipboardManager.setClip(clipEntry)
-                    // Only show a toast for Android 12 and lower.
-                    if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.S_V2) Toast.makeText(
-                        context, "Markdown 📋", Toast.LENGTH_SHORT
-                    ).show()
+                    coroutineScope.launch {
+                        clipboard.setClipEntry(clipEntry)
+                    }
+                    Toast.makeText(context, "Markdown 📋", Toast.LENGTH_SHORT).show()
                 }
 
                 ShareType.TEXT -> {

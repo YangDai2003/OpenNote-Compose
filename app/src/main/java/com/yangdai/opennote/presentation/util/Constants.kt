@@ -1,14 +1,14 @@
 package com.yangdai.opennote.presentation.util
 
 object Constants {
-    const val DEFAULT_MAX_LINES = 2
+    const val DEFAULT_MAX_LINES = 3
     const val NAV_ANIMATION_TIME = 300
     const val MIME_TYPE_TEXT = "text/"
-    const val LINK = "https://www.yangdai-opennote.com"
+    const val LINK = "app://open.yangdai-opennote.com"
     object File {
         const val OPENNOTE = "OpenNote"
-        const val OPENNOTE_BACKUP = "OpenNote/Backup"
-        const val OPENNOTE_IMAGES = "OpenNote/Images"
+        const val OPENNOTE_BACKUP = "Backup"
+        const val OPENNOTE_IMAGES = "Images"
     }
 
     object Preferences {
@@ -26,6 +26,7 @@ object Constants {
         const val IS_DEFAULT_VIEW_FOR_READING = "IS_DEFAULT_VIEW_FOR_READING"
         const val IS_DEFAULT_LITE_MODE = "IS_DEFAULT_LITE_MODE"
         const val IS_LINT_ACTIVE = "IS_LINT_ACTIVE"
+        const val STORAGE_PATH = "STORAGE_PATH"
     }
 
     object Editor {
@@ -59,8 +60,6 @@ object Constants {
         const val DIAGRAM = "diagram"
 
         const val TEXT = "text"
-        const val TITLE = "title"
-        const val NEW_TEXT = "newText"
     }
 
 }

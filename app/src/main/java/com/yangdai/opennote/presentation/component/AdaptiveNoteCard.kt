@@ -29,6 +29,65 @@ import com.yangdai.opennote.R
 import com.yangdai.opennote.data.local.entity.NoteEntity
 import com.yangdai.opennote.presentation.util.timestampToFormatLocalDateTime
 
+@Composable
+fun AdaptiveNoteCard(
+    modifier: Modifier = Modifier,
+    isListView: Boolean,
+    note: NoteEntity,
+    isEnabled: Boolean,
+    isSelected: Boolean,
+    onNoteClick: (NoteEntity) -> Unit,
+    onEnableChange: (Boolean) -> Unit
+) = if (isListView) ColumnNoteCard(
+    modifier = modifier,
+    note = note,
+    isEnabled = isEnabled,
+    isSelected = isSelected,
+    onNoteClick = onNoteClick,
+    onEnableChange = onEnableChange
+)
+else GridNoteCard(
+    modifier = modifier,
+    note = note,
+    isEnabled = isEnabled,
+    isSelected = isSelected,
+    onNoteClick = onNoteClick,
+    onEnableChange = onEnableChange
+)
+
+@Composable
+private fun NoteCardContent(
+    modifier: Modifier = Modifier,
+    note: NoteEntity
+) = Column(
+    modifier = modifier
+        .fillMaxWidth()
+        .padding(vertical = 8.dp, horizontal = 10.dp)
+) {
+    if (note.title.isNotEmpty()) {
+        Text(
+            modifier = Modifier.basicMarquee(),
+            text = note.title,
+            style = MaterialTheme.typography.titleMedium,
+            maxLines = 1
+        )
+
+        if (note.content.isNotEmpty()) {
+            Spacer(modifier = Modifier.height(8.dp))
+        }
+    }
+
+    if (note.content.isNotEmpty()) {
+        Text(
+            text = note.content,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            overflow = TextOverflow.Ellipsis
+        )
+    }
+}
+
+
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun GridNoteCard(
@@ -39,50 +98,25 @@ fun GridNoteCard(
     onNoteClick: (NoteEntity) -> Unit,
     onEnableChange: (Boolean) -> Unit
 ) = Card(
-    modifier = modifier,
-    colors = CardDefaults.elevatedCardColors()
+    modifier = modifier, colors = CardDefaults.elevatedCardColors()
 ) {
 
-    Box(modifier = Modifier
-        .fillMaxWidth()
-        .sizeIn(minHeight = 80.dp, maxHeight = 360.dp)
-        .combinedClickable(
-            onLongClick = {
-                onEnableChange(true)
-            },
-            onClick = { onNoteClick(note) }
-        )) {
-        if (isEnabled)
-            Checkbox(
-                checked = isSelected, onCheckedChange = null, modifier = Modifier
-                    .padding(10.dp)
-                    .align(Alignment.TopEnd)
-            )
-        Column(
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .sizeIn(minHeight = 80.dp, maxHeight = 360.dp)
+            .combinedClickable(
+                onLongClick = { onEnableChange(true) },
+                onClick = { onNoteClick(note) })
+    ) {
+        if (isEnabled) Checkbox(
+            checked = isSelected,
+            onCheckedChange = null,
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 8.dp, horizontal = 10.dp)
-        ) {
-
-            if (note.title.isNotEmpty())
-                Text(
-                    modifier = Modifier.basicMarquee(),
-                    text = note.title,
-                    style = MaterialTheme.typography.titleMedium,
-                    maxLines = 1
-                )
-
-            if (note.title.isNotEmpty() && note.content.isNotEmpty())
-                Spacer(modifier = Modifier.height(8.dp))
-
-            if (note.content.isNotEmpty())
-                Text(
-                    text = note.content,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    overflow = TextOverflow.Ellipsis
-                )
-        }
+                .padding(10.dp)
+                .align(Alignment.TopEnd)
+        )
+        NoteCardContent(note = note)
     }
 }
 
@@ -138,46 +172,22 @@ fun ColumnNoteCard(
         colors = CardDefaults.elevatedCardColors()
     ) {
 
-        Box(modifier = Modifier
-            .fillMaxWidth()
-            .sizeIn(minHeight = 80.dp, maxHeight = 360.dp)
-            .combinedClickable(
-                onLongClick = {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .sizeIn(minHeight = 80.dp, maxHeight = 360.dp)
+                .combinedClickable(onLongClick = {
                     onEnableChange(true)
-                },
-                onClick = { onNoteClick(note) }
-            )) {
-            if (isEnabled)
-                Checkbox(
-                    checked = isSelected, onCheckedChange = null, modifier = Modifier
-                        .padding(10.dp)
-                        .align(Alignment.TopEnd)
-                )
-            Column(
+                }, onClick = { onNoteClick(note) })
+        ) {
+            if (isEnabled) Checkbox(
+                checked = isSelected,
+                onCheckedChange = null,
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 8.dp, horizontal = 10.dp)
-            ) {
-
-                if (note.title.isNotEmpty())
-                    Text(
-                        modifier = Modifier.basicMarquee(),
-                        text = note.title,
-                        style = MaterialTheme.typography.titleMedium,
-                        maxLines = 1
-                    )
-
-                if (note.title.isNotEmpty() && note.content.isNotEmpty())
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                if (note.content.isNotEmpty())
-                    Text(
-                        text = note.content,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        overflow = TextOverflow.Ellipsis
-                    )
-            }
+                    .padding(10.dp)
+                    .align(Alignment.TopEnd)
+            )
+            NoteCardContent(note = note)
         }
     }
 }

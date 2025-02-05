@@ -12,7 +12,9 @@ import androidx.datastore.preferences.core.stringSetPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.yangdai.opennote.domain.repository.DataStoreRepository
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 
 
@@ -91,6 +93,15 @@ class DataStoreRepositoryImpl @Inject constructor(
         val preferencesKey = stringSetPreferencesKey(key)
         return context.dataStore.data.map { preferences ->
             preferences[preferencesKey] ?: setOf()
+        }
+    }
+
+    override fun getStringValue(key: String, defaultValue: String): String {
+        val preferencesKey = stringPreferencesKey(key)
+        return runBlocking {
+            context.dataStore.data.map { preferences ->
+                preferences[preferencesKey] ?: defaultValue
+            }.first()
         }
     }
 }

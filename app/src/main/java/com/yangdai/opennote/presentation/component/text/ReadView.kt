@@ -1,12 +1,16 @@
+@file:Suppress("DEPRECATION", "unused")
+
 package com.yangdai.opennote.presentation.component.text
 
 import android.annotation.SuppressLint
 import android.graphics.Color
+import android.net.Uri
 import android.view.ViewGroup
 import android.webkit.JavascriptInterface
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import android.widget.Toast
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.rememberScrollState
@@ -18,16 +22,22 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.net.toUri
+import androidx.documentfile.provider.DocumentFile
 import com.yangdai.opennote.presentation.component.image.FullscreenImageDialog
 import com.yangdai.opennote.presentation.theme.linkColor
+import com.yangdai.opennote.presentation.util.Constants
 import com.yangdai.opennote.presentation.util.rememberCustomTabsIntent
 import com.yangdai.opennote.presentation.util.toHexColor
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 data class MarkdownStyles(
     val hexTextColor: String,
@@ -54,6 +64,7 @@ data class MarkdownStyles(
 fun ReadView(
     modifier: Modifier = Modifier,
     html: String,
+    rootUri: Uri,
     scrollSynchronized: Boolean,
     scrollState: ScrollState = rememberScrollState(),
     colorScheme: ColorScheme = MaterialTheme.colorScheme
@@ -74,8 +85,14 @@ fun ReadView(
                         function handleImageClick(src) {
                             window.imageInterface.onImageClick(src);
                         }
+
                         function setupImageHandlers() {
-                            document.querySelectorAll('img').forEach(img => {
+                            document.querySelectorAll('img').forEach((img, index) => {
+                                const imageName = img.getAttribute('src');
+                                const id = 'img_' + index;
+                                img.setAttribute('data-id', id);
+                                window.imagePathHandler.processImage(imageName, id);
+                                
                                 let touchTimeout;
                                 let touchStartTime;
                                 
@@ -103,7 +120,6 @@ fun ReadView(
                                 img.draggable = false;
                             });
                         }
-                        
                         document.addEventListener('DOMContentLoaded', setupImageHandlers);
                     </script>
                     <script>
@@ -148,11 +164,14 @@ fun ReadView(
     }
 
     val customTabsIntent = rememberCustomTabsIntent()
+    val coroutineScope = rememberCoroutineScope()
 
     var webView by remember { mutableStateOf<WebView?>(null) }
-
+    val imageCache = remember(rootUri) {
+        mutableMapOf<String, String>()
+    }
     var showDialog by remember { mutableStateOf(false) }
-    var url by remember { mutableStateOf("") }
+    var clickedImageUrl by remember { mutableStateOf("") }
 
     LaunchedEffect(scrollState.value) {
         if (!scrollSynchronized) return@LaunchedEffect
@@ -207,14 +226,89 @@ fun ReadView(
                     object {
                         @JavascriptInterface
                         fun onImageClick(urlStr: String) {
-                            url = urlStr
+                            clickedImageUrl = urlStr
                             showDialog = true
+                        }
+
+                        @JavascriptInterface
+                        fun getImageUri(imageName: String): String {
+                            val imagesDir =
+                                DocumentFile.fromTreeUri(context.applicationContext, rootUri)
+                                    ?.findFile(Constants.File.OPENNOTE)
+                                    ?.findFile(Constants.File.OPENNOTE_IMAGES)
+
+                            val imageFile = imagesDir?.listFiles()?.find {
+                                it.name == imageName
+                            }
+                            Toast.makeText(context, imageFile?.uri.toString(), Toast.LENGTH_LONG)
+                                .show()
+                            return imageFile?.uri?.toString() ?: ""
                         }
                     },
                     "imageInterface"
                 )
+                addJavascriptInterface(
+                    object {
+                        @JavascriptInterface
+                        fun processImage(imageName: String, id: String) {
+                            coroutineScope.launch(Dispatchers.IO) {
+                                // 先检查缓存
+                                if (imageCache.containsKey(imageName)) {
+                                    withContext(Dispatchers.Main) {
+                                        webView?.evaluateJavascript(
+                                            """
+                                            (function() {
+                                                const img = document.querySelector('img[data-id="$id"]');
+                                                if (img) {
+                                                    img.src = '${imageCache[imageName]}';
+                                                }
+                                            })();
+                                            """.trimIndent(),
+                                            null
+                                        )
+                                    }
+                                    return@launch
+                                }
+
+                                val imagesDir =
+                                    DocumentFile.fromTreeUri(context.applicationContext, rootUri)
+                                        ?.findFile(Constants.File.OPENNOTE)
+                                        ?.findFile(Constants.File.OPENNOTE_IMAGES)
+
+                                val imageFile = imagesDir?.listFiles()?.find {
+                                    it.name == imageName
+                                }
+
+                                val imageUri = imageFile?.uri?.toString() ?: ""
+
+                                // 更新缓存
+                                if (imageUri.isNotEmpty()) {
+                                    imageCache[imageName] = imageUri
+                                }
+
+                                withContext(Dispatchers.Main) {
+                                    // 通过 JavaScript 更新图片 src
+                                    webView?.evaluateJavascript(
+                                        """
+                                        (function() {
+                                            const img = document.querySelector('img[data-id="$id"]');
+                                            if (img && '${imageUri}' !== '') {
+                                                img.src = '${imageUri}';
+                                            }
+                                        })();
+                                        """.trimIndent(),
+                                        null
+                                    )
+                                }
+                            }
+                        }
+                    },
+                    "imagePathHandler"
+                )
                 settings.allowFileAccess = true
                 settings.allowContentAccess = true
+                settings.allowFileAccessFromFileURLs = true
+                settings.allowUniversalAccessFromFileURLs = true
                 settings.domStorageEnabled = true
                 settings.javaScriptEnabled = true
                 settings.loadsImagesAutomatically = true
@@ -243,6 +337,6 @@ fun ReadView(
     if (showDialog)
         FullscreenImageDialog(
             onDismiss = { showDialog = false },
-            imageUrl = url,
+            imageUrl = clickedImageUrl,
         )
 }

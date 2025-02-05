@@ -5,17 +5,21 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.icu.text.DateFormat
+import android.net.Uri
 import android.provider.OpenableColumns
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.remember
 import androidx.core.app.TaskStackBuilder
 import androidx.core.net.toUri
+import androidx.documentfile.provider.DocumentFile
 import com.yangdai.opennote.MainActivity
 import java.util.Date
 
 fun Intent.isTextMimeType() = type?.startsWith(Constants.MIME_TYPE_TEXT) == true
 
+@Stable
 data class SharedContent(val fileName: String, val content: String)
 
 @SuppressLint("Range")
@@ -56,6 +60,29 @@ fun Intent.parseSharedContent(context: Context): SharedContent {
         }
 
         else -> SharedContent("", "")
+    }
+}
+
+fun getOrCreateDirectory(
+    context: Context, parentUri: Uri, dirName: String
+): DocumentFile? {
+    // 尝试获取父URI的DocumentFile表示
+    val parent = DocumentFile.fromTreeUri(context, parentUri)
+        ?: return null // 无法获取父目录，返回 null
+
+    return try {
+        // 检查是否存在同名文件或目录
+        parent.findFile(dirName)?.let { existingFile ->
+            if (existingFile.isDirectory) {
+                // 如果已存在同名目录，则直接返回
+                return existingFile
+            }
+        }
+
+        parent.createDirectory(dirName)
+    } catch (e: Exception) {
+        e.printStackTrace()
+        null
     }
 }
 

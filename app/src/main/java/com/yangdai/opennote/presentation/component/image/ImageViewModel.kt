@@ -23,7 +23,7 @@ class ImageViewModel : ViewModel() {
             try {
                 val isLocalFile = isLocalFile(imageUrl)
                 val imagePath = if (isLocalFile) getLocalFilePath(imageUrl) else downloadAndSaveImage(context, imageUrl)
-                _imageState.value = ImageState.Success(imagePath, isLocalFile)
+                _imageState.value = ImageState.Success(imagePath, !imageUrl.startsWith("content://"), isLocalFile)
             } catch (e: Exception) {
                 _imageState.value = ImageState.Error(e.message ?: "Unknown error")
             }
@@ -31,12 +31,12 @@ class ImageViewModel : ViewModel() {
     }
 
     private fun isLocalFile(url: String): Boolean {
-        return url.startsWith("file:///")
+        return url.startsWith("file://") || url.startsWith("content://")
     }
 
     private fun getLocalFilePath(fileUrl: String): String {
         // 移除 "file:///" 前缀
-        return fileUrl.substring(8)
+        return fileUrl.replace("file:///", "")
     }
 
     private suspend fun downloadAndSaveImage(context: Context, imageUrl: String): String {
@@ -65,6 +65,7 @@ class ImageViewModel : ViewModel() {
     // 清理缓存目录中的图片文件
     fun clearCache(context: Context) {
         viewModelScope.launch(Dispatchers.IO) {
+            _imageState.value = ImageState.Empty
             try {
                 context.cacheDir.listFiles()?.forEach { file ->
                     if (file.name.startsWith("img_")) {

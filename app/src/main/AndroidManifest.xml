@@ -51,7 +51,6 @@
             android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
@@ -76,6 +75,10 @@
                 <data android:scheme="file" />
                 <data android:scheme="content" />
                 <data android:mimeType="text/*" />
+
+                <data android:scheme="app" />
+                <data android:host="open.yangdai-opennote.com" />
+                <data android:pathPrefix="/note" />
             </intent-filter>
 
         </activity>

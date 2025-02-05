@@ -4,9 +4,9 @@ import androidx.activity.compose.BackHandler
 import androidx.activity.compose.LocalActivity
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
@@ -25,9 +25,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.items
@@ -49,6 +46,8 @@ import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -56,6 +55,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.animateFloatingActionButton
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -82,6 +82,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.traversalIndex
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.yangdai.opennote.MainActivity
@@ -89,10 +90,9 @@ import com.yangdai.opennote.R
 import com.yangdai.opennote.data.local.entity.FolderEntity
 import com.yangdai.opennote.data.local.entity.NoteEntity
 import com.yangdai.opennote.presentation.component.AdaptiveNavigationScreen
+import com.yangdai.opennote.presentation.component.AdaptiveNoteCard
 import com.yangdai.opennote.presentation.component.AdaptiveTopSearchbar
-import com.yangdai.opennote.presentation.component.ColumnNoteCard
 import com.yangdai.opennote.presentation.component.DrawerContent
-import com.yangdai.opennote.presentation.component.GridNoteCard
 import com.yangdai.opennote.presentation.component.Timeline
 import com.yangdai.opennote.presentation.component.dialog.ExportDialog
 import com.yangdai.opennote.presentation.component.dialog.FolderListDialog
@@ -104,7 +104,7 @@ import com.yangdai.opennote.presentation.navigation.Screen
 import com.yangdai.opennote.presentation.viewmodel.SharedViewModel
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun MainScreen(
     sharedViewModel: SharedViewModel = hiltViewModel(LocalActivity.current as MainActivity),
@@ -119,10 +119,9 @@ fun MainScreen(
     val dataActionState by sharedViewModel.dataActionStateFlow.collectAsStateWithLifecycle()
 
     val staggeredGridState = rememberLazyStaggeredGridState()
-    val lazyListState = rememberLazyListState()
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
 
-    // Search bar state, reset when configuration changes, no need to use rememberSaveable
+    // Search bar state, reset when configuration changes
     var isSearchBarActivated by remember { mutableStateOf(false) }
 
     // Selected drawer item and folder, 0 for all, 1 for trash, others for folder index
@@ -147,7 +146,7 @@ fun MainScreen(
     val isFloatingButtonVisible by remember {
         derivedStateOf {
             selectedDrawerIndex != 1 && !isSearchBarActivated && !isMultiSelectionModeEnabled
-                    && !staggeredGridState.isScrollInProgress && !lazyListState.isScrollInProgress
+                    && !staggeredGridState.isScrollInProgress
         }
     }
 
@@ -171,17 +170,14 @@ fun MainScreen(
         }
     }
 
-    // Bottom sheet visibility, reset when configuration changes, no need to use rememberSaveable
-    var isFolderDialogVisible by remember {
-        mutableStateOf(false)
-    }
-
-    // Whether to show the export dialog
-    var isExportDialogVisible by remember {
-        mutableStateOf(false)
-    }
+    var isFolderDialogVisible by remember { mutableStateOf(false) }
+    var isExportDialogVisible by remember { mutableStateOf(false) }
 
     val coroutineScope = rememberCoroutineScope()
+
+    val toolbarVisible by rememberSaveable(selectedDrawerIndex) {
+        mutableStateOf(selectedDrawerIndex != 0)
+    }
 
     AdaptiveNavigationScreen(
         isLargeScreen = isLargeScreen,
@@ -191,6 +187,15 @@ fun MainScreen(
             DrawerContent(
                 folderNoteCounts = folderNoteCounts,
                 selectedDrawerIndex = selectedDrawerIndex,
+                showLock = settingsState.needPassword,
+                onLockClick = {
+                    sharedViewModel.authenticated.value = false
+                    coroutineScope.launch {
+                        drawerState.apply {
+                            close()
+                        }
+                    }
+                },
                 navigateTo = { navigateToScreen(it) }
             ) { position, folderEntity ->
                 if (selectedDrawerIndex != position) {
@@ -210,22 +215,17 @@ fun MainScreen(
                         )
                     }
                 }
-                if (!isLargeScreen)
-                    coroutineScope.launch {
-                        drawerState.apply {
-                            close()
-                        }
+                coroutineScope.launch {
+                    drawerState.apply {
+                        close()
                     }
+                }
             }
         },
     ) {
         Scaffold(
             topBar = {
-                if (selectedDrawerIndex != 0) {
-                    var showMenu by remember {
-                        mutableStateOf(false)
-                    }
-
+                if (toolbarVisible) {
                     TopAppBar(
                         title = {
                             Text(
@@ -255,6 +255,11 @@ fun MainScreen(
                             }
                         },
                         actions = {
+
+                            var showMenu by remember {
+                                mutableStateOf(false)
+                            }
+
                             IconButton(onClick = { sharedViewModel.onListEvent(ListEvent.ChangeViewMode) }) {
                                 Icon(
                                     imageVector = if (!settingsState.isListView) Icons.Outlined.ViewAgenda else Icons.Outlined.GridView,
@@ -358,7 +363,11 @@ fun MainScreen(
                                                 imageVector = Icons.Outlined.RestartAlt,
                                                 contentDescription = "Restore"
                                             )
-                                            Text(text = stringResource(id = R.string.restore))
+                                            Text(
+                                                text = stringResource(id = R.string.restore),
+                                                maxLines = 1,
+                                                overflow = TextOverflow.Ellipsis
+                                            )
                                         }
                                     }
                                 } else {
@@ -370,7 +379,11 @@ fun MainScreen(
                                                 imageVector = Icons.Outlined.Upload,
                                                 contentDescription = "Export"
                                             )
-                                            Text(text = stringResource(id = R.string.export))
+                                            Text(
+                                                text = stringResource(id = R.string.export),
+                                                maxLines = 1,
+                                                overflow = TextOverflow.Ellipsis
+                                            )
                                         }
                                     }
 
@@ -380,7 +393,11 @@ fun MainScreen(
                                                 imageVector = Icons.AutoMirrored.Outlined.DriveFileMove,
                                                 contentDescription = "Move"
                                             )
-                                            Text(text = stringResource(id = R.string.move))
+                                            Text(
+                                                text = stringResource(id = R.string.move),
+                                                maxLines = 1,
+                                                overflow = TextOverflow.Ellipsis
+                                            )
                                         }
                                     }
                                 }
@@ -399,7 +416,11 @@ fun MainScreen(
                                             imageVector = Icons.Outlined.Delete,
                                             contentDescription = "Delete"
                                         )
-                                        Text(text = stringResource(id = R.string.delete))
+                                        Text(
+                                            text = stringResource(id = R.string.delete),
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis
+                                        )
                                     }
                                 }
                             }
@@ -407,6 +428,7 @@ fun MainScreen(
                     }
                 }
             },
+            floatingActionButtonPosition = FabPosition.End,
             floatingActionButton = {
 
                 val hapticFeedback = LocalHapticFeedback.current
@@ -417,26 +439,26 @@ fun MainScreen(
                     label = "scale"
                 )
 
-                AnimatedVisibility(
-                    visible = isFloatingButtonVisible,
-                    enter = slideInHorizontally { fullWidth -> fullWidth * 3 / 2 },
-                    exit = slideOutHorizontally { fullWidth -> fullWidth * 3 / 2 }) {
-                    FloatingActionButton(
-                        modifier = Modifier.scale(scale),
-                        onClick = {
-                            hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
-                            sharedViewModel.onListEvent(
-                                ListEvent.OpenOrCreateNote(
-                                    null,
-                                    selectedFolder.id
-                                )
+                FloatingActionButton(
+                    modifier = Modifier
+                        .scale(scale)
+                        .animateFloatingActionButton(
+                            visible = isFloatingButtonVisible,
+                            alignment = Alignment.BottomEnd
+                        ),
+                    onClick = {
+                        hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                        sharedViewModel.onListEvent(
+                            ListEvent.OpenOrCreateNote(
+                                null,
+                                selectedFolder.id
                             )
-                            navigateToNote(-1)
-                        },
-                        interactionSource = interactionSource
-                    ) {
-                        Icon(imageVector = Icons.Outlined.Add, contentDescription = "Add")
-                    }
+                        )
+                        navigateToNote(-1)
+                    },
+                    interactionSource = interactionSource
+                ) {
+                    Icon(imageVector = Icons.Outlined.Add, contentDescription = "Add")
                 }
 
             }) { innerPadding ->
@@ -458,9 +480,10 @@ fun MainScreen(
                     .semantics { isTraversalGroup = true }
             ) {
 
-                if (selectedDrawerIndex == 0) {
+                if (!toolbarVisible) {
                     AdaptiveTopSearchbar(
                         modifier = Modifier
+                            .zIndex(1f)
                             .align(Alignment.TopCenter)
                             .semantics { traversalIndex = 0f },
                         enabled = !isMultiSelectionModeEnabled,
@@ -483,63 +506,11 @@ fun MainScreen(
                     return@Box
                 }
 
-                if (!settingsState.isListView) {
-                    LazyVerticalStaggeredGrid(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .semantics { traversalIndex = 1f },
-                        state = staggeredGridState,
-                        // The staggered grid layout is adaptive, with a minimum column width of 160dp(mdpi)
-                        columns = StaggeredGridCells.Adaptive(160.dp),
-                        verticalItemSpacing = 8.dp,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        // for better edgeToEdge experience
-                        contentPadding = PaddingValues(
-                            top = WindowInsets.statusBars.asPaddingValues()
-                                .calculateTopPadding() + 78.dp,
-                            start = 16.dp,
-                            end = 16.dp,
-                            bottom = innerPadding.calculateBottomPadding()
-                        ),
-                        content = {
-                            items(
-                                dataState.notes,
-                                key = { item: NoteEntity -> item.id!! }) { note ->
-                                GridNoteCard(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .animateItem(), // Add animation to the item
-                                    note = note,
-                                    isEnabled = isMultiSelectionModeEnabled,
-                                    isSelected = selectedNotes.contains(note),
-                                    onEnableChange = { isMultiSelectionModeEnabled = it },
-                                    onNoteClick = {
-                                        if (isMultiSelectionModeEnabled) {
-                                            selectedNotes =
-                                                if (selectedNotes.contains(it)) selectedNotes.minus(
-                                                    it
-                                                )
-                                                else selectedNotes.plus(it)
-                                        } else {
-                                            if (selectedDrawerIndex != 1) {
-                                                sharedViewModel.onListEvent(
-                                                    ListEvent.OpenOrCreateNote(
-                                                        it,
-                                                        null
-                                                    )
-                                                )
-                                                navigateToNote(it.id!!)
-                                            } else {
-                                                Unit
-                                            }
-                                        }
-                                    }
-                                )
-                            }
-                        }
-                    )
-                } else {
-
+                AnimatedVisibility(
+                    visible = settingsState.isListView,
+                    enter = fadeIn(),
+                    exit = fadeOut()
+                ) {
                     Timeline(
                         modifier = Modifier
                             .align(Alignment.CenterStart)
@@ -547,27 +518,48 @@ fun MainScreen(
                             .padding(start = 8.dp),
                         thickness = 2.dp
                     )
+                }
 
-                    LazyColumn(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .semantics { traversalIndex = 1f },
-                        state = lazyListState,
-                        contentPadding = PaddingValues(
-                            top = WindowInsets.statusBars.asPaddingValues()
-                                .calculateTopPadding() + 74.dp,
+                val statusBarPadding = WindowInsets.statusBars.asPaddingValues()
+                val contentPadding =
+                    remember(statusBarPadding, innerPadding, settingsState.isListView) {
+
+                        if (!settingsState.isListView) PaddingValues(
+                            top = statusBarPadding.calculateTopPadding() + 78.dp,
+                            start = 16.dp,
+                            end = 16.dp,
+                            bottom = innerPadding.calculateBottomPadding()
+                        ) else PaddingValues(
+                            top = statusBarPadding.calculateTopPadding() + 74.dp,
                             start = 5.dp,
                             end = 16.dp,
                             bottom = innerPadding.calculateBottomPadding()
                         )
-                    ) {
+                    }
+
+                LazyVerticalStaggeredGrid(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .semantics { traversalIndex = 1f },
+                    state = staggeredGridState,
+                    // The staggered grid layout is adaptive, with a minimum column width of 160dp(mdpi)
+                    columns = if (!settingsState.isListView) StaggeredGridCells.Adaptive(160.dp)
+                    else StaggeredGridCells.Fixed(1),
+                    verticalItemSpacing = 8.dp,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    // for better edgeToEdge experience
+                    contentPadding = contentPadding,
+                    content = {
                         items(
-                            dataState.notes,
-                            key = { item: NoteEntity -> item.id!! }) { note ->
-                            ColumnNoteCard(
+                            items = dataState.notes,
+                            key = { item: NoteEntity -> item.id!! },
+                            contentType = { item: NoteEntity -> item }
+                        ) { note ->
+                            AdaptiveNoteCard(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .animateItem(), // Add animation to the item
+                                    .animateItem(),
+                                isListView = settingsState.isListView,
                                 note = note,
                                 isEnabled = isMultiSelectionModeEnabled,
                                 isSelected = selectedNotes.contains(note),
@@ -596,7 +588,7 @@ fun MainScreen(
                             )
                         }
                     }
-                }
+                )
             }
 
             if (dataState.isOrderSectionVisible) {
@@ -620,8 +612,8 @@ fun MainScreen(
                 val context = LocalContext.current
                 ExportDialog(onDismissRequest = { isExportDialogVisible = false }) {
                     sharedViewModel.onDatabaseEvent(
-                        DatabaseEvent.ExportFile(
-                            context.contentResolver,
+                        DatabaseEvent.ExportFiles(
+                            context.applicationContext,
                             selectedNotes.toList(),
                             it
                         )

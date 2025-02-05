@@ -8,19 +8,19 @@ import com.yangdai.opennote.presentation.component.dialog.ExportType
 
 sealed interface DatabaseEvent {
 
-    data class ImportFile(
+    data class ImportFiles(
         val contentResolver: ContentResolver,
         val folderId: Long?,
         val uriList: List<Uri>
     ) : DatabaseEvent
 
-    data class ExportFile(
-        val contentResolver: ContentResolver,
+    data class ExportFiles(
+        val context: Context,
         val notes: List<NoteEntity>,
         val type: ExportType
     ) : DatabaseEvent
 
-    data class Backup(val contentResolver: ContentResolver) : DatabaseEvent
+    data class Backup(val context: Context) : DatabaseEvent
     data class Recovery(val contentResolver: ContentResolver, val uri: Uri) : DatabaseEvent
     data object Reset : DatabaseEvent
 

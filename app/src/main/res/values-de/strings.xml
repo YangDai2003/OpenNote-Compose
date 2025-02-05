@@ -57,7 +57,7 @@
     <string name="data">Daten</string>
     <string name="security">Sicherheit</string>
     <string name="import_files_description">Importieren Sie Textdateien (z. B. .txt, .md, .html usw.) als Notizen. Der Dateiname wird als Titel verwendet und der MARKDOWN-Typ wird automatisch bestimmt.</string>
-    <string name="backup_description">Sichern Sie alle Ordner und darin enthaltenen Notizen als JSON-Datei und speichern Sie sie unter {Downloads/OpenNote/Backup}.</string>
+    <string name="backup_description">Sichern Sie alle Ordner und darin enthaltenen Notizen als JSON-Datei und speichern Sie sie unter {OpenNote/Backup}.</string>
     <string name="restore_description">Stellen Sie die Daten in der ausgewählten Sicherungsdatei vom Typ JSON in der Datenbank wieder her. Bei einem Datenkonflikt überschreibt die Sicherungsdatei die Notizen in der Datenbank.</string>
     <string name="reset_database_description">Löschen Sie alle Daten in der Datenbank (einschließlich aller Notizen und Ordner).</string>
     <string name="backup">Sichern</string>
@@ -123,4 +123,11 @@
     <string name="replace">Ersetzen</string>
     <string name="lint">Lint</string>
     <string name="lint_description">Wenn aktiviert, werden im Standard Modus das Markdown-Textformat und die Syntax auf die Einhaltung der Spezifikation überprüft und Fehler mit roten Wellenlinien markiert.</string>
+    <string name="compose">Erstellen</string>
+    <string name="storage_detail">Am ausgewählten Stammverzeichnisspeicherort wird ein Datei-Repository mit dem Namen { %1$s } erstellt, um exportierte Notizdateien, referenzierte Bildressourcen und Sicherungsdaten zu speichern.</string>
+    <string name="storage">Bitte wählen Sie den Speicherort des Stammverzeichnisses des Datei-Repositorys</string>
+    <string name="open_file_manager">Dateimanager öffnen</string>
+    <string name="current_root_directory_location_of_the_file_repository">"Aktueller Speicherort des Stammverzeichnisses des Datei-Repositorys: "</string>
+    <string name="change">Ändern</string>
+    <string name="root_directory_location">Speicherort des Stammverzeichnisses</string>
 </resources>

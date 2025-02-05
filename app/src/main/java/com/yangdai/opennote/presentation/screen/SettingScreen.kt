@@ -26,41 +26,14 @@ fun SettingsScreen(navigateUp: () -> Unit) {
 
     val scaffoldNavigator = rememberListDetailPaneScaffoldNavigator<SettingsItem>()
     val coroutineScope = rememberCoroutineScope()
-//    val backBehavior = remember { BackNavigationBehavior.PopUntilContentChange }
 
-//    key(scaffoldNavigator, backBehavior) {
-//        PredictiveBackHandler(enabled = scaffoldNavigator.canNavigateBack(backBehavior)) { progress ->
-//            // code for gesture back started
-//            try {
-//                progress.collect { backEvent ->
-//                    scaffoldNavigator.seekBack(
-//                        backBehavior,
-//                        fraction = backEvent.progress,
-//                    )
-//                }
-//                // code for completion
-//                scaffoldNavigator.navigateBack(backBehavior)
-//            } catch (_: CancellationException) {
-//                // code for cancellation
-//                withContext(NonCancellable) {
-//                    scaffoldNavigator.seekBack(
-//                        backBehavior,
-//                        fraction = 0f
-//                    )
-//                }
-//            }
-//        }
-//    }
-
-    BackHandler(enabled = scaffoldNavigator.canNavigateBack()) {
-        coroutineScope.launch {
-            scaffoldNavigator.navigateBack()
-        }
+    BackHandler(scaffoldNavigator.canNavigateBack()) {
+        coroutineScope.launch { scaffoldNavigator.navigateBack() }
     }
 
     ListDetailPaneScaffold(
         directive = scaffoldNavigator.scaffoldDirective,
-        scaffoldState = scaffoldNavigator.scaffoldState,
+        value = scaffoldNavigator.scaffoldValue,
         listPane = {
             AnimatedPane(
                 enterTransition = sharedAxisXIn(initialOffsetX = { -(it * INITIAL_OFFSET_FACTOR).toInt() }),

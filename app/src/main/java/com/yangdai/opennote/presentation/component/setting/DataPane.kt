@@ -13,6 +13,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Backup
 import androidx.compose.material.icons.outlined.CleaningServices
+import androidx.compose.material.icons.outlined.Dataset
 import androidx.compose.material.icons.outlined.FileDownload
 import androidx.compose.material.icons.outlined.Fingerprint
 import androidx.compose.material.icons.outlined.Restore
@@ -26,11 +27,14 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.core.net.toUri
+import androidx.documentfile.provider.DocumentFile
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.yangdai.opennote.R
 import com.yangdai.opennote.presentation.component.dialog.FolderListDialog
@@ -52,13 +56,13 @@ fun DataPane(sharedViewModel: SharedViewModel) {
     var showFolderDialog by rememberSaveable { mutableStateOf(false) }
 
     var folderId: Long? by rememberSaveable { mutableStateOf(null) }
-    val importFileLauncher = rememberLauncherForActivityResult(
+    val importFilesLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenMultipleDocuments()
     ) { uriList ->
         if (uriList.isNotEmpty()) {
             val contentResolver = context.contentResolver
             sharedViewModel.onDatabaseEvent(
-                DatabaseEvent.ImportFile(
+                DatabaseEvent.ImportFiles(
                     contentResolver,
                     folderId,
                     uriList
@@ -104,7 +108,7 @@ fun DataPane(sharedViewModel: SharedViewModel) {
 
         ListItem(
             modifier = Modifier.clickable {
-                sharedViewModel.onDatabaseEvent(DatabaseEvent.Backup(context.contentResolver))
+                sharedViewModel.onDatabaseEvent(DatabaseEvent.Backup(context.applicationContext))
             },
             leadingContent = {
                 Icon(
@@ -166,6 +170,40 @@ fun DataPane(sharedViewModel: SharedViewModel) {
             }
         )
 
+        val parent = remember(settingsState.storagePath) {
+            if (settingsState.storagePath.isEmpty()) null
+            else
+                DocumentFile.fromTreeUri(context, settingsState.storagePath.toUri())
+        }
+
+        ListItem(
+            leadingContent = {
+                Icon(
+                    imageVector = Icons.Outlined.Dataset,
+                    contentDescription = "File Location"
+                )
+            },
+            headlineContent = { Text(text = stringResource(R.string.root_directory_location)) },
+            supportingContent = {
+                Text(
+                    text = stringResource(R.string.current_root_directory_location_of_the_file_repository) + parent?.name.toString() + "/" + Constants.File.OPENNOTE
+                )
+            },
+            trailingContent = {
+                TextButton(
+                    onClick = {
+                        sharedViewModel.putPreferenceValue(Constants.Preferences.STORAGE_PATH, "")
+                    },
+                    colors = ButtonDefaults.textButtonColors().copy(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                    )
+                ) {
+                    Text(text = stringResource(R.string.change))
+                }
+            },
+        )
+
         SettingsHeader(text = stringResource(R.string.security))
 
         ListItem(
@@ -222,7 +260,7 @@ fun DataPane(sharedViewModel: SharedViewModel) {
             onDismissRequest = { showFolderDialog = false }
         ) { id ->
             folderId = id
-            importFileLauncher.launch(arrayOf("text/*"))
+            importFilesLauncher.launch(arrayOf("text/*"))
         }
     }
 

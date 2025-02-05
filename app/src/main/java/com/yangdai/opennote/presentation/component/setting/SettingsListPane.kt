@@ -83,7 +83,7 @@ fun SettingsListPane(
                         )
                     }
                 },
-                colors = TopAppBarDefaults.largeTopAppBarColors()
+                colors = TopAppBarDefaults.topAppBarColors()
                     .copy(
                         containerColor = MaterialTheme.colorScheme.surfaceContainer,
                         scrolledContainerColor = MaterialTheme.colorScheme.surfaceContainer

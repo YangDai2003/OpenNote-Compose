@@ -56,7 +56,7 @@
     <string name="data">Veri</string>
     <string name="security">Güvenlik</string>
     <string name="import_files_description">Metin dosyalarını (ör. .txt, .md, .html vb.) not olarak içe aktarın. Dosya adı başlık olarak kullanılacak ve MARKDOWN türü otomatik olarak belirlenecektir.</string>
-    <string name="backup_description">Tüm notları ve klasörler bir JSON dosyası olarak yedekleyin ve {Downloads/OpenNote/Backup} içine kaydedin.</string>
+    <string name="backup_description">Tüm notları ve klasörler bir JSON dosyası olarak yedekleyin ve {OpenNote/Backup} içine kaydedin.</string>
     <string name="restore_description">Seçilen JSON türü yedekleme dosyasındaki verileri veritabanına geri yükleyin. Veri çakışması varsa, yedekleme dosyası veritabanındaki notların üzerine yazacaktır.</string>
     <string name="reset_database_description">Veritabanındaki tüm verileri temizleyin (tüm notlar ve klasörler dahil).</string>
     <string name="backup">Yedekleme</string>
@@ -122,4 +122,11 @@
     <string name="replace">Değiştirmek</string>
     <string name="lint">Lint</string>
     <string name="lint_description">Etkinleştirildiğinde, Markdown metin biçimi ve sözdizimi standartlara uyup uymadığını görmek için klasik modda kontrol edilecek ve hatalar kırmızı dalgalı çizgilerle işaretlenecektir.</string>
+    <string name="compose">Yazmak</string>
+    <string name="storage_detail">Seçilen kök dizin konumunda, dışa aktarılan not dosyalarını, başvurulan görüntü kaynaklarını ve yedekleme verilerini depolamak için { %1$s } adlı bir dosya deposu oluşturulacak.</string>
+    <string name="storage">Lütfen dosya deposunun kök dizin konumunu seçin</string>
+    <string name="open_file_manager">Dosya yöneticisini açın</string>
+    <string name="current_root_directory_location_of_the_file_repository">"Dosya deposunun geçerli kök dizin konumu: "</string>
+    <string name="change">Değiştirmek</string>
+    <string name="root_directory_location">Kök dizin konumu</string>
 </resources>

@@ -1,7 +1,6 @@
 package com.yangdai.opennote.presentation.component
 
 import android.animation.ValueAnimator
-import android.annotation.SuppressLint
 import android.graphics.Bitmap
 import android.graphics.Paint
 import android.graphics.PorterDuff
@@ -10,8 +9,9 @@ import android.view.animation.AccelerateDecelerateInterpolator
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -25,22 +25,25 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalView
 import androidx.core.animation.addListener
 import androidx.core.graphics.applyCanvas
+import androidx.core.graphics.createBitmap
 import kotlin.math.hypot
 import kotlin.math.roundToInt
-import androidx.core.graphics.createBitmap
 
 /**
  * 激活遮罩动画，
- * 动画模式，点击的 x坐标，点击的 y坐标
+ * 动画模式
  */
 enum class MaskAnimModel {
-    EXPEND,
-    SHRINK,
+    EXPEND, SHRINK,
 }
 
 typealias MaskAnimActive = (MaskAnimModel, Float, Float) -> Unit
 
-@SuppressLint("Recycle")
+@Stable
+private data class AnimState(
+    val clickX: Float = 0f, val clickY: Float = 0f, val maskRadius: Float = 0f
+)
+
 @Composable
 fun MaskBox(
     animTime: Long = 650L,
@@ -48,56 +51,58 @@ fun MaskBox(
     animFinish: () -> Unit,
     content: @Composable (MaskAnimActive) -> Unit,
 ) {
-    var maskAnimModel by remember {
-        mutableStateOf(MaskAnimModel.EXPEND)
-    }
-    val paint by remember {
-        mutableStateOf(Paint(Paint.ANTI_ALIAS_FLAG))
-    }
-    var clickX by remember { mutableFloatStateOf(0f) }
-    var clickY by remember { mutableFloatStateOf(0f) }
+    var maskAnimModel by remember { mutableStateOf(MaskAnimModel.EXPEND) }
     var viewBounds by remember { mutableStateOf<Rect?>(null) }
-    val rootView = LocalView.current.rootView
+    val paint by remember { mutableStateOf(Paint(Paint.ANTI_ALIAS_FLAG)) }
+
+    var animState by remember { mutableStateOf(AnimState()) }
     var viewScreenshot by remember { mutableStateOf<Bitmap?>(null) }
-    var maskRadius by remember { mutableFloatStateOf(0f) }
-
-    val maskAnimActive: MaskAnimActive = clickEvent@{ animModel, x, y ->
-        clickX = x
-        clickY = y
-        val bitmapBound = viewBounds ?: return@clickEvent
-        val radiusRange = when (animModel) {
-            MaskAnimModel.EXPEND -> Pair(
-                0f,
-                hypot(rootView.width.toFloat(), rootView.height.toFloat())
-            )
-
-            MaskAnimModel.SHRINK -> Pair(
-                hypot(
-                    rootView.width.toFloat(),
-                    rootView.height.toFloat()
-                ), 0f
-            )
+    DisposableEffect(Unit) {
+        onDispose {
+            viewScreenshot?.recycle()
         }
+    }
+
+    val rootView = LocalView.current.rootView
+    val maskAnimActive: MaskAnimActive = clickEvent@{ animModel, x, y ->
+        val bitmapBound = viewBounds ?: return@clickEvent
+        animState = animState.copy(
+            clickX = x,
+            clickY = y,
+            maskRadius = if (animModel == MaskAnimModel.EXPEND) 0f else hypot(
+                rootView.width.toFloat(),
+                rootView.height.toFloat()
+            )
+        )
         maskAnimModel = animModel
-        viewScreenshot =
-            createBitmap(bitmapBound.width.roundToInt(), bitmapBound.height.roundToInt())
-            .applyCanvas {
-                translate(-bitmapBound.left, -bitmapBound.top)
-                rootView.draw(this)
-                maskComplete(animModel)
+        viewScreenshot?.recycle()
+        viewScreenshot = createBitmap(
+            bitmapBound.width.roundToInt(),
+            bitmapBound.height.roundToInt()
+        ).applyCanvas {
+            translate(-bitmapBound.left, -bitmapBound.top)
+            rootView.draw(this)
+            maskComplete(animModel)
+        }
+        ValueAnimator.ofFloat(
+            animState.maskRadius,
+            if (animModel == MaskAnimModel.EXPEND) hypot(
+                rootView.width.toFloat(),
+                rootView.height.toFloat()
+            )
+            else 0f
+        ).apply {
+            duration = animTime
+            interpolator = AccelerateDecelerateInterpolator()
+            addUpdateListener {
+                animState = animState.copy(maskRadius = it.animatedValue as Float)
             }
-        ValueAnimator.ofFloat(radiusRange.first, radiusRange.second)
-            .apply {
-                duration = animTime
-                interpolator = AccelerateDecelerateInterpolator()
-                addUpdateListener { valueAnimator ->
-                    maskRadius = valueAnimator.animatedValue as Float
-                }
-                addListener(onEnd = {
-                    viewScreenshot = null
-                    animFinish()
-                })
-            }.start()
+            addListener(onEnd = {
+                viewScreenshot?.recycle()
+                viewScreenshot = null
+                animFinish()
+            })
+        }.start()
     }
     Box(
         modifier = Modifier
@@ -110,30 +115,39 @@ fun MaskBox(
                     clipRect {
                         this@onDrawWithContent.drawContent()
                     }
-                    if (viewScreenshot == null) return@onDrawWithContent
-                    with(drawContext.canvas.nativeCanvas) {
-                        val layer = saveLayer(null, null)
-                        when (maskAnimModel) {
-                            MaskAnimModel.EXPEND -> {
-                                drawBitmap(viewScreenshot!!, 0f, 0f, null)
-                                paint.xfermode = PorterDuffXfermode(PorterDuff.Mode.CLEAR)
-                                drawCircle(clickX, clickY, maskRadius, paint)
-                            }
+                    viewScreenshot?.let { bitmap ->
+                        with(drawContext.canvas.nativeCanvas) {
+                            val layer = saveLayer(null, null)
+                            when (maskAnimModel) {
+                                MaskAnimModel.EXPEND -> {
+                                    drawBitmap(bitmap, 0f, 0f, null)
+                                    paint.xfermode = PorterDuffXfermode(PorterDuff.Mode.CLEAR)
+                                    drawCircle(
+                                        animState.clickX,
+                                        animState.clickY,
+                                        animState.maskRadius,
+                                        paint
+                                    )
+                                }
 
-                            MaskAnimModel.SHRINK -> {
-                                drawCircle(clickX, clickY, maskRadius, paint)
-                                paint.xfermode = PorterDuffXfermode(PorterDuff.Mode.SRC_IN)
-                                drawBitmap(viewScreenshot!!, 0f, 0f, paint)
+                                MaskAnimModel.SHRINK -> {
+                                    drawCircle(
+                                        animState.clickX,
+                                        animState.clickY,
+                                        animState.maskRadius,
+                                        paint
+                                    )
+                                    paint.xfermode = PorterDuffXfermode(PorterDuff.Mode.SRC_IN)
+                                    drawBitmap(bitmap, 0f, 0f, paint)
+                                }
                             }
+                            paint.xfermode = null
+                            restoreToCount(layer)
+
                         }
-                        paint.xfermode = null
-                        restoreToCount(layer)
-
                     }
                 }
-            }
-    ) {
+            }) {
         content(maskAnimActive)
     }
 }
-

@@ -58,7 +58,7 @@
     <string name="data">Data</string>
     <string name="security">Security</string>
     <string name="import_files_description">Import text files (such as .txt, .md, .html, etc.) as notes. The file name will be used as the title and the MARKDOWN type will be automatically determined.</string>
-    <string name="backup_description">Back up all folders and notes in them as a JSON file and save it to {Downloads/OpenNote/Backup}.</string>
+    <string name="backup_description">Back up all folders and notes in them as a JSON file and save it to {OpenNote/Backup}.</string>
     <string name="restore_description">Restore the data in the selected JSON type backup file to the database. If there is a data conflict, the backup file will overwrite the notes in the database.</string>
     <string name="reset_database_description">Clear all data in the database (including all notes and folders).</string>
     <string name="backup">Backup</string>
@@ -125,4 +125,11 @@
     <string name="replace">Replace</string>
     <string name="lint">Lint</string>
     <string name="lint_description" >When enabled, the Markdown text format and syntax will be checked in Standard mode to see if they meet the specification, and errors will be marked with red wavy lines.</string>
+    <string name="compose">Compose</string>
+    <string name="storage">Please select the root directory location of the file repository</string>
+    <string name="storage_detail">In the selected root directory location, a file repository named { %1$s } will be created to store exported note files, referenced image resources, and backup data.</string>
+    <string name="open_file_manager">Open File Manager</string>
+    <string name="root_directory_location">Root directory location</string>
+    <string name="current_root_directory_location_of_the_file_repository">"Current root directory location of the file repository: "</string>
+    <string name="change">Change</string>
 </resources>

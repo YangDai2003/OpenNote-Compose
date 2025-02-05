@@ -57,7 +57,7 @@
     <string name="data">数据</string>
     <string name="security">安全</string>
     <string name="import_files_description">批量导入文本类型的文件（比如：.txt, .md, .html）。文件名会作为标题，并自动判断是否为MARKDOWN类型。</string>
-    <string name="backup_description">将所有文件夹和其所包含的笔记备份为一个JSON文件，保存到｛Downloads/OpenNote/Backup｝。</string>
+    <string name="backup_description">将所有文件夹和其所包含的笔记备份为一个JSON文件，保存到｛OpenNote/Backup｝。</string>
     <string name="restore_description">将所选的JSON备份文件中的数据写入到数据库中。如果数据冲突，备份文件将覆盖数据库中的笔记。</string>
     <string name="reset_database_description">清空数据库中的所有内容（包括所有笔记和文件夹）。</string>
     <string name="backup">备份</string>
@@ -115,12 +115,19 @@
     <string name="editing_view">编辑视图</string>
     <string name="reading_view">阅读视图</string>
     <string name="sponsor">赞助，给开发者一点鼓励</string>
-    <string name="notes">个 笔记</string>
-    <string name="note">个 笔记</string>
+    <string name="notes">个笔记</string>
+    <string name="note">个笔记</string>
     <string name="image">图片</string>
     <string name="list">列表</string>
     <string name="find">查找</string>
     <string name="replace">替换</string>
     <string name="lint">规范检查</string>
     <string name="lint_description">开启后，将在经典模式中检测 Markdown 文本格式和语法是否符合规范，错误会被红色波浪线标记。</string>
+    <string name="compose">撰写</string>
+    <string name="storage">请选择文件储存库的根目录位置</string>
+    <string name="storage_detail">在选择的根目录位置中，会创建一个名为 { %1$s } 的文件夹，用于存放导出的笔记文件、引用的图片资源和备份的数据。</string>
+    <string name="open_file_manager">打开文件管理器</string>
+    <string name="current_root_directory_location_of_the_file_repository">当前文件储存库所在的根目录位置：</string>
+    <string name="change">更改</string>
+    <string name="root_directory_location">根目录位置</string>
 </resources>

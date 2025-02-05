@@ -98,8 +98,8 @@ fun FolderScreen(
                         )
                     }
                 },
-                colors = TopAppBarDefaults.largeTopAppBarColors()
-                    .copy(scrolledContainerColor = TopAppBarDefaults.largeTopAppBarColors().containerColor),
+                colors = TopAppBarDefaults.topAppBarColors()
+                    .copy(scrolledContainerColor = TopAppBarDefaults.topAppBarColors().containerColor),
                 scrollBehavior = scrollBehavior
             )
         }
