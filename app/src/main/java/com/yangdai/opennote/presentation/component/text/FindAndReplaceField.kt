@@ -14,6 +14,8 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.ArrowDownward
+import androidx.compose.material.icons.outlined.ArrowUpward
 import androidx.compose.material.icons.outlined.Autorenew
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.LocationSearching
@@ -22,6 +24,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -38,15 +41,28 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import com.yangdai.opennote.R
 
+@Stable
+data class FindAndReplaceState(
+    val searchWord: String = "",
+    val replaceWord: String = "",
+    val matchCount: Int = 0,
+    val scrollDirection: ScrollDirection? = null,
+    val replaceType: ReplaceType? = null
+)
+
+enum class ScrollDirection {
+    NEXT, PREVIOUS
+}
+
+enum class ReplaceType {
+    ALL, CURRENT
+}
+
 @Composable
 fun FindAndReplaceField(
-    searchWord: String,
-    replaceWord: String,
-    matchCount: Int,
-    onSearchWordChange: (String) -> Unit,
-    onReplaceWordChange: (String) -> Unit,
-    replaceFirst: () -> Unit,
-    replaceAll: () -> Unit
+    isStandard: Boolean,
+    state: FindAndReplaceState,
+    onStateUpdate: (FindAndReplaceState) -> Unit
 ) = Column(
     modifier = Modifier
         .fillMaxWidth()
@@ -57,20 +73,41 @@ fun FindAndReplaceField(
     ) {
         CustomTextField(
             modifier = Modifier.weight(1f),
-            value = searchWord,
-            onValueChange = { onSearchWordChange(it) },
+            value = state.searchWord,
+            onValueChange = { onStateUpdate(state.copy(searchWord = it)) },
             leadingIcon = Icons.Outlined.LocationSearching,
             suffix = {
                 Text(
-                    text = if (searchWord.isBlank()) "" else matchCount.toString(),
+                    text = if (state.searchWord.isBlank()) "" else state.matchCount.toString(),
                     style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
                 )
             },
             placeholderText = stringResource(R.string.find)
         )
+        if (isStandard) {
+            IconButton(onClick = {
+                onStateUpdate(state.copy(scrollDirection = ScrollDirection.PREVIOUS))
+            }) {
+                Icon(
+                    imageVector = Icons.Outlined.ArrowUpward, contentDescription = "PREVIOUS"
+                )
+            }
+            IconButton(onClick = {
+                onStateUpdate(state.copy(scrollDirection = ScrollDirection.NEXT))
+            }) {
+                Icon(
+                    imageVector = Icons.Outlined.ArrowDownward, contentDescription = "Next"
+                )
+            }
+        }
+
         IconButton(onClick = {
-            onSearchWordChange("")
-            onReplaceWordChange("")
+            onStateUpdate(
+                state.copy(
+                    searchWord = "",
+                    replaceWord = ""
+                )
+            )
         }) {
             Icon(
                 imageVector = Icons.Outlined.Close, contentDescription = "Clear"
@@ -85,18 +122,18 @@ fun FindAndReplaceField(
             modifier = Modifier
                 .padding(end = 8.dp)
                 .weight(1f),
-            value = replaceWord,
-            onValueChange = { onReplaceWordChange(it) },
+            value = state.replaceWord,
+            onValueChange = { onStateUpdate(state.copy(replaceWord = it)) },
             leadingIcon = Icons.Outlined.Autorenew,
             placeholderText = stringResource(R.string.replace)
         )
-        IconButton(onClick = replaceFirst) {
+        IconButton(onClick = { onStateUpdate(state.copy(replaceType = ReplaceType.CURRENT)) }) {
             Icon(
                 painter = painterResource(id = R.drawable.replace),
                 contentDescription = "Replace"
             )
         }
-        IconButton(onClick = replaceAll) {
+        IconButton(onClick = { onStateUpdate(state.copy(replaceType = ReplaceType.ALL)) }) {
             Icon(
                 painter = painterResource(id = R.drawable.replace_all),
                 contentDescription = "Replace all"
@@ -108,11 +145,11 @@ fun FindAndReplaceField(
 
 // 由于OutlinedTextField有诡异的边距和大小，因此自定义BasicTextField来实现
 @Composable
-private fun CustomTextField(
+fun CustomTextField(
     modifier: Modifier = Modifier,
     value: String,
     onValueChange: (String) -> Unit,
-    leadingIcon: ImageVector,
+    leadingIcon: ImageVector? = null,
     suffix: @Composable (() -> Unit)? = null,
     placeholderText: String = ""
 ) {
@@ -151,12 +188,14 @@ private fun CustomTextField(
                     .padding(horizontal = 9.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(
-                    imageVector = leadingIcon,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(0.8f)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
+                if (leadingIcon != null) {
+                    Icon(
+                        imageVector = leadingIcon,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(0.8f)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                }
                 Box(Modifier.weight(1f)) {
                     if (value.isEmpty()) Text(
                         modifier = Modifier.align(Alignment.CenterStart),

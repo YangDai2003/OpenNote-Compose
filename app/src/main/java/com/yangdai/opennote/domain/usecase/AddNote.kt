@@ -7,7 +7,7 @@ class AddNote(
     private val repository: NoteRepository
 ) {
 
-    suspend operator fun invoke(note: NoteEntity) {
-        repository.insertNote(note)
+    suspend operator fun invoke(note: NoteEntity): Long {
+        return repository.insertNote(note)
     }
 }

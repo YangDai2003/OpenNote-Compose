@@ -12,6 +12,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.automirrored.outlined.TextSnippet
 import androidx.compose.material.icons.outlined.CloudCircle
 import androidx.compose.material.icons.outlined.Language
 import androidx.compose.material.icons.outlined.ModeEdit
@@ -175,6 +176,24 @@ fun SettingsListPane(
             }
 
             SettingsSection {
+                SettingItem(
+                    modifier = Modifier.clickable {
+                        navigateToDetail(SettingsItem(5, R.string.templates))
+                    },
+                    leadingContent = {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Outlined.TextSnippet,
+                            contentDescription = "Templates"
+                        )
+                    },
+                    headlineText = stringResource(R.string.templates),
+                    supportingText = stringResource(R.string.date_format) + "  •  " + stringResource(
+                        R.string.time_format
+                    )
+                )
+
+                SettingsSectionDivider()
+
                 SettingItem(
                     modifier = Modifier.clickable {
                         navigateToDetail(SettingsItem(1, R.string.data_security))

@@ -78,9 +78,6 @@
     <string name="file">File</string>
     <string name="text">Text</string>
     <string name="export_as">Export note as</string>
-    <string name="empty_note">Cannot save empty note.</string>
-    <string name="confirm">Confirm</string>
-    <string name="confirm_msg">The note has not been saved. \nAre you sure of navigating up?</string>
     <string name="note_editing">Note editing</string>
     <string name="undo">Undo</string>
     <string name="redo">Redo</string>
@@ -127,9 +124,23 @@
     <string name="lint_description" >When enabled, the Markdown text format and syntax will be checked in Standard mode to see if they meet the specification, and errors will be marked with red wavy lines.</string>
     <string name="compose">Compose</string>
     <string name="storage">Please select the root directory location of the file repository</string>
-    <string name="storage_detail">In the selected root directory location, a file repository named { %1$s } will be created to store exported note files, referenced image resources, and backup data.</string>
+    <string name="storage_detail">In the selected root directory location, a file repository named { %1$s } will be created to store exported note files, referenced image resources, template files and backup data.</string>
     <string name="open_file_manager">Open File Manager</string>
     <string name="root_directory_location">Root directory location</string>
     <string name="current_root_directory_location_of_the_file_repository">"Current root directory location of the file repository: "</string>
     <string name="change">Change</string>
+    <string name="print">Print</string>
+    <string name="templates">Templates</string>
+    <string name="date_format">Date format</string>
+    <string name="time_format">Time format</string>
+    <string name="date_in_the_template_file_will_be_replaced_with_this_value">{{date}} in the template file will be replaced with this value.\n</string>
+    <string name="you_can_also_use_date_yyyy_mm_dd_to_override_the_format_once">You can also use {{date:YYYY-MM-DD}} to override the format once.\n</string>
+    <string name="for_more_syntax_refer_to">"For more syntax, refer to "</string>
+    <string name="format_reference">format reference</string>
+    <string name="your_current_syntax_looks_like_this">\nYour current syntax looks like this: %1$s</string>
+    <string name="time_in_the_template_file_will_be_replaced_with_this_value">{{time}} in the template file will be replaced with this value.\n</string>
+    <string name="you_can_also_use_time_hh_mm_to_override_the_format_once">You can also use {{time:HH:mm}} to override the format once.\n</string>
+    <string name="template_folder_location">Template folder location</string>
+    <string name="files_in_this_folder_will_be_available_as_templates">Files in this folder will be available as templates.</string>
+    <string name="saveAsTemplate">Save this note as a template</string>
 </resources>

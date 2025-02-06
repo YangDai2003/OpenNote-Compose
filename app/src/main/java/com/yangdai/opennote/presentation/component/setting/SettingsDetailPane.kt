@@ -115,6 +115,10 @@ fun SettingsDetailPane(
             4 -> {
                 EditorPane(sharedViewModel = sharedViewModel)
             }
+
+            5 -> {
+                TemplatePane(sharedViewModel = sharedViewModel)
+            }
         }
     }
 }

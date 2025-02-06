@@ -16,6 +16,7 @@ import androidx.compose.material.icons.automirrored.outlined.FormatIndentDecreas
 import androidx.compose.material.icons.automirrored.outlined.FormatIndentIncrease
 import androidx.compose.material.icons.automirrored.outlined.List
 import androidx.compose.material.icons.automirrored.outlined.Redo
+import androidx.compose.material.icons.automirrored.outlined.TextSnippet
 import androidx.compose.material.icons.automirrored.outlined.Undo
 import androidx.compose.material.icons.outlined.AddChart
 import androidx.compose.material.icons.outlined.CheckBox
@@ -73,7 +74,8 @@ fun RichTextEditorRowPreview() {
         onCodeClick = {},
         onBracketsClick = {},
         onBracesClick = {},
-        onScanButtonClick = {}
+        onScanButtonClick = {},
+        onTemplateClick = {}
     )
 }
 
@@ -89,7 +91,8 @@ fun MarkdownEditorRowPreview() {
         onListButtonClick = {},
         onTaskButtonClick = {},
         onLinkButtonClick = {},
-        onImageButtonClick = {}
+        onImageButtonClick = {},
+        onTemplateClick = {}
     )
 }
 
@@ -142,7 +145,8 @@ fun RichTextEditorRow(
     onCodeClick: () -> Unit,
     onBracketsClick: () -> Unit,
     onBracesClick: () -> Unit,
-    onScanButtonClick: () -> Unit
+    onScanButtonClick: () -> Unit,
+    onTemplateClick: () -> Unit
 ) {
 
     var isExpanded by rememberSaveable { mutableStateOf(false) }
@@ -285,7 +289,15 @@ fun RichTextEditorRow(
             IconButtonWithTooltip(
                 imageVector = Icons.Outlined.DocumentScanner,
                 contentDescription = stringResource(id = R.string.scan),
+                shortCutDescription = "Ctrl + Shift + S",
                 onClick = onScanButtonClick
+            )
+
+            IconButtonWithTooltip(
+                imageVector = Icons.AutoMirrored.Outlined.TextSnippet,
+                contentDescription = stringResource(id = R.string.templates),
+                shortCutDescription = "Ctrl + Shift + P",
+                onClick = onTemplateClick
             )
         }
     }
@@ -301,7 +313,8 @@ fun MarkdownEditorRow(
     onListButtonClick: () -> Unit,
     onTaskButtonClick: () -> Unit,
     onLinkButtonClick: () -> Unit,
-    onImageButtonClick: () -> Unit
+    onImageButtonClick: () -> Unit,
+    onTemplateClick: () -> Unit
 ) {
 
     var isExpanded by rememberSaveable { mutableStateOf(false) }
@@ -556,6 +569,13 @@ fun MarkdownEditorRow(
                 contentDescription = stringResource(id = R.string.scan),
                 shortCutDescription = "Ctrl + Shift + S",
                 onClick = onScanButtonClick
+            )
+
+            IconButtonWithTooltip(
+                imageVector = Icons.AutoMirrored.Outlined.TextSnippet,
+                contentDescription = stringResource(id = R.string.templates),
+                shortCutDescription = "Ctrl + Shift + P",
+                onClick = onTemplateClick
             )
         }
     }

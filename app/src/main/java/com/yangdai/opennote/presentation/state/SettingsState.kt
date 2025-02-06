@@ -15,7 +15,9 @@ data class SettingsState(
     val isDefaultViewForReading: Boolean = false,
     val isDefaultLiteMode: Boolean = false,
     val isLintActive: Boolean = false,
-    val storagePath: String = ""
+    val storagePath: String = "",
+    val dateFormatter: String = "",
+    val timeFormatter: String = ""
 )
 
 enum class AppTheme(private val value: Int) {

@@ -76,9 +76,6 @@
     <string name="file">Datei</string>
     <string name="text">Text</string>
     <string name="export_as">Notiz exportieren als</string>
-    <string name="empty_note">Leere Notiz kann nicht gespeichert werden.</string>
-    <string name="confirm">Bestätigen</string>
-    <string name="confirm_msg">Die Notiz wurde nicht gespeichert. \nSind Sie sicher, dass Sie nach oben navigieren möchten?</string>
     <string name="note_editing">Notizbearbeitung</string>
     <string name="undo">Rückgängig</string>
     <string name="redo">Wiederholen</string>
@@ -124,10 +121,25 @@
     <string name="lint">Lint</string>
     <string name="lint_description">Wenn aktiviert, werden im Standard Modus das Markdown-Textformat und die Syntax auf die Einhaltung der Spezifikation überprüft und Fehler mit roten Wellenlinien markiert.</string>
     <string name="compose">Erstellen</string>
-    <string name="storage_detail">Am ausgewählten Stammverzeichnisspeicherort wird ein Datei-Repository mit dem Namen { %1$s } erstellt, um exportierte Notizdateien, referenzierte Bildressourcen und Sicherungsdaten zu speichern.</string>
+    <string name="storage_detail">Am ausgewählten Stammverzeichnisspeicherort wird ein Datei-Repository mit dem Namen { %1$s } erstellt, um exportierte Notizdateien, referenzierte Bildressourcen, Vorlagendateien und Sicherungsdaten zu speichern.</string>
     <string name="storage">Bitte wählen Sie den Speicherort des Stammverzeichnisses des Datei-Repositorys</string>
     <string name="open_file_manager">Dateimanager öffnen</string>
     <string name="current_root_directory_location_of_the_file_repository">"Aktueller Speicherort des Stammverzeichnisses des Datei-Repositorys: "</string>
     <string name="change">Ändern</string>
     <string name="root_directory_location">Speicherort des Stammverzeichnisses</string>
+    <string name="print">Drucken</string>
+    <string name="templates">Vorlagen</string>
+    <string name="date_format">Datumsformat</string>
+    <string name="time_format">Zeitformat</string>
+    <string name="date_in_the_template_file_will_be_replaced_with_this_value">{{date}} in der Vorlagendatei wird durch diesen Wert ersetzt.\n</string>
+    <string name="you_can_also_use_date_yyyy_mm_dd_to_override_the_format_once">Sie können auch {{date:YYYY-MM-DD}} verwenden, um das Format einmalig zu überschreiben.\n</string>
+    <string name="for_more_syntax_refer_to">"Weitere Syntax finden Sie unter "</string>
+    <string name="format_reference">Formatreferenz</string>
+    <string name="your_current_syntax_looks_like_this">\nIhre aktuelle Syntax sieht so aus: %1$s</string>
+    <string name="time_in_the_template_file_will_be_replaced_with_this_value">{{time}} in der Vorlagendatei wird durch diesen Wert ersetzt.\n</string>
+    <string name="you_can_also_use_time_hh_mm_to_override_the_format_once">Sie können auch {{time:HH:mm}} verwenden, um das Format einmalig zu überschreiben.\n</string>
+    <string name="template_folder_location">Vorlagenordner-Speicherort</string>
+    <string name="files_in_this_folder_will_be_available_as_templates">Dateien in diesem Ordner stehen als Vorlagen zur Verfügung.</string>
+    <string name="saveAsTemplate">Diese Notiz als Vorlage speichern</string>
+
 </resources>

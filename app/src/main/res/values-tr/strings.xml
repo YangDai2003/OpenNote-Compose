@@ -75,9 +75,6 @@
     <string name="file">Dosya</string>
     <string name="text">Metin</string>
     <string name="export_as">Notu dışa aktar</string>
-    <string name="empty_note">Boş not kaydedilemez.</string>
-    <string name="confirm">Onayla</string>
-    <string name="confirm_msg">Not kaydedilmedi. \nYukarı çıkmak istediğinizden emin misiniz?</string>
     <string name="note_editing">Not düzenleme</string>
     <string name="undo">Geri al</string>
     <string name="redo">Yinele</string>
@@ -129,4 +126,19 @@
     <string name="current_root_directory_location_of_the_file_repository">"Dosya deposunun geçerli kök dizin konumu: "</string>
     <string name="change">Değiştirmek</string>
     <string name="root_directory_location">Kök dizin konumu</string>
+    <string name="print">Yazdır</string>
+    <string name="templates">Şablonlar</string>
+    <string name="date_format">Tarih biçimi</string>
+    <string name="time_format">Zaman biçimi</string>
+    <string name="date_in_the_template_file_will_be_replaced_with_this_value">Şablon dosyasındaki {{date}} bu değerle değiştirilecektir.\n</string>
+    <string name="you_can_also_use_date_yyyy_mm_dd_to_override_the_format_once">Formatı bir kerelik geçersiz kılmak için {{date:YYYY-MM-DD}} kullanabilirsiniz.\n</string>
+    <string name="for_more_syntax_refer_to">"Daha fazla sözdizimi için bakınız: "</string>
+    <string name="format_reference">Format referansı</string>
+    <string name="your_current_syntax_looks_like_this">\nMevcut sözdiziminiz şu şekilde görünüyor: %1$s</string>
+    <string name="time_in_the_template_file_will_be_replaced_with_this_value">Şablon dosyasındaki {{time}} bu değerle değiştirilecektir.\n</string>
+    <string name="you_can_also_use_time_hh_mm_to_override_the_format_once">Formatı bir kerelik geçersiz kılmak için {{time:HH:mm}} kullanabilirsiniz.\n</string>
+    <string name="template_folder_location">Şablon klasörü konumu</string>
+    <string name="files_in_this_folder_will_be_available_as_templates">Bu klasördeki dosyalar şablon olarak kullanılabilir.</string>
+    <string name="saveAsTemplate">Bu notu şablon olarak kaydet</string>
+
 </resources>

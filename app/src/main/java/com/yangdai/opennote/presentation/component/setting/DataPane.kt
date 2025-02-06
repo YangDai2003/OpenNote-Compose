@@ -60,10 +60,9 @@ fun DataPane(sharedViewModel: SharedViewModel) {
         contract = ActivityResultContracts.OpenMultipleDocuments()
     ) { uriList ->
         if (uriList.isNotEmpty()) {
-            val contentResolver = context.contentResolver
             sharedViewModel.onDatabaseEvent(
                 DatabaseEvent.ImportFiles(
-                    contentResolver,
+                    context.applicationContext,
                     folderId,
                     uriList
                 )

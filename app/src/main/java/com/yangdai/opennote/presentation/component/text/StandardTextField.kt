@@ -1,6 +1,7 @@
 package com.yangdai.opennote.presentation.component.text
 
 import android.content.ClipData
+import android.net.Uri
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -18,11 +19,13 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -52,6 +55,7 @@ import kotlinx.coroutines.withContext
 import kotlin.math.PI
 import kotlin.math.sin
 
+
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun StandardTextField(
@@ -59,15 +63,16 @@ fun StandardTextField(
     state: TextFieldState,
     scrollState: ScrollState = rememberScrollState(),
     readMode: Boolean,
-    searchWord: String,
     isLintActive: Boolean,
-    onScanButtonClick: () -> Unit,
+    findAndReplaceState: FindAndReplaceState,
+    onFindAndReplaceUpdate: (FindAndReplaceState) -> Unit,
     onListButtonClick: () -> Unit,
     onTableButtonClick: () -> Unit,
     onTaskButtonClick: () -> Unit,
     onLinkButtonClick: () -> Unit,
     onImageButtonClick: () -> Unit,
-    onFocusChanged: (Boolean) -> Unit
+    onFocusChanged: (Boolean) -> Unit,
+    onImageReceived: (List<Uri>) -> Unit
 ) {
 
     var textLayoutResult by remember { mutableStateOf<TextLayoutResult?>(null) }
@@ -82,6 +87,18 @@ fun StandardTextField(
                             state.edit { addInNewLine(item.text.toString()) }
                         }
                         hasText
+                    }
+                }
+
+                transferableContent.hasMediaType(MediaType.Image) -> {
+                    val receivedImages = mutableListOf<Uri>()
+                    transferableContent.consume { item: ClipData.Item ->
+                        item.uri.let {
+                            receivedImages.add(it)
+                        }
+                        true
+                    }.also {
+                        onImageReceived(receivedImages)
                     }
                 }
 
@@ -106,7 +123,7 @@ fun StandardTextField(
     var indices by remember { mutableStateOf(emptyList<Pair<Int, Int>>()) }
     var lintErrors by remember { mutableStateOf(emptyList<Pair<Int, Int>>()) }
 
-    LaunchedEffect(state.text, searchWord, isLintActive, readMode) {
+    LaunchedEffect(state.text, findAndReplaceState.searchWord, isLintActive, readMode) {
         withContext(Dispatchers.Default) {
             lintErrors = if (isLintActive)
                 MarkdownLint().validate(state.text.toString())
@@ -114,9 +131,56 @@ fun StandardTextField(
                 emptyList()
 
             indices = if (!readMode)
-                findAllIndices(state.text.toString(), searchWord)
+                findAllIndices(state.text.toString(), findAndReplaceState.searchWord)
             else
                 emptyList()
+        }
+    }
+
+    var currentIndex by remember { mutableIntStateOf(0) }
+
+    LaunchedEffect(findAndReplaceState.searchWord, indices, findAndReplaceState.scrollDirection) {
+        if (indices.isNotEmpty() && textLayoutResult != null && findAndReplaceState.scrollDirection != null) {
+            // 更新当前索引
+            currentIndex = when (findAndReplaceState.scrollDirection) {
+                ScrollDirection.NEXT -> (currentIndex + 1) % indices.size
+                ScrollDirection.PREVIOUS -> if (currentIndex <= 0) indices.size - 1 else currentIndex - 1
+            }
+
+            // 获取目标匹配项的位置
+            val targetMatch = indices[currentIndex]
+            // 获取该位置的文本边界
+            val bounds = textLayoutResult!!.getBoundingBox(targetMatch.first)
+            // 计算滚动位置
+            val scrollPosition = (bounds.top - 50f).toInt().coerceAtLeast(0)
+            // 执行滚动
+            scrollState.animateScrollTo(scrollPosition)
+            // 通知滚动完成
+            onFindAndReplaceUpdate(findAndReplaceState.copy(scrollDirection = null))
+        }
+    }
+
+    LaunchedEffect(findAndReplaceState.replaceType) {
+        if (findAndReplaceState.replaceType != null) {
+            if (findAndReplaceState.replaceType == ReplaceType.ALL) {
+                if (findAndReplaceState.searchWord.isBlank()) return@LaunchedEffect
+                val currentText = state.text.toString()
+                val newText = currentText.replace(findAndReplaceState.searchWord, findAndReplaceState.replaceWord, ignoreCase = false)
+                state.setTextAndPlaceCursorAtEnd(newText)
+            } else if (findAndReplaceState.replaceType == ReplaceType.CURRENT) {
+                if (findAndReplaceState.searchWord.isBlank()) return@LaunchedEffect
+                // 获取所有匹配位置
+                val indices = findAllIndices(state.text.toString(), findAndReplaceState.searchWord)
+                // 检查索引是否有效
+                if (indices.isEmpty() || currentIndex >= indices.size) return@LaunchedEffect
+                // 获取要替换的位置
+                val (startIndex, endIndex) = indices[currentIndex]
+                // 执行替换
+                state.edit {
+                    replace(startIndex, endIndex, findAndReplaceState.replaceWord)
+                }
+            }
+            onFindAndReplaceUpdate(findAndReplaceState.copy(replaceType = null))
         }
     }
 
@@ -162,11 +226,6 @@ fun StandardTextField(
 
                                 Key.D -> {
                                     state.edit { addMermaid() }
-                                    true
-                                }
-
-                                Key.S -> {
-                                    onScanButtonClick()
                                     true
                                 }
 
@@ -293,9 +352,9 @@ fun StandardTextField(
                         textLayoutResult?.let { layoutResult ->
                             val text = state.text.toString()
 
-                            if (searchWord.isNotEmpty()) {
+                            if (findAndReplaceState.searchWord.isNotEmpty()) {
 
-                                indices.forEach { (start, end) ->
+                                indices.forEachIndexed { index, (start, end) ->
                                     if (start < end && end <= text.length) {
                                         // 获取整个范围的Path
                                         val path: Path = layoutResult.getPathForRange(start, end)
@@ -303,9 +362,16 @@ fun StandardTextField(
                                         val scrollOffset = scrollState.value.toFloat()
                                         path.translate(Offset(0f, -scrollOffset))
 
+                                        // 当前选中项使用黄色，其他使用青色
+                                        val highlightColor = if (index == currentIndex) {
+                                            Color.Green
+                                        } else {
+                                            Color.Cyan
+                                        }
+
                                         drawPath(
                                             path = path,
-                                            color = Color.Cyan,
+                                            color = highlightColor,
                                             alpha = 0.5f,
                                         )
                                     }
@@ -323,8 +389,7 @@ fun StandardTextField(
                                     drawWavyUnderline(
                                         drawScope = this,
                                         path = path,
-                                        phase = phase,
-                                        color = Color.Red
+                                        phase = phase
                                     )
                                 }
                             }
@@ -361,7 +426,6 @@ private fun drawWavyUnderline(
     drawScope: DrawScope,
     path: Path,
     phase: Float,
-    color: Color,
     amplitude: Float = 3f,
     wavelength: Float = 25f
 ) {
@@ -383,7 +447,7 @@ private fun drawWavyUnderline(
         drawScope.drawPoints(
             points = pathPoints,
             pointMode = PointMode.Polygon,
-            color = color,
+            color = Color.Red,
             strokeWidth = 1.5f,
             cap = StrokeCap.Round // 添加圆角端点使线条更平滑
         )

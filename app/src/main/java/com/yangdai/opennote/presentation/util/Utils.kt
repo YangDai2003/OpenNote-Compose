@@ -6,7 +6,6 @@ import android.content.Context
 import android.content.Intent
 import android.icu.text.DateFormat
 import android.net.Uri
-import android.provider.OpenableColumns
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
@@ -38,17 +37,13 @@ fun Intent.parseSharedContent(context: Context): SharedContent {
                 var text = ""
                 var fileName = ""
                 try {
-                    context.contentResolver.openInputStream(data!!)?.use { inputStream ->
-
-                        inputStream.bufferedReader().use { reader ->
-                            text = reader.readText()
+                    data?.let { uri ->
+                        context.contentResolver.openInputStream(uri)?.use { inputStream ->
+                            inputStream.bufferedReader().use { reader ->
+                                text = reader.readText()
+                            }
                         }
-                    }
-                    context.contentResolver.query(data!!, null, null, null, null)?.use { cursor ->
-                        if (cursor.moveToFirst()) {
-                            fileName =
-                                cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME))
-                        }
+                        fileName = getFileName(context, uri).toString()
                     }
                 } catch (e: Exception) {
                     e.printStackTrace()
@@ -61,6 +56,11 @@ fun Intent.parseSharedContent(context: Context): SharedContent {
 
         else -> SharedContent("", "")
     }
+}
+
+fun getFileName(context: Context, uri: Uri): String? {
+    val docFile = DocumentFile.fromSingleUri(context, uri)
+    return docFile?.name
 }
 
 fun getOrCreateDirectory(

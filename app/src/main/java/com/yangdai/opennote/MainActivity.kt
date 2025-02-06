@@ -129,6 +129,10 @@ class MainActivity : AppCompatActivity() {
                     getString(R.string.image),
                     KeyEvent.KEYCODE_I,
                     KeyEvent.META_CTRL_ON or KeyEvent.META_SHIFT_ON
+                ), KeyboardShortcutInfo(
+                    getString(R.string.templates),
+                    KeyEvent.KEYCODE_P,
+                    KeyEvent.META_CTRL_ON or KeyEvent.META_SHIFT_ON
                 )
             )
         )

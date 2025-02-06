@@ -1,9 +1,5 @@
 package com.yangdai.opennote.presentation.viewmodel
 
-import android.annotation.SuppressLint
-import android.content.ContentResolver
-import android.net.Uri
-import android.provider.OpenableColumns
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.clearText
@@ -57,6 +53,7 @@ import com.yangdai.opennote.presentation.state.DataState
 import com.yangdai.opennote.presentation.state.NoteState
 import com.yangdai.opennote.presentation.state.SettingsState
 import com.yangdai.opennote.presentation.util.Constants
+import com.yangdai.opennote.presentation.util.getFileName
 import com.yangdai.opennote.presentation.util.getOrCreateDirectory
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -96,7 +93,6 @@ import org.commonmark.ext.ins.InsExtension
 import org.commonmark.ext.task.list.items.TaskListItemsExtension
 import org.commonmark.parser.Parser
 import org.commonmark.renderer.html.HtmlRenderer
-import java.io.File
 import java.io.OutputStreamWriter
 import java.util.Locale
 import javax.inject.Inject
@@ -208,7 +204,9 @@ class SharedViewModel @Inject constructor(
         dataStoreRepository.booleanFlow(Constants.Preferences.IS_DEFAULT_VIEW_FOR_READING),
         dataStoreRepository.booleanFlow(Constants.Preferences.IS_DEFAULT_LITE_MODE),
         dataStoreRepository.booleanFlow(Constants.Preferences.IS_LINT_ACTIVE),
-        dataStoreRepository.stringFlow(Constants.Preferences.STORAGE_PATH)
+        dataStoreRepository.stringFlow(Constants.Preferences.STORAGE_PATH),
+        dataStoreRepository.stringFlow(Constants.Preferences.DATE_FORMATTER),
+        dataStoreRepository.stringFlow(Constants.Preferences.TIME_FORMATTER)
     ) { values ->
         SettingsState(
             theme = AppTheme.fromInt(values[0] as Int),
@@ -222,7 +220,9 @@ class SharedViewModel @Inject constructor(
             isDefaultViewForReading = values[8] as Boolean,
             isDefaultLiteMode = values[9] as Boolean,
             isLintActive = values[10] as Boolean,
-            storagePath = values[11] as String
+            storagePath = values[11] as String,
+            dateFormatter = values[12] as String,
+            timeFormatter = values[13] as String
         )
     }.flowOn(Dispatchers.IO).stateIn(
         scope = viewModelScope, started = SharingStarted.Eagerly, initialValue = SettingsState()
@@ -250,7 +250,6 @@ class SharedViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(5_000),
             initialValue = setOf()
         )
-
 
     fun onListEvent(event: ListEvent) {
         when (event) {
@@ -348,7 +347,6 @@ class SharedViewModel @Inject constructor(
         }
     }
 
-
     fun onFolderEvent(event: FolderEvent) {
         viewModelScope.launch(Dispatchers.IO) {
             when (event) {
@@ -367,7 +365,6 @@ class SharedViewModel @Inject constructor(
             }
         }
     }
-
 
     private fun getNotes(
         noteOrder: NoteOrder = NoteOrder.Date(OrderType.Descending),
@@ -408,26 +405,6 @@ class SharedViewModel @Inject constructor(
         }
     }
 
-    fun replaceFirstSearchWordByReplaceWord(searchWord: String, replaceWord: String) {
-        if (searchWord.isBlank()) return
-        val currentText = contentState.text
-        val startIndex = currentText.indexOf(searchWord, ignoreCase = false)
-
-        if (startIndex != -1) {
-            val endIndex = startIndex + searchWord.length
-            contentState.edit {
-                replace(startIndex, endIndex, replaceWord)
-            }
-        }
-    }
-
-    fun replaceSearchWordByReplaceWord(searchWord: String, replaceWord: String) {
-        if (searchWord.isBlank()) return
-        val currentText = contentState.text.toString()
-        val newText = currentText.replace(searchWord, replaceWord, ignoreCase = false)
-        contentState.setTextAndPlaceCursorAtEnd(newText)
-    }
-
     @OptIn(ExperimentalFoundationApi::class)
     fun onNoteEvent(event: NoteEvent) {
         when (event) {
@@ -437,22 +414,6 @@ class SharedViewModel @Inject constructor(
                     it.copy(
                         folderId = event.value
                     )
-                }
-            }
-
-            is NoteEvent.Save -> {
-                viewModelScope.launch(Dispatchers.IO) {
-                    val noteState = noteStateFlow.value
-                    val note = NoteEntity(
-                        id = noteState.id,
-                        title = titleState.text.toString(),
-                        content = contentState.text.toString(),
-                        folderId = noteState.folderId,
-                        isMarkdown = noteState.isStandard,
-                        timestamp = System.currentTimeMillis()
-                    )
-                    useCases.addNote(note)
-                    uiEventFlow.emit(UiEvent.NavigateBack)
                 }
             }
 
@@ -547,7 +508,7 @@ class SharedViewModel @Inject constructor(
                 }
             }
 
-            NoteEvent.Update -> {
+            NoteEvent.SaveOrUpdate -> {
                 viewModelScope.launch(Dispatchers.IO) {
                     val noteState = noteStateFlow.value
                     val note = NoteEntity(
@@ -558,14 +519,19 @@ class SharedViewModel @Inject constructor(
                         isMarkdown = noteState.isStandard,
                         timestamp = System.currentTimeMillis()
                     )
-                    if (note.id != null) if (note.title != _oNote.title || note.content != _oNote.content || note.isMarkdown != _oNote.isMarkdown || note.folderId != _oNote.folderId) useCases.updateNote(
-                        note
-                    )
+                    if (note.id != null) {
+                        if (note.title != _oNote.title || note.content != _oNote.content || note.isMarkdown != _oNote.isMarkdown || note.folderId != _oNote.folderId)
+                            useCases.updateNote(note)
+                    } else {
+                        if (note.title.isNotBlank() || note.content.isNotBlank()) {
+                            val newId = useCases.addNote(note)
+                            noteStateFlow.update { it.copy(id = newId) }
+                        }
+                    }
                 }
             }
         }
     }
-
 
     private val _dataActionState = MutableStateFlow(DataActionState())
     val dataActionStateFlow = _dataActionState.asStateFlow()
@@ -579,30 +545,6 @@ class SharedViewModel @Inject constructor(
     fun startDataAction(infinite: Boolean = false) {
         cancelDataAction()
         _dataActionState.update { it.copy(loading = true, infinite = infinite) }
-    }
-
-    // 获取文件名的函数
-    @SuppressLint("Range")
-    fun getFileName(contentResolver: ContentResolver, uri: Uri): String? {
-        var result: String? = null
-        if (uri.scheme == "content") {
-            val cursor = contentResolver.query(uri, null, null, null, null, null)
-            cursor?.use {
-                if (it.moveToFirst()) {
-                    result = it.getString(it.getColumnIndex(OpenableColumns.DISPLAY_NAME))
-                }
-            }
-        } else if (uri.scheme == "file") {
-            result = uri.path?.let { path -> File(path).name }
-        }
-        if (result == null) {
-            result = uri.path
-            val cut = result?.lastIndexOf('/')
-            if (cut != -1) {
-                result = result?.substring(cut!! + 1)
-            }
-        }
-        return result
     }
 
     fun onDatabaseEvent(event: DatabaseEvent) {
@@ -633,7 +575,7 @@ class SharedViewModel @Inject constructor(
                             }
 
                             val timestamp = System.currentTimeMillis()
-                            val name = getFileName(contentResolver, uri)
+                            val name = getFileName(context, uri)
                             val fileName = "${name?.substringBeforeLast(".")}_${timestamp}.${
                                 name?.substringAfterLast(".")
                             }"
@@ -668,7 +610,7 @@ class SharedViewModel @Inject constructor(
 
             is DatabaseEvent.ImportFiles -> {
 
-                val contentResolver = event.contentResolver
+                val context = event.context
                 val folderId = event.folderId
                 val uriList = event.uriList
 
@@ -679,18 +621,18 @@ class SharedViewModel @Inject constructor(
                             it.copy(progress = index.toFloat() / uriList.size)
                         }
 
-                        val fileName = getFileName(contentResolver, uri)
+                        val fileName = getFileName(context, uri)
 
-                        contentResolver.openInputStream(uri).use {
+                        context.contentResolver.openInputStream(uri).use {
                             it?.bufferedReader().use { reader ->
                                 val content = reader?.readText()
                                 val note = NoteEntity(
                                     title = fileName?.substringBeforeLast(".") ?: "",
                                     content = content ?: "",
                                     folderId = folderId,
-                                    isMarkdown = (fileName?.endsWith(".md") == true) || (fileName?.endsWith(
-                                        ".markdown"
-                                    ) == true || (fileName?.endsWith(".html") == true)),
+                                    isMarkdown = (fileName?.endsWith(".md") == true)
+                                            || (fileName?.endsWith(".markdown") == true
+                                            || (fileName?.endsWith(".html") == true)),
                                     timestamp = System.currentTimeMillis()
                                 )
                                 useCases.addNote(note)

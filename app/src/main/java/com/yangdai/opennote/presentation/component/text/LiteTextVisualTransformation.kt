@@ -5,6 +5,7 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.ParagraphStyle
 import androidx.compose.ui.text.PlatformParagraphStyle
 import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
@@ -19,8 +20,11 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 
-class LiteTextVisualTransformation(private val readMode: Boolean, private val searchWord: String) :
-    VisualTransformation {
+class LiteTextVisualTransformation(
+    private val readMode: Boolean,
+    private val searchWord: String,
+    private val selection: TextRange
+) : VisualTransformation {
 
     private data class StyleRanges(
         val codeRanges: List<IntRange>,
@@ -47,101 +51,96 @@ class LiteTextVisualTransformation(private val readMode: Boolean, private val se
     }
 
     override fun filter(text: AnnotatedString): TransformedText {
-
         val styleRanges = findAllRanges(text)
-
         val annotatedString = buildAnnotatedString {
+            // 应用语法内文本样式
             applyTextStyles(styleRanges)
-            applySymbols(styleRanges, readMode)
-            if (!readMode)
-                applySearchWordStyle(styleRanges.searchWordRanges)
+            // 应用语法符号样式
+            applySymbols(text, styleRanges)
+            if (!readMode) applySearchWordStyle(styleRanges.searchWordRanges)
             append(text)
         }
-
         return TransformedText(
-            text = annotatedString, offsetMapping = OffsetMapping.Identity
+            text = annotatedString,
+            offsetMapping = OffsetMapping.Identity
         )
+    }
+
+    private fun findFilteredRanges(
+        regex: Regex,
+        textString: String,
+        excludeRanges: List<IntRange> = emptyList()
+    ): List<IntRange> {
+        return regex.findAll(textString)
+            .map { it.range }
+            .filterNot { range -> excludeRanges.any { it.overlaps(range) } }
+            .toList()
     }
 
     private fun findAllRanges(text: AnnotatedString): StyleRanges {
         if (text.isEmpty()) return StyleRanges.EMPTY
+        val textString = text.text
 
-        val codeRanges = REGEX_PATTERNS[StyleType.CODE]!!.findAll(text).map { it.range }.toList()
-
-        fun findNonCodeRanges(pattern: Regex) = pattern.findAll(text)
+        // 优先找出 codeRanges
+        val codeRanges = REGEX_PATTERNS[StyleType.CODE]!!
+            .findAll(textString)
             .map { it.range }
-            .filterNot { range -> codeRanges.any { it.overlaps(range) } }
             .toList()
 
-        // 优先处理粗斜体
-        val boldItalicRanges = REGEX_PATTERNS[StyleType.BOLD_ITALIC]!!
-            .findAll(text)
-            .map { it.range }
-            .filterNot { range -> codeRanges.any { it.overlaps(range) } }
+        // 找出其他区间时排除 codeRanges
+        val boldItalicRanges = findFilteredRanges(
+            REGEX_PATTERNS[StyleType.BOLD_ITALIC]!!,
+            textString,
+            codeRanges
+        )
+        val boldRanges = findFilteredRanges(
+            REGEX_PATTERNS[StyleType.BOLD]!!,
+            textString,
+            codeRanges + boldItalicRanges
+        )
+        val italicRanges = findFilteredRanges(
+            REGEX_PATTERNS[StyleType.ITALIC]!!,
+            textString,
+            codeRanges + boldItalicRanges + boldRanges
+        )
+        val strikethroughRanges = findFilteredRanges(
+            REGEX_PATTERNS[StyleType.STRIKETHROUGH]!!,
+            textString,
+            codeRanges
+        )
+        val underlineRanges = findFilteredRanges(
+            REGEX_PATTERNS[StyleType.UNDERLINE]!!,
+            textString,
+            codeRanges
+        )
+        val headerRanges = REGEX_PATTERNS[StyleType.HEADER]!!
+            .findAll(textString)
+            .map { it.range to it.groupValues[1].length }
             .toList()
-
-        // 处理粗体，排除与粗斜体重叠的部分
-        val boldRanges = REGEX_PATTERNS[StyleType.BOLD]!!
-            .findAll(text)
-            .map { it.range }
-            .filterNot { range ->
-                codeRanges.any { it.overlaps(range) } ||
-                        boldItalicRanges.any { it.overlaps(range) }
-            }
-            .toList()
-
-        // 处理斜体，排除与粗斜体和粗体重叠的部分
-        val italicRanges = REGEX_PATTERNS[StyleType.ITALIC]!!
-            .findAll(text)
-            .map { it.range }
-            .filterNot { range ->
-                codeRanges.any { it.overlaps(range) } ||
-                        boldItalicRanges.any { it.overlaps(range) } ||
-                        boldRanges.any { it.overlaps(range) }
-            }
-            .toList()
+        val searchWordRanges = findSearchWordRanges(textString)
 
         return StyleRanges(
-            codeRanges = codeRanges,
-            boldRanges = boldRanges,
-            italicRanges = italicRanges,
-            boldItalicRanges = boldItalicRanges,
-            strikethroughRanges = findNonCodeRanges(REGEX_PATTERNS[StyleType.STRIKETHROUGH]!!),
-            underlineRanges = findNonCodeRanges(REGEX_PATTERNS[StyleType.UNDERLINE]!!),
-            headerRanges = REGEX_PATTERNS[StyleType.HEADER]!!.findAll(text)
-                .map { it.range to it.groupValues[1].length }
-                .toList(),
-            searchWordRanges = findSearchWordRanges(text.text)
+            codeRanges,
+            boldRanges,
+            italicRanges,
+            boldItalicRanges,
+            strikethroughRanges,
+            underlineRanges,
+            headerRanges,
+            searchWordRanges
         )
     }
 
     private fun AnnotatedString.Builder.applyTextStyles(ranges: StyleRanges) {
+        ranges.codeRanges.forEach { range -> addStyle(CODE_STYLE, range.first, range.last + 1) }
+        ranges.boldItalicRanges.forEach { range -> addStyle(BOLD_ITALIC_STYLE, range.first, range.last + 1) }
+        ranges.boldRanges.forEach { range -> addStyle(BOLD_STYLE, range.first, range.last + 1) }
+        ranges.italicRanges.forEach { range -> addStyle(ITALIC_STYLE, range.first, range.last + 1) }
 
-        // 应用代码样式
-        ranges.codeRanges.forEach { range ->
-            addStyle(CODE_STYLE, range.first, range.last + 1)
-        }
-
-        ranges.boldItalicRanges.forEach { range ->
-            addStyle(BOLD_ITALIC_STYLE, range.first, range.last + 1)
-        }
-
-        // 应用加粗样式
-        ranges.boldRanges.forEach { range ->
-            addStyle(BOLD_STYLE, range.first, range.last + 1)
-        }
-
-        // 应用斜体样式
-        ranges.italicRanges.forEach { range ->
-            addStyle(ITALIC_STYLE, range.first, range.last + 1)
-        }
-
-        // 应用删除线和下划线样式
         val combinedRanges = (ranges.strikethroughRanges + ranges.underlineRanges).distinct()
         combinedRanges.forEach { range ->
             val hasStrikethrough = ranges.strikethroughRanges.any { it.overlaps(range) }
             val hasUnderline = ranges.underlineRanges.any { it.overlaps(range) }
-
             val style = when {
                 hasStrikethrough && hasUnderline -> STRIKETHROUGH_AND_UNDERLINE_STYLE
                 hasStrikethrough -> STRIKETHROUGH_STYLE
@@ -151,51 +150,85 @@ class LiteTextVisualTransformation(private val readMode: Boolean, private val se
             addStyle(style, range.first, range.last + 1)
         }
 
-        // 应用标题样式
         ranges.headerRanges.forEach { (range, level) ->
             addStyle(HEADER_STYLES[level - 1], range.first, range.last + 1)
             addStyle(HEADER_LINE_STYLES[level - 1], range.first, range.last + 1)
         }
     }
 
-    private fun AnnotatedString.Builder.applySymbols(ranges: StyleRanges, readMode: Boolean) {
-
-        val symbolStyle =
-            if (readMode) SYMBOL_STYLE else SYMBOL_STYLE.copy(fontSize = TextUnit.Unspecified)
-
-        ranges.codeRanges.forEach { range ->
-            addStyle(symbolStyle, range.first, range.first + 1)
-            addStyle(symbolStyle, range.last, range.last + 1)
+    private fun AnnotatedString.Builder.applySymbolsCommon(
+        ranges: StyleRanges,
+        isInAffectedLines: ((IntRange) -> Boolean)?
+    ) {
+        fun applyRangeStyle(range: IntRange, startOffset: Int, endOffset: Int) {
+            if (isInAffectedLines == null) {
+                addStyle(SYMBOL_STYLE, range.first, range.first + startOffset)
+                addStyle(SYMBOL_STYLE, range.last - endOffset + 1, range.last + 1)
+                return
+            }
+            val style = if (isInAffectedLines(range)) {
+                SYMBOL_STYLE.copy(fontSize = TextUnit.Unspecified)
+            } else {
+                SYMBOL_STYLE
+            }
+            addStyle(style, range.first, range.first + startOffset)
+            addStyle(style, range.last - endOffset + 1, range.last + 1)
         }
 
-        ranges.boldItalicRanges.forEach { range ->
-            addStyle(symbolStyle, range.first, range.first + 3)
-            addStyle(symbolStyle, range.last - 2, range.last + 1)
-        }
-
-        ranges.boldRanges.forEach { range ->
-            addStyle(symbolStyle, range.first, range.first + 2)
-            addStyle(symbolStyle, range.last - 1, range.last + 1)
-        }
-
-        ranges.italicRanges.forEach { range ->
-            addStyle(symbolStyle, range.first, range.first + 1)
-            addStyle(symbolStyle, range.last, range.last + 1)
-        }
-
-        ranges.strikethroughRanges.forEach { range ->
-            addStyle(symbolStyle, range.first, range.first + 2)
-            addStyle(symbolStyle, range.last - 1, range.last + 1)
-        }
-
-        ranges.underlineRanges.forEach { range ->
-            addStyle(symbolStyle, range.first, range.first + 2)
-            addStyle(symbolStyle, range.last - 1, range.last + 1)
-        }
-
+        ranges.codeRanges.forEach { range -> applyRangeStyle(range, 1, 1) }
+        ranges.boldItalicRanges.forEach { range -> applyRangeStyle(range, 3, 3) }
+        ranges.boldRanges.forEach { range -> applyRangeStyle(range, 2, 2) }
+        ranges.italicRanges.forEach { range -> applyRangeStyle(range, 1, 1) }
+        ranges.strikethroughRanges.forEach { range -> applyRangeStyle(range, 2, 2) }
+        ranges.underlineRanges.forEach { range -> applyRangeStyle(range, 2, 2) }
         ranges.headerRanges.forEach { (range, level) ->
-            addStyle(symbolStyle, range.first, range.first + level + 1)
+            if (isInAffectedLines == null) {
+                addStyle(SYMBOL_STYLE, range.first, range.first + level + 1)
+            } else {
+                val style = if (isInAffectedLines(range)) {
+                    SYMBOL_STYLE.copy(fontSize = TextUnit.Unspecified)
+                } else {
+                    SYMBOL_STYLE
+                }
+                addStyle(style, range.first, range.first + level + 1)
+            }
         }
+    }
+
+    private fun AnnotatedString.Builder.applySymbols(
+        text: AnnotatedString,
+        ranges: StyleRanges
+    ) {
+        if (selection.start < 0 || selection.end < 0 || readMode) {
+            applySymbolsCommon(ranges, null)
+            return
+        }
+
+        val lines = text.lines()
+        val lineStarts = IntArray(lines.size + 1).also {
+            var pos = 0
+            lines.forEachIndexed { index, line ->
+                it[index] = pos
+                pos += line.length + 1
+            }
+            it[lines.size] = pos
+        }
+        // 根据光标位置确定要完全显示的行
+        val affectedLines = if (selection.collapsed) {
+            val lineIdx = lineStarts.indexOfFirst { it > selection.start } - 1
+            lineIdx..lineIdx
+        } else {
+            val startLine = lineStarts.indexOfFirst { it > selection.start } - 1
+            val endLine = lineStarts.indexOfFirst { it > selection.end } - 1
+            startLine..endLine
+        }
+
+        fun isInAffectedLines(range: IntRange): Boolean {
+            val startLine = lineStarts.indexOfFirst { it > range.first } - 1
+            return startLine in affectedLines
+        }
+
+        applySymbolsCommon(ranges, ::isInAffectedLines)
     }
 
     private fun AnnotatedString.Builder.applySearchWordStyle(ranges: List<IntRange>) {
@@ -248,7 +281,6 @@ class LiteTextVisualTransformation(private val readMode: Boolean, private val se
             StyleType.HEADER to "^(#{1,6})\\s+\\S.*\n".toRegex(RegexOption.MULTILINE)
         )
 
-        // 语法符号样式定义
         private val SYMBOL_STYLE = SpanStyle(
             fontWeight = FontWeight.Thin,
             fontStyle = FontStyle.Normal,
@@ -274,7 +306,8 @@ class LiteTextVisualTransformation(private val readMode: Boolean, private val se
         private val STRIKETHROUGH_AND_UNDERLINE_STYLE =
             SpanStyle(textDecoration = TextDecoration.LineThrough + TextDecoration.Underline)
         private val CODE_STYLE = SpanStyle(
-            fontFamily = FontFamily.Monospace, background = Color.LightGray.copy(alpha = 0.3f)
+            fontFamily = FontFamily.Monospace,
+            background = Color.LightGray.copy(alpha = 0.3f)
         )
         private val SEARCH_WORD_STYLE = SpanStyle(background = Color.Cyan.copy(alpha = 0.5f))
 
@@ -311,29 +344,33 @@ class LiteTextVisualTransformation(private val readMode: Boolean, private val se
             )
         )
 
-        // 标题样式
         private val HEADER_STYLES = listOf(
             SpanStyle(
                 fontSize = 36.sp,
                 fontWeight = FontWeight.ExtraBold,
                 fontSynthesis = FontSynthesis.Weight
-            ), SpanStyle(
+            ),
+            SpanStyle(
                 fontSize = 28.sp,
                 fontWeight = FontWeight.ExtraBold,
                 fontSynthesis = FontSynthesis.Weight
-            ), SpanStyle(
+            ),
+            SpanStyle(
                 fontSize = 22.sp,
                 fontWeight = FontWeight.Bold,
                 fontSynthesis = FontSynthesis.Weight
-            ), SpanStyle(
+            ),
+            SpanStyle(
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
                 fontSynthesis = FontSynthesis.Weight
-            ), SpanStyle(
+            ),
+            SpanStyle(
                 fontSize = 14.sp,
                 fontWeight = FontWeight.SemiBold,
                 fontSynthesis = FontSynthesis.Weight
-            ), SpanStyle(
+            ),
+            SpanStyle(
                 fontSize = 12.sp,
                 fontWeight = FontWeight.SemiBold,
                 fontSynthesis = FontSynthesis.Weight

@@ -59,7 +59,14 @@ fun PermissionScreen(onPermissionResult: (String) -> Unit) {
                 Intent.FLAG_GRANT_READ_URI_PERMISSION or
                         Intent.FLAG_GRANT_WRITE_URI_PERMISSION
             )
-            getOrCreateDirectory(context.applicationContext, uri, Constants.File.OPENNOTE)
+            // 获取Open Note目录
+            val openNoteDir =
+                getOrCreateDirectory(context, uri, Constants.File.OPENNOTE)
+            openNoteDir?.let { dir ->
+                getOrCreateDirectory(context, dir.uri, Constants.File.OPENNOTE_IMAGES)
+                getOrCreateDirectory(context, dir.uri, Constants.File.OPENNOTE_BACKUP)
+                getOrCreateDirectory(context, dir.uri, Constants.File.OPENNOTE_TEMPLATES)
+            }
             onPermissionResult(uri.toString())
         }
     }

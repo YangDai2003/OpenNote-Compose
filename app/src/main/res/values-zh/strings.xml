@@ -76,9 +76,6 @@
     <string name="file">文件</string>
     <string name="text">文本</string>
     <string name="export_as">导出笔记为</string>
-    <string name="empty_note">不能保存空笔记。</string>
-    <string name="confirm">确定</string>
-    <string name="confirm_msg">笔记尚未保存，\n确定要返回主界面吗?</string>
     <string name="note_editing">笔记编辑</string>
     <string name="undo">撤销</string>
     <string name="redo">恢复</string>
@@ -125,9 +122,23 @@
     <string name="lint_description">开启后，将在经典模式中检测 Markdown 文本格式和语法是否符合规范，错误会被红色波浪线标记。</string>
     <string name="compose">撰写</string>
     <string name="storage">请选择文件储存库的根目录位置</string>
-    <string name="storage_detail">在选择的根目录位置中，会创建一个名为 { %1$s } 的文件夹，用于存放导出的笔记文件、引用的图片资源和备份的数据。</string>
+    <string name="storage_detail">在选择的根目录位置中，会创建一个名为 { %1$s } 的文件夹，用于存放导出的笔记文件、引用的图片资源、模板文件和备份的数据。</string>
     <string name="open_file_manager">打开文件管理器</string>
     <string name="current_root_directory_location_of_the_file_repository">当前文件储存库所在的根目录位置：</string>
     <string name="change">更改</string>
     <string name="root_directory_location">根目录位置</string>
+    <string name="print">打印</string>
+    <string name="templates">模板</string>
+    <string name="date_format">日期格式</string>
+    <string name="time_format">时间格式</string>
+    <string name="you_can_also_use_time_hh_mm_to_override_the_format_once">你也可以使用 {{time:HH:mm}} 字段在模板中直接指定时间值的格式。这将覆盖此项。\n</string>
+    <string name="template_folder_location">模板文件夹地址</string>
+    <string name="files_in_this_folder_will_be_available_as_templates">该文件夹中的文件都可以作为模板。</string>
+    <string name="date_in_the_template_file_will_be_replaced_with_this_value">模板文件中的 {{date}} 字段将被一个日期值替换。日期值的格式由此项控制。\n</string>
+    <string name="you_can_also_use_date_yyyy_mm_dd_to_override_the_format_once">你也可以使用 {{date:YYYY-MM-DD}} 字段在模板中直接指定日期值的格式。这将覆盖此项。\n</string>
+    <string name="for_more_syntax_refer_to">更多语法，请参阅：</string>
+    <string name="format_reference">格式参考</string>
+    <string name="your_current_syntax_looks_like_this">\n这是当前所用格式的样例：%1$s</string>
+    <string name="time_in_the_template_file_will_be_replaced_with_this_value">模板文件中的 {{time}} 字段将被一个时间值替换。时间值的格式由此项控制。\n</string>
+    <string name="saveAsTemplate">保存此笔记为模板</string>
 </resources>

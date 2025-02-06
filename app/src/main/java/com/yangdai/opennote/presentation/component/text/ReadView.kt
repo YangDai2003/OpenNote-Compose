@@ -3,14 +3,18 @@
 package com.yangdai.opennote.presentation.component.text
 
 import android.annotation.SuppressLint
-import android.graphics.Color
+import android.app.Activity
+import android.content.Context
 import android.net.Uri
+import android.print.PrintAttributes
+import android.print.PrintManager
 import android.view.ViewGroup
 import android.webkit.JavascriptInterface
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.Toast
+import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.rememberScrollState
@@ -19,18 +23,22 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.net.toUri
 import androidx.documentfile.provider.DocumentFile
 import com.yangdai.opennote.presentation.component.image.FullscreenImageDialog
+import com.yangdai.opennote.presentation.state.SettingsState
 import com.yangdai.opennote.presentation.theme.linkColor
 import com.yangdai.opennote.presentation.util.Constants
 import com.yangdai.opennote.presentation.util.rememberCustomTabsIntent
@@ -65,16 +73,26 @@ fun ReadView(
     modifier: Modifier = Modifier,
     html: String,
     rootUri: Uri,
+    noteName: String,
+    printEnabled: MutableState<Boolean>,
     scrollSynchronized: Boolean,
     scrollState: ScrollState = rememberScrollState(),
-    colorScheme: ColorScheme = MaterialTheme.colorScheme
+    settingsState: SettingsState
 ) {
 
+    val colorScheme = MaterialTheme.colorScheme
     val markdownStyles = remember(colorScheme) {
         MarkdownStyles.fromColorScheme(colorScheme)
     }
+    val codeTheme = remember(settingsState.isAppInDarkMode) {
+        if (settingsState.isAppInDarkMode) {
+            "https://cdn.jsdelivr.net/npm/prism-themes@1.9.0/themes/prism-material-dark.css"
+        } else {
+            "https://cdn.jsdelivr.net/npm/prism-themes@1.9.0/themes/prism-material-light.css"
+        }
+    }
 
-    val data by remember(html, markdownStyles) {
+    val data by remember(html, markdownStyles, codeTheme) {
         mutableStateOf(
             """
                     <!DOCTYPE html>
@@ -136,6 +154,9 @@ fun ReadView(
                       import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
                       mermaid.initialize({ startOnLoad: true });
                     </script>
+                    <link href="$codeTheme" rel="stylesheet" />
+                    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+                    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
                     <style type="text/css">
                         body { color: ${markdownStyles.hexTextColor}; padding: 0px; margin: 0px; }
                         img { max-width: 100%; height: auto; }
@@ -202,8 +223,18 @@ fun ReadView(
         )
     }
 
+    val activity = LocalActivity.current
+    LaunchedEffect(printEnabled.value) {
+        if (!printEnabled.value) return@LaunchedEffect
+        webView?.let {
+            createWebPrintJob(it, activity, noteName)
+            printEnabled.value = false
+        }
+    }
+
+    val backgroundColor = MaterialTheme.colorScheme.surface
     AndroidView(
-        modifier = modifier.fillMaxSize(),
+        modifier = modifier.fillMaxSize().clip(RectangleShape),
         factory = {
             WebView(it).also { webView = it }.apply {
                 layoutParams = ViewGroup.LayoutParams(
@@ -320,10 +351,10 @@ fun ReadView(
                 settings.displayZoomControls = false
                 settings.useWideViewPort = false
                 settings.loadWithOverviewMode = false
-                setBackgroundColor(Color.TRANSPARENT)
             }
         },
         update = {
+            it.setBackgroundColor(backgroundColor.toArgb())
             it.loadDataWithBaseURL(
                 null,
                 data,
@@ -332,11 +363,35 @@ fun ReadView(
                 null
             )
         },
-        onReset = { it.stopLoading() })
+        onReset = {
+            imageCache.clear()
+            webView = null
+            it.stopLoading()
+            it.destroy()
+        })
 
     if (showDialog)
         FullscreenImageDialog(
             onDismiss = { showDialog = false },
             imageUrl = clickedImageUrl,
         )
+}
+
+private fun createWebPrintJob(webView: WebView, activity: Activity?, name: String) {
+
+    // Get a PrintManager instance
+    (activity?.getSystemService(Context.PRINT_SERVICE) as? PrintManager)?.let { printManager ->
+
+        val jobName = "$name Document"
+
+        // Get a print adapter instance
+        val printAdapter = webView.createPrintDocumentAdapter(jobName)
+
+        // Create a print job with name and adapter instance
+        printManager.print(
+            jobName,
+            printAdapter,
+            PrintAttributes.Builder().build()
+        )
+    }
 }

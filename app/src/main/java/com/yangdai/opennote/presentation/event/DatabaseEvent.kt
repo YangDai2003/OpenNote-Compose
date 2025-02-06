@@ -9,7 +9,7 @@ import com.yangdai.opennote.presentation.component.dialog.ExportType
 sealed interface DatabaseEvent {
 
     data class ImportFiles(
-        val contentResolver: ContentResolver,
+        val context: Context,
         val folderId: Long?,
         val uriList: List<Uri>
     ) : DatabaseEvent

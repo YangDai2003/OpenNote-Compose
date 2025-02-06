@@ -9,6 +9,7 @@ object Constants {
         const val OPENNOTE = "OpenNote"
         const val OPENNOTE_BACKUP = "Backup"
         const val OPENNOTE_IMAGES = "Images"
+        const val OPENNOTE_TEMPLATES = "Templates"
     }
 
     object Preferences {
@@ -27,6 +28,8 @@ object Constants {
         const val IS_DEFAULT_LITE_MODE = "IS_DEFAULT_LITE_MODE"
         const val IS_LINT_ACTIVE = "IS_LINT_ACTIVE"
         const val STORAGE_PATH = "STORAGE_PATH"
+        const val DATE_FORMATTER = "DATE_FORMATTER"
+        const val TIME_FORMATTER = "TIME_FORMATTER"
     }
 
     object Editor {

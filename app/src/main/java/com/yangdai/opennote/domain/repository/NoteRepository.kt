@@ -12,7 +12,7 @@ interface NoteRepository {
 
     suspend fun getNoteById(id: Long): NoteEntity?
 
-    suspend fun insertNote(note: NoteEntity)
+    suspend fun insertNote(note: NoteEntity): Long
 
     suspend fun deleteNote(noteEntity: NoteEntity)
 

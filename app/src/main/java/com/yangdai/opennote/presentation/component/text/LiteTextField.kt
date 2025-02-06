@@ -50,7 +50,8 @@ fun LiteTextField(
     state: TextFieldState,
     searchWord: String,
     onFocusChanged: (Boolean) -> Unit,
-    onScanButtonClick: () -> Unit
+    onScanButtonClick: () -> Unit,
+    onTemplateClick: () -> Unit
 ) {
 
     var textFieldValue by rememberSaveable(stateSaver = TextFieldValue.Saver) {
@@ -186,9 +187,9 @@ fun LiteTextField(
                 applyChange(newText)
             },
             readOnly = readMode,
-            visualTransformation = remember(readMode, searchWord) {
+            visualTransformation = remember(readMode, searchWord, textFieldValue.selection) {
                 LiteTextVisualTransformation(
-                    readMode, searchWord
+                    readMode, searchWord, textFieldValue.selection
                 )
             },
             textStyle = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface),
@@ -230,7 +231,8 @@ fun LiteTextField(
                     applyChange(textFieldValue.brackets())
                 }, onBracesClick = {
                     applyChange(textFieldValue.braces())
-                }, onScanButtonClick = onScanButtonClick
+                }, onScanButtonClick = onScanButtonClick,
+                onTemplateClick = onTemplateClick
             )
         }
     }
