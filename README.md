@@ -21,11 +21,6 @@ pattern along with Clean Architecture principles.
       <img alt="Get it on GitHub" src="https://raw.githubusercontent.com/deckerst/common/main/assets/get-it-on-github.png" height="100">
 </a>
 
-## How to Use OpenNote with Markdown, LaTeX Math, and Mermaid Diagrams?
-
-You can know more about how to use OpenNote with Markdown, LaTeX Math, and Mermaid Diagrams in
-the [Guide](Guide.md).
-
 ## Features
 
 ### Core Features:
@@ -76,6 +71,11 @@ the [Guide](Guide.md).
 <img src="screenshots/Settings_Large.png" width="30%" alt=""/>
 
 </div>
+
+## How to Use OpenNote with Markdown, LaTeX Math, and Mermaid Diagrams?
+
+You can know more about how to use OpenNote with Markdown, LaTeX Math, and Mermaid Diagrams in
+the [Guide](Guide.md).
 
 ## Technical Details
 

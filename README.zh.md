@@ -20,11 +20,6 @@ OpenNote是一款完全使用Compose构建的现代化Android记事本应用程�
       <img alt="Get it on GitHub" src="https://raw.githubusercontent.com/deckerst/common/main/assets/get-it-on-github.png" height="100">
 </a>
 
-## 如何使用 Markdown, LaTeX Math 和 Mermaid 图表的语法在 OpenNote 中编写文档？
-
-您可以在[指南](Guide.zh.md)中了解有关如何使用 Markdown，LaTeX Math 和 Mermaid 图表的语法在 OpenNote
-中编写文档的更多信息。
-
 ## 功能
 
 ### 核心功能
@@ -75,6 +70,11 @@ OpenNote是一款完全使用Compose构建的现代化Android记事本应用程�
 <img src="screenshots/Settings_Large.png" width="30%" alt=""/>
 
 </div>
+
+## 如何使用 Markdown, LaTeX Math 和 Mermaid 图表的语法在 OpenNote 中编写文档？
+
+您可以在[指南](Guide.zh.md)中了解有关如何使用 Markdown，LaTeX Math 和 Mermaid 图表的语法在 OpenNote
+中编写文档的更多信息。
 
 ## 技术细节
 
