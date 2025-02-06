@@ -28,23 +28,29 @@ the [Guide](Guide.md).
 
 ## Features
 
-- **Create, Edit, and Delete Notes**: Users can create, edit, and delete notes effortlessly.
-- **Create, Edit, and Delete Folders**: Organize notes efficiently with folder management
-  functionalities.
-- **Sorting and Filtering**: Easily sort and filter notes and folders based on various criteria.
-- **Move Notes**: Seamlessly move notes between different folders for better organization.
-- **Trash Bin**: Safely move notes to the trash for temporary storage before permanent deletion.
-- **OCR Text Recognition**: Utilizes ML Kit and CameraX for optical character recognition (OCR)
-  directly from images.
-- **Markdown Support**: Supports both CommonMark and GitHub Flavored Markdown (GFM) syntax for
-  versatile formatting options.
-- **LaTeX Math Support**: Supports LaTeX math syntax for mathematical equations.
-- **Mermaid Diagram Support**: Supports Mermaid syntax for creating diagrams and flowcharts.
-- **Light Mode**: Provides basic Markdown syntax and real-time preview.
-- **Standard Mode**: Offers comprehensive Markdown syntax and precise rendering, with separate editing and reading areas.
-- **Export Options**: Notes can be exported in various formats, including TXT, MD (Markdown), and HTML for versatile sharing and usage.
-- **Material 3 Design**: Adheres to Material Design guidelines, creating a modern and cohesive user interface.
-- **Responsive Design**: Optimized for devices with different screen sizes and orientations, providing a great experience on phones, tablets, and even foldable devices.
+### Core Features:
+- **Create, Edit, and Delete Notes:** Users can easily create, modify, and remove notes.
+- **Create, Edit, and Delete Folders:** Organize notes effectively using folder management capabilities.
+- **Sorting and Filtering:** Effortlessly sort and filter notes and folders based on various criteria.
+- **Move Notes:** Seamlessly move notes between different folders for improved organization.
+- **Trash Bin:** Securely move notes to a trash bin for temporary storage before permanent deletion.
+
+### Advanced Capabilities:
+- **Note Templates:** Insert notes from the "Templates" folder as templates, with automatic date and time formatting.
+- **Local Image Support:** Directly import local images from the device into notes, with in-app preview.
+- **OCR Text Recognition:** Utilize ML Kit and CameraX for Optical Character Recognition (OCR) directly from images.
+- **Markdown Support:** Comprehensive support for CommonMark and GitHub Flavored Markdown (GFM) syntax for rich formatting options.
+- **LaTeX Math Support:** Incorporates LaTeX Math syntax for rendering mathematical equations.
+- **Mermaid Support:** Supports Mermaid syntax for creating diagrams and flowcharts.
+
+### Editing Modes:
+- **Lite Mode:** Provides basic Markdown syntax with a WYSIWYG (What You See Is What You Get) display.
+- **Standard Mode:** Offers full Markdown syntax support with precise rendering, separating the editing and reading areas.
+
+### Additional Features:
+- **Export Options:** Notes can be exported in various formats, including TXT, Markdown, PDF, and HTML, for versatile sharing and usage.
+- **Material 3 Design:** Adheres to Material Design 3 guidelines for a modern and cohesive user interface.
+- **Responsive Design:** Optimized for various screen sizes and device orientations, ensuring a great experience on phones, tablets, and even foldables.
 
 ## Screenshots
 
