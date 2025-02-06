@@ -48,9 +48,12 @@ the [Guide](Guide.md).
 - **Standard Mode:** Offers full Markdown syntax support with precise rendering, separating the editing and reading areas.
 
 ### Additional Features:
+- **Accept Shared Text:** The app can directly receive text shared from other applications and create a new note with it.
+- **Directly Open Documents:** The app can be selected as handler for various text document types (such as .txt, .md, and .html), allowing them to be opened directly and converted into notes.
 - **Export Options:** Notes can be exported in various formats, including TXT, Markdown, PDF, and HTML, for versatile sharing and usage.
 - **Material 3 Design:** Adheres to Material Design 3 guidelines for a modern and cohesive user interface.
-- **Responsive Design:** Optimized for various screen sizes and device orientations, ensuring a great experience on phones, tablets, and even foldables.
+- **Comprehensive Mouse and Keyboard Support:** The app has been thoroughly adapted for seamless interaction with mice and external physical keyboards, delivering a highly productive environment.
+- **Responsive Design:** Optimized for various screen sizes and device orientations, ensuring a great experience on phones, tablets, foldables and even ChromeOS devices.
 
 ## Screenshots
 
