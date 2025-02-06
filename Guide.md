@@ -204,6 +204,7 @@ various formats including TXT, MD (Markdown), and HTML.
 | Horizontal Rule  | `Ctrl+Shift+R` |
 |       Task       | `Ctrl+Shift+T` |
 | Mermaid Diagram  | `Ctrl+Shift+D` |
+|    Templates     | `Ctrl+Shift+P` |
 
 # References
 

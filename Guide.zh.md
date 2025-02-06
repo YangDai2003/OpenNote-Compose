@@ -189,6 +189,7 @@ TXT、MD (Markdown) 和 HTML。
 |    分隔线     | `Ctrl+Shift+R` |
 |    任务列表    | `Ctrl+Shift+T` |
 | Mermaid 图表 | `Ctrl+Shift+D` |
+|     模板     | `Ctrl+Shift+P` |
 
 # 参考
 
