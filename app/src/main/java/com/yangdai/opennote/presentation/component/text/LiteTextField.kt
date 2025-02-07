@@ -188,9 +188,10 @@ fun LiteTextField(
             },
             readOnly = readMode,
             visualTransformation = remember(readMode, searchWord, textFieldValue.selection) {
-                LiteTextVisualTransformation(
-                    readMode, searchWord, textFieldValue.selection
-                )
+//                LiteTextVisualTransformation(
+//                    readMode, searchWord, textFieldValue.selection
+//                )
+                LiteTextVisualTransformation2()
             },
             textStyle = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface),
             cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),

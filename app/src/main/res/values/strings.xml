@@ -24,7 +24,6 @@
     <string name="content">Content</string>
     <string name="delete">Delete</string>
     <string name="unlock">Unlock</string>
-    <string name="data_security">Data and security</string>
     <string name="reset_database">Reset database</string>
     <string name="shareContent">Welcome to \"Open Note\", a lightweight, aesthetically pleasing application that adheres to the Material 3 design style. Our app offers local storage, allowing you to jot down your thoughts anytime, anywhere, even without an internet connection. The efficient search function helps you quickly locate your notes, while the folder categorization feature aids in better organization of your notes. Additionally, it provides a text OCR feature, capable of converting text in images into editable text. The goal is to provide you with the most convenient and efficient note-taking experience. Download: https://play.google.com/store/apps/details?id=com.yangdai.opennote</string>
     <string name="remind">Remind</string>
@@ -127,7 +126,7 @@
     <string name="storage_detail">In the selected root directory location, a file repository named { %1$s } will be created to store exported note files, referenced image resources, template files and backup data.</string>
     <string name="open_file_manager">Open File Manager</string>
     <string name="root_directory_location">Root directory location</string>
-    <string name="current_root_directory_location_of_the_file_repository">"Current root directory location of the file repository: "</string>
+    <string name="current_root_directory_location_of_the_file_repository">Root directory location of the file repository.</string>
     <string name="change">Change</string>
     <string name="print">Print</string>
     <string name="templates">Templates</string>
@@ -143,4 +142,6 @@
     <string name="template_folder_location">Template folder location</string>
     <string name="files_in_this_folder_will_be_available_as_templates">Files in this folder will be available as templates.</string>
     <string name="saveAsTemplate">Save this note as a template</string>
+    <string name="screen_protection">Screen protection</string>
+    <string name="screen_protection_detail">When this feature is turned on, app content cannot be captured or recorded, and the content will not be displayed in the background app list.</string>
 </resources>

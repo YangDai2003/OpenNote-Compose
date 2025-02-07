@@ -206,7 +206,8 @@ class SharedViewModel @Inject constructor(
         dataStoreRepository.booleanFlow(Constants.Preferences.IS_LINT_ACTIVE),
         dataStoreRepository.stringFlow(Constants.Preferences.STORAGE_PATH),
         dataStoreRepository.stringFlow(Constants.Preferences.DATE_FORMATTER),
-        dataStoreRepository.stringFlow(Constants.Preferences.TIME_FORMATTER)
+        dataStoreRepository.stringFlow(Constants.Preferences.TIME_FORMATTER),
+        dataStoreRepository.booleanFlow(Constants.Preferences.IS_SCREEN_PROTECTED)
     ) { values ->
         SettingsState(
             theme = AppTheme.fromInt(values[0] as Int),
@@ -222,7 +223,8 @@ class SharedViewModel @Inject constructor(
             isLintActive = values[10] as Boolean,
             storagePath = values[11] as String,
             dateFormatter = values[12] as String,
-            timeFormatter = values[13] as String
+            timeFormatter = values[13] as String,
+            isScreenProtected = values[14] as Boolean
         )
     }.flowOn(Dispatchers.IO).stateIn(
         scope = viewModelScope, started = SharingStarted.Eagerly, initialValue = SettingsState()

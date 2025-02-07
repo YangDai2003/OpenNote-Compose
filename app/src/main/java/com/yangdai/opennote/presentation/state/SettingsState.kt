@@ -17,7 +17,8 @@ data class SettingsState(
     val isLintActive: Boolean = false,
     val storagePath: String = "",
     val dateFormatter: String = "",
-    val timeFormatter: String = ""
+    val timeFormatter: String = "",
+    val isScreenProtected: Boolean = false
 )
 
 enum class AppTheme(private val value: Int) {

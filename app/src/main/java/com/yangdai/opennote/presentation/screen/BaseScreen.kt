@@ -40,6 +40,13 @@ fun BaseScreen(
 
     val settingsState by sharedViewModel.settingsStateFlow.collectAsStateWithLifecycle()
     val authState by sharedViewModel.authenticated.collectAsStateWithLifecycle()
+    val activity = LocalActivity.current
+
+    if (settingsState.isScreenProtected) {
+        activity?.window?.addFlags(android.view.WindowManager.LayoutParams.FLAG_SECURE)
+    } else {
+        activity?.window?.clearFlags(android.view.WindowManager.LayoutParams.FLAG_SECURE)
+    }
 
     // Check if the user is logged in
     val loggedIn by remember {

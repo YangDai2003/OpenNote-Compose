@@ -24,7 +24,6 @@
     <string name="content">正文</string>
     <string name="delete">删除</string>
     <string name="unlock">解锁</string>
-    <string name="data_security">数据和安全</string>
     <string name="reset_database">重置数据库</string>
     <string name="remind">提醒</string>
     <string name="restore_all">全部恢复</string>
@@ -124,7 +123,7 @@
     <string name="storage">请选择文件储存库的根目录位置</string>
     <string name="storage_detail">在选择的根目录位置中，会创建一个名为 { %1$s } 的文件夹，用于存放导出的笔记文件、引用的图片资源、模板文件和备份的数据。</string>
     <string name="open_file_manager">打开文件管理器</string>
-    <string name="current_root_directory_location_of_the_file_repository">当前文件储存库所在的根目录位置：</string>
+    <string name="current_root_directory_location_of_the_file_repository">文件储存库所在的根目录位置。</string>
     <string name="change">更改</string>
     <string name="root_directory_location">根目录位置</string>
     <string name="print">打印</string>
@@ -141,4 +140,6 @@
     <string name="your_current_syntax_looks_like_this">\n这是当前所用格式的样例：%1$s</string>
     <string name="time_in_the_template_file_will_be_replaced_with_this_value">模板文件中的 {{time}} 字段将被一个时间值替换。时间值的格式由此项控制。\n</string>
     <string name="saveAsTemplate">保存此笔记为模板</string>
+    <string name="screen_protection_detail">开启后，应用内容无法被截屏或录制，在后台应用列表中也不会显示内容。</string>
+    <string name="screen_protection">屏幕隐私保护</string>
 </resources>

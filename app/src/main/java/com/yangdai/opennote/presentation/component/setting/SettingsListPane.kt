@@ -19,6 +19,7 @@ import androidx.compose.material.icons.outlined.ModeEdit
 import androidx.compose.material.icons.outlined.Palette
 import androidx.compose.material.icons.outlined.PermDeviceInformation
 import androidx.compose.material.icons.outlined.SdStorage
+import androidx.compose.material.icons.outlined.Security
 import androidx.compose.material.icons.outlined.Widgets
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -196,7 +197,23 @@ fun SettingsListPane(
 
                 SettingItem(
                     modifier = Modifier.clickable {
-                        navigateToDetail(SettingsItem(1, R.string.data_security))
+                        navigateToDetail(SettingsItem(6, R.string.security))
+                    },
+                    leadingContent = {
+                        Icon(
+                            imageVector = Icons.Outlined.Security,
+                            contentDescription = "Security"
+                        )
+                    },
+                    headlineText = stringResource(R.string.security),
+                    supportingText = stringResource(R.string.screen_protection) + "  •  " + stringResource(R.string.password)
+                )
+
+                SettingsSectionDivider()
+
+                SettingItem(
+                    modifier = Modifier.clickable {
+                        navigateToDetail(SettingsItem(1, R.string.data))
                     },
                     leadingContent = {
                         Icon(
@@ -204,10 +221,8 @@ fun SettingsListPane(
                             contentDescription = "Storage"
                         )
                     },
-                    headlineText = stringResource(R.string.data_security),
-                    supportingText = stringResource(R.string.backup) + "  •  " + stringResource(R.string.recovery) + "  •  " + stringResource(
-                        R.string.password
-                    )
+                    headlineText = stringResource(R.string.data),
+                    supportingText = stringResource(R.string.backup) + "  •  " + stringResource(R.string.recovery)
                 )
 
                 SettingsSectionDivider()

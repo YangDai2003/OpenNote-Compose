@@ -30,6 +30,7 @@ object Constants {
         const val STORAGE_PATH = "STORAGE_PATH"
         const val DATE_FORMATTER = "DATE_FORMATTER"
         const val TIME_FORMATTER = "TIME_FORMATTER"
+        const val IS_SCREEN_PROTECTED = "IS_SCREEN_PROTECTED"
     }
 
     object Editor {
