@@ -1,5 +1,6 @@
 - [简体中文](README.zh.md)
 - [English](README.md)
+- [Türkçe](README.tr.md)
 
 # OpenNote
 
