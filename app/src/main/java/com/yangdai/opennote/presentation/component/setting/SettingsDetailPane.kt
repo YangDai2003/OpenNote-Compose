@@ -119,6 +119,10 @@ fun SettingsDetailPane(
             5 -> {
                 TemplatePane(sharedViewModel = sharedViewModel)
             }
+
+            6 -> {
+                SecurityPane(sharedViewModel = sharedViewModel)
+            }
         }
     }
 }

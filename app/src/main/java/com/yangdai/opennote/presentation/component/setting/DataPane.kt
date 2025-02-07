@@ -1,8 +1,5 @@
 package com.yangdai.opennote.presentation.component.setting
 
-import android.app.KeyguardManager
-import android.content.Context
-import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
@@ -15,13 +12,11 @@ import androidx.compose.material.icons.outlined.Backup
 import androidx.compose.material.icons.outlined.CleaningServices
 import androidx.compose.material.icons.outlined.Dataset
 import androidx.compose.material.icons.outlined.FileDownload
-import androidx.compose.material.icons.outlined.Fingerprint
 import androidx.compose.material.icons.outlined.Restore
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -43,6 +38,7 @@ import com.yangdai.opennote.presentation.component.dialog.WarningDialog
 import com.yangdai.opennote.presentation.event.DatabaseEvent
 import com.yangdai.opennote.presentation.util.Constants
 import com.yangdai.opennote.presentation.viewmodel.SharedViewModel
+import java.io.File
 
 @Composable
 fun DataPane(sharedViewModel: SharedViewModel) {
@@ -85,7 +81,40 @@ fun DataPane(sharedViewModel: SharedViewModel) {
             .verticalScroll(rememberScrollState())
     ) {
 
-        SettingsHeader(text = stringResource(R.string.data))
+        val parent = remember(settingsState.storagePath) {
+            if (settingsState.storagePath.isEmpty()) null
+            else
+                DocumentFile.fromTreeUri(context, settingsState.storagePath.toUri())
+        }
+
+        ListItem(
+            leadingContent = {
+                Icon(
+                    imageVector = Icons.Outlined.Dataset,
+                    contentDescription = "File Location"
+                )
+            },
+            overlineContent = { Text(text = parent?.name.toString() + File.separator + Constants.File.OPENNOTE) },
+            headlineContent = { Text(text = stringResource(R.string.root_directory_location)) },
+            supportingContent = {
+                Text(
+                    text = stringResource(R.string.current_root_directory_location_of_the_file_repository)
+                )
+            },
+            trailingContent = {
+                TextButton(
+                    onClick = {
+                        sharedViewModel.putPreferenceValue(Constants.Preferences.STORAGE_PATH, "")
+                    },
+                    colors = ButtonDefaults.textButtonColors().copy(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                    )
+                ) {
+                    Text(text = stringResource(R.string.change))
+                }
+            },
+        )
 
         ListItem(
             modifier = Modifier.clickable {
@@ -165,78 +194,6 @@ fun DataPane(sharedViewModel: SharedViewModel) {
             supportingContent = {
                 Text(
                     text = stringResource(R.string.reset_database_description)
-                )
-            }
-        )
-
-        val parent = remember(settingsState.storagePath) {
-            if (settingsState.storagePath.isEmpty()) null
-            else
-                DocumentFile.fromTreeUri(context, settingsState.storagePath.toUri())
-        }
-
-        ListItem(
-            leadingContent = {
-                Icon(
-                    imageVector = Icons.Outlined.Dataset,
-                    contentDescription = "File Location"
-                )
-            },
-            headlineContent = { Text(text = stringResource(R.string.root_directory_location)) },
-            supportingContent = {
-                Text(
-                    text = stringResource(R.string.current_root_directory_location_of_the_file_repository) + parent?.name.toString() + "/" + Constants.File.OPENNOTE
-                )
-            },
-            trailingContent = {
-                TextButton(
-                    onClick = {
-                        sharedViewModel.putPreferenceValue(Constants.Preferences.STORAGE_PATH, "")
-                    },
-                    colors = ButtonDefaults.textButtonColors().copy(
-                        containerColor = MaterialTheme.colorScheme.primaryContainer,
-                        contentColor = MaterialTheme.colorScheme.onSecondaryContainer
-                    )
-                ) {
-                    Text(text = stringResource(R.string.change))
-                }
-            },
-        )
-
-        SettingsHeader(text = stringResource(R.string.security))
-
-        ListItem(
-            leadingContent = {
-                Icon(
-                    imageVector = Icons.Outlined.Fingerprint,
-                    contentDescription = "Password"
-                )
-            },
-            headlineContent = { Text(text = stringResource(R.string.password)) },
-            trailingContent = {
-                Switch(
-                    checked = settingsState.needPassword,
-                    onCheckedChange = { checked ->
-                        val keyguardManager =
-                            context.getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager
-                        if (keyguardManager.isKeyguardSecure) {
-                            sharedViewModel.putPreferenceValue(
-                                Constants.Preferences.NEED_PASSWORD,
-                                checked
-                            )
-                        } else {
-                            Toast.makeText(
-                                context,
-                                context.getString(R.string.no_password_set),
-                                Toast.LENGTH_LONG
-                            ).show()
-                        }
-                    }
-                )
-            },
-            supportingContent = {
-                Text(
-                    text = stringResource(R.string.password_description)
                 )
             }
         )
