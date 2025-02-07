@@ -24,7 +24,6 @@
     <string name="content">Inhalt</string>
     <string name="delete">Löschen</string>
     <string name="unlock">Entsperren</string>
-    <string name="data_security">Daten und Sicherheit</string>
     <string name="reset_database">Datenbank zurücksetzen</string>
     <string name="shareContent">Willkommen bei \"Open Note\", einer leichtgewichtigen, ästhetisch ansprechenden Anwendung, die dem Material 3-Designstil folgt. Unsere App bietet lokalen Speicher, sodass Sie Ihre Gedanken jederzeit und überall festhalten können, auch ohne Internetverbindung. Die effiziente Suchfunktion hilft Ihnen, Ihre Notizen schnell zu finden, während die Ordnerkategorisierungsfunktion bei der besseren Organisation Ihrer Notizen hilft. Darüber hinaus bietet es eine Texterkennungsfunktion, mit der Text in Bildern in bearbeitbaren Text umgewandelt werden kann. Das Ziel ist es, Ihnen das bequemste und effizienteste Notizen-Erlebnis zu bieten. Herunterladen: https://play.google.com/store/apps/details?id=com.yangdai.opennote</string>
     <string name="remind">Erinnern</string>
@@ -55,7 +54,7 @@
     <string name="destination_folder">Zielordner</string>
     <string name="language_description">Wählen Sie die App-Sprache</string>
     <string name="data">Daten</string>
-    <string name="security">Sicherheit</string>
+    <string name="security">Sicherung</string>
     <string name="import_files_description">Importieren Sie Textdateien (z. B. .txt, .md, .html usw.) als Notizen. Der Dateiname wird als Titel verwendet und der MARKDOWN-Typ wird automatisch bestimmt.</string>
     <string name="backup_description">Sichern Sie alle Ordner und darin enthaltenen Notizen als JSON-Datei und speichern Sie sie unter {OpenNote/Backup}.</string>
     <string name="restore_description">Stellen Sie die Daten in der ausgewählten Sicherungsdatei vom Typ JSON in der Datenbank wieder her. Bei einem Datenkonflikt überschreibt die Sicherungsdatei die Notizen in der Datenbank.</string>
@@ -124,7 +123,7 @@
     <string name="storage_detail">Am ausgewählten Stammverzeichnisspeicherort wird ein Datei-Repository mit dem Namen { %1$s } erstellt, um exportierte Notizdateien, referenzierte Bildressourcen, Vorlagendateien und Sicherungsdaten zu speichern.</string>
     <string name="storage">Bitte wählen Sie den Speicherort des Stammverzeichnisses des Datei-Repositorys</string>
     <string name="open_file_manager">Dateimanager öffnen</string>
-    <string name="current_root_directory_location_of_the_file_repository">"Aktueller Speicherort des Stammverzeichnisses des Datei-Repositorys: "</string>
+    <string name="current_root_directory_location_of_the_file_repository">Speicherort des Stammverzeichnisses des Datei-Repositorys.</string>
     <string name="change">Ändern</string>
     <string name="root_directory_location">Speicherort des Stammverzeichnisses</string>
     <string name="print">Drucken</string>
@@ -141,5 +140,7 @@
     <string name="template_folder_location">Vorlagenordner-Speicherort</string>
     <string name="files_in_this_folder_will_be_available_as_templates">Dateien in diesem Ordner stehen als Vorlagen zur Verfügung.</string>
     <string name="saveAsTemplate">Diese Notiz als Vorlage speichern</string>
+    <string name="screen_protection">Bildschirmschutz</string>
+    <string name="screen_protection_detail">Wenn diese Funktion aktiviert ist, können App-Inhalte nicht erfasst oder aufgezeichnet werden und die Inhalte werden nicht in der App-Liste im Hintergrund angezeigt.</string>
 
 </resources>

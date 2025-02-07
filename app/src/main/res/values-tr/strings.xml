@@ -23,7 +23,6 @@
     <string name="content">İçerik</string>
     <string name="delete">Sil</string>
     <string name="unlock">Kilidini aç</string>
-    <string name="data_security">Veri ve güvenlik</string>
     <string name="reset_database">Veritabanını sıfırla</string>
     <string name="shareContent">\"Open Note"\ uygulamasına hoş geldiniz, hafif, estetik açıdan hoş ve Material 3 tasarım tarzına uygun bir uygulama. Uygulamamız yerel depolama sunar, böylece internet bağlantısı olmadan her zaman ve her yerde düşüncelerinizi not alabilirsiniz. Verimli arama fonksiyonu, notlarınızı hızlıca bulmanıza yardımcı olurken, klasör kategorilendirme özelliği notlarınızı daha iyi organize etmenize yardımcı olur. Ayrıca, görüntülerdeki metni düzenlenebilir metne dönüştürebilen bir metin OCR özelliği sunar. Amacımız, size en uygun ve verimli not alma deneyimini sunmaktır. İndirin: https://play.google.com/store/apps/details?id=com.yangdai.opennote</string>
     <string name="remind">Hatırlat</string>
@@ -140,5 +139,7 @@
     <string name="template_folder_location">Şablon klasörü konumu</string>
     <string name="files_in_this_folder_will_be_available_as_templates">Bu klasördeki dosyalar şablon olarak kullanılabilir.</string>
     <string name="saveAsTemplate">Bu notu şablon olarak kaydet</string>
+    <string name="screen_protection">Ekran koruma</string>
+    <string name="screen_protection_detail">Bu özellik açıldığında uygulama içerikleri yakalanamayacak veya kaydedilemeyecek ve içerikler arka plan uygulama listesinde görüntülenmeyecektir.</string>
 
 </resources>
