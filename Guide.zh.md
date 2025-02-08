@@ -190,6 +190,8 @@ TXT、MD (Markdown) 和 HTML。
 |    任务列表    | `Ctrl+Shift+T` |
 | Mermaid 图表 | `Ctrl+Shift+D` |
 |     模板     | `Ctrl+Shift+P` |
+|     音频     | `Ctrl+Shift+A` |
+|     视频     | `Ctrl+Shift+V` |
 
 # 参考
 

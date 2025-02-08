@@ -205,6 +205,8 @@ various formats including TXT, MD (Markdown), and HTML.
 |       Task       | `Ctrl+Shift+T` |
 | Mermaid Diagram  | `Ctrl+Shift+D` |
 |    Templates     | `Ctrl+Shift+P` |
+|      Audio       | `Ctrl+Shift+A` |
+|      Video       | `Ctrl+Shift+V` |
 
 # References
 
