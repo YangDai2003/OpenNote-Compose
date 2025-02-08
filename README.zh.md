@@ -97,6 +97,7 @@ OpenNote是一款完全使用Compose构建的现代化Android记事本应用程�
 - **Room**：一个持久性库，提供 SQLite 上的抽象层。
 - **Compose Navigation**：简化应用程序中不同屏幕间导航的实现。
 - **Material Icons**：提供材质设计图标以实现一致的视觉元素。
+- **CommonMark**： 用于 Markdown 解析和渲染。
 
 ## 隐私政策和所需权限
 

@@ -101,6 +101,7 @@ the [Guide](Guide.md).
 - **Room**: A persistence library providing an abstraction layer over SQLite.
 - **Compose Navigation**: Simplifies the implementation of navigation between screens.
 - **Material Icons**: Provides Material Design icons for consistent visual elements.
+- **CommonMark**: For markdown parsing and rendering.
 
 ## Privacy Policy and Required Permissions
 

@@ -97,6 +97,7 @@ OpenNote'un Markdown, LaTeX Matematik ve Mermaid Diyagramları ile nasıl kullan
 - **Room**: SQLite üzerinde soyutlama katmanı sağlayan bir kalıcılık (veritabanı) kütüphanesi.
 - **Compose Navigation**: Ekranlar arasında gezinmeyi kolaylaştırır.
 - **Material Icons**: Tutarlı görseller için Material Design simgelerini içerir.
+- **CommonMark**: Markdown ayrıştırma ve işleme için.
 
 ## Gizlilik Politikası ve Gerekli İzinler
 
