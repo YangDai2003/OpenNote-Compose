@@ -58,6 +58,13 @@ fun Intent.parseSharedContent(context: Context): SharedContent {
     }
 }
 
+// 检查目录中是否存在指定名称的文件
+fun hasFileWithName(dir: DocumentFile, fileName: String): Boolean {
+    return dir.listFiles().any { file ->
+        file.name == fileName
+    }
+}
+
 fun getFileName(context: Context, uri: Uri): String? {
     val docFile = DocumentFile.fromSingleUri(context, uri)
     return docFile?.name

@@ -21,6 +21,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AttachMoney
+import androidx.compose.material.icons.outlined.BugReport
+import androidx.compose.material.icons.outlined.Commit
 import androidx.compose.material.icons.outlined.IosShare
 import androidx.compose.material.icons.outlined.PrivacyTip
 import androidx.compose.material.icons.outlined.StarRate
@@ -134,6 +136,32 @@ fun AboutPane() {
                 textAlign = TextAlign.Center
             )
         }
+
+        ListItem(modifier = Modifier.clickable {
+            customTabsIntent.launchUrl(
+                context,
+                "https://github.com/YangDai2003/OpenNote-Compose".toUri()
+            )
+        }, leadingContent = {
+            Icon(
+                imageVector = Icons.Outlined.Commit, contentDescription = "code"
+            )
+        }, headlineContent = {
+            Text(text = stringResource(R.string.source_code))
+        })
+
+        ListItem(modifier = Modifier.clickable {
+            customTabsIntent.launchUrl(
+                context,
+                "https://github.com/YangDai2003/OpenNote-Compose/issues".toUri()
+            )
+        }, leadingContent = {
+            Icon(
+                imageVector = Icons.Outlined.BugReport, contentDescription = "bug"
+            )
+        }, headlineContent = {
+            Text(text = stringResource(R.string.report_a_bug_or_request_a_feature))
+        })
 
         ListItem(modifier = Modifier.clickable {
             customTabsIntent.launchUrl(

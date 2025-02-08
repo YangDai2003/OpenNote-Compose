@@ -16,12 +16,10 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import androidx.navigation.navDeepLink
-import com.yangdai.opennote.presentation.navigation.Screen.CameraX
 import com.yangdai.opennote.presentation.navigation.Screen.Folders
 import com.yangdai.opennote.presentation.navigation.Screen.Home
 import com.yangdai.opennote.presentation.navigation.Screen.Note
 import com.yangdai.opennote.presentation.navigation.Screen.Settings
-import com.yangdai.opennote.presentation.screen.CameraXScreen
 import com.yangdai.opennote.presentation.screen.FolderScreen
 import com.yangdai.opennote.presentation.screen.MainScreen
 import com.yangdai.opennote.presentation.screen.NoteScreen
@@ -110,19 +108,12 @@ fun AnimatedNavHost(
             id = id,
             isLargeScreen = isLargeScreen,
             sharedContent = sharedContent,
-            navigateUp = { navController.navigateBackWithHapticFeedback(hapticFeedback) },
-            onScanTextClick = { navController.navigate(CameraX) }
+            navigateUp = { navController.navigateBackWithHapticFeedback(hapticFeedback) }
         )
     }
 
     composable<Folders> {
         FolderScreen {
-            navController.navigateBackWithHapticFeedback(hapticFeedback)
-        }
-    }
-
-    composable<CameraX> {
-        CameraXScreen {
             navController.navigateBackWithHapticFeedback(hapticFeedback)
         }
     }

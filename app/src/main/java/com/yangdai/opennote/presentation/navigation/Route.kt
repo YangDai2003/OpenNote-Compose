@@ -19,7 +19,4 @@ sealed class Screen(val route: String) {
 
     @Serializable
     data object Folders : Screen("folders")
-
-    @Serializable
-    data object CameraX : Screen("cameraX")
 }

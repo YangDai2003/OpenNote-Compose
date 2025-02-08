@@ -225,21 +225,23 @@ fun SettingsListPane(
                     supportingText = stringResource(R.string.backup) + "  •  " + stringResource(R.string.recovery)
                 )
 
-                SettingsSectionDivider()
+                // TODO 云同步
 
-                SettingItem(
-                    modifier = Modifier.clickable {
-                        navigateToDetail(SettingsItem(2, R.string.account_cloud))
-                    },
-                    leadingContent = {
-                        Icon(
-                            imageVector = Icons.Outlined.CloudCircle,
-                            contentDescription = "Account"
-                        )
-                    },
-                    headlineText = stringResource(R.string.account_cloud),
-                    supportingText = "WebDAV" + "  •  " + "Dropbox" + "  •  " + stringResource(R.string.sync)
-                )
+//                SettingsSectionDivider()
+//
+//                SettingItem(
+//                    modifier = Modifier.clickable {
+//                        navigateToDetail(SettingsItem(2, R.string.account_cloud))
+//                    },
+//                    leadingContent = {
+//                        Icon(
+//                            imageVector = Icons.Outlined.CloudCircle,
+//                            contentDescription = "Account"
+//                        )
+//                    },
+//                    headlineText = stringResource(R.string.account_cloud),
+//                    supportingText = "WebDAV" + "  •  " + "Dropbox" + "  •  " + stringResource(R.string.sync)
+//                )
             }
 
             SettingsSection {

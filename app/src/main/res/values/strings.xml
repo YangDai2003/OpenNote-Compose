@@ -144,4 +144,12 @@
     <string name="saveAsTemplate">Save this note as a template</string>
     <string name="screen_protection">Screen protection</string>
     <string name="screen_protection_detail">When this feature is turned on, app content cannot be captured or recorded, and the content will not be displayed in the background app list.</string>
+    <string name="font_size">Font size</string>
+    <string name="font_size_detail">Make text bigger or smaller.</string>
+    <string name="source_code">Source code</string>
+    <string name="audio">Audio</string>
+    <string name="select_audio">Select audio</string>
+    <string name="record_audio">Record audio</string>
+    <string name="video">Video</string>
+    <string name="report_a_bug_or_request_a_feature">Report a bug or request a feature</string>
 </resources>

@@ -141,4 +141,12 @@
     <string name="saveAsTemplate">Bu notu şablon olarak kaydet</string>
     <string name="screen_protection">Ekran koruması</string>
     <string name="screen_protection_detail">Bu özellik açıldığında, uygulama içeriği yakalanamaz veya kaydedilemez, ve içerik arka planda uygulamalar listesinde görüntülenmez.</string>
+    <string name="font_size">Yazı tipi boyutu</string>
+    <string name="font_size_detail">Metni büyüt veya küçült.</string>
+    <string name="source_code">Kaynak kodu</string>
+    <string name="audio">Ses</string>
+    <string name="select_audio">Ses seçin</string>
+    <string name="record_audio">Ses kaydı</string>
+    <string name="video">Video</string>
+    <string name="report_a_bug_or_request_a_feature">Bir hatayı bildirin veya bir özellik talep edin</string>
 </resources>

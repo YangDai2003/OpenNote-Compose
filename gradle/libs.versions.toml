@@ -24,17 +24,11 @@ room = "2.6.1"
 browser = "1.8.0"
 commonmark = "0.24.0"
 datastorePreferences = "1.1.2"
-textRecognition = "16.0.1"
-
-camerax_version = "1.5.0-alpha05"
+workRuntimeKtx = "2.10.0"
 coreSplashscreen = "1.2.0-alpha02"
 biometricVersion = "1.4.0-alpha02"
 
 [libraries]
-
-androidx-camera-camera2 = { group = "androidx.camera", name = "camera-camera2", version.ref = "camerax_version" }
-androidx-camera-lifecycle = { group = "androidx.camera", name = "camera-lifecycle", version.ref = "camerax_version" }
-androidx-camera-view = { group = "androidx.camera", name = "camera-view", version.ref = "camerax_version" }
 
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 androidx-core-splashscreen = { group = "androidx.core", name = "core-splashscreen", version.ref = "coreSplashscreen" }
@@ -45,6 +39,7 @@ androidx-browser = { group = "androidx.browser", name = "browser", version.ref =
 androidx-documentfile = { module = "androidx.documentfile:documentfile", version.ref = "documentfile" }
 androidx-glance = { module = "androidx.glance:glance", version.ref = "glance" }
 androidx-glance-appwidget = { module = "androidx.glance:glance-appwidget", version.ref = "glance" }
+androidx-work-runtime-ktx = { module = "androidx.work:work-runtime-ktx", version.ref = "workRuntimeKtx" }
 colorpicker-compose = { module = "com.github.skydoves:colorpicker-compose", version.ref = "colorpickerCompose" }
 commonmark = { group = "org.commonmark", name = "commonmark", version.ref = "commonmark" }
 commonmark-ext-gfm-strikethrough = { group = "org.commonmark", name = "commonmark-ext-gfm-strikethrough", version.ref = "commonmark" }
@@ -86,8 +81,6 @@ androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = 
 androidx-room-testing = { group = "androidx.room", name = "room-testing", version.ref = "room" }
 
 kotlinx-serialization = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinxSerialization" }
-text-recognition = { group = "com.google.mlkit", name = "text-recognition", version.ref = "textRecognition" }
-text-recognition-chinese = { group = "com.google.mlkit", name = "text-recognition-chinese", version.ref = "textRecognition" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

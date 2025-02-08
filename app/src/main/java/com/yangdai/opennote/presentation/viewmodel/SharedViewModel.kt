@@ -9,10 +9,6 @@ import androidx.compose.ui.util.fastJoinToString
 import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.mlkit.vision.text.TextRecognition
-import com.google.mlkit.vision.text.TextRecognizer
-import com.google.mlkit.vision.text.chinese.ChineseTextRecognizerOptions
-import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 import com.yangdai.opennote.data.local.Database
 import com.yangdai.opennote.data.local.entity.BackupData
 import com.yangdai.opennote.data.local.entity.NoteEntity
@@ -94,7 +90,6 @@ import org.commonmark.ext.task.list.items.TaskListItemsExtension
 import org.commonmark.parser.Parser
 import org.commonmark.renderer.html.HtmlRenderer
 import java.io.OutputStreamWriter
-import java.util.Locale
 import javax.inject.Inject
 
 @HiltViewModel
@@ -145,7 +140,6 @@ class SharedViewModel @Inject constructor(
     private lateinit var extensions: List<Extension>
     private lateinit var parser: Parser
     private lateinit var renderer: HtmlRenderer
-    lateinit var textRecognizer: TextRecognizer
 
     // 被打开的笔记的标题和内容的状态，唯一的数据源
     val titleState = TextFieldState()
@@ -179,11 +173,6 @@ class SharedViewModel @Inject constructor(
             )
             parser = Parser.builder().extensions(extensions).build()
             renderer = HtmlRenderer.builder().extensions(extensions).build()
-            textRecognizer = if (Locale.getDefault().language == Locale.CHINESE.language) {
-                TextRecognition.getClient(ChineseTextRecognizerOptions.Builder().build())
-            } else {
-                TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
-            }
             delay(300)
             //任务完成后将 isLoading 设置为 false 以隐藏启动屏幕
             isLoading.value = false
@@ -207,7 +196,8 @@ class SharedViewModel @Inject constructor(
         dataStoreRepository.stringFlow(Constants.Preferences.STORAGE_PATH),
         dataStoreRepository.stringFlow(Constants.Preferences.DATE_FORMATTER),
         dataStoreRepository.stringFlow(Constants.Preferences.TIME_FORMATTER),
-        dataStoreRepository.booleanFlow(Constants.Preferences.IS_SCREEN_PROTECTED)
+        dataStoreRepository.booleanFlow(Constants.Preferences.IS_SCREEN_PROTECTED),
+        dataStoreRepository.floatFlow(Constants.Preferences.FONT_SCALE)
     ) { values ->
         SettingsState(
             theme = AppTheme.fromInt(values[0] as Int),
@@ -224,7 +214,8 @@ class SharedViewModel @Inject constructor(
             storagePath = values[11] as String,
             dateFormatter = values[12] as String,
             timeFormatter = values[13] as String,
-            isScreenProtected = values[14] as Boolean
+            isScreenProtected = values[14] as Boolean,
+            fontScale = values[15] as Float
         )
     }.flowOn(Dispatchers.IO).stateIn(
         scope = viewModelScope, started = SharingStarted.Eagerly, initialValue = SettingsState()
@@ -551,6 +542,42 @@ class SharedViewModel @Inject constructor(
 
     fun onDatabaseEvent(event: DatabaseEvent) {
         when (event) {
+
+            is DatabaseEvent.ImportVideo -> {
+                val context = event.context
+                val uri = event.uri
+
+                startDataAction()
+                dataActionJob = viewModelScope.launch(Dispatchers.IO) {
+                    val rootUri =
+                        dataStoreRepository.getStringValue(Constants.Preferences.STORAGE_PATH, "")
+                            .toUri()
+                    // 获取Open Note目录
+                    val openNoteDir = getOrCreateDirectory(context, rootUri, Constants.File.OPENNOTE)
+                    // 获取Backup目录
+                    val videosDir = openNoteDir?.let { dir ->
+                        getOrCreateDirectory(context, dir.uri, Constants.File.OPENNOTE_VIDEOS)
+                    }
+                    videosDir?.let { dir ->
+                        val name = getFileName(context, uri)
+                        val fileName = "${name?.substringBeforeLast(".")}_${System.currentTimeMillis()}.${name?.substringAfterLast(".")}"
+                        val newFile = dir.createFile("video/*", fileName)
+                        newFile?.let { file ->
+                            context.contentResolver.openInputStream(uri)?.use { input ->
+                                context.contentResolver.openOutputStream(file.uri)?.use { output ->
+                                    input.copyTo(output)
+                                    withContext(Dispatchers.Main) {
+                                        contentState.edit { add("<video src=\"$fileName\" controls></video>") }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    _dataActionState.update {
+                        it.copy(progress = 1f)
+                    }
+                }
+            }
 
             is DatabaseEvent.ImportImages -> {
                 val context = event.context

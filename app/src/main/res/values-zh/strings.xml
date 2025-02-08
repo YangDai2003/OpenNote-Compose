@@ -121,7 +121,7 @@
     <string name="lint_description">开启后，将在经典模式中检测 Markdown 文本格式和语法是否符合规范，错误会被红色波浪线标记。</string>
     <string name="compose">撰写</string>
     <string name="storage">请选择文件储存库的根目录位置</string>
-    <string name="storage_detail">在选择的根目录位置中，会创建一个名为 { %1$s } 的文件夹，用于存放导出的笔记文件、引用的图片资源、模板文件和备份的数据。</string>
+    <string name="storage_detail">在选择的根目录位置中，会创建一个名为 { %1$s } 的文件夹，用于存放导出的笔记文件、引用的图片资源、音频资源、视频资源、模板文件和备份的数据。</string>
     <string name="open_file_manager">打开文件管理器</string>
     <string name="current_root_directory_location_of_the_file_repository">文件储存库所在的根目录位置。</string>
     <string name="change">更改</string>
@@ -142,4 +142,12 @@
     <string name="saveAsTemplate">保存此笔记为模板</string>
     <string name="screen_protection_detail">开启后，应用内容无法被截屏或录制，在后台应用列表中也不会显示内容。</string>
     <string name="screen_protection">屏幕隐私保护</string>
+    <string name="font_size_detail">放大或缩小文字。</string>
+    <string name="font_size">字体大小</string>
+    <string name="source_code">项目源代码</string>
+    <string name="select_audio">选择音频</string>
+    <string name="record_audio">录制音频</string>
+    <string name="audio">音频</string>
+    <string name="video">视频</string>
+    <string name="report_a_bug_or_request_a_feature">报告错误或功能建议</string>
 </resources>

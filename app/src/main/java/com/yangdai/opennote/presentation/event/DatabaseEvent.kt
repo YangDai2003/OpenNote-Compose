@@ -28,4 +28,9 @@ sealed interface DatabaseEvent {
         val context: Context,
         val uriList: List<Uri>
     ) : DatabaseEvent
+
+    data class ImportVideo(
+        val context: Context,
+        val uri: Uri
+    ) : DatabaseEvent
 }

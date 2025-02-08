@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
@@ -13,6 +14,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.MenuBook
 import androidx.compose.material.icons.outlined.EditNote
+import androidx.compose.material.icons.outlined.FormatSize
 import androidx.compose.material.icons.outlined.Spellcheck
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -20,10 +22,14 @@ import androidx.compose.material3.ListItem
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -33,6 +39,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.yangdai.opennote.R
 import com.yangdai.opennote.presentation.util.Constants
 import com.yangdai.opennote.presentation.viewmodel.SharedViewModel
+import kotlin.math.roundToInt
 
 @Composable
 fun EditorPane(sharedViewModel: SharedViewModel) {
@@ -44,6 +51,48 @@ fun EditorPane(sharedViewModel: SharedViewModel) {
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
     ) {
+
+        ListItem(
+            leadingContent = {
+                Icon(
+                    imageVector = Icons.Outlined.FormatSize,
+                    contentDescription = "Font size"
+                )
+            },
+            headlineContent = { Text(text = stringResource(R.string.font_size)) },
+            supportingContent = {
+                Text(
+                    text = stringResource(R.string.font_size_detail)
+                )
+            }
+        )
+
+        var sliderPosition by remember { mutableFloatStateOf(settingsState.fontScale) }
+
+        Slider(
+            value = sliderPosition,
+            onValueChange = {
+                // Snap to the nearest step
+                val roundedValue = (it / 0.05f).roundToInt() * 0.05f
+                if (roundedValue in 0.75f..1.25f) {
+                    sliderPosition = roundedValue
+                }
+            },
+            onValueChangeFinished = {
+                sharedViewModel.putPreferenceValue(
+                    Constants.Preferences.FONT_SCALE,
+                    sliderPosition
+                )
+            },
+            valueRange = 0.75f..1.25f,
+            steps = 9, // (1.3 - 0.7) / 0.05 = 12, but steps should be one less than the number of intervals
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp)
+                .padding(bottom = 16.dp)
+        )
+
+        HorizontalDivider()
 
         ListItem(
             headlineContent = { Text(text = stringResource(R.string.default_view)) },
@@ -60,7 +109,8 @@ fun EditorPane(sharedViewModel: SharedViewModel) {
         SingleChoiceSegmentedButtonRow(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp)
+                .padding(horizontal = 16.dp)
+                .padding(bottom = 16.dp)
         ) {
             SegmentedButton(
                 shape = SegmentedButtonDefaults.itemShape(index = 0, count = viewOptions.size),
@@ -124,7 +174,8 @@ fun EditorPane(sharedViewModel: SharedViewModel) {
         SingleChoiceSegmentedButtonRow(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp)
+                .padding(horizontal = 16.dp)
+                .padding(bottom = 16.dp)
         ) {
             SegmentedButton(
                 shape = SegmentedButtonDefaults.itemShape(index = 0, count = modeOptions.size),

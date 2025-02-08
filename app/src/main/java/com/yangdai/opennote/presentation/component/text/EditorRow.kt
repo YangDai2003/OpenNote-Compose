@@ -22,7 +22,6 @@ import androidx.compose.material.icons.outlined.CheckBox
 import androidx.compose.material.icons.outlined.Code
 import androidx.compose.material.icons.outlined.DataArray
 import androidx.compose.material.icons.outlined.DataObject
-import androidx.compose.material.icons.outlined.DocumentScanner
 import androidx.compose.material.icons.outlined.FormatBold
 import androidx.compose.material.icons.outlined.FormatItalic
 import androidx.compose.material.icons.outlined.FormatPaint
@@ -31,9 +30,11 @@ import androidx.compose.material.icons.outlined.FormatUnderlined
 import androidx.compose.material.icons.outlined.HorizontalRule
 import androidx.compose.material.icons.outlined.Image
 import androidx.compose.material.icons.outlined.Link
+import androidx.compose.material.icons.outlined.Mic
 import androidx.compose.material.icons.outlined.StrikethroughS
 import androidx.compose.material.icons.outlined.TableChart
 import androidx.compose.material.icons.outlined.Title
+import androidx.compose.material.icons.outlined.VideoFile
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -72,7 +73,6 @@ fun RichTextEditorRowPreview() {
         onCodeClick = {},
         onBracketsClick = {},
         onBracesClick = {},
-        onScanButtonClick = {},
         onTemplateClick = {}
     )
 }
@@ -85,11 +85,12 @@ fun MarkdownEditorRowPreview() {
         canRedo = true,
         onEdit = {},
         onTableButtonClick = {},
-        onScanButtonClick = {},
         onListButtonClick = {},
         onTaskButtonClick = {},
         onLinkButtonClick = {},
         onImageButtonClick = {},
+        onAudioButtonClick = {},
+        onVideoButtonClick = {},
         onTemplateClick = {}
     )
 }
@@ -143,7 +144,6 @@ fun RichTextEditorRow(
     onCodeClick: () -> Unit,
     onBracketsClick: () -> Unit,
     onBracesClick: () -> Unit,
-    onScanButtonClick: () -> Unit,
     onTemplateClick: () -> Unit
 ) {
 
@@ -282,13 +282,6 @@ fun RichTextEditorRow(
             )
 
             IconButtonWithTooltip(
-                imageVector = Icons.Outlined.DocumentScanner,
-                contentDescription = stringResource(id = R.string.scan),
-                shortCutDescription = "Ctrl + Shift + S",
-                onClick = onScanButtonClick
-            )
-
-            IconButtonWithTooltip(
                 imageVector = Icons.AutoMirrored.Outlined.TextSnippet,
                 contentDescription = stringResource(id = R.string.templates),
                 shortCutDescription = "Ctrl + Shift + P",
@@ -304,11 +297,12 @@ fun MarkdownEditorRow(
     canRedo: Boolean,
     onEdit: (String) -> Unit,
     onTableButtonClick: () -> Unit,
-    onScanButtonClick: () -> Unit,
     onListButtonClick: () -> Unit,
     onTaskButtonClick: () -> Unit,
     onLinkButtonClick: () -> Unit,
     onImageButtonClick: () -> Unit,
+    onAudioButtonClick: () -> Unit,
+    onVideoButtonClick: () -> Unit,
     onTemplateClick: () -> Unit
 ) {
 
@@ -553,17 +547,24 @@ fun MarkdownEditorRow(
             )
 
             IconButtonWithTooltip(
+                imageVector = Icons.Outlined.Mic,
+                contentDescription = stringResource(id = R.string.audio),
+                shortCutDescription = "Ctrl + Shift + A",
+                onClick = onAudioButtonClick
+            )
+
+            IconButtonWithTooltip(
+                imageVector = Icons.Outlined.VideoFile,
+                contentDescription = stringResource(id = R.string.video),
+                shortCutDescription = "Ctrl + Shift + V",
+                onClick = onVideoButtonClick
+            )
+
+            IconButtonWithTooltip(
                 imageVector = Icons.Outlined.Image,
                 contentDescription = stringResource(id = R.string.image),
                 shortCutDescription = "Ctrl + Shift + I",
                 onClick = onImageButtonClick
-            )
-
-            IconButtonWithTooltip(
-                imageVector = Icons.Outlined.DocumentScanner,
-                contentDescription = stringResource(id = R.string.scan),
-                shortCutDescription = "Ctrl + Shift + S",
-                onClick = onScanButtonClick
             )
 
             IconButtonWithTooltip(

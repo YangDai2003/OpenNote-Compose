@@ -10,6 +10,13 @@ object Constants {
         const val OPENNOTE_BACKUP = "Backup"
         const val OPENNOTE_IMAGES = "Images"
         const val OPENNOTE_TEMPLATES = "Templates"
+        const val OPENNOTE_AUDIO = "Audio"
+        const val OPENNOTE_VIDEOS = "Videos"
+    }
+
+    object Backup {
+        const val BACKUP_WORK_TAG = "backup_work_tag"
+        const val BACKUP_WORK_NAME = "backup_work"
     }
 
     object Preferences {
@@ -31,6 +38,7 @@ object Constants {
         const val DATE_FORMATTER = "DATE_FORMATTER"
         const val TIME_FORMATTER = "TIME_FORMATTER"
         const val IS_SCREEN_PROTECTED = "IS_SCREEN_PROTECTED"
+        const val FONT_SCALE = "FONT_SCALE"
     }
 
     object Editor {

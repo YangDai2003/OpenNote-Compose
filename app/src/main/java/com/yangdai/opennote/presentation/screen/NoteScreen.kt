@@ -109,6 +109,7 @@ import com.yangdai.opennote.MainActivity
 import com.yangdai.opennote.R
 import com.yangdai.opennote.data.local.entity.NoteEntity
 import com.yangdai.opennote.presentation.component.TemplateFilesList
+import com.yangdai.opennote.presentation.component.dialog.AudioSelectionDialog
 import com.yangdai.opennote.presentation.component.dialog.ExportDialog
 import com.yangdai.opennote.presentation.component.dialog.FolderListDialog
 import com.yangdai.opennote.presentation.component.dialog.LinkDialog
@@ -146,8 +147,7 @@ fun NoteScreen(
     id: Long,
     isLargeScreen: Boolean,
     sharedContent: SharedContent?,
-    navigateUp: () -> Unit,
-    onScanTextClick: () -> Unit
+    navigateUp: () -> Unit
 ) {
     val noteState by sharedViewModel.noteStateFlow.collectAsStateWithLifecycle()
     val folderNoteCounts by sharedViewModel.folderWithNoteCountsFlow.collectAsStateWithLifecycle()
@@ -190,6 +190,7 @@ fun NoteScreen(
     var showTaskDialog by rememberSaveable { mutableStateOf(false) }
     var showExportDialog by rememberSaveable { mutableStateOf(false) }
     var showShareDialog by rememberSaveable { mutableStateOf(false) }
+    var showAudioDialog by rememberSaveable { mutableStateOf(false) }
     var showTemplateBottomSheet by remember { mutableStateOf(false) }
     val triggerPrint = remember { mutableStateOf(false) }
 
@@ -264,6 +265,16 @@ fun NoteScreen(
         )
     }
 
+    val videoPicker = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickVisualMedia()
+    ) { uri ->
+        if (uri != null) sharedViewModel.onDatabaseEvent(
+            DatabaseEvent.ImportVideo(
+                context.applicationContext, uri
+            )
+        )
+    }
+
     Scaffold(
         modifier = Modifier
             .fillMaxSize()
@@ -272,10 +283,6 @@ fun NoteScreen(
                 if (keyEvent.type == KeyEventType.KeyDown && keyEvent.isCtrlPressed) {
                     if (keyEvent.isShiftPressed) {
                         when (keyEvent.key) {
-                            Key.S -> {
-                                onScanTextClick()
-                                true
-                            }
 
                             Key.P -> {
                                 showTemplateBottomSheet = true
@@ -462,7 +469,6 @@ fun NoteScreen(
                     canRedo = sharedViewModel.contentState.undoState.canRedo,
                     canUndo = sharedViewModel.contentState.undoState.canUndo,
                     onEdit = { sharedViewModel.onNoteEvent(NoteEvent.Edit(it)) },
-                    onScanButtonClick = onScanTextClick,
                     onTableButtonClick = { showTableDialog = true },
                     onListButtonClick = { showListDialog = true },
                     onTaskButtonClick = { showTaskDialog = true },
@@ -471,6 +477,16 @@ fun NoteScreen(
                         photoPicker.launch(
                             PickVisualMediaRequest(
                                 ActivityResultContracts.PickVisualMedia.ImageOnly
+                            )
+                        )
+                    },
+                    onAudioButtonClick = {
+                        showAudioDialog = true
+                    },
+                    onVideoButtonClick = {
+                        videoPicker.launch(
+                            PickVisualMediaRequest(
+                                ActivityResultContracts.PickVisualMedia.VideoOnly
                             )
                         )
                     },
@@ -569,7 +585,6 @@ fun NoteScreen(
                 state = sharedViewModel.contentState,
                 searchWord = findAndReplaceState.searchWord,
                 onFocusChanged = { isContentFocused = it },
-                onScanButtonClick = onScanTextClick,
                 onTemplateClick = { showTemplateBottomSheet = true }
             )
             else {
@@ -605,6 +620,16 @@ fun NoteScreen(
                                 photoPicker.launch(
                                     PickVisualMediaRequest(
                                         ActivityResultContracts.PickVisualMedia.ImageOnly
+                                    )
+                                )
+                            },
+                            onAudioButtonClick = {
+                                showAudioDialog = true
+                            },
+                            onVideoButtonClick = {
+                                videoPicker.launch(
+                                    PickVisualMediaRequest(
+                                        ActivityResultContracts.PickVisualMedia.VideoOnly
                                     )
                                 )
                             },
@@ -677,6 +702,16 @@ fun NoteScreen(
                                         )
                                     )
                                 },
+                                onAudioButtonClick = {
+                                    showAudioDialog = true
+                                },
+                                onVideoButtonClick = {
+                                    videoPicker.launch(
+                                        PickVisualMediaRequest(
+                                            ActivityResultContracts.PickVisualMedia.VideoOnly
+                                        )
+                                    )
+                                },
                                 onFocusChanged = { isContentFocused = it },
                                 onImageReceived = {
                                     sharedViewModel.onDatabaseEvent(
@@ -703,6 +738,22 @@ fun NoteScreen(
                 }
             }
         }
+    }
+
+    if (showAudioDialog) {
+        AudioSelectionDialog(
+            rootUri = settingsState.storagePath.toUri(),
+            onDismiss = { showAudioDialog = false },
+            onAudioSelected = {
+                sharedViewModel.onNoteEvent(
+                    NoteEvent.Edit(
+                        Constants.Editor.TEXT,
+                        "<audio src=\"$it\" controls></audio>"
+                    )
+                )
+                showAudioDialog = false
+            }
+        )
     }
 
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)

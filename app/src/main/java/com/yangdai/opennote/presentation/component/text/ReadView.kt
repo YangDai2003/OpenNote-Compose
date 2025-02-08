@@ -5,6 +5,8 @@ package com.yangdai.opennote.presentation.component.text
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
+import android.graphics.Bitmap
+import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.print.PrintAttributes
 import android.print.PrintManager
@@ -13,7 +15,6 @@ import android.webkit.JavascriptInterface
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
-import android.widget.Toast
 import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.layout.fillMaxSize
@@ -46,6 +47,9 @@ import com.yangdai.opennote.presentation.util.toHexColor
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.io.ByteArrayOutputStream
+import kotlin.io.encoding.Base64
+import kotlin.io.encoding.ExperimentalEncodingApi
 
 data class MarkdownStyles(
     val hexTextColor: String,
@@ -103,6 +107,50 @@ fun ReadView(
                         function handleImageClick(src) {
                             window.imageInterface.onImageClick(src);
                         }
+                        
+                        function setupVideoHandlers() {
+                            document.querySelectorAll('video').forEach((video, index) => {
+                                const videoName = video.getAttribute('src');
+                                const id = 'video_' + index;
+                                video.setAttribute('data-id', id);
+                                window.videoPathHandler.processVideo(videoName, id);
+                                
+                                // 设置视频控件样式
+                                video.style.width = '100%';
+                                video.controls = true;
+                                
+                                // 禁用下载和全屏
+                                video.controlsList = "nodownload nofullscreen";
+                                
+                                // 禁用右键菜单
+                                video.oncontextmenu = function(e) {
+                                    e.preventDefault();
+                                    return false;
+                                };
+                            });
+                        }
+                        
+                        function setupAudioHandlers() {
+                            document.querySelectorAll('audio').forEach((audio, index) => {
+                                const audioName = audio.getAttribute('src');
+                                const id = 'audio_' + index;
+                                audio.setAttribute('data-id', id);
+                                window.audioPathHandler.processAudio(audioName, id);
+                                
+                                // 设置音频控件样式
+                                audio.style.width = '100%';
+                                audio.controls = true;
+                                
+                                // 禁用下载
+                                audio.controlsList = "nodownload";
+                                
+                                // 禁用右键菜单
+                                audio.oncontextmenu = function(e) {
+                                    e.preventDefault();
+                                    return false;
+                                };
+                            });
+                        }
 
                         function setupImageHandlers() {
                             document.querySelectorAll('img').forEach((img, index) => {
@@ -138,7 +186,12 @@ fun ReadView(
                                 img.draggable = false;
                             });
                         }
-                        document.addEventListener('DOMContentLoaded', setupImageHandlers);
+                        
+                        document.addEventListener('DOMContentLoaded', () => {
+                            setupImageHandlers();
+                            setupAudioHandlers();
+                            setupVideoHandlers();
+                        });
                     </script>
                     <script>
                         MathJax = {
@@ -174,6 +227,9 @@ fun ReadView(
                         table { border-collapse: collapse; display: block; white-space: nowrap; overflow-x: auto; margin-right: 1px; }
                         th, td { border: 1px solid ${markdownStyles.hexBorderColor}; padding: 6px 13px; line-height: 1.5; }
                         tr:nth-child(even) { background-color: ${markdownStyles.hexPreBackgroundColor}; }
+                        video::-webkit-media-controls-fullscreen-button {
+                            display: none !important;
+                        }
                     </style>
                     </head>
                     <body>
@@ -234,7 +290,9 @@ fun ReadView(
 
     val backgroundColor = MaterialTheme.colorScheme.surface
     AndroidView(
-        modifier = modifier.fillMaxSize().clip(RectangleShape),
+        modifier = modifier
+            .fillMaxSize()
+            .clip(RectangleShape),
         factory = {
             WebView(it).also { webView = it }.apply {
                 layoutParams = ViewGroup.LayoutParams(
@@ -259,21 +317,6 @@ fun ReadView(
                         fun onImageClick(urlStr: String) {
                             clickedImageUrl = urlStr
                             showDialog = true
-                        }
-
-                        @JavascriptInterface
-                        fun getImageUri(imageName: String): String {
-                            val imagesDir =
-                                DocumentFile.fromTreeUri(context.applicationContext, rootUri)
-                                    ?.findFile(Constants.File.OPENNOTE)
-                                    ?.findFile(Constants.File.OPENNOTE_IMAGES)
-
-                            val imageFile = imagesDir?.listFiles()?.find {
-                                it.name == imageName
-                            }
-                            Toast.makeText(context, imageFile?.uri.toString(), Toast.LENGTH_LONG)
-                                .show()
-                            return imageFile?.uri?.toString() ?: ""
                         }
                     },
                     "imageInterface"
@@ -336,6 +379,92 @@ fun ReadView(
                     },
                     "imagePathHandler"
                 )
+                addJavascriptInterface(
+                    object {
+                        @JavascriptInterface
+                        fun processAudio(audioName: String, id: String) {
+                            coroutineScope.launch(Dispatchers.IO) {
+                                val audioDir =
+                                    DocumentFile.fromTreeUri(context.applicationContext, rootUri)
+                                        ?.findFile(Constants.File.OPENNOTE)
+                                        ?.findFile(Constants.File.OPENNOTE_AUDIO)
+
+                                val audioFile = audioDir?.listFiles()?.find {
+                                    it.name == audioName
+                                }
+
+                                val audioUri = audioFile?.uri?.toString() ?: ""
+
+                                withContext(Dispatchers.Main) {
+                                    // 通过 JavaScript 更新音频 src
+                                    webView?.evaluateJavascript(
+                                        """
+                                    (function() {
+                                        const audio = document.querySelector('audio[data-id="$id"]');
+                                        if (audio && '${audioUri}' !== '') {
+                                            audio.src = '${audioUri}';
+                                        }
+                                    })();
+                                    """.trimIndent(),
+                                        null
+                                    )
+                                }
+                            }
+                        }
+                    },
+                    "audioPathHandler"
+                )
+                addJavascriptInterface(
+                    object {
+                        @JavascriptInterface
+                        fun processVideo(videoName: String, id: String) {
+                            coroutineScope.launch(Dispatchers.IO) {
+                                val videoDir =
+                                    DocumentFile.fromTreeUri(context.applicationContext, rootUri)
+                                        ?.findFile(Constants.File.OPENNOTE)
+                                        ?.findFile(Constants.File.OPENNOTE_VIDEOS)
+
+                                val videoFile = videoDir?.listFiles()?.find {
+                                    it.name == videoName
+                                }
+
+                                val videoUri = videoFile?.uri?.toString() ?: ""
+                                // 生成缩略图
+                                val thumbnail = if (videoUri.isNotEmpty()) {
+                                    withContext(Dispatchers.IO) {
+                                        val retriever = MediaMetadataRetriever()
+                                        try {
+                                            retriever.setDataSource(context.applicationContext, videoUri.toUri())
+                                            val bitmap = retriever.getFrameAtTime(0)
+                                            val base64 = bitmapToBase64(bitmap)
+                                            "data:image/jpeg;base64,$base64"
+                                        } catch (e: Exception) {
+                                            ""
+                                        } finally {
+                                            retriever.release()
+                                        }
+                                    }
+                                } else ""
+
+                                withContext(Dispatchers.Main) {
+                                    webView?.evaluateJavascript(
+                                        """
+                                        (function() {
+                                            const video = document.querySelector('video[data-id="$id"]');
+                                            if (video && '${videoUri}' !== '') {
+                                                video.src = '${videoUri}';
+                                                video.poster = '${thumbnail}';
+                                            }
+                                        })();
+                                        """.trimIndent(),
+                                        null
+                                    )
+                                }
+                            }
+                        }
+                    },
+                    "videoPathHandler"
+                )
                 settings.allowFileAccess = true
                 settings.allowContentAccess = true
                 settings.allowFileAccessFromFileURLs = true
@@ -393,5 +522,14 @@ private fun createWebPrintJob(webView: WebView, activity: Activity?, name: Strin
             printAdapter,
             PrintAttributes.Builder().build()
         )
+    }
+}
+
+@OptIn(ExperimentalEncodingApi::class)
+private fun bitmapToBase64(bitmap: Bitmap?): String {
+    if (bitmap == null) return ""
+    return ByteArrayOutputStream().use { outputStream ->
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 60, outputStream)
+        Base64.encode(outputStream.toByteArray())
     }
 }

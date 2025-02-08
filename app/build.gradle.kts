@@ -85,6 +85,7 @@ android {
 }
 
 dependencies {
+    implementation(libs.androidx.work.runtime.ktx)
     implementation(libs.androidx.documentfile)
     // ColorPicker
     implementation(libs.colorpicker.compose)
@@ -101,16 +102,6 @@ dependencies {
     implementation(libs.commonmark.ext.heading.anchor)
     implementation(libs.commonmark.ext.image.attributes)
     implementation(libs.commonmark)
-
-    // CameraX
-    implementation(libs.androidx.camera.camera2)
-    implementation(libs.androidx.camera.lifecycle)
-    implementation(libs.androidx.camera.view)
-
-    // To recognize Latin script
-    implementation(libs.text.recognition)
-    // To recognize Chinese script
-    implementation(libs.text.recognition.chinese)
 
     // Room, for local database
     implementation(libs.androidx.room.runtime)

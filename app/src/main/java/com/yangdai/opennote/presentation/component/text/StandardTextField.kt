@@ -55,7 +55,6 @@ import kotlinx.coroutines.withContext
 import kotlin.math.PI
 import kotlin.math.sin
 
-
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun StandardTextField(
@@ -71,6 +70,8 @@ fun StandardTextField(
     onTaskButtonClick: () -> Unit,
     onLinkButtonClick: () -> Unit,
     onImageButtonClick: () -> Unit,
+    onAudioButtonClick: () -> Unit,
+    onVideoButtonClick: () -> Unit,
     onFocusChanged: (Boolean) -> Unit,
     onImageReceived: (List<Uri>) -> Unit
 ) {
@@ -106,8 +107,6 @@ fun StandardTextField(
             }
         }
     }
-
-    val cursorState = rememberCursorState()
 
     val infiniteTransition = rememberInfiniteTransition(label = "wavy-line")
     val phase by infiniteTransition.animateFloat(
@@ -184,6 +183,8 @@ fun StandardTextField(
         }
     }
 
+    val cursorState = rememberCursorState()
+
     BasicTextField(
         // The contentReceiver modifier is used to receive text content from the clipboard or drag-and-drop operations.
         modifier = modifier
@@ -231,6 +232,16 @@ fun StandardTextField(
 
                                 Key.I -> {
                                     onImageButtonClick()
+                                    true
+                                }
+
+                                Key.A -> {
+                                    onAudioButtonClick()
+                                    true
+                                }
+
+                                Key.V -> {
+                                    onVideoButtonClick()
                                     true
                                 }
 

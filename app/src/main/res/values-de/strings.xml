@@ -142,5 +142,13 @@
     <string name="saveAsTemplate">Diese Notiz als Vorlage speichern</string>
     <string name="screen_protection">Bildschirmschutz</string>
     <string name="screen_protection_detail">Wenn diese Funktion aktiviert ist, können App-Inhalte nicht erfasst oder aufgezeichnet werden und die Inhalte werden nicht in der App-Liste im Hintergrund angezeigt.</string>
+    <string name="font_size">Schriftgröße</string>
+    <string name="font_size_detail">Text vergrößern oder verkleinern.</string>
+    <string name="source_code">Quellcode</string>
+    <string name="audio">Audio</string>
+    <string name="select_audio">Audio auswählen</string>
+    <string name="record_audio">Audio aufnehmen</string>
+    <string name="video">Video</string>
+    <string name="report_a_bug_or_request_a_feature">Einen Fehler melden oder eine Funktion anfordern</string>
 
 </resources>

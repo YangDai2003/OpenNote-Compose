@@ -68,6 +68,7 @@ fun BaseScreen(
 
     OpenNoteTheme(
         color = settingsState.color,
+        fontScale = settingsState.fontScale,
         darkMode = settingsState.isAppInDarkMode,
         amoledMode = settingsState.isAppInAmoledMode
     ) {
