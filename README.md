@@ -10,9 +10,7 @@
 ![LaTeX](https://img.shields.io/badge/latex-%23008080.svg?style=for-the-badge&logo=latex&logoColor=white)
 ![Markdown](https://img.shields.io/badge/markdown-%23000000.svg?style=for-the-badge&logo=markdown&logoColor=white)
 
-OpenNote is a modern Android note-taking application built entirely with Compose.  
-It is developed using Kotlin (Compose) and follows the MVVM (Model-View-ViewModel) architecture
-pattern along with Clean Architecture principles.
+OpenNote is a modern Android note-taking application built entirely with Compose.
 
 <a href="https://play.google.com/store/apps/details?id=com.yangdai.opennote">
       <img alt="Get it on Google Play" src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" height="100">

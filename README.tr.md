@@ -10,8 +10,7 @@
 ![LaTeX](https://img.shields.io/badge/latex-%23008080.svg?style=for-the-badge&logo=latex&logoColor=white)
 ![Markdown](https://img.shields.io/badge/markdown-%23000000.svg?style=for-the-badge&logo=markdown&logoColor=white)
 
-OpenNote, tamamen Jetpack Compose kullanılarak geliştirilmiş modern bir Android not alma uygulamasıdır.  
-Kotlin (Compose) ile geliştirilmiş olup, MVVM (Model-View-ViewModel) mimari modelini ve Temiz Mimari (Clean Architecture) prensiplerini takip etmektedir.
+OpenNote, tamamen Jetpack Compose kullanılarak geliştirilmiş modern bir Android not alma uygulamasıdır.
 
 <a href="https://play.google.com/store/apps/details?id=com.yangdai.opennote">
       <img alt="Google Play'den Edinin" src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" height="100">

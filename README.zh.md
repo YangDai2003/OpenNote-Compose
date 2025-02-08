@@ -11,7 +11,6 @@
 ![Markdown](https://img.shields.io/badge/markdown-%23000000.svg?style=for-the-badge&logo=markdown&logoColor=white)
 
 OpenNote是一款完全使用Compose构建的现代化Android记事本应用程序。
-它使用Gradle和Kotlin DSL进行项目构建和依赖管理, 采用MVVM架构。
 
 <a href="https://play.google.com/store/apps/details?id=com.yangdai.opennote">
       <img alt="Get it on Google Play" src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" height="100">
