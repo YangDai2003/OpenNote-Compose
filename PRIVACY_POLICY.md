@@ -16,19 +16,16 @@ https://github.com/YangDai2003/OpenNote-Compose/blob/e04804999016469d47e61cd98c5
 | Permission                         | Purpose                                                    |
 |------------------------------------|------------------------------------------------------------|
 | `android.permission.USE_BIOMETRIC` | Used for implementing the app's login functionality        |
-| `android.permission.CAMERA`        | Used for OCR recognition and capturing images              |
 | `android.permission.INTERNET`      | Used to access the internet for loading images in markdown |
 
 ### Dependencies
 
 The app uses the following dependencies:
 
-- **CameraX**: For camera functionalities.
 - **Room**: For local database management.
 - **Hilt**: For dependency injection.
 - **Compose**: For building the UI.
 - **CommonMark**: For markdown rendering and parsing.
-- **ML Kit**: For text recognition, including Latin and Chinese scripts.
 - **ColorPicker**: For color picking functionalities.
 - **Glance**: For creating app widgets.
 
