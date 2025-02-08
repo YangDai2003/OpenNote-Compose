@@ -31,9 +31,9 @@ Kotlin (Compose) ile geliştirilmiş olup, MVVM (Model-View-ViewModel) mimari mo
 - **Çöp Kutusu:** Notları kalıcı olarak silmeden önce çöp kutusuna taşıma özelliği sunar.
 
 ### Gelişmiş Yetenekler:
+- **Bul ve değiştir**: Not çok uzun ve belirli bir metnin yerini bulamıyor musunuz? Notu toplu olarak değiştirmek istiyorsunuz ancak tek tek düzenlemek çok can sıkıcı mı? Bu özelliği deneyin.
 - **Not Şablonları:** "Templates" klasöründeki notları şablon olarak ekleyebilir, tarih ve saat formatlamasını otomatik olarak uygular.
 - **Yerel Görsel Desteği:** Cihazdan doğrudan notlara görsel ekleyebilir ve uygulama içinde önizleme yapabilirsiniz.
-- **OCR Metin Tanıma:** ML Kit ve CameraX kullanarak görüntülerden Optik Karakter Tanıma (OCR) işlemi yapabilir.
 - **Markdown Desteği:** CommonMark ve GitHub Flavored Markdown (GFM) sözdizimini destekleyerek zengin biçimlendirme seçenekleri sunar.
 - **LaTeX Matematik Desteği:** Matematiksel denklemleri oluşturmak için LaTeX sözdizimini destekler.
 - **Mermaid Desteği:** Diyagramlar ve akış şemaları oluşturmak için Mermaid sözdizimini destekler.
@@ -98,8 +98,6 @@ OpenNote'un Markdown, LaTeX Matematik ve Mermaid Diyagramları ile nasıl kullan
 - **Room**: SQLite üzerinde soyutlama katmanı sağlayan bir kalıcılık (veritabanı) kütüphanesi.
 - **Compose Navigation**: Ekranlar arasında gezinmeyi kolaylaştırır.
 - **Material Icons**: Tutarlı görseller için Material Design simgelerini içerir.
-- **ML Kit**: OCR metin tanıma özelliği için kullanılır.
-- **CameraX**: Özelleştirilmiş kamera işlevselliği için kullanılır.
 
 ## Gizlilik Politikası ve Gerekli İzinler
 

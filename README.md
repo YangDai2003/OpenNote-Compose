@@ -32,9 +32,9 @@ pattern along with Clean Architecture principles.
 - **Trash Bin:** Securely move notes to a trash bin for temporary storage before permanent deletion.
 
 ### Advanced Capabilities:
+- **Find and replace**: The note is too long and you can't find the location of a certain text? Want to modify it in batches but it's too annoying to edit one by one? Try this feature.
 - **Note Templates:** Insert notes from the "Templates" folder as templates, with automatic date and time formatting.
-- **Local Image Support:** Directly import local images from the device into notes, with in-app preview.
-- **OCR Text Recognition:** Utilize ML Kit and CameraX for Optical Character Recognition (OCR) directly from images.
+- **Local Image, Video and Audio Support:** Directly import local images, videos and audio from the device into notes, with in-app preview.
 - **Markdown Support:** Comprehensive support for CommonMark and GitHub Flavored Markdown (GFM) syntax for rich formatting options.
 - **LaTeX Math Support:** Incorporates LaTeX Math syntax for rendering mathematical equations.
 - **Mermaid Support:** Supports Mermaid syntax for creating diagrams and flowcharts.
@@ -103,8 +103,6 @@ the [Guide](Guide.md).
 - **Room**: A persistence library providing an abstraction layer over SQLite.
 - **Compose Navigation**: Simplifies the implementation of navigation between screens.
 - **Material Icons**: Provides Material Design icons for consistent visual elements.
-- **ML Kit**: Utilized for OCR text recognition.
-- **CameraX**: Used for custom camera functionality.
 
 ## Privacy Policy and Required Permissions
 
