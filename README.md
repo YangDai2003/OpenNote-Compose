@@ -12,15 +12,15 @@
 
 OpenNote is a modern Android note-taking application built entirely with Compose.
 
-<div style="display: flex; justify-content: center; align-items: center;">
-    <a href="https://play.google.com/store/apps/details?id=com.yangdai.opennote" style="margin: 0 10px;">
-        <img alt="Google Play'den Edinin" src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" height="100" style="max-width: 100%; height: auto; object-fit: contain;">
+<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; max-width: 800px; margin: 0 auto; padding: 20px;">
+    <a href="https://play.google.com/store/apps/details?id=com.yangdai.opennote" style="display: flex; justify-content: center;">
+        <img alt="Get it on Google Play" src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" style="width: 200px; height: auto;">
     </a>
-    <a href="https://github.com/YangDai2003/OpenNote-Compose/releases" style="margin: 0 10px;">
-        <img alt="GitHub'dan Edinin" src="https://raw.githubusercontent.com/deckerst/common/main/assets/get-it-on-github.png" height="100" style="max-width: 100%; height: auto; object-fit: contain;">
+    <a href="https://github.com/YangDai2003/OpenNote-Compose/releases" style="display: flex; justify-content: center;">
+        <img alt="Get it on GitHub" src="https://raw.githubusercontent.com/deckerst/common/main/assets/get-it-on-github.png" style="width: 200px; height: auto;">
     </a>
-    <a href="https://apt.izzysoft.de/fdroid/index/apk/com.yangdai.opennote" style="margin: 0 10px;">
-        <img alt="Get it on IzzyOnDroid" src="screenshots/IzzyOnDroidButtonGreyBorder.svg" height="100" style="max-width: 100%; height: auto; object-fit: contain;">
+    <a href="https://apt.izzysoft.de/fdroid/index/apk/com.yangdai.opennote" style="display: flex; justify-content: center;">
+        <img alt="Get it on IzzyOnDroid" src="screenshots/IzzyOnDroidButtonGreyBorder.svg" style="width: 130px; height: auto;">
     </a>
 </div>
 
