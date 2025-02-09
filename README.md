@@ -20,7 +20,7 @@ OpenNote is a modern Android note-taking application built entirely with Compose
         <img alt="GitHub'dan Edinin" src="https://raw.githubusercontent.com/deckerst/common/main/assets/get-it-on-github.png" height="100" style="max-width: 100%; height: auto; object-fit: contain;">
     </a>
     <a href="https://apt.izzysoft.de/fdroid/index/apk/com.yangdai.opennote" style="margin: 0 10px;">
-        <img alt="Get it on IzzyOnDroid" src="screenshots/IzzyOnDroidButtonGreyBorder_nofont.png" height="100" style="max-width: 100%; height: auto; object-fit: contain;">
+        <img alt="Get it on IzzyOnDroid" src="screenshots/IzzyOnDroidButtonGreyBorder.svg" height="100" style="max-width: 100%; height: auto; object-fit: contain;">
     </a>
 </div>
 
