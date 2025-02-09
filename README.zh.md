@@ -12,17 +12,17 @@
 
 OpenNote是一款完全使用Compose构建的现代化Android记事本应用程序。
 
-<a href="https://play.google.com/store/apps/details?id=com.yangdai.opennote">
-      <img alt="Get it on Google Play" src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" height="100">
-</a>
-
-<a href="https://github.com/YangDai2003/OpenNote-Compose/releases">
-      <img alt="Get it on GitHub" src="https://raw.githubusercontent.com/deckerst/common/main/assets/get-it-on-github.png" height="100">
-</a>
-
-<a href="https://apt.izzysoft.de/fdroid/index/apk/com.yangdai.opennote">
-      <img alt="Get it on IzzyOnDroid" src="screenshots/IzzyOnDroidButtonGreyBorder_nofont.png" height="100">
-</a>
+<div style="display: flex; justify-content: center; align-items: center;">
+    <a href="https://play.google.com/store/apps/details?id=com.yangdai.opennote" style="margin: 0 10px;">
+        <img alt="Google Play'den Edinin" src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" height="100" style="max-width: 100%; height: auto; object-fit: contain;">
+    </a>
+    <a href="https://github.com/YangDai2003/OpenNote-Compose/releases" style="margin: 0 10px;">
+        <img alt="GitHub'dan Edinin" src="https://raw.githubusercontent.com/deckerst/common/main/assets/get-it-on-github.png" height="100" style="max-width: 100%; height: auto; object-fit: contain;">
+    </a>
+    <a href="https://apt.izzysoft.de/fdroid/index/apk/com.yangdai.opennote" style="margin: 0 10px;">
+        <img alt="Get it on IzzyOnDroid" src="screenshots/IzzyOnDroidButtonGreyBorder_nofont.png" height="100" style="max-width: 100%; height: auto; object-fit: contain;">
+    </a>
+</div>
 
 ## 功能
 
