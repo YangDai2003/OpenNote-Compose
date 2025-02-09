@@ -20,6 +20,10 @@ OpenNote, tamamen Jetpack Compose kullanılarak geliştirilmiş modern bir Andro
       <img alt="GitHub'dan Edinin" src="https://raw.githubusercontent.com/deckerst/common/main/assets/get-it-on-github.png" height="100">
 </a>
 
+<a href="https://apt.izzysoft.de/fdroid/index/apk/com.yangdai.opennote">
+      <img alt="Get it on IzzyOnDroid" src="https://gitlab.com/IzzyOnDroid/repo/-/blob/158a4de91ba5d094a8b8bf7531e656c4e381f9ee/assets/IzzyOnDroidButtonGreyBorder_nofont.png" height="100">
+</a>
+
 ## Özellikler
 
 ### Temel Özellikler:
