@@ -44,7 +44,6 @@ import com.yangdai.opennote.MainActivity
 import com.yangdai.opennote.R
 import com.yangdai.opennote.data.di.AppModule
 import com.yangdai.opennote.data.local.entity.NoteEntity
-import com.yangdai.opennote.data.repository.NoteRepositoryImpl
 import com.yangdai.opennote.presentation.util.Constants.LINK
 import com.yangdai.opennote.presentation.util.sendPendingIntent
 
@@ -55,7 +54,7 @@ class NoteListWidget : GlanceAppWidget() {
     override suspend fun provideGlance(context: Context, id: GlanceId) {
 
         val database = AppModule.provideNoteDatabase(context.applicationContext)
-        val noteRepository = NoteRepositoryImpl(database.noteDao)
+        val noteRepository = AppModule.provideNoteRepository(database)
 
         provideContent {
 

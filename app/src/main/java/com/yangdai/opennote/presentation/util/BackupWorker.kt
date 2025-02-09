@@ -1,30 +1,71 @@
 package com.yangdai.opennote.presentation.util
 
 import android.content.Context
+import androidx.core.net.toUri
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
+import com.yangdai.opennote.R
+import com.yangdai.opennote.data.di.AppModule
+import com.yangdai.opennote.data.local.entity.BackupData
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.withContext
+import kotlinx.serialization.json.Json
+import java.io.OutputStreamWriter
 
-// TODO 自动备份功能
-
-enum class BackupFrequency(val days: Int) {
-    NEVER(0),
-    DAILY(1),
-    WEEKLY(7),
-    MONTHLY(30)
+enum class BackupFrequency(val days: Int, val textRes: Int) {
+    NEVER(0, R.string.never),
+    DAILY(1, R.string.daily),
+    WEEKLY(7, R.string.weekly),
+    MONTHLY(30, R.string.monthly);
 }
 
 class BackupWorker(
-    context: Context,
+    appContext: Context,
     workerParams: WorkerParameters
-) : CoroutineWorker(context, workerParams) {
+) : CoroutineWorker(appContext, workerParams) {
 
-    override suspend fun doWork(): Result {
+    override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
         try {
-            // 调用现有的备份逻辑
-            // 这里需要注入相关依赖
-            return Result.success()
-        } catch (e: Exception) {
-            return Result.failure()
+            val context = applicationContext
+            val dataStoreRepository = AppModule.provideDataStoreRepository(context)
+            val database = AppModule.provideNoteDatabase(context)
+            val noteRepository = AppModule.provideNoteRepository(database)
+            val folderRepository = AppModule.provideFolderRepository(database)
+            val useCases = AppModule.provideNoteUseCases(noteRepository, folderRepository)
+
+            val rootUri =
+                dataStoreRepository.getStringValue(Constants.Preferences.STORAGE_PATH, "")
+                    .toUri()
+            // 获取Open Note目录
+            val openNoteDir =
+                getOrCreateDirectory(context, rootUri, Constants.File.OPENNOTE)
+            // 获取Backup目录
+            val backupDir = openNoteDir?.let { dir ->
+                getOrCreateDirectory(context, dir.uri, Constants.File.OPENNOTE_BACKUP)
+            }
+            backupDir?.let { dir ->
+                val notes = useCases.getNotes().first()
+                val folders = useCases.getFolders().first()
+                val backupData = BackupData(notes, folders)
+                val json = Json.encodeToString(backupData)
+
+                val fileName = "${System.currentTimeMillis()}.json"
+                val file = dir.createFile("application/json", fileName)
+
+                file?.let { docFile ->
+                    context.contentResolver.openOutputStream(docFile.uri)
+                        ?.use { outputStream ->
+                            OutputStreamWriter(outputStream).use { writer ->
+                                writer.write(json)
+                            }
+                        }
+                }
+            }
+
+            Result.success()
+        } catch (_: Exception) {
+            Result.failure()
         }
     }
 }

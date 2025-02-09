@@ -4,7 +4,7 @@
     <selectionStates>
       <SelectionState runConfigName="OpenNote.app">
         <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2025-02-08T15:04:50.051150300Z">
+        <DropdownSelection timestamp="2025-02-08T15:31:56.798146800Z">
           <Target type="DEFAULT_BOOT">
             <handle>
               <DeviceId pluginId="PhysicalDevice" identifier="serial=44090DLJH000NP" />

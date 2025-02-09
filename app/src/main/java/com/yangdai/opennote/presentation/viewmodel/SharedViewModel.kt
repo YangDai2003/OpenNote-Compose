@@ -48,6 +48,7 @@ import com.yangdai.opennote.presentation.state.DataActionState
 import com.yangdai.opennote.presentation.state.DataState
 import com.yangdai.opennote.presentation.state.NoteState
 import com.yangdai.opennote.presentation.state.SettingsState
+import com.yangdai.opennote.presentation.util.BackupManager
 import com.yangdai.opennote.presentation.util.Constants
 import com.yangdai.opennote.presentation.util.getFileName
 import com.yangdai.opennote.presentation.util.getOrCreateDirectory
@@ -156,7 +157,13 @@ class SharedViewModel @Inject constructor(
         )
 
     // 当前笔记的初始化状态，用于比较是否有修改
-    private var _oNote: NoteEntity = NoteEntity(timestamp = System.currentTimeMillis())
+    private var _oNote: NoteEntity = NoteEntity(
+        timestamp = System.currentTimeMillis(),
+        isMarkdown = dataStoreRepository.getBooleanValue(
+            Constants.Preferences.IS_DEFAULT_LITE_MODE,
+            false
+        ).not()
+    )
 
     init {
         viewModelScope.launch(Dispatchers.IO) {
@@ -197,7 +204,8 @@ class SharedViewModel @Inject constructor(
         dataStoreRepository.stringFlow(Constants.Preferences.DATE_FORMATTER),
         dataStoreRepository.stringFlow(Constants.Preferences.TIME_FORMATTER),
         dataStoreRepository.booleanFlow(Constants.Preferences.IS_SCREEN_PROTECTED),
-        dataStoreRepository.floatFlow(Constants.Preferences.FONT_SCALE)
+        dataStoreRepository.floatFlow(Constants.Preferences.FONT_SCALE),
+        dataStoreRepository.intFlow(BackupManager.BACKUP_FREQUENCY_KEY)
     ) { values ->
         SettingsState(
             theme = AppTheme.fromInt(values[0] as Int),
@@ -215,7 +223,8 @@ class SharedViewModel @Inject constructor(
             dateFormatter = values[12] as String,
             timeFormatter = values[13] as String,
             isScreenProtected = values[14] as Boolean,
-            fontScale = values[15] as Float
+            fontScale = values[15] as Float,
+            backupFrequency = values[16] as Int
         )
     }.flowOn(Dispatchers.IO).stateIn(
         scope = viewModelScope, started = SharingStarted.Eagerly, initialValue = SettingsState()
@@ -333,8 +342,14 @@ class SharedViewModel @Inject constructor(
             is ListEvent.OpenOrCreateNote -> {
                 titleState.clearText()
                 contentState.clearText()
+                // 直接获取点击的note，避免在NoteEvent.Load中再次从数据库加载
                 _oNote = event.noteEntity ?: NoteEntity(
-                    folderId = event.folderId, timestamp = System.currentTimeMillis()
+                    folderId = event.folderId,
+                    timestamp = System.currentTimeMillis(),
+                    isMarkdown = dataStoreRepository.getBooleanValue(
+                        Constants.Preferences.IS_DEFAULT_LITE_MODE,
+                        false
+                    ).not()
                 )
             }
         }
@@ -476,15 +491,16 @@ class SharedViewModel @Inject constructor(
             }
 
             is NoteEvent.Load -> {
-                // 判断id是否与oNote的id相同，不同则从数据库获取笔记，并更新oNote。
                 viewModelScope.launch(Dispatchers.IO) {
-                    // 当数据库中不存在该笔记时，创建一个新的笔记
-                    if (event.id != (_oNote.id ?: -1L) || event.id == -1L) _oNote =
-                        useCases.getNoteById(event.id) ?: NoteEntity(
-                            timestamp = System.currentTimeMillis(),
-                            isMarkdown = dataStoreRepository.booleanFlow(Constants.Preferences.IS_DEFAULT_LITE_MODE)
-                                .first().not()
-                        )
+                    // 判断id是否与oNote的id相同，不同则从数据库获取笔记，并更新oNote。用于从小组件打开时的情况。
+                    if (event.id != _oNote.id && event.id != -1L) {
+                        _oNote =
+                            useCases.getNoteById(event.id) ?: NoteEntity(
+                                timestamp = System.currentTimeMillis(),
+                                isMarkdown = dataStoreRepository.booleanFlow(Constants.Preferences.IS_DEFAULT_LITE_MODE)
+                                    .first().not()
+                            )
+                    }
                     noteStateFlow.update { noteState ->
                         noteState.copy(
                             id = _oNote.id,
@@ -553,14 +569,18 @@ class SharedViewModel @Inject constructor(
                         dataStoreRepository.getStringValue(Constants.Preferences.STORAGE_PATH, "")
                             .toUri()
                     // 获取Open Note目录
-                    val openNoteDir = getOrCreateDirectory(context, rootUri, Constants.File.OPENNOTE)
+                    val openNoteDir =
+                        getOrCreateDirectory(context, rootUri, Constants.File.OPENNOTE)
                     // 获取Backup目录
                     val videosDir = openNoteDir?.let { dir ->
                         getOrCreateDirectory(context, dir.uri, Constants.File.OPENNOTE_VIDEOS)
                     }
                     videosDir?.let { dir ->
                         val name = getFileName(context, uri)
-                        val fileName = "${name?.substringBeforeLast(".")}_${System.currentTimeMillis()}.${name?.substringAfterLast(".")}"
+                        val fileName =
+                            "${name?.substringBeforeLast(".")}_${System.currentTimeMillis()}.${
+                                name?.substringAfterLast(".")
+                            }"
                         val newFile = dir.createFile("video/*", fileName)
                         newFile?.let { file ->
                             context.contentResolver.openInputStream(uri)?.use { input ->

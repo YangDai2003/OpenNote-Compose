@@ -152,4 +152,9 @@
     <string name="record_audio">Record audio</string>
     <string name="video">Video</string>
     <string name="report_a_bug_or_request_a_feature">Report a bug or request a feature</string>
+    <string name="frequency_backup">Frequency of the automatic backup</string>
+    <string name="never">Never</string>
+    <string name="daily">Daily</string>
+    <string name="weekly">Weekly</string>
+    <string name="monthly">Monthly</string>
 </resources>

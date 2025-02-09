@@ -1,6 +1,8 @@
 package com.yangdai.opennote.presentation.state
 
 import androidx.compose.runtime.Stable
+import com.yangdai.opennote.presentation.state.AppColor.entries
+import com.yangdai.opennote.presentation.state.AppTheme.entries
 
 @Stable
 data class SettingsState(
@@ -19,7 +21,8 @@ data class SettingsState(
     val dateFormatter: String = "",
     val timeFormatter: String = "",
     val isScreenProtected: Boolean = false,
-    val fontScale: Float = 1f
+    val fontScale: Float = 1f,
+    val backupFrequency: Int = 0
 )
 
 enum class AppTheme(private val value: Int) {

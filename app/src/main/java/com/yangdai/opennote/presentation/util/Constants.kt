@@ -14,11 +14,6 @@ object Constants {
         const val OPENNOTE_VIDEOS = "Videos"
     }
 
-    object Backup {
-        const val BACKUP_WORK_TAG = "backup_work_tag"
-        const val BACKUP_WORK_NAME = "backup_work"
-    }
-
     object Preferences {
         const val SEARCH_HISTORY = "SEARCH_HISTORY"
         const val APP_THEME = "APP_THEME"

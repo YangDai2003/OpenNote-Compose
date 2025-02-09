@@ -54,7 +54,7 @@
     <string name="destination_folder">Zielordner</string>
     <string name="language_description">Wählen Sie die App-Sprache</string>
     <string name="data">Daten</string>
-    <string name="security">Sicherung</string>
+    <string name="security">Datensicherheit</string>
     <string name="import_files_description">Importieren Sie Textdateien (z. B. .txt, .md, .html usw.) als Notizen. Der Dateiname wird als Titel verwendet und der MARKDOWN-Typ wird automatisch bestimmt.</string>
     <string name="backup_description">Sichern Sie alle Ordner und darin enthaltenen Notizen als JSON-Datei und speichern Sie sie unter {OpenNote/Backup}.</string>
     <string name="restore_description">Stellen Sie die Daten in der ausgewählten Sicherungsdatei vom Typ JSON in der Datenbank wieder her. Bei einem Datenkonflikt überschreibt die Sicherungsdatei die Notizen in der Datenbank.</string>
@@ -150,5 +150,10 @@
     <string name="record_audio">Audio aufnehmen</string>
     <string name="video">Video</string>
     <string name="report_a_bug_or_request_a_feature">Einen Fehler melden oder eine Funktion anfordern</string>
+    <string name="frequency_backup">Häufigkeit der automatischen Sicherung</string>
+    <string name="never">Niemals</string>
+    <string name="daily">Täglich</string>
+    <string name="weekly">Wöchentlich</string>
+    <string name="monthly">Monatlich</string>
 
 </resources>

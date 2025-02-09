@@ -150,4 +150,9 @@
     <string name="audio">音频</string>
     <string name="video">视频</string>
     <string name="report_a_bug_or_request_a_feature">报告错误或功能建议</string>
+    <string name="frequency_backup">自动备份频率</string>
+    <string name="never">从不</string>
+    <string name="daily">每天</string>
+    <string name="weekly">每周</string>
+    <string name="monthly">每月</string>
 </resources>

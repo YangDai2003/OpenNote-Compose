@@ -149,4 +149,9 @@
     <string name="record_audio">Ses kaydı</string>
     <string name="video">Video</string>
     <string name="report_a_bug_or_request_a_feature">Bir hatayı bildirin veya bir özellik talep edin</string>
+    <string name="frequency_backup">Otomatik yedeklemenin sıklığı</string>
+    <string name="never">Asla</string>
+    <string name="daily">Günlük</string>
+    <string name="weekly">Haftalık</string>
+    <string name="monthly">Aylık</string>
 </resources>

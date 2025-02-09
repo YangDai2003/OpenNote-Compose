@@ -104,4 +104,13 @@ class DataStoreRepositoryImpl @Inject constructor(
             }.first()
         }
     }
+
+    override fun getBooleanValue(key: String, defaultValue: Boolean): Boolean {
+        val preferencesKey = booleanPreferencesKey(key)
+        return runBlocking {
+            context.dataStore.data.map { preferences ->
+                preferences[preferencesKey] ?: defaultValue
+            }.first()
+        }
+    }
 }
