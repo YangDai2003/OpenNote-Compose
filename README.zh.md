@@ -12,17 +12,9 @@
 
 OpenNote是一款完全使用Compose构建的现代化Android记事本应用程序。
 
-<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; max-width: 800px; margin: 0 auto; padding: 20px;">
-    <a href="https://play.google.com/store/apps/details?id=com.yangdai.opennote" style="display: flex; justify-content: center;">
-        <img alt="Get it on Google Play" src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" style="width: 200px; height: auto;">
-    </a>
-    <a href="https://github.com/YangDai2003/OpenNote-Compose/releases" style="display: flex; justify-content: center;">
-        <img alt="Get it on GitHub" src="https://raw.githubusercontent.com/deckerst/common/main/assets/get-it-on-github.png" style="width: 200px; height: auto;">
-    </a>
-    <a href="https://apt.izzysoft.de/fdroid/index/apk/com.yangdai.opennote" style="display: flex; justify-content: center;">
-        <img alt="Get it on IzzyOnDroid" src="screenshots/IzzyOnDroidButtonGreyBorder.svg" style="width: 130px; height: auto;">
-    </a>
-</div>
+[<img alt="Get it on Google Play" src="screenshots/google_play.png" width="200px">](https://play.google.com/store/apps/details?id=com.yangdai.opennote)
+[<img alt="Get it on IzzyOnDroid" src="screenshots/izzyondroid.png" width="200px">](https://apt.izzysoft.de/fdroid/index/apk/com.yangdai.opennote)
+[<img alt="Get it on GitHub" src="screenshots/github.png" width="200px">](https://github.com/YangDai2003/OpenNote-Compose/releases)
 
 ## 功能
 
