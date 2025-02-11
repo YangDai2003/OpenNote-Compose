@@ -17,7 +17,7 @@ OpenNote, tamamen Jetpack Compose kullanılarak geliştirilmiş modern bir Andro
 [<img alt="Get it on IzzyOnDroid" src="screenshots/izzyondroid.png" width="200px">](https://apt.izzysoft.de/fdroid/index/apk/com.yangdai.opennote)
 [<img alt="Get it on GitHub" src="screenshots/github.png" width="200px">](https://github.com/YangDai2003/OpenNote-Compose/releases)
 
-## Özellikler
+## 📃 Özellikler
 
 ### Temel Özellikler:
 - **Not Oluşturma, Düzenleme ve Silme:** Kullanıcılar kolayca not oluşturabilir, düzenleyebilir ve silebilir.
@@ -46,7 +46,7 @@ OpenNote, tamamen Jetpack Compose kullanılarak geliştirilmiş modern bir Andro
 - **Fare ve Klavye Desteği:** Harici fare ve klavyelerle eksiksiz bir uyumluluk sunarak üretkenliği artırır.
 - **Duyarlı Tasarım:** Telefonlar, tabletler, katlanabilir cihazlar ve ChromeOS cihazları için optimize edilmiştir.
 
-## Ekran Görüntüleri
+## 🖼️ Ekran Görüntüleri
 
 <div style="overflow-x: auto; white-space: nowrap;">
 
@@ -68,12 +68,16 @@ OpenNote, tamamen Jetpack Compose kullanılarak geliştirilmiş modern bir Andro
 
 </div>
 
-## OpenNote'u Markdown, LaTeX Matematik ve Mermaid Diyagramları ile Kullanma
+## 🌎 Çeviriler
+
+Şu anda Çince, İngilizce, Almanca ve Türkçe'yi destekliyor.
+
+## 💡 OpenNote'u Markdown, LaTeX Matematik ve Mermaid Diyagramları ile Kullanma
 
 OpenNote'un Markdown, LaTeX Matematik ve Mermaid Diyagramları ile nasıl kullanılacağını öğrenmek için  
 [Rehber](Guide.md) dosyasına göz atabilirsiniz.
 
-## Teknik Detaylar
+## 🔎 Teknik Detaylar
 
 - **Programlama Dili**: Kotlin
 - **Derleme Aracı**: Gradle (Kotlin DSL)
@@ -81,12 +85,12 @@ OpenNote'un Markdown, LaTeX Matematik ve Mermaid Diyagramları ile nasıl kullan
 - **Kotlin Sürümü**: 2.1.10
 - **Java Sürümü**: Java 17
 
-## Mimari
+## 🛠️ Mimari
 
 - **MVVM (Model-View-ViewModel)**: Kullanıcı arayüzü mantığını iş mantığından ayırarak net bir yapı sunar.
 - **Temiz Mimari (Clean Architecture)**: Modüler, ölçeklenebilir ve sürdürülebilir bir yapı için katmanlı bir ayrım uygular.
 
-## Kütüphaneler ve Çatılar
+## 📚 Kütüphaneler ve Çatılar
 
 - **Compose**: Modern, yerel Android kullanıcı arayüzleri oluşturmak için kullanılan bir araç takımı.
 - **Hilt**: Android için bağımlılık enjeksiyonu sağlayan bir kütüphane.
@@ -96,12 +100,12 @@ OpenNote'un Markdown, LaTeX Matematik ve Mermaid Diyagramları ile nasıl kullan
 - **Material Icons**: Tutarlı görseller için Material Design simgelerini içerir.
 - **CommonMark**: Markdown ayrıştırma ve işleme için.
 
-## Gizlilik Politikası ve Gerekli İzinler
+## 🔐 Gizlilik Politikası ve Gerekli İzinler
 
 Gizlilik Politikası ve uygulamanın ihtiyaç duyduğu izinler hakkında bilgi almak için  
 [Gizlilik Politikası](PRIVACY_POLICY.md) sayfasına göz atabilirsiniz.
 
-## Kurulum
+## 📦 Kurulum
 
 Bu uygulamayı derleyip çalıştırmak için en güncel Android Studio sürümünü yüklemeniz gerekir.  
 Daha sonra GitHub üzerindeki bu projeyi klonlayarak Android Studio'da açabilirsiniz.
@@ -112,13 +116,13 @@ git clone https://github.com/YangDai2003/OpenNote.git
 
 Android Studio'da, uygulamayı başlatmak için Çalıştır > 'app' Çalıştır seçeneğini seçin.
 
-## Katkı
+## 🎈 Katkı
 
 Her türlü katkıya açığız! Eğer bir hata bulursanız veya yeni bir özellik talebiniz varsa, lütfen bir 
 issue oluşturun. Bu projeye doğrudan kod katkısında bulunmak istiyorsanız, bir pull request 
 oluşturabilirsiniz.
 
-## Referanslar
+## 🔗 Referanslar
 
 - [MaskAnim](https://github.com/setruth/MaskAnim): Tema değiştirme işlevinin maske animasyonu 
   kullanılarak uygulanması.

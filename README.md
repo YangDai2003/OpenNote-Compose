@@ -17,7 +17,7 @@ OpenNote is a modern Android note-taking application built entirely with Compose
 [<img alt="Get it on IzzyOnDroid" src="screenshots/izzyondroid.png" width="200px">](https://apt.izzysoft.de/fdroid/index/apk/com.yangdai.opennote)
 [<img alt="Get it on GitHub" src="screenshots/github.png" width="200px">](https://github.com/YangDai2003/OpenNote-Compose/releases)
 
-## Features
+## 📃 Features
 
 ### Core Features:
 - **Create, Edit, and Delete Notes:** Users can easily create, modify, and remove notes.
@@ -46,7 +46,7 @@ OpenNote is a modern Android note-taking application built entirely with Compose
 - **Comprehensive Mouse and Keyboard Support:** The app has been thoroughly adapted for seamless interaction with mice and external physical keyboards, delivering a highly productive environment.
 - **Responsive Design:** Optimized for various screen sizes and device orientations, ensuring a great experience on phones, tablets, foldables and even ChromeOS devices.
 
-## Screenshots
+## 🖼️ Screenshots
 
 <div style="overflow-x: auto; white-space: nowrap;">
 
@@ -68,12 +68,16 @@ OpenNote is a modern Android note-taking application built entirely with Compose
 
 </div>
 
-## How to Use OpenNote with Markdown, LaTeX Math, and Mermaid Diagrams?
+## 🌎 Translations
+
+Currently supports Chinese, English, German and Turkish.
+
+## 💡 How to Use OpenNote with Markdown, LaTeX Math, and Mermaid Diagrams?
 
 You can know more about how to use OpenNote with Markdown, LaTeX Math, and Mermaid Diagrams in
 the [Guide](Guide.md).
 
-## Technical Details
+## 🔎 Technical Details
 
 - **Programming Languages**: Kotlin
 - **Build Tool**: Gradle with Kotlin DSL
@@ -82,14 +86,14 @@ the [Guide](Guide.md).
 - **Kotlin Version**: The application uses Kotlin version 2.1.10.
 - **Java Version**: The application uses Java version 17.
 
-## Architecture
+## 🛠️ Architecture
 
 - **MVVM (Model-View-ViewModel)**: Separates the user interface logic from the business logic,
   providing a clear separation of concerns.
 - **Clean Architecture**: Emphasizes separation of concerns and layers of abstraction, making the
   application more modular, scalable, and maintainable.
 
-## Libraries and Frameworks
+## 📚 Libraries and Frameworks
 
 - **Compose**: A modern toolkit for building native Android UI.
 - **Hilt**: A dependency injection library for Android.
@@ -100,11 +104,11 @@ the [Guide](Guide.md).
 - **Material Icons**: Provides Material Design icons for consistent visual elements.
 - **CommonMark**: For markdown parsing and rendering.
 
-## Privacy Policy and Required Permissions
+## 🔐 Privacy Policy and Required Permissions
 
 You can find the Privacy Policy and Required Permissions in the [Privacy Policy](PRIVACY_POLICY.md).
 
-## Installation
+## 📦 Installation
 
 To build and run this application, you need to install the latest version of Android Studio. Then,
 you can clone this repository from GitHub and open it in Android Studio.
@@ -115,12 +119,12 @@ git clone https://github.com/YangDai2003/OpenNote.git
 
 In Android Studio, select `Run > Run 'app'` to start the application.
 
-## Contribution
+## 🎈 Contribution
 
 Any form of contribution is welcome! If you find a bug or have a new feature request, please create
 an issue. If you want to contribute code directly to this project, you can create a pull request.
 
-## References
+## 🔗 References
 
 - [MaskAnim](https://github.com/setruth/MaskAnim): Implementation of the theme switching function
   using mask animation.

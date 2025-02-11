@@ -17,7 +17,7 @@ OpenNote是一款完全使用Compose构建的现代化Android记事本应用程�
 [<img alt="Get it on IzzyOnDroid" src="screenshots/izzyondroid.png" width="200px">](https://apt.izzysoft.de/fdroid/index/apk/com.yangdai.opennote)
 [<img alt="Get it on GitHub" src="screenshots/github.png" width="200px">](https://github.com/YangDai2003/OpenNote-Compose/releases)
 
-## 功能
+## 📃 功能
 
 ### 核心功能
 - **创建、编辑和删除笔记**：用户可以轻松创建、编辑和删除笔记。
@@ -46,7 +46,7 @@ OpenNote是一款完全使用Compose构建的现代化Android记事本应用程�
 - **支持鼠标和物理键盘**：应用对使用鼠标和外接物理键盘时的操作做了充足的适配，确保了高生产力表现。
 - **响应式设计**：针对不同屏幕尺寸和方向的设备进行了优化，在手机、平板、折叠屏甚至搭载了ChromeOS的设备上都具有良好的体验。
 
-## 屏幕截图
+## 🖼️ 屏幕截图
 
 <div style="overflow-x: auto; white-space: nowrap;">
 
@@ -68,12 +68,16 @@ OpenNote是一款完全使用Compose构建的现代化Android记事本应用程�
 
 </div>
 
-## 如何使用 Markdown, LaTeX Math 和 Mermaid 图表的语法在 OpenNote 中编写文档？
+## 🌎 翻译
+
+目前支持中文、英文、德语和土耳其语。
+
+## 💡 如何使用 Markdown, LaTeX Math 和 Mermaid 图表的语法在 OpenNote 中编写文档？
 
 您可以在[指南](Guide.zh.md)中了解有关如何使用 Markdown，LaTeX Math 和 Mermaid 图表的语法在 OpenNote
 中编写文档的更多信息。
 
-## 技术细节
+## 🔎 技术细节
 
 - **编程语言**：Kotlin
 - **构建工具**：Gradle和Kotlin DSL
@@ -81,12 +85,12 @@ OpenNote是一款完全使用Compose构建的现代化Android记事本应用程�
 - **Kotlin版本**：应用程序使用Kotlin版本2.1.10。
 - **Java版本**：应用程序使用Java版本17。
 
-## 架构
+## 🛠️ 架构
 
 - **MVVM（模型-视图-视图模型）**：将用户界面逻辑与业务逻辑分开，提供清晰的关注点分离。
 - **干净架构**：强调关注点和抽象层的分离，使应用程序更加模块化、可扩展和可维护。
 
-## 库和框架
+## 📚 库和框架
 
 - **Compose**：用于构建本机 Android UI 的现代化工具包。
 - **Hilt**：Android 的依赖注入库。
@@ -96,11 +100,11 @@ OpenNote是一款完全使用Compose构建的现代化Android记事本应用程�
 - **Material Icons**：提供材质设计图标以实现一致的视觉元素。
 - **CommonMark**： 用于 Markdown 解析和渲染。
 
-## 隐私政策和所需权限
+## 🔐 隐私政策和所需权限
 
 您可以在[隐私政策](PRIVACY_POLICY.md)中找到隐私政策和所需权限。
 
-## 安装
+## 📦 安装
 
 要构建和运行此应用程序，您需要安装最新版本的Android Studio。然后，您可以从GitHub克隆此仓库并在Android
 Studio中打开它。
@@ -111,10 +115,10 @@ git clone https://github.com/YangDai2003/OpenNote.git
 
 在Android Studio中，选择`Run > Run 'app'`来启动应用程序。
 
-## 贡献
+## 🎈 贡献
 
 欢迎任何形式的贡献！如果您发现错误或有新的功能请求，请创建问题。如果您想直接向此项目贡献代码，您可以创建拉取请求。
 
-## 参考
+## 🔗 参考
 
 - [MaskAnim](https://github.com/setruth/MaskAnim)：用于使用遮罩动画来切换主题功能的实现。
