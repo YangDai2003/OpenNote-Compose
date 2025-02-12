@@ -4,7 +4,7 @@
     <selectionStates>
       <SelectionState runConfigName="OpenNote.app">
         <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2025-02-12T05:19:12.255712400Z">
+        <DropdownSelection timestamp="2025-02-12T15:02:32.200171900Z">
           <Target type="DEFAULT_BOOT">
             <handle>
               <DeviceId pluginId="LocalEmulator" identifier="path=C:\Users\30415\.android\avd\Small_Phone.avd" />

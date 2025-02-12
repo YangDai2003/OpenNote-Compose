@@ -417,6 +417,7 @@ fun NumberPad(
             if (biometricAuthEnabled)
                 IconButton(
                     size,
+                    30.dp,
                     imageVector = Icons.Filled.Fingerprint,
                     onClick = onFingerprintClick
                 )
@@ -424,6 +425,7 @@ fun NumberPad(
             NumberButton(size, "0", onNumberClick)
             IconButton(
                 size,
+                24.dp,
                 imageVector = Icons.AutoMirrored.Filled.Backspace,
                 onClick = onDeleteClick
             )
@@ -489,6 +491,7 @@ fun EmptyButton(size: Dp) {
 @Composable
 fun IconButton(
     size: Dp,
+    iconSize: Dp,
     imageVector: ImageVector,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
@@ -523,7 +526,7 @@ fun IconButton(
             imageVector = imageVector,
             contentDescription = null,
             tint = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = modifier.size(30.dp)
+            modifier = modifier.size(iconSize)
         )
     }
 }
