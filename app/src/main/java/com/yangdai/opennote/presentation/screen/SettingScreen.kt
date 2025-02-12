@@ -37,7 +37,7 @@ fun SettingsScreen(navigateUp: () -> Unit) {
         listPane = {
             AnimatedPane(
                 enterTransition = sharedAxisXIn(initialOffsetX = { -(it * INITIAL_OFFSET_FACTOR).toInt() }),
-                exitTransition = sharedAxisXOut(targetOffsetX = { (it * INITIAL_OFFSET_FACTOR).toInt() }),
+                exitTransition = sharedAxisXOut(targetOffsetX = { -(it * INITIAL_OFFSET_FACTOR).toInt() }),
             ) {
                 SettingsListPane(navigateUp = navigateUp) {
                     coroutineScope.launch {

@@ -134,9 +134,7 @@ import com.yangdai.opennote.presentation.util.TemplateProcessor
 import com.yangdai.opennote.presentation.util.getOrCreateDirectory
 import com.yangdai.opennote.presentation.util.timestampToFormatLocalDateTime
 import com.yangdai.opennote.presentation.viewmodel.SharedViewModel
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.io.File
 import kotlin.math.abs
 
@@ -154,7 +152,6 @@ fun NoteScreen(
     val html by sharedViewModel.html.collectAsStateWithLifecycle()
     val actionState by sharedViewModel.dataActionStateFlow.collectAsStateWithLifecycle()
     val settingsState by sharedViewModel.settingsStateFlow.collectAsStateWithLifecycle()
-    val scannedText by sharedViewModel.scannedTextStateFlow.collectAsStateWithLifecycle()
 
     // 确保屏幕旋转等配置变更时，不会重复加载笔记
     var previousId by rememberSaveable { mutableStateOf<Long?>(null) }
@@ -207,15 +204,6 @@ fun NoteScreen(
         timestamp = if (noteState.timestamp == null) System.currentTimeMillis()
             .timestampToFormatLocalDateTime()
         else noteState.timestamp!!.timestampToFormatLocalDateTime()
-    }
-
-    LaunchedEffect(scannedText) {
-        if (scannedText.isNotEmpty()) {
-            withContext(Dispatchers.Main) {
-                sharedViewModel.onNoteEvent(NoteEvent.Edit(Constants.Editor.TEXT, scannedText))
-                sharedViewModel.scannedTextStateFlow.value = ""
-            }
-        }
     }
 
     val keyboardController = LocalSoftwareKeyboardController.current

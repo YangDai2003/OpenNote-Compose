@@ -11,7 +11,7 @@
     <string name="dark_mode">深色模式</string>
     <string name="color">调色盘</string>
     <string name="language">语言</string>
-    <string name="password">密码保护</string>
+    <string name="password">密码锁</string>
     <string name="privacy_policy">隐私权政策</string>
     <string name="rate_this_app">评价应用</string>
     <string name="share_this_app">分享应用</string>
@@ -23,7 +23,6 @@
     <string name="search_history">搜索历史</string>
     <string name="content">正文</string>
     <string name="delete">删除</string>
-    <string name="unlock">解锁</string>
     <string name="reset_database">重置数据库</string>
     <string name="remind">提醒</string>
     <string name="restore_all">全部恢复</string>
@@ -61,7 +60,7 @@
     <string name="reset_database_description">清空数据库中的所有内容（包括所有笔记和文件夹）。</string>
     <string name="backup">备份</string>
     <string name="recovery">还原</string>
-    <string name="password_description">应用冷启动时，用户需要使用系统锁屏密码解锁。</string>
+    <string name="password_description">应用冷启动时，用户需要输入四位数字密码来解锁。</string>
     <string name="date">日期</string>
     <string name="ascending">升序</string>
     <string name="descending">降序</string>
@@ -155,4 +154,10 @@
     <string name="daily">每天</string>
     <string name="weekly">每周</string>
     <string name="monthly">每月</string>
+    <string name="biometric">使用生物识别解锁</string>
+    <string name="create_password">创建四位数密码</string>
+    <string name="enter_again">请再次输入密码</string>
+    <string name="clean">清理</string>
+    <string name="free_up_space">释放存储空间</string>
+    <string name="free_up_detail">OpenNote 文件夹中所有未在笔记中引用的图片、音频和视频资源将被删除。</string>
 </resources>

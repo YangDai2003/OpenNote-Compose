@@ -23,7 +23,6 @@
     <string name="search_history">Search history</string>
     <string name="content">Content</string>
     <string name="delete">Delete</string>
-    <string name="unlock">Unlock</string>
     <string name="reset_database">Reset database</string>
     <string name="shareContent">Welcome to \"Open Note\", a lightweight, aesthetically pleasing application that adheres to the Material 3 design style. Our app offers local storage, allowing you to jot down your thoughts anytime, anywhere, even without an internet connection. The efficient search function helps you quickly locate your notes, while the folder categorization feature aids in better organization of your notes. Additionally, it provides a text OCR feature, capable of converting text in images into editable text. The goal is to provide you with the most convenient and efficient note-taking experience. Download: https://play.google.com/store/apps/details?id=com.yangdai.opennote</string>
     <string name="remind">Remind</string>
@@ -62,7 +61,7 @@
     <string name="reset_database_description">Clear all data in the database (including all notes and folders).</string>
     <string name="backup">Backup</string>
     <string name="recovery">Recovery</string>
-    <string name="password_description">When the application is cold started, the user needs to unlock it using the system lock screen password.</string>
+    <string name="password_description">When the app is cold started, the user needs to enter a four-digit password to unlock it.</string>
     <string name="date">Date</string>
     <string name="ascending">Ascending</string>
     <string name="descending">Descending</string>
@@ -157,4 +156,10 @@
     <string name="daily">Daily</string>
     <string name="weekly">Weekly</string>
     <string name="monthly">Monthly</string>
+    <string name="biometric">Unlock with biometrics</string>
+    <string name="create_password">Create a four-digit passcode</string>
+    <string name="enter_again">Please enter your passcode again</string>
+    <string name="clean">Clean</string>
+    <string name="free_up_space">Free up space</string>
+    <string name="free_up_detail">All images, audio and video resources in the OpenNote folder that are not referenced in the notes will be deleted.</string>
 </resources>

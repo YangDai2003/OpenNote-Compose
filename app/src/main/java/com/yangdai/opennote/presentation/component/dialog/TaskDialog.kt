@@ -24,6 +24,8 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -107,8 +109,10 @@ fun TaskDialog(
         },
         onDismissRequest = onDismissRequest,
         confirmButton = {
+            val haptic = LocalHapticFeedback.current
             Button(
                 onClick = {
+                    haptic.performHapticFeedback(HapticFeedbackType.Confirm)
                     onConfirm(taskList)
                     onDismissRequest()
                 }

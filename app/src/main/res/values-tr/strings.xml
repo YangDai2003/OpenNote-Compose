@@ -22,7 +22,6 @@
     <string name="search_history">Arama geçmişi</string>
     <string name="content">İçerik</string>
     <string name="delete">Sil</string>
-    <string name="unlock">Kilidi aç</string>
     <string name="reset_database">Veritabanını sıfırla</string>
     <string name="shareContent">\"Open Note\" uygulamasına hoş geldiniz, hafif, estetik açıdan hoş bir uygulamadır ve Material 3 tasarım stiline uyar. Uygulamamız, internet bağlantısı olmadan dahi düşüncelerinizi yazmanıza olanak tanır. Verimli arama fonksiyonu, notlarınıza hızlıca ulaşmanıza yardımcı olurken, klasör kategorilendirme özelliği notlarınızı daha iyi organize etmenizi sağlar. Ayrıca, metin OCR özelliği sayesinde görsellerdeki metinleri düzenlenebilir metne dönüştürebilirsiniz. Amacımız, size en rahat ve verimli not alma deneyimini sunmaktır. İndir: https://play.google.com/store/apps/details?id=com.yangdai.opennote</string>
     <string name="remind">Hatırlat</string>
@@ -60,7 +59,7 @@
     <string name="reset_database_description">Veritabanındaki tüm verileri (tüm notlar ve klasörler dahil) temizler.</string>
     <string name="backup">Yedekleme</string>
     <string name="recovery">Kurtarma</string>
-    <string name="password_description">Uygulama soğuk başlatıldığında, kullanıcı sistem kilit ekranı şifresiyle açılmalıdır.</string>
+    <string name="password_description">Uygulama soğuk başlatıldığında, kullanıcının kilidi açmak için dört haneli bir şifre girmesi gerekiyor.</string>
     <string name="date">Tarih</string>
     <string name="ascending">Artan</string>
     <string name="descending">Azalan</string>
@@ -154,4 +153,10 @@
     <string name="daily">Günlük</string>
     <string name="weekly">Haftalık</string>
     <string name="monthly">Aylık</string>
+    <string name="biometric">Biyometri ile kilidi açın</string>
+    <string name="create_password">Dört haneli bir şifre oluşturun</string>
+    <string name="enter_again">Lütfen şifrenizi tekrar giriniz</string>
+    <string name="clean">Temizle</string>
+    <string name="free_up_space">Alan boşalt</string>
+    <string name="free_up_detail">OpenNote klasöründeki notlarda referans verilmeyen tüm görüntü, ses ve video kaynakları silinecektir.</string>
 </resources>

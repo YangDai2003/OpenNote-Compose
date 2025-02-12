@@ -1,5 +1,6 @@
 package com.yangdai.opennote.presentation.viewmodel
 
+import android.util.Log
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.clearText
@@ -7,6 +8,7 @@ import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.util.fastJoinToString
 import androidx.core.net.toUri
+import androidx.documentfile.provider.DocumentFile
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.yangdai.opennote.data.local.Database
@@ -57,6 +59,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -77,6 +82,8 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import org.commonmark.Extension
@@ -101,6 +108,7 @@ class SharedViewModel @Inject constructor(
 ) : ViewModel() {
 
     val authenticated = MutableStateFlow(false)
+    val isCreatingPassword = MutableStateFlow(false)
 
     // 起始页加载状态，初始值为 true
     val isLoading: StateFlow<Boolean>
@@ -126,9 +134,6 @@ class SharedViewModel @Inject constructor(
     // 编辑时的笔记状态, 包含笔记的 id、所属文件夹 id、格式、时间戳
     val noteStateFlow: StateFlow<NoteState>
         field = MutableStateFlow(NoteState())
-
-    // OCR扫描文本的状态
-    val scannedTextStateFlow = MutableStateFlow("")
 
     // UI 事件，用于导航
     val uiEventFlow: SharedFlow<UiEvent>
@@ -158,10 +163,8 @@ class SharedViewModel @Inject constructor(
 
     // 当前笔记的初始化状态，用于比较是否有修改
     private var _oNote: NoteEntity = NoteEntity(
-        timestamp = System.currentTimeMillis(),
-        isMarkdown = dataStoreRepository.getBooleanValue(
-            Constants.Preferences.IS_DEFAULT_LITE_MODE,
-            false
+        timestamp = System.currentTimeMillis(), isMarkdown = dataStoreRepository.getBooleanValue(
+            Constants.Preferences.IS_DEFAULT_LITE_MODE, false
         ).not()
     )
 
@@ -191,7 +194,7 @@ class SharedViewModel @Inject constructor(
     val settingsStateFlow: StateFlow<SettingsState> = combine(
         dataStoreRepository.intFlow(Constants.Preferences.APP_THEME),
         dataStoreRepository.intFlow(Constants.Preferences.APP_COLOR),
-        dataStoreRepository.booleanFlow(Constants.Preferences.NEED_PASSWORD),
+        dataStoreRepository.booleanFlow(Constants.Preferences.BIOMETRIC_AUTH_ENABLED),
         dataStoreRepository.booleanFlow(Constants.Preferences.IS_APP_IN_DARK_MODE),
         dataStoreRepository.booleanFlow(Constants.Preferences.SHOULD_FOLLOW_SYSTEM),
         dataStoreRepository.booleanFlow(Constants.Preferences.IS_SWITCH_ACTIVE),
@@ -205,12 +208,13 @@ class SharedViewModel @Inject constructor(
         dataStoreRepository.stringFlow(Constants.Preferences.TIME_FORMATTER),
         dataStoreRepository.booleanFlow(Constants.Preferences.IS_SCREEN_PROTECTED),
         dataStoreRepository.floatFlow(Constants.Preferences.FONT_SCALE),
-        dataStoreRepository.intFlow(BackupManager.BACKUP_FREQUENCY_KEY)
+        dataStoreRepository.intFlow(BackupManager.BACKUP_FREQUENCY_KEY),
+        dataStoreRepository.stringFlow(Constants.Preferences.PASSWORD)
     ) { values ->
         SettingsState(
             theme = AppTheme.fromInt(values[0] as Int),
             color = AppColor.fromInt(values[1] as Int),
-            needPassword = values[2] as Boolean,
+            biometricAuthEnabled = values[2] as Boolean,
             isAppInDarkMode = values[3] as Boolean,
             shouldFollowSystem = values[4] as Boolean,
             isSwitchActive = values[5] as Boolean,
@@ -224,7 +228,8 @@ class SharedViewModel @Inject constructor(
             timeFormatter = values[13] as String,
             isScreenProtected = values[14] as Boolean,
             fontScale = values[15] as Float,
-            backupFrequency = values[16] as Int
+            backupFrequency = values[16] as Int,
+            password = values[17] as String
         )
     }.flowOn(Dispatchers.IO).stateIn(
         scope = viewModelScope, started = SharingStarted.Eagerly, initialValue = SettingsState()
@@ -347,8 +352,7 @@ class SharedViewModel @Inject constructor(
                     folderId = event.folderId,
                     timestamp = System.currentTimeMillis(),
                     isMarkdown = dataStoreRepository.getBooleanValue(
-                        Constants.Preferences.IS_DEFAULT_LITE_MODE,
-                        false
+                        Constants.Preferences.IS_DEFAULT_LITE_MODE, false
                     ).not()
                 )
             }
@@ -494,12 +498,11 @@ class SharedViewModel @Inject constructor(
                 viewModelScope.launch(Dispatchers.IO) {
                     // 判断id是否与oNote的id相同，不同则从数据库获取笔记，并更新oNote。用于从小组件打开时的情况。
                     if (event.id != _oNote.id && event.id != -1L) {
-                        _oNote =
-                            useCases.getNoteById(event.id) ?: NoteEntity(
-                                timestamp = System.currentTimeMillis(),
-                                isMarkdown = dataStoreRepository.booleanFlow(Constants.Preferences.IS_DEFAULT_LITE_MODE)
-                                    .first().not()
-                            )
+                        _oNote = useCases.getNoteById(event.id) ?: NoteEntity(
+                            timestamp = System.currentTimeMillis(),
+                            isMarkdown = dataStoreRepository.booleanFlow(Constants.Preferences.IS_DEFAULT_LITE_MODE)
+                                .first().not()
+                        )
                     }
                     noteStateFlow.update { noteState ->
                         noteState.copy(
@@ -529,8 +532,9 @@ class SharedViewModel @Inject constructor(
                         timestamp = System.currentTimeMillis()
                     )
                     if (note.id != null) {
-                        if (note.title != _oNote.title || note.content != _oNote.content || note.isMarkdown != _oNote.isMarkdown || note.folderId != _oNote.folderId)
-                            useCases.updateNote(note)
+                        if (note.title != _oNote.title || note.content != _oNote.content || note.isMarkdown != _oNote.isMarkdown || note.folderId != _oNote.folderId) useCases.updateNote(
+                            note
+                        )
                     } else {
                         if (note.title.isNotBlank() || note.content.isNotBlank()) {
                             val newId = useCases.addNote(note)
@@ -582,6 +586,7 @@ class SharedViewModel @Inject constructor(
                                 name?.substringAfterLast(".")
                             }"
                         val newFile = dir.createFile("video/*", fileName)
+                        _dataActionState.update { it.copy(progress = 0.5f) }
                         newFile?.let { file ->
                             context.contentResolver.openInputStream(uri)?.use { input ->
                                 context.contentResolver.openOutputStream(file.uri)?.use { output ->
@@ -593,9 +598,7 @@ class SharedViewModel @Inject constructor(
                             }
                         }
                     }
-                    _dataActionState.update {
-                        it.copy(progress = 1f)
-                    }
+                    _dataActionState.update { it.copy(progress = 1f) }
                 }
             }
 
@@ -651,9 +654,7 @@ class SharedViewModel @Inject constructor(
                     withContext(Dispatchers.Main) {
                         contentState.edit { add(savedUriList.fastJoinToString(separator = "\n")) }
                     }
-                    _dataActionState.update {
-                        it.copy(progress = 1f)
-                    }
+                    _dataActionState.update { it.copy(progress = 1f) }
                 }
             }
 
@@ -679,18 +680,16 @@ class SharedViewModel @Inject constructor(
                                     title = fileName?.substringBeforeLast(".") ?: "",
                                     content = content ?: "",
                                     folderId = folderId,
-                                    isMarkdown = (fileName?.endsWith(".md") == true)
-                                            || (fileName?.endsWith(".markdown") == true
-                                            || (fileName?.endsWith(".html") == true)),
+                                    isMarkdown = (fileName?.endsWith(".md") == true) || (fileName?.endsWith(
+                                        ".markdown"
+                                    ) == true || (fileName?.endsWith(".html") == true)),
                                     timestamp = System.currentTimeMillis()
                                 )
                                 useCases.addNote(note)
                             }
                         }
                     }
-                    _dataActionState.update {
-                        it.copy(progress = 1f)
-                    }
+                    _dataActionState.update { it.copy(progress = 1f) }
                 }
             }
 
@@ -745,9 +744,7 @@ class SharedViewModel @Inject constructor(
                         }
                     }
 
-                    _dataActionState.update {
-                        it.copy(progress = 1f)
-                    }
+                    _dataActionState.update { it.copy(progress = 1f) }
                 }
             }
 
@@ -757,9 +754,7 @@ class SharedViewModel @Inject constructor(
 
                 startDataAction()
 
-                _dataActionState.update {
-                    it.copy(progress = 0.2f)
-                }
+                _dataActionState.update { it.copy(progress = 0.2f) }
                 dataActionJob = viewModelScope.launch(Dispatchers.IO) {
                     val rootUri =
                         dataStoreRepository.getStringValue(Constants.Preferences.STORAGE_PATH, "")
@@ -798,9 +793,7 @@ class SharedViewModel @Inject constructor(
                         }
                     }
 
-                    _dataActionState.update {
-                        it.copy(progress = 1f)
-                    }
+                    _dataActionState.update { it.copy(progress = 1f) }
                 }
             }
 
@@ -809,25 +802,18 @@ class SharedViewModel @Inject constructor(
                 val uri = event.uri
 
                 startDataAction()
-
-                _dataActionState.update {
-                    it.copy(progress = 0.2f)
-                }
+                _dataActionState.update { it.copy(progress = 0.2f) }
 
                 dataActionJob = viewModelScope.launch(Dispatchers.IO) {
 
                     val json = contentResolver.openInputStream(uri)?.bufferedReader()
                         .use { it?.readText() }
 
-                    _dataActionState.update {
-                        it.copy(progress = 0.4f)
-                    }
+                    _dataActionState.update { it.copy(progress = 0.4f) }
 
                     runCatching {
                         val backupData = Json.decodeFromString<BackupData>(json ?: "")
-                        _dataActionState.update {
-                            it.copy(progress = 0.6f)
-                        }
+                        _dataActionState.update { it.copy(progress = 0.6f) }
                         backupData.folders.forEach { folderEntity ->
                             useCases.addFolder(folderEntity)
                         }
@@ -848,14 +834,81 @@ class SharedViewModel @Inject constructor(
                                 )
                             }
                         }.onSuccess {
-                            _dataActionState.update {
-                                it.copy(progress = 1f)
-                            }
+                            _dataActionState.update { it.copy(progress = 1f) }
                         }
                     }.onSuccess {
-                        _dataActionState.update {
-                            it.copy(progress = 1f)
+                        _dataActionState.update { it.copy(progress = 1f) }
+                    }
+                }
+            }
+
+            is DatabaseEvent.RemoveUselessFiles -> {
+                val context = event.context
+                startDataAction()
+                try {
+                    _dataActionState.update { it.copy(progress = 0.1f) }
+
+                    dataActionJob = viewModelScope.launch(Dispatchers.IO) {
+
+                        val rootUri = dataStoreRepository.getStringValue(
+                            Constants.Preferences.STORAGE_PATH,
+                            ""
+                        ).toUri()
+
+                        val allNoteContents = useCases.getNotes()
+                            .map { notes -> notes.joinToString(" ") { it.content } }
+                            .first()
+
+                        _dataActionState.update { it.copy(progress = 0.3f) }
+
+                        val directories = listOf(
+                            Constants.File.OPENNOTE_VIDEOS,
+                            Constants.File.OPENNOTE_IMAGES,
+                            Constants.File.OPENNOTE_AUDIO
+                        )
+
+                        val openNoteDir = getOrCreateDirectory(
+                            context,
+                            rootUri,
+                            Constants.File.OPENNOTE
+                        )
+
+                        val mutex = Mutex()
+                        var progress = 0.4f
+                        val progressStep = 0.6f / directories.size
+
+                        openNoteDir?.let { dir ->
+                            coroutineScope {
+                                // 并行删除各目录下的无用文件
+                                directories.map { dirName ->
+                                    async {
+                                        getOrCreateDirectory(
+                                            context,
+                                            dir.uri,
+                                            dirName
+                                        )?.let { dir ->
+                                            deleteUselessFiles(dir, allNoteContents)
+                                            // 使用互斥锁保护进度更新
+                                            mutex.withLock {
+                                                progress += progressStep
+                                                _dataActionState.update {
+                                                    it.copy(progress = progress)
+                                                }
+                                            }
+                                        }
+                                    }
+                                }.awaitAll()
+                            }
                         }
+
+                        _dataActionState.update { it.copy(progress = 1f) }
+                    }
+                } catch (e: Exception) {
+                    Log.e("DatabaseEvent", "Error in RemoveUselessFiles", e)
+                    _dataActionState.update {
+                        it.copy(
+                            message = "Operation failed: ${e.localizedMessage}"
+                        )
                     }
                 }
             }
@@ -866,9 +919,7 @@ class SharedViewModel @Inject constructor(
                     runCatching {
                         database.clearAllTables()
                     }.onSuccess {
-                        _dataActionState.update {
-                            it.copy(progress = 1f)
-                        }
+                        _dataActionState.update { it.copy(progress = 1f) }
                     }.onFailure { throwable ->
                         _dataActionState.update {
                             it.copy(
@@ -877,6 +928,42 @@ class SharedViewModel @Inject constructor(
                         }
                     }
                 }
+            }
+        }
+    }
+
+    private fun deleteUselessFiles(dir: DocumentFile, allNoteContents: String) {
+        try {
+            val files = dir.listFiles()
+            files.forEach { file ->
+                file.name?.let { fileName ->
+                    if (!allNoteContents.contains(fileName)) {
+                        try {
+                            val deleted = file.delete()
+                            if (!deleted) {
+                                _dataActionState.update {
+                                    it.copy(
+                                        message = "Failed to delete file: $fileName"
+                                    )
+                                }
+                            }
+                        } catch (e: Exception) {
+                            Log.e("DatabaseEvent", "Error deleting file: $fileName", e)
+                            _dataActionState.update {
+                                it.copy(
+                                    message = "Failed to delete file: ${e.localizedMessage}"
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            Log.e("DatabaseEvent", "Error accessing directory", e)
+            _dataActionState.update {
+                it.copy(
+                    message = "Failed to access directory: ${e.localizedMessage}"
+                )
             }
         }
     }

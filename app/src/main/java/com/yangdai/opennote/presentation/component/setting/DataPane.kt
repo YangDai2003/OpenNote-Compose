@@ -30,7 +30,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
@@ -83,6 +86,8 @@ fun DataPane(sharedViewModel: SharedViewModel) {
         }
     }
 
+    val hapticFeedback = LocalHapticFeedback.current
+
     Column(
         Modifier
             .fillMaxSize()
@@ -112,6 +117,7 @@ fun DataPane(sharedViewModel: SharedViewModel) {
             trailingContent = {
                 TextButton(
                     onClick = {
+                        hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
                         sharedViewModel.putPreferenceValue(Constants.Preferences.STORAGE_PATH, "")
                     },
                     colors = ButtonDefaults.textButtonColors().copy(
@@ -223,6 +229,7 @@ fun DataPane(sharedViewModel: SharedViewModel) {
                 .padding(bottom = 16.dp),
             value = sliderPosition,
             onValueChange = { newPosition ->
+                hapticFeedback.performHapticFeedback(HapticFeedbackType.SegmentFrequentTick)
                 // 直接更新 ViewModel 中的值
                 val newFrequency = mapSliderPositionToFrequency(newPosition)
                 sharedViewModel.putPreferenceValue(
@@ -243,14 +250,44 @@ fun DataPane(sharedViewModel: SharedViewModel) {
         ListItem(
             leadingContent = {
                 Icon(
+                    painter = painterResource(R.drawable.quick_reference_all),
+                    contentDescription = "Clean"
+                )
+            },
+            headlineContent = { Text(text = stringResource(R.string.free_up_space)) },
+            supportingContent = {
+                Text(
+                    text = stringResource(R.string.free_up_detail)
+                )
+            },
+            trailingContent = {
+                TextButton(
+                    onClick = {
+                        hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
+                        sharedViewModel.onDatabaseEvent(DatabaseEvent.RemoveUselessFiles(context.applicationContext))
+                    },
+                    colors = ButtonDefaults.textButtonColors().copy(
+                        containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                        contentColor = MaterialTheme.colorScheme.tertiary
+                    )
+                ) {
+                    Text(text = stringResource(R.string.clean))
+                }
+            },
+        )
+
+        ListItem(
+            leadingContent = {
+                Icon(
                     imageVector = Icons.Outlined.CleaningServices,
-                    contentDescription = "Clear"
+                    contentDescription = "Reset"
                 )
             },
             headlineContent = { Text(text = stringResource(R.string.reset_database)) },
             trailingContent = {
                 TextButton(
                     onClick = {
+                        hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
                         showWarningDialog = true
                     },
                     colors = ButtonDefaults.textButtonColors().copy(

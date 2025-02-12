@@ -8,7 +8,6 @@ import com.yangdai.opennote.presentation.state.AppTheme.entries
 data class SettingsState(
     val theme: AppTheme = AppTheme.UNDEFINED,
     val color: AppColor = AppColor.DYNAMIC,
-    val needPassword: Boolean = false,
     val isAppInDarkMode: Boolean = false,
     val shouldFollowSystem: Boolean = false,
     val isSwitchActive: Boolean = false,
@@ -22,7 +21,9 @@ data class SettingsState(
     val timeFormatter: String = "",
     val isScreenProtected: Boolean = false,
     val fontScale: Float = 1f,
-    val backupFrequency: Int = 0
+    val backupFrequency: Int = 0,
+    val password: String = "",
+    val biometricAuthEnabled: Boolean = false
 )
 
 enum class AppTheme(private val value: Int) {

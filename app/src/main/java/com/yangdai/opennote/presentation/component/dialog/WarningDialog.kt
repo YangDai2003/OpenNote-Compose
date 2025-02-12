@@ -7,6 +7,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.yangdai.opennote.R
@@ -21,8 +23,10 @@ fun WarningDialog(
     text = { Text(text = message) },
     onDismissRequest = onDismissRequest,
     confirmButton = {
+        val haptic = LocalHapticFeedback.current
         Button(
             onClick = {
+                haptic.performHapticFeedback(HapticFeedbackType.Confirm)
                 onConfirm()
                 onDismissRequest()
             },

@@ -31,7 +31,7 @@ import androidx.compose.ui.unit.dp
 import com.yangdai.opennote.R
 import com.yangdai.opennote.presentation.component.TypingText
 import com.yangdai.opennote.presentation.component.login.LogoText
-import com.yangdai.opennote.presentation.component.login.NeonIndication
+import com.yangdai.opennote.presentation.util.NeonIndication
 import com.yangdai.opennote.presentation.util.Constants
 import com.yangdai.opennote.presentation.util.getOrCreateDirectory
 

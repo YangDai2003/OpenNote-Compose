@@ -23,6 +23,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.github.skydoves.colorpicker.compose.AlphaSlider
@@ -111,7 +113,11 @@ fun ColorPickerDialog(
                     .padding(16.dp),
                 horizontalArrangement = Arrangement.End
             ) {
-                Button(onClick = { onConfirm(color?.toArgb() ?: Color.White.toArgb()) }) {
+                val haptic = LocalHapticFeedback.current
+                Button(onClick = {
+                    haptic.performHapticFeedback(HapticFeedbackType.Confirm)
+                    onConfirm(color?.toArgb() ?: Color.White.toArgb())
+                }) {
                     Text(stringResource(id = android.R.string.ok))
                 }
             }

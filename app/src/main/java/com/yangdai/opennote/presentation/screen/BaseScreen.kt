@@ -40,6 +40,7 @@ fun BaseScreen(
 
     val settingsState by sharedViewModel.settingsStateFlow.collectAsStateWithLifecycle()
     val authState by sharedViewModel.authenticated.collectAsStateWithLifecycle()
+    val isCreatingPass by sharedViewModel.isCreatingPassword.collectAsStateWithLifecycle()
     val activity = LocalActivity.current
 
     if (settingsState.isScreenProtected) {
@@ -51,7 +52,7 @@ fun BaseScreen(
     // Check if the user is logged in
     val loggedIn by remember {
         derivedStateOf {
-            !settingsState.needPassword || authState
+            (settingsState.password.isEmpty() && !isCreatingPass) || authState
         }
     }
 
@@ -109,7 +110,10 @@ fun BaseScreen(
                     )
             }
 
-            val blur by animateDpAsState(targetValue = if (!loggedIn) 16.dp else 0.dp, label = "Blur")
+            val blur by animateDpAsState(
+                targetValue = if (!loggedIn) 16.dp else 0.dp,
+                label = "Blur"
+            )
 
             val windowSizeClass: WindowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
             val isLargeScreen by remember {
@@ -129,16 +133,34 @@ fun BaseScreen(
 
             AnimatedVisibility(visible = !loggedIn, enter = fadeIn(), exit = fadeOut()) {
                 LoginOverlayScreen(
+                    password = settingsState.password,
+                    biometricAuthEnabled = settingsState.biometricAuthEnabled,
+                    isCreatingPass = isCreatingPass,
+                    onCreatingCanceled = {
+                        sharedViewModel.isCreatingPassword.value = false
+                    },
+                    onPassCreated = {
+                        sharedViewModel.putPreferenceValue(Constants.Preferences.PASSWORD, it)
+                        sharedViewModel.isCreatingPassword.value = false
+                        sharedViewModel.authenticated.value = true
+                    },
                     onAuthenticated = {
                         sharedViewModel.authenticated.value = true
                     },
                     onAuthenticationNotEnrolled = {
-                        sharedViewModel.putPreferenceValue(Constants.Preferences.NEED_PASSWORD, false)
+                        sharedViewModel.putPreferenceValue(
+                            Constants.Preferences.BIOMETRIC_AUTH_ENABLED,
+                            false
+                        )
                     }
                 )
             }
 
-            AnimatedVisibility(visible = settingsState.storagePath.isEmpty(), enter = fadeIn(), exit = fadeOut()) {
+            AnimatedVisibility(
+                visible = settingsState.storagePath.isEmpty(),
+                enter = fadeIn(),
+                exit = fadeOut()
+            ) {
                 PermissionScreen(
                     onPermissionResult = {
                         sharedViewModel.putPreferenceValue(Constants.Preferences.STORAGE_PATH, it)

@@ -8,6 +8,8 @@ import com.yangdai.opennote.presentation.component.dialog.ExportType
 
 sealed interface DatabaseEvent {
 
+    data class RemoveUselessFiles(val context: Context) : DatabaseEvent
+
     data class ImportFiles(
         val context: Context,
         val folderId: Long?,

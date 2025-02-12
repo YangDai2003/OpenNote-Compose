@@ -17,6 +17,8 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.yangdai.opennote.R
@@ -53,7 +55,9 @@ fun RatingDialog(
             }
         },
         confirmButton = {
+            val haptic = LocalHapticFeedback.current
             Button(onClick = {
+                haptic.performHapticFeedback(HapticFeedbackType.Confirm)
                 onDismissRequest()
                 onRatingChanged(rating)
             }) {

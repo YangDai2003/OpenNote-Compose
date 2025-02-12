@@ -35,6 +35,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -127,8 +129,10 @@ fun ModifyFolderDialog(
         },
         onDismissRequest = onDismissRequest,
         confirmButton = {
+            val haptic = LocalHapticFeedback.current
             Button(
                 onClick = {
+                    haptic.performHapticFeedback(HapticFeedbackType.Confirm)
 
                     color = when (selectedIndex) {
                         0 -> null

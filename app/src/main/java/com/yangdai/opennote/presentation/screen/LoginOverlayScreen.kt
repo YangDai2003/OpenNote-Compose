@@ -9,29 +9,23 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.biometric.BiometricManager
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.yangdai.opennote.R
-import com.yangdai.opennote.presentation.component.login.LoginButton
-import com.yangdai.opennote.presentation.component.login.LogoText
+import com.yangdai.opennote.presentation.component.login.NumberLockScreen
 import com.yangdai.opennote.presentation.util.BiometricPromptManager
 
 @Composable
 fun LoginOverlayScreen(
+    password: String,
+    biometricAuthEnabled: Boolean,
+    isCreatingPass: Boolean,
+    onCreatingCanceled: () -> Unit,
+    onPassCreated: (String) -> Unit,
     onAuthenticated: () -> Unit,
     onAuthenticationNotEnrolled: () -> Unit
 ) {
@@ -84,49 +78,18 @@ fun LoginOverlayScreen(
     val title = stringResource(R.string.unlock_to_use_open_note)
     val negativeButtonText = stringResource(android.R.string.cancel)
 
-    LoginScreenContent(
-        onClick = {
+    NumberLockScreen(
+        password = password,
+        biometricAuthEnabled = biometricAuthEnabled,
+        isCreatingPass = isCreatingPass,
+        onCreatingCanceled = onCreatingCanceled,
+        onPassCreated = onPassCreated,
+        onFingerprintClick = {
             promptManager.showBiometricPrompt(
                 title = title,
                 negativeButtonText = negativeButtonText
             )
-        }
+        },
+        onAuthenticated = onAuthenticated
     )
-}
-
-@Composable
-fun LoginScreenContent(
-    onClick: () -> Unit
-) {
-    // 判断系统版本是否大于android 12
-    val modifier: Modifier = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-        Modifier
-    } else {
-        Modifier.background(MaterialTheme.colorScheme.surface)
-    }
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .pointerInput(Unit) {}
-            .then(modifier),
-        verticalArrangement = Arrangement.SpaceEvenly,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-
-        LogoText()
-
-        LoginButton(onClick = onClick) {
-            Text(
-                color = MaterialTheme.colorScheme.onSurface,
-                text = stringResource(R.string.unlock)
-            )
-        }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun LoginScreenPreview() {
-    LoginScreenContent(onClick = {})
 }

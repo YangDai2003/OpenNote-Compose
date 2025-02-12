@@ -1,29 +1,15 @@
-package com.yangdai.opennote.presentation.component.login
+package com.yangdai.opennote.presentation.util
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.IndicationNodeFactory
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.InteractionSource
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.PressInteraction
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.RowScope
-import androidx.compose.foundation.layout.defaultMinSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.geometry.center
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Brush.Companion.linearGradient
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.SolidColor
@@ -32,51 +18,11 @@ import androidx.compose.ui.graphics.drawscope.ContentDrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.node.DelegatableNode
 import androidx.compose.ui.node.DrawModifierNode
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlin.math.abs
 import kotlin.math.sign
-
-@Preview
-@Composable
-fun LoginButtonPreview() {
-    LoginButton(
-        onClick = {},
-        content = {
-            Text("Login")
-        }
-    )
-}
-
-@Composable
-fun LoginButton(
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-    enabled: Boolean = true,
-    interactionSource: MutableInteractionSource? = null,
-    shape: Shape = CircleShape,
-    borderColor: Color = MaterialTheme.colorScheme.onSurface,
-    content: @Composable RowScope.() -> Unit
-) {
-    Row(
-        modifier = modifier
-            .defaultMinSize(minWidth = 80.dp, minHeight = 48.dp)
-            .clickable(
-                enabled = enabled,
-                indication = NeonIndication(shape, 3.dp),
-                interactionSource = interactionSource,
-                onClick = onClick
-            )
-            .border(width = 2.dp, color = borderColor, shape = shape)
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        horizontalArrangement = Arrangement.Center,
-        verticalAlignment = Alignment.CenterVertically,
-        content = content
-    )
-}
 
 data class NeonIndication(private val shape: Shape, private val borderWidth: Dp) :
     IndicationNodeFactory {
@@ -96,7 +42,7 @@ private class NeonNode(
     private val borderWidth: Dp,
     private val interactionSource: InteractionSource
 ) : Modifier.Node(), DrawModifierNode {
-    var currentPressPosition: Offset = Offset.Zero
+    var currentPressPosition: Offset = Offset.Companion.Zero
     val animatedProgress = Animatable(0f)
     val animatedPressAlpha = Animatable(1f)
 
@@ -212,7 +158,7 @@ private class NeonNode(
                 progress < 1 / 6f -> {
                     val adjustedProgress = progress * 6f
                     add(0f to Blue)
-                    add(adjustedProgress to Color.Transparent)
+                    add(adjustedProgress to Color.Companion.Transparent)
                 }
 
                 progress < 2 / 6f -> {
@@ -220,7 +166,7 @@ private class NeonNode(
                     add(0f to Purple)
                     add(adjustedProgress * MAXBLUESTOP to Blue)
                     add(adjustedProgress to Blue)
-                    add(1f to Color.Transparent)
+                    add(1f to Color.Companion.Transparent)
                 }
 
                 progress < 3 / 6f -> {
@@ -263,7 +209,7 @@ private class NeonNode(
             }
         }
 
-        return linearGradient(
+        return Brush.Companion.linearGradient(
             colorStops = colorStops.toTypedArray(),
             start = startPosition,
             end = endPosition
@@ -271,7 +217,7 @@ private class NeonNode(
     }
 
     companion object {
-        val TransparentBrush = SolidColor(Color.Transparent)
+        val TransparentBrush = SolidColor(Color.Companion.Transparent)
         val Blue = Color(0xFF4285F4)
         val Purple = Color(0xFF9B72CB)
         val Pink = Color(0xFFD96570)

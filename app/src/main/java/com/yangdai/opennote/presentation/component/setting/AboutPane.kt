@@ -1,9 +1,9 @@
 package com.yangdai.opennote.presentation.component.setting
 
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.os.Build
-import android.widget.Toast
-import androidx.activity.compose.LocalActivity
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
@@ -42,6 +42,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
@@ -50,20 +51,22 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.core.net.toUri
 import com.yangdai.opennote.R
 import com.yangdai.opennote.presentation.component.CurlyCornerShape
 import com.yangdai.opennote.presentation.component.dialog.RatingDialog
-import com.yangdai.opennote.presentation.util.PaymentUtil
 import com.yangdai.opennote.presentation.util.rememberCustomTabsIntent
+import java.io.InputStream
 
 @Composable
 fun AboutPane() {
 
     val context = LocalContext.current
-    val activity = LocalActivity.current
     val customTabsIntent = rememberCustomTabsIntent()
     var showRatingDialog by rememberSaveable { mutableStateOf(false) }
+    var showSponsorDialog by rememberSaveable { mutableStateOf(false) }
 
     Column(
         Modifier
@@ -211,26 +214,55 @@ fun AboutPane() {
             )
         }, headlineContent = { Text(text = stringResource(R.string.share_this_app)) })
 
-        ListItem(modifier = Modifier.clickable {
-            runCatching {
-                if (PaymentUtil.isInstalledPackage(context.applicationContext)) {
-                    PaymentUtil.startAlipayClient(activity, "fkx17585uzuubvggq3eij18")
-                } else {
-                    val donateIntent = Intent(
-                        Intent.ACTION_VIEW,
-                        "https://paypal.me/YangDaiDevelpoer?country.x=DE&locale.x=de_DE".toUri()
-                    )
-                    context.startActivity(donateIntent)
-                }
-            }.onFailure {
-                Toast.makeText(context, "Please install Paypal or Alipay.", Toast.LENGTH_SHORT)
-                    .show()
-            }
-        }, leadingContent = {
-            Icon(
-                imageVector = Icons.Outlined.AttachMoney, contentDescription = "Donate"
+        ListItem(
+            modifier = Modifier.clickable { showSponsorDialog = true },
+            leadingContent = {
+                Icon(
+                    imageVector = Icons.Outlined.AttachMoney, contentDescription = "Donate"
+                )
+            }, headlineContent = { Text(text = stringResource(R.string.sponsor)) })
+    }
+
+    if (showSponsorDialog) {
+        val context = LocalContext.current
+        val assetManager = context.assets
+        val inputStream1: InputStream = assetManager.open("alipay.jpg")
+        val bitmap1: Bitmap = BitmapFactory.decodeStream(inputStream1)
+        val inputStream2: InputStream = assetManager.open("wechat.png")
+        val bitmap2: Bitmap = BitmapFactory.decodeStream(inputStream2)
+        val inputStream3: InputStream = assetManager.open("paypal.jpg")
+        val bitmap3: Bitmap = BitmapFactory.decodeStream(inputStream3)
+        Dialog(
+            onDismissRequest = { showSponsorDialog = false },
+            properties = DialogProperties(
+                usePlatformDefaultWidth = true,
+                dismissOnBackPress = true,
+                dismissOnClickOutside = false
             )
-        }, headlineContent = { Text(text = stringResource(R.string.sponsor)) })
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.background)
+                    .verticalScroll(rememberScrollState())
+            ) {
+                SettingsHeader("Alipay")
+                Image(
+                    bitmap = bitmap1.asImageBitmap(),
+                    contentDescription = "Alipay"
+                )
+                SettingsHeader("Wechat")
+                Image(
+                    bitmap = bitmap2.asImageBitmap(),
+                    contentDescription = "Wechat"
+                )
+                SettingsHeader("Paypal")
+                Image(
+                    bitmap = bitmap3.asImageBitmap(),
+                    contentDescription = "Paypal"
+                )
+            }
+        }
     }
 
     if (showRatingDialog) {

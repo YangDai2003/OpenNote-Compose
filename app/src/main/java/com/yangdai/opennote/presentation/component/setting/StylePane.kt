@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
@@ -34,6 +35,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
@@ -71,6 +74,7 @@ fun StylePane(sharedViewModel: SharedViewModel) {
     )
 
     val isSystemDarkTheme = isSystemInDarkTheme()
+    val hapticFeedback = LocalHapticFeedback.current
 
     Column(
         Modifier
@@ -80,7 +84,7 @@ fun StylePane(sharedViewModel: SharedViewModel) {
 
         Box(
             modifier = Modifier
-                .fillMaxWidth()
+                .sizeIn(maxWidth = 673.dp)
                 .padding(16.dp)
                 .clip(MaterialTheme.shapes.large)
                 .background(MaterialTheme.colorScheme.surfaceContainer)
@@ -98,6 +102,7 @@ fun StylePane(sharedViewModel: SharedViewModel) {
                     .fillMaxWidth()
                     .height(56.dp)
                     .clickable {
+                        hapticFeedback.performHapticFeedback(HapticFeedbackType.SegmentTick)
                         sharedViewModel.putPreferenceValue(
                             Constants.Preferences.APP_COLOR,
                             AppColor.DYNAMIC.toInt()
@@ -140,6 +145,7 @@ fun StylePane(sharedViewModel: SharedViewModel) {
                     selected = settingsState.color == colorSchemePair.first,
                     colorScheme = colorSchemePair.second
                 ) {
+                    hapticFeedback.performHapticFeedback(HapticFeedbackType.SegmentTick)
                     sharedViewModel.putPreferenceValue(
                         Constants.Preferences.APP_COLOR,
                         colorSchemePair.first.toInt()
@@ -159,6 +165,10 @@ fun StylePane(sharedViewModel: SharedViewModel) {
                 modifier = Modifier.padding(start = 20.dp),
                 checked = settingsState.isAppInAmoledMode,
                 onCheckedChange = {
+                    if (it)
+                        hapticFeedback.performHapticFeedback(HapticFeedbackType.ToggleOn)
+                    else
+                        hapticFeedback.performHapticFeedback(HapticFeedbackType.ToggleOff)
                     sharedViewModel.putPreferenceValue(
                         Constants.Preferences.IS_APP_IN_AMOLED_MODE,
                         it
@@ -185,7 +195,7 @@ fun StylePane(sharedViewModel: SharedViewModel) {
                         .selectable(
                             selected = (index == settingsState.theme.toInt()),
                             onClick = {
-
+                                hapticFeedback.performHapticFeedback(HapticFeedbackType.SegmentTick)
                                 if (settingsState.theme.toInt() != index) {
                                     when (index) {
                                         0 -> {

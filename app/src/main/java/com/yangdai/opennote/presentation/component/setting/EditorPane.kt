@@ -32,6 +32,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -45,6 +47,7 @@ import kotlin.math.roundToInt
 fun EditorPane(sharedViewModel: SharedViewModel) {
 
     val settingsState by sharedViewModel.settingsStateFlow.collectAsStateWithLifecycle()
+    val hapticFeedback = LocalHapticFeedback.current
 
     Column(
         Modifier
@@ -72,6 +75,7 @@ fun EditorPane(sharedViewModel: SharedViewModel) {
         Slider(
             value = sliderPosition,
             onValueChange = {
+                hapticFeedback.performHapticFeedback(HapticFeedbackType.SegmentFrequentTick)
                 // Snap to the nearest step
                 val roundedValue = (it / 0.05f).roundToInt() * 0.05f
                 if (roundedValue in 0.75f..1.25f) {
@@ -115,6 +119,7 @@ fun EditorPane(sharedViewModel: SharedViewModel) {
             SegmentedButton(
                 shape = SegmentedButtonDefaults.itemShape(index = 0, count = viewOptions.size),
                 onClick = {
+                    hapticFeedback.performHapticFeedback(HapticFeedbackType.SegmentTick)
                     sharedViewModel.putPreferenceValue(
                         Constants.Preferences.IS_DEFAULT_VIEW_FOR_READING,
                         false
@@ -136,6 +141,7 @@ fun EditorPane(sharedViewModel: SharedViewModel) {
             SegmentedButton(
                 shape = SegmentedButtonDefaults.itemShape(index = 1, count = viewOptions.size),
                 onClick = {
+                    hapticFeedback.performHapticFeedback(HapticFeedbackType.SegmentTick)
                     sharedViewModel.putPreferenceValue(
                         Constants.Preferences.IS_DEFAULT_VIEW_FOR_READING,
                         true
@@ -180,6 +186,7 @@ fun EditorPane(sharedViewModel: SharedViewModel) {
             SegmentedButton(
                 shape = SegmentedButtonDefaults.itemShape(index = 0, count = modeOptions.size),
                 onClick = {
+                    hapticFeedback.performHapticFeedback(HapticFeedbackType.SegmentTick)
                     sharedViewModel.putPreferenceValue(
                         Constants.Preferences.IS_DEFAULT_LITE_MODE,
                         false
@@ -202,6 +209,7 @@ fun EditorPane(sharedViewModel: SharedViewModel) {
             SegmentedButton(
                 shape = SegmentedButtonDefaults.itemShape(index = 1, count = modeOptions.size),
                 onClick = {
+                    hapticFeedback.performHapticFeedback(HapticFeedbackType.SegmentTick)
                     sharedViewModel.putPreferenceValue(
                         Constants.Preferences.IS_DEFAULT_LITE_MODE,
                         true
@@ -237,6 +245,10 @@ fun EditorPane(sharedViewModel: SharedViewModel) {
                 Switch(
                     checked = settingsState.isLintActive,
                     onCheckedChange = { checked ->
+                        if (checked)
+                            hapticFeedback.performHapticFeedback(HapticFeedbackType.ToggleOn)
+                        else
+                            hapticFeedback.performHapticFeedback(HapticFeedbackType.ToggleOff)
                         sharedViewModel.putPreferenceValue(
                             Constants.Preferences.IS_LINT_ACTIVE,
                             checked

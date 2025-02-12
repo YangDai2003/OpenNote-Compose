@@ -17,6 +17,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -31,6 +33,7 @@ fun OrderSectionDialog(
     onDismiss: () -> Unit
 ) {
 
+    val hapticFeedback = LocalHapticFeedback.current
     var newOrder by remember { mutableStateOf(noteOrder) }
 
     val typeOptions = listOf(
@@ -54,7 +57,10 @@ fun OrderSectionDialog(
                             index = 0,
                             count = typeOptions.size
                         ),
-                        onClick = { newOrder = NoteOrder.Title(noteOrder.orderType) },
+                        onClick = {
+                            hapticFeedback.performHapticFeedback(HapticFeedbackType.SegmentTick)
+                            newOrder = NoteOrder.Title(noteOrder.orderType)
+                        },
                         selected = newOrder is NoteOrder.Title
                     ) {
                         Text(typeOptions[0])
@@ -64,7 +70,10 @@ fun OrderSectionDialog(
                             index = 1,
                             count = typeOptions.size
                         ),
-                        onClick = { newOrder = NoteOrder.Date(noteOrder.orderType) },
+                        onClick = {
+                            hapticFeedback.performHapticFeedback(HapticFeedbackType.SegmentTick)
+                            newOrder = NoteOrder.Date(noteOrder.orderType)
+                        },
                         selected = newOrder is NoteOrder.Date
                     ) {
                         Text(typeOptions[1])
@@ -77,7 +86,10 @@ fun OrderSectionDialog(
                             index = 0,
                             count = typeOptions.size
                         ),
-                        onClick = { newOrder = newOrder.copy(OrderType.Ascending) },
+                        onClick = {
+                            hapticFeedback.performHapticFeedback(HapticFeedbackType.SegmentTick)
+                            newOrder = newOrder.copy(OrderType.Ascending)
+                        },
                         selected = newOrder.orderType is OrderType.Ascending
                     ) {
                         Text(orderOptions[0])
@@ -87,7 +99,10 @@ fun OrderSectionDialog(
                             index = 1,
                             count = typeOptions.size
                         ),
-                        onClick = { newOrder = newOrder.copy(OrderType.Descending) },
+                        onClick = {
+                            hapticFeedback.performHapticFeedback(HapticFeedbackType.SegmentTick)
+                            newOrder = newOrder.copy(OrderType.Descending)
+                        },
                         selected = newOrder.orderType is OrderType.Descending
                     ) {
                         Text(orderOptions[1])
@@ -102,6 +117,7 @@ fun OrderSectionDialog(
         },
         confirmButton = {
             Button(onClick = {
+                hapticFeedback.performHapticFeedback(HapticFeedbackType.Confirm)
                 onDismiss()
                 onOrderChange(newOrder)
             }) {

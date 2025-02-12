@@ -4,10 +4,10 @@
     <selectionStates>
       <SelectionState runConfigName="OpenNote.app">
         <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2025-02-08T15:31:56.798146800Z">
+        <DropdownSelection timestamp="2025-02-12T05:19:12.255712400Z">
           <Target type="DEFAULT_BOOT">
             <handle>
-              <DeviceId pluginId="PhysicalDevice" identifier="serial=44090DLJH000NP" />
+              <DeviceId pluginId="LocalEmulator" identifier="path=C:\Users\30415\.android\avd\Small_Phone.avd" />
             </handle>
           </Target>
         </DropdownSelection>
@@ -23,6 +23,9 @@
           </Target>
         </DropdownSelection>
         <DialogSelection />
+      </SelectionState>
+      <SelectionState runConfigName="NumberLockScreenPreview">
+        <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
     </selectionStates>
   </component>

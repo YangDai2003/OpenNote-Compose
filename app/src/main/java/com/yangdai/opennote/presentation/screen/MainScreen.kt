@@ -187,7 +187,7 @@ fun MainScreen(
             DrawerContent(
                 folderNoteCounts = folderNoteCounts,
                 selectedDrawerIndex = selectedDrawerIndex,
-                showLock = settingsState.needPassword,
+                showLock = settingsState.password.isNotEmpty(),
                 onLockClick = {
                     sharedViewModel.authenticated.value = false
                     coroutineScope.launch {
@@ -447,7 +447,7 @@ fun MainScreen(
                             alignment = Alignment.BottomEnd
                         ),
                     onClick = {
-                        hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                        hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
                         sharedViewModel.onListEvent(
                             ListEvent.OpenOrCreateNote(
                                 null,

@@ -23,7 +23,6 @@
     <string name="search_history">Suchverlauf</string>
     <string name="content">Inhalt</string>
     <string name="delete">Löschen</string>
-    <string name="unlock">Entsperren</string>
     <string name="reset_database">Datenbank zurücksetzen</string>
     <string name="shareContent">Willkommen bei \"Open Note\", einer leichtgewichtigen, ästhetisch ansprechenden Anwendung, die dem Material 3-Designstil folgt. Unsere App bietet lokalen Speicher, sodass Sie Ihre Gedanken jederzeit und überall festhalten können, auch ohne Internetverbindung. Die effiziente Suchfunktion hilft Ihnen, Ihre Notizen schnell zu finden, während die Ordnerkategorisierungsfunktion bei der besseren Organisation Ihrer Notizen hilft. Darüber hinaus bietet es eine Texterkennungsfunktion, mit der Text in Bildern in bearbeitbaren Text umgewandelt werden kann. Das Ziel ist es, Ihnen das bequemste und effizienteste Notizen-Erlebnis zu bieten. Herunterladen: https://play.google.com/store/apps/details?id=com.yangdai.opennote</string>
     <string name="remind">Erinnern</string>
@@ -61,7 +60,7 @@
     <string name="reset_database_description">Löschen Sie alle Daten in der Datenbank (einschließlich aller Notizen und Ordner).</string>
     <string name="backup">Sichern</string>
     <string name="recovery">Wiederherstellung</string>
-    <string name="password_description">Wenn die Anwendung kalt gestartet wird, muss der Benutzer sie mit dem Passwort für den Sperrbildschirm des Systems entsperren.</string>
+    <string name="password_description">Beim Kaltstart der App muss der Nutzer zum Entsperren ein vierstelliges Passwort eingeben.</string>
     <string name="date">Datum</string>
     <string name="ascending">Aufsteigend</string>
     <string name="descending">Absteigend</string>
@@ -155,5 +154,11 @@
     <string name="daily">Täglich</string>
     <string name="weekly">Wöchentlich</string>
     <string name="monthly">Monatlich</string>
+    <string name="biometric">Entsperren mit Biometrie</string>
+    <string name="create_password">Erstellen Sie ein vierstelliges Passwort</string>
+    <string name="enter_again">Bitte geben Sie das Passwort noch einmal ein</string>
+    <string name="clean">Bereinigen</string>
+    <string name="free_up_space">Speicherplatz freigeben</string>
+    <string name="free_up_detail">Alle Bilder, Audio- und Videodateien im OpenNote-Ordner, die nicht in den Notizen referenziert werden, werden gelöscht.</string>
 
 </resources>

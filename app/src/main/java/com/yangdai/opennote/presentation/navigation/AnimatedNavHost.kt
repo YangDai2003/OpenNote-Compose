@@ -28,7 +28,7 @@ import com.yangdai.opennote.presentation.util.Constants.LINK
 import com.yangdai.opennote.presentation.util.parseSharedContent
 
 private fun NavHostController.navigateBackWithHapticFeedback(hapticFeedback: HapticFeedback) {
-    hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+    hapticFeedback.performHapticFeedback(HapticFeedbackType.VirtualKey)
     navigateUp()
 }
 

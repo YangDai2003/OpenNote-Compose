@@ -16,9 +16,11 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -34,94 +36,105 @@ fun SettingsDetailPane(
     sharedViewModel: SharedViewModel = hiltViewModel(LocalActivity.current as MainActivity),
     selectedSettingsItem: SettingsItem,
     navigateBackToList: () -> Unit
-) = Scaffold(
-    topBar = {
-        val activity = LocalActivity.current
-        if (currentWindowAdaptiveInfo().windowSizeClass.windowWidthSizeClass == WindowWidthSizeClass.EXPANDED)
-            TopAppBar(
-                title = {
-                    TopBarTitle(title = stringResource(selectedSettingsItem.titleId))
-                },
-                actions = {
-                    if (selectedSettingsItem.index == 4)
-                        IconButton(onClick = {
-                            activity?.requestShowKeyboardShortcuts()
-                        }) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Outlined.HelpOutline,
-                                contentDescription = "Helper"
-                            )
-                        }
-                },
-                colors = TopAppBarDefaults.topAppBarColors()
-                    .copy(scrolledContainerColor = TopAppBarDefaults.topAppBarColors().containerColor)
-            )
-        else
-            LargeTopAppBar(
-                navigationIcon = {
-                    val haptic = LocalHapticFeedback.current
-                    IconButton(onClick = {
-                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                        navigateBackToList()
-                    }) {
-                        Icon(
-                            imageVector = Icons.Outlined.Close,
-                            contentDescription = "Close"
-                        )
-                    }
-                },
-                title = {
-                    TopBarTitle(title = stringResource(selectedSettingsItem.titleId))
-                },
-                actions = {
-                    if (selectedSettingsItem.index == 4)
-                        IconButton(onClick = {
-                            activity?.requestShowKeyboardShortcuts()
-                        }) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Outlined.HelpOutline,
-                                contentDescription = "Helper"
-                            )
-                        }
-                },
-                colors = TopAppBarDefaults.topAppBarColors()
-                    .copy(scrolledContainerColor = TopAppBarDefaults.topAppBarColors().containerColor)
-            )
-    }
 ) {
-    Box(
-        Modifier
-            .fillMaxSize()
-            .padding(it),
-        contentAlignment = Alignment.Center
+    val activity = LocalActivity.current
+    val isExpended =
+        currentWindowAdaptiveInfo().windowSizeClass.windowWidthSizeClass == WindowWidthSizeClass.EXPANDED
+    val scrollBehavior =
+        if (isExpended) TopAppBarDefaults.pinnedScrollBehavior() else TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+    val modifier =
+        remember(scrollBehavior) { Modifier.nestedScroll(scrollBehavior.nestedScrollConnection) }
+    Scaffold(
+        modifier = modifier,
+        topBar = {
+            if (isExpended)
+                TopAppBar(
+                    title = {
+                        TopBarTitle(title = stringResource(selectedSettingsItem.titleId))
+                    },
+                    actions = {
+                        if (selectedSettingsItem.index == 4)
+                            IconButton(onClick = {
+                                activity?.requestShowKeyboardShortcuts()
+                            }) {
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Outlined.HelpOutline,
+                                    contentDescription = "Helper"
+                                )
+                            }
+                    },
+                    scrollBehavior = scrollBehavior,
+                    colors = TopAppBarDefaults.topAppBarColors()
+                        .copy(scrolledContainerColor = TopAppBarDefaults.topAppBarColors().containerColor)
+                )
+            else
+                LargeTopAppBar(
+                    navigationIcon = {
+                        val haptic = LocalHapticFeedback.current
+                        IconButton(onClick = {
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            navigateBackToList()
+                        }) {
+                            Icon(
+                                imageVector = Icons.Outlined.Close,
+                                contentDescription = "Close"
+                            )
+                        }
+                    },
+                    title = {
+                        TopBarTitle(title = stringResource(selectedSettingsItem.titleId))
+                    },
+                    actions = {
+                        if (selectedSettingsItem.index == 4)
+                            IconButton(onClick = {
+                                activity?.requestShowKeyboardShortcuts()
+                            }) {
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Outlined.HelpOutline,
+                                    contentDescription = "Helper"
+                                )
+                            }
+                    },
+                    scrollBehavior = scrollBehavior,
+                    colors = TopAppBarDefaults.topAppBarColors()
+                        .copy(scrolledContainerColor = TopAppBarDefaults.topAppBarColors().containerColor)
+                )
+        }
     ) {
-        when (selectedSettingsItem.index) {
-            0 -> {
-                StylePane(sharedViewModel = sharedViewModel)
-            }
+        Box(
+            Modifier
+                .fillMaxSize()
+                .padding(it),
+            contentAlignment = Alignment.Center
+        ) {
+            when (selectedSettingsItem.index) {
+                0 -> {
+                    StylePane(sharedViewModel = sharedViewModel)
+                }
 
-            1 -> {
-                DataPane(sharedViewModel = sharedViewModel)
-            }
+                1 -> {
+                    DataPane(sharedViewModel = sharedViewModel)
+                }
 
-            2 -> {
-                AccountPane()
-            }
+                2 -> {
+                    AccountPane()
+                }
 
-            3 -> {
-                AboutPane()
-            }
+                3 -> {
+                    AboutPane()
+                }
 
-            4 -> {
-                EditorPane(sharedViewModel = sharedViewModel)
-            }
+                4 -> {
+                    EditorPane(sharedViewModel = sharedViewModel)
+                }
 
-            5 -> {
-                TemplatePane(sharedViewModel = sharedViewModel)
-            }
+                5 -> {
+                    TemplatePane(sharedViewModel = sharedViewModel)
+                }
 
-            6 -> {
-                SecurityPane(sharedViewModel = sharedViewModel)
+                6 -> {
+                    SecurityPane(sharedViewModel = sharedViewModel)
+                }
             }
         }
     }
