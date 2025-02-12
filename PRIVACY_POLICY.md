@@ -11,7 +11,7 @@ Open Note does not collect any personal or confidential information such as addr
 
 The app requires the following permissions, as listed in the `AndroidManifest.xml` file:
 
-https://github.com/YangDai2003/OpenNote-Compose/blob/e04804999016469d47e61cd98c59a1a65832f2f1/app/src/main/AndroidManifest.xml#L5-L10
+https://github.com/YangDai2003/OpenNote-Compose/blob/4bc1cafa7368d81c539a09374e95d9859ab170a4/app/src/main/AndroidManifest.xml#L4-L7
 
 | Permission                         | Purpose                                                    |
 |------------------------------------|------------------------------------------------------------|
