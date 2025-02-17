@@ -35,6 +35,8 @@ object Constants {
         const val TIME_FORMATTER = "TIME_FORMATTER"
         const val IS_SCREEN_PROTECTED = "IS_SCREEN_PROTECTED"
         const val FONT_SCALE = "FONT_SCALE"
+        const val ENUM_OVERFLOW_STYLE = "ENUM_OVERFLOW_STYLE"
+        const val ENUM_CONTENT_SIZE = "ENUM_WIDGET_SIZE"
     }
 
     object Editor {

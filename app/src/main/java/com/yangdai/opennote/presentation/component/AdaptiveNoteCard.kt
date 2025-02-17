@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Circle
 import androidx.compose.material3.Card
@@ -34,6 +33,8 @@ fun AdaptiveNoteCard(
     modifier: Modifier = Modifier,
     isListView: Boolean,
     note: NoteEntity,
+    maxLines: Int,
+    textOverflow: TextOverflow,
     isEnabled: Boolean,
     isSelected: Boolean,
     onNoteClick: (NoteEntity) -> Unit,
@@ -41,6 +42,8 @@ fun AdaptiveNoteCard(
 ) = if (isListView) ColumnNoteCard(
     modifier = modifier,
     note = note,
+    maxLines = maxLines,
+    textOverflow = textOverflow,
     isEnabled = isEnabled,
     isSelected = isSelected,
     onNoteClick = onNoteClick,
@@ -49,6 +52,8 @@ fun AdaptiveNoteCard(
 else GridNoteCard(
     modifier = modifier,
     note = note,
+    maxLines = maxLines,
+    textOverflow = textOverflow,
     isEnabled = isEnabled,
     isSelected = isSelected,
     onNoteClick = onNoteClick,
@@ -58,7 +63,9 @@ else GridNoteCard(
 @Composable
 private fun NoteCardContent(
     modifier: Modifier = Modifier,
-    note: NoteEntity
+    note: NoteEntity,
+    textOverflow: TextOverflow,
+    maxLines: Int
 ) = Column(
     modifier = modifier
         .fillMaxWidth()
@@ -82,7 +89,8 @@ private fun NoteCardContent(
             text = note.content,
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            overflow = TextOverflow.Ellipsis
+            overflow = textOverflow,
+            maxLines = maxLines
         )
     }
 }
@@ -93,6 +101,8 @@ private fun NoteCardContent(
 fun GridNoteCard(
     modifier: Modifier = Modifier,
     note: NoteEntity,
+    maxLines: Int,
+    textOverflow: TextOverflow,
     isEnabled: Boolean,
     isSelected: Boolean,
     onNoteClick: (NoteEntity) -> Unit,
@@ -104,7 +114,6 @@ fun GridNoteCard(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .sizeIn(minHeight = 80.dp, maxHeight = 360.dp)
             .combinedClickable(
                 onLongClick = { onEnableChange(true) },
                 onClick = { onNoteClick(note) })
@@ -116,7 +125,7 @@ fun GridNoteCard(
                 .padding(10.dp)
                 .align(Alignment.TopEnd)
         )
-        NoteCardContent(note = note)
+        NoteCardContent(note = note, textOverflow = textOverflow, maxLines = maxLines)
     }
 }
 
@@ -125,6 +134,8 @@ fun GridNoteCard(
 fun ColumnNoteCard(
     modifier: Modifier = Modifier,
     note: NoteEntity,
+    maxLines: Int,
+    textOverflow: TextOverflow,
     isEnabled: Boolean,
     isSelected: Boolean,
     onNoteClick: (NoteEntity) -> Unit,
@@ -158,7 +169,7 @@ fun ColumnNoteCard(
 
         Text(
             modifier = Modifier.align(Alignment.CenterEnd),
-            text = if (note.isMarkdown) stringResource(R.string.standard_mode) else stringResource(R.string.lite_mode),
+            text = stringResource(if (note.isMarkdown) R.string.standard_mode else R.string.lite_mode),
             style = MaterialTheme.typography.bodyMedium,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis
@@ -175,7 +186,6 @@ fun ColumnNoteCard(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .sizeIn(minHeight = 80.dp, maxHeight = 360.dp)
                 .combinedClickable(onLongClick = {
                     onEnableChange(true)
                 }, onClick = { onNoteClick(note) })
@@ -187,7 +197,7 @@ fun ColumnNoteCard(
                     .padding(10.dp)
                     .align(Alignment.TopEnd)
             )
-            NoteCardContent(note = note)
+            NoteCardContent(note = note, textOverflow = textOverflow, maxLines = maxLines)
         }
     }
 }

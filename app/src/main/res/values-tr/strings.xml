@@ -18,12 +18,20 @@
     <string name="light">Kapalı</string>
     <string name="dark">Açık</string>
     <string name="dynamic_only_android_12">Dinamik renk</string>
-    <string name="edited">"Düzenlendi: "</string>
+    <string name="edited">Düzenlendi</string>
     <string name="search_history">Arama geçmişi</string>
     <string name="content">İçerik</string>
     <string name="delete">Sil</string>
     <string name="reset_database">Veritabanını sıfırla</string>
-    <string name="shareContent">\"Open Note\" uygulamasına hoş geldiniz, hafif, estetik açıdan hoş bir uygulamadır ve Material 3 tasarım stiline uyar. Uygulamamız, internet bağlantısı olmadan dahi düşüncelerinizi yazmanıza olanak tanır. Verimli arama fonksiyonu, notlarınıza hızlıca ulaşmanıza yardımcı olurken, klasör kategorilendirme özelliği notlarınızı daha iyi organize etmenizi sağlar. Ayrıca, metin OCR özelliği sayesinde görsellerdeki metinleri düzenlenebilir metne dönüştürebilirsiniz. Amacımız, size en rahat ve verimli not alma deneyimini sunmaktır. İndir: https://play.google.com/store/apps/details?id=com.yangdai.opennote</string>
+    <string name="shareContent">
+        OpenNote, tamamen Compose kullanılarak geliştirilmiş modern bir Android not alma uygulamasıdır.\n
+        Notlar ve klasörler oluşturmanıza, düzenlemenize ve silmenize olanak tanır, sıralama ve filtreleme desteği sunar; ayrıca çöp kutusu, arama ve değiştirme, not şablonları, yerel resim/video/ses dosyası içe aktarma, Markdown, LaTeX matematik formülleri ve Mermaid diyagram desteği gibi gelişmiş özelliklere sahiptir.\n
+        Uygulama, tüm cihaz boyutlarına uygun responsive bir tasarıma sahiptir.\n
+        Hemen indirip deneyin:\n
+        - [Google Play](https://play.google.com/store/apps/details?id=com.yangdai.opennote)\n
+        - [IzzyOnDroid](https://apt.izzysoft.de/fdroid/index/apk/com.yangdai.opennote)\n
+        - [GitHub](https://github.com/YangDai2003/OpenNote-Compose/releases)\n
+    </string>
     <string name="remind">Hatırlat</string>
     <string name="restore_all">Hepsini geri yükle</string>
     <string name="delete_all">Hepsini sil</string>
@@ -159,4 +167,18 @@
     <string name="clean">Temizle</string>
     <string name="free_up_space">Alan boşalt</string>
     <string name="free_up_detail">OpenNote klasöründeki notlarda referans verilmeyen tüm görüntü, ses ve video kaynakları silinecektir.</string>
+    <string name="text_overflow">Metin taşması</string>
+    <string name="card_size">Kart boyutu</string>
+    <string name="ellipsis">Elipsler</string>
+    <string name="clip">Klip</string>
+    <string name="default_size">Normal</string>
+    <string name="compact">Küçük</string>
+    <string name="flat">Büyük</string>
+    <string name="overview">Genel bakış</string>
+    <string name="char_count">Karakter</string>
+    <string name="word_count">Kelime</string>
+    <string name="word_count_without_punctuation">Kelime (noktalama işaretleri hariç)</string>
+    <string name="line_count">Satır</string>
+    <string name="paragraph_count">Paragraf</string>
+    <string name="outline">Anahat</string>
 </resources>

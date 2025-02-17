@@ -1,4 +1,4 @@
-package com.yangdai.opennote.presentation.component.text
+package com.yangdai.opennote.presentation.component.note
 
 import android.content.ClipData
 import androidx.compose.animation.AnimatedVisibility
@@ -14,13 +14,16 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.SolidColor
@@ -32,6 +35,7 @@ import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import com.yangdai.opennote.R
@@ -49,6 +53,7 @@ fun LiteTextField(
     readMode: Boolean = false,
     state: TextFieldState,
     searchWord: String,
+    headerRange: IntRange?,
     onFocusChanged: (Boolean) -> Unit,
     onTemplateClick: () -> Unit
 ) {
@@ -85,6 +90,18 @@ fun LiteTextField(
             }
         }
     }
+    var textLayoutResult by remember { mutableStateOf<TextLayoutResult?>(null) }
+    val scrollState = rememberScrollState()
+    LaunchedEffect(headerRange) {
+        headerRange?.let {
+            // 获取该位置的文本边界
+            val bounds = textLayoutResult!!.getBoundingBox(headerRange.first)
+            // 计算滚动位置
+            val scrollPosition = (bounds.top - 50f).toInt().coerceAtLeast(0)
+            // 执行滚动
+            scrollState.animateScrollTo(scrollPosition)
+        }
+    }
 
     Column(modifier = modifier) {
         BasicTextField(
@@ -94,6 +111,7 @@ fun LiteTextField(
                 .weight(1f)
                 .contentReceiver(receiveContentListener)
                 .onFocusChanged { onFocusChanged(it.isFocused) }
+                .verticalScroll(scrollState)
                 .onPreviewKeyEvent { keyEvent ->
                     if (keyEvent.type == KeyEventType.KeyDown) {
                         if (keyEvent.isCtrlPressed) {
@@ -193,6 +211,9 @@ fun LiteTextField(
             },
             textStyle = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface),
             cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+            onTextLayout = { result ->
+                textLayoutResult = result
+            },
             decorationBox = { innerTextField ->
                 Box {
                     if (textFieldValue.text.isEmpty()) {

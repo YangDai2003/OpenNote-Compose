@@ -3,9 +3,7 @@ package com.yangdai.opennote.presentation.component.login
 import android.annotation.SuppressLint
 import android.os.Build
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.repeatable
 import androidx.compose.animation.core.tween
@@ -31,6 +29,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Backspace
 import androidx.compose.material.icons.filled.Fingerprint
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ButtonShapes
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -44,7 +45,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
@@ -433,6 +433,7 @@ fun NumberPad(
     }
 }
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun NumberButton(
     size: Dp,
@@ -443,32 +444,21 @@ fun NumberButton(
     val isPressed by interactionSource.collectIsPressedAsState()
     val hapticFeedback = LocalHapticFeedback.current
 
-    val cornerRadius by animateDpAsState(
-        targetValue = if (isPressed) 16.dp else 50.dp,
-        animationSpec = tween(durationMillis = 180, easing = FastOutSlowInEasing),
-        label = ""
-    )
-    val shape: Shape = RoundedCornerShape(cornerRadius)
-
     val animatedColor by animateColorAsState(
         targetValue = if (isPressed) MaterialTheme.colorScheme.secondaryContainer
         else MaterialTheme.colorScheme.surfaceBright,
         label = ""
     )
 
-    Box(
-        modifier = Modifier
-            .size(size)
-            .clip(shape)
-            .background(animatedColor)
-            .clickable(
-                interactionSource = interactionSource,
-                indication = null
-            ) {
-                hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
-                onNumberClick(number)
-            },
-        contentAlignment = Alignment.Center
+    TextButton(
+        modifier = Modifier.size(size),
+        shapes = ButtonShapes(shape = CircleShape, pressedShape = RoundedCornerShape(16.dp)),
+        colors = ButtonDefaults.textButtonColors(containerColor = animatedColor),
+        interactionSource = interactionSource,
+        onClick = {
+            hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
+            onNumberClick(number)
+        }
     ) {
         Text(
             text = number,

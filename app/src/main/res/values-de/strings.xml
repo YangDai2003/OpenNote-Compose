@@ -19,12 +19,20 @@
     <string name="light">Aus</string>
     <string name="dark">Ein</string>
     <string name="dynamic_only_android_12">Dynamische Farbe</string>
-    <string name="edited">Bearbeitet: </string>
+    <string name="edited">Bearbeitet</string>
     <string name="search_history">Suchverlauf</string>
     <string name="content">Inhalt</string>
     <string name="delete">Löschen</string>
     <string name="reset_database">Datenbank zurücksetzen</string>
-    <string name="shareContent">Willkommen bei \"Open Note\", einer leichtgewichtigen, ästhetisch ansprechenden Anwendung, die dem Material 3-Designstil folgt. Unsere App bietet lokalen Speicher, sodass Sie Ihre Gedanken jederzeit und überall festhalten können, auch ohne Internetverbindung. Die effiziente Suchfunktion hilft Ihnen, Ihre Notizen schnell zu finden, während die Ordnerkategorisierungsfunktion bei der besseren Organisation Ihrer Notizen hilft. Darüber hinaus bietet es eine Texterkennungsfunktion, mit der Text in Bildern in bearbeitbaren Text umgewandelt werden kann. Das Ziel ist es, Ihnen das bequemste und effizienteste Notizen-Erlebnis zu bieten. Herunterladen: https://play.google.com/store/apps/details?id=com.yangdai.opennote</string>
+    <string name="shareContent">
+        OpenNote ist eine moderne Android-Notizen-App, die vollständig mit Compose entwickelt wurde.\n
+        Sie ermöglicht es dir, Notizen und Ordner zu erstellen, zu bearbeiten und zu löschen, unterstützt das Sortieren und Filtern und bietet einen Papierkorb sowie fortschrittliche Funktionen wie Suchen und Ersetzen, Notizvorlagen, den Import lokaler Bilder/Videos/Audiodateien, Markdown, LaTeX-Mathematikformeln und Mermaid-Diagrammunterstützung.\n
+        Die App verfügt über ein responsives Design, das sie für Geräte jeder Größe geeignet macht.\n
+        Lade sie jetzt herunter und probiere sie aus:\n
+        - [Google Play](https://play.google.com/store/apps/details?id=com.yangdai.opennote)\n
+        - [IzzyOnDroid](https://apt.izzysoft.de/fdroid/index/apk/com.yangdai.opennote)\n
+        - [GitHub](https://github.com/YangDai2003/OpenNote-Compose/releases)\n
+    </string>
     <string name="remind">Erinnern</string>
     <string name="restore_all">Alles wiederherstellen</string>
     <string name="delete_all">Alles löschen</string>
@@ -160,5 +168,18 @@
     <string name="clean">Bereinigen</string>
     <string name="free_up_space">Speicherplatz freigeben</string>
     <string name="free_up_detail">Alle Bilder, Audio- und Videodateien im OpenNote-Ordner, die nicht in den Notizen referenziert werden, werden gelöscht.</string>
-
+    <string name="text_overflow">Textüberlauf</string>
+    <string name="card_size">Kartengröße</string>
+    <string name="ellipsis">Ellipsen</string>
+    <string name="clip">Ausschnitt</string>
+    <string name="default_size">Normal</string>
+    <string name="compact">Klein</string>
+    <string name="flat">Ganz</string>
+    <string name="overview">Überblick</string>
+    <string name="char_count">Zeichen</string>
+    <string name="word_count">Wörter</string>
+    <string name="word_count_without_punctuation">Wörter (ohne Satzzeichen)</string>
+    <string name="line_count">Zeilen</string>
+    <string name="paragraph_count">Absätze</string>
+    <string name="outline">Gliederung</string>
 </resources>

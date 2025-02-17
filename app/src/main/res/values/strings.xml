@@ -19,12 +19,20 @@
     <string name="light">Off</string>
     <string name="dark">On</string>
     <string name="dynamic_only_android_12">Dynamic color</string>
-    <string name="edited">"Edited: "</string>
+    <string name="edited">Edited</string>
     <string name="search_history">Search history</string>
     <string name="content">Content</string>
     <string name="delete">Delete</string>
     <string name="reset_database">Reset database</string>
-    <string name="shareContent">Welcome to \"Open Note\", a lightweight, aesthetically pleasing application that adheres to the Material 3 design style. Our app offers local storage, allowing you to jot down your thoughts anytime, anywhere, even without an internet connection. The efficient search function helps you quickly locate your notes, while the folder categorization feature aids in better organization of your notes. Additionally, it provides a text OCR feature, capable of converting text in images into editable text. The goal is to provide you with the most convenient and efficient note-taking experience. Download: https://play.google.com/store/apps/details?id=com.yangdai.opennote</string>
+    <string name="shareContent">
+        OpenNote is a modern Android note-taking app built entirely with Compose.\n
+        It allows you to create, edit, and delete notes and folders, supports sorting and filtering, and features a trash bin along with advanced functionalities such as find and replace, note templates, local image/video/audio import, Markdown, LaTeX math formulas, and Mermaid diagram support.\n
+        The app boasts a responsive design, making it suitable for devices of all sizes.\n
+        Download and try it now:\n
+        - [Google Play](https://play.google.com/store/apps/details?id=com.yangdai.opennote)\n
+        - [IzzyOnDroid](https://apt.izzysoft.de/fdroid/index/apk/com.yangdai.opennote)\n
+        - [GitHub](https://github.com/YangDai2003/OpenNote-Compose/releases)\n
+    </string>
     <string name="remind">Remind</string>
     <string name="restore_all">All restore</string>
     <string name="delete_all">All delete</string>
@@ -101,7 +109,7 @@
     <string name="pass">Password</string>
     <string name="color_picker">Color Picker</string>
     <string name="navigate_back">Navigate back</string>
-    <string name="mode">mode</string>
+    <string name="mode">Mode</string>
     <string name="standard_mode">Standard</string>
     <string name="editor">Editor</string>
     <string name="editor_description">Default view • Default editing mode</string>
@@ -162,4 +170,18 @@
     <string name="clean">Clean</string>
     <string name="free_up_space">Free up space</string>
     <string name="free_up_detail">All images, audio and video resources in the OpenNote folder that are not referenced in the notes will be deleted.</string>
+    <string name="text_overflow">Text overflow</string>
+    <string name="card_size">Card size</string>
+    <string name="ellipsis">Ellipsis</string>
+    <string name="clip">Clip</string>
+    <string name="default_size">Normal</string>
+    <string name="compact">Compact</string>
+    <string name="flat">Flat</string>
+    <string name="overview">Overview</string>
+    <string name="char_count">Characters</string>
+    <string name="word_count">Words</string>
+    <string name="word_count_without_punctuation">Words (excluding punctuation)</string>
+    <string name="line_count">Lines</string>
+    <string name="paragraph_count">Paragraphs</string>
+    <string name="outline">Outline</string>
 </resources>

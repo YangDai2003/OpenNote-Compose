@@ -1,6 +1,6 @@
 @file:Suppress("DEPRECATION", "unused")
 
-package com.yangdai.opennote.presentation.component.text
+package com.yangdai.opennote.presentation.component.note
 
 import android.annotation.SuppressLint
 import android.app.Activity

@@ -101,6 +101,8 @@ import com.yangdai.opennote.presentation.component.dialog.ProgressDialog
 import com.yangdai.opennote.presentation.event.DatabaseEvent
 import com.yangdai.opennote.presentation.event.ListEvent
 import com.yangdai.opennote.presentation.navigation.Screen
+import com.yangdai.opennote.presentation.state.ListNoteContentOverflowStyle
+import com.yangdai.opennote.presentation.state.ListNoteContentSize
 import com.yangdai.opennote.presentation.viewmodel.SharedViewModel
 import kotlinx.coroutines.launch
 
@@ -315,6 +317,22 @@ fun MainScreen(
                         }
                     )
                 }
+//                else {
+//                    AdaptiveSearchbar2 (
+//                        modifier = Modifier
+//                            .semantics { traversalIndex = 0f },
+//                        enabled = !isMultiSelectionModeEnabled,
+//                        isLargeScreen = isLargeScreen,
+//                        searchBarState = rememberSearchBarState(),
+//                        onDrawerStateChange = {
+//                            coroutineScope.launch {
+//                                drawerState.apply {
+//                                    if (isClosed) open() else close()
+//                                }
+//                            }
+//                        }
+//                    )
+//                }
             },
             bottomBar = {
                 AnimatedVisibility(
@@ -536,7 +554,19 @@ fun MainScreen(
                             bottom = innerPadding.calculateBottomPadding()
                         )
                     }
-
+                val textOverflow = remember(settingsState.enumOverflowStyle) {
+                    when (settingsState.enumOverflowStyle) {
+                        ListNoteContentOverflowStyle.CLIP -> TextOverflow.Clip
+                        else -> TextOverflow.Ellipsis
+                    }
+                }
+                val maxLines = remember(settingsState.enumContentSize) {
+                    when (settingsState.enumContentSize) {
+                        ListNoteContentSize.DEFAULT -> 12
+                        ListNoteContentSize.COMPACT -> 6
+                        else -> Int.MAX_VALUE
+                    }
+                }
                 LazyVerticalStaggeredGrid(
                     modifier = Modifier
                         .fillMaxSize()
@@ -561,6 +591,8 @@ fun MainScreen(
                                     .animateItem(),
                                 isListView = settingsState.isListView,
                                 note = note,
+                                maxLines = maxLines,
+                                textOverflow = textOverflow,
                                 isEnabled = isMultiSelectionModeEnabled,
                                 isSelected = selectedNotes.contains(note),
                                 onEnableChange = { isMultiSelectionModeEnabled = it },

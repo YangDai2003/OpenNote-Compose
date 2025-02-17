@@ -96,8 +96,8 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastJoinToString
@@ -108,7 +108,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.yangdai.opennote.MainActivity
 import com.yangdai.opennote.R
 import com.yangdai.opennote.data.local.entity.NoteEntity
-import com.yangdai.opennote.presentation.component.TemplateFilesList
+import com.yangdai.opennote.presentation.component.note.TemplateFilesList
 import com.yangdai.opennote.presentation.component.dialog.AudioSelectionDialog
 import com.yangdai.opennote.presentation.component.dialog.ExportDialog
 import com.yangdai.opennote.presentation.component.dialog.FolderListDialog
@@ -119,22 +119,28 @@ import com.yangdai.opennote.presentation.component.dialog.ShareDialog
 import com.yangdai.opennote.presentation.component.dialog.ShareType
 import com.yangdai.opennote.presentation.component.dialog.TableDialog
 import com.yangdai.opennote.presentation.component.dialog.TaskDialog
-import com.yangdai.opennote.presentation.component.text.FindAndReplaceField
-import com.yangdai.opennote.presentation.component.text.FindAndReplaceState
-import com.yangdai.opennote.presentation.component.text.LiteTextField
-import com.yangdai.opennote.presentation.component.text.MarkdownEditorRow
-import com.yangdai.opennote.presentation.component.text.ReadView
-import com.yangdai.opennote.presentation.component.text.StandardTextField
+import com.yangdai.opennote.presentation.component.note.FindAndReplaceField
+import com.yangdai.opennote.presentation.component.note.FindAndReplaceState
+import com.yangdai.opennote.presentation.component.note.LiteTextField
+import com.yangdai.opennote.presentation.component.note.MarkdownEditorRow
+import com.yangdai.opennote.presentation.component.note.NoteSideSheet
+import com.yangdai.opennote.presentation.component.note.NoteSideSheetItem
+import com.yangdai.opennote.presentation.component.note.OutlineView
+import com.yangdai.opennote.presentation.component.note.ReadView
+import com.yangdai.opennote.presentation.component.note.StandardTextField
 import com.yangdai.opennote.presentation.event.DatabaseEvent
 import com.yangdai.opennote.presentation.event.NoteEvent
 import com.yangdai.opennote.presentation.event.UiEvent
+import com.yangdai.opennote.presentation.state.TextState
 import com.yangdai.opennote.presentation.util.Constants
 import com.yangdai.opennote.presentation.util.SharedContent
 import com.yangdai.opennote.presentation.util.TemplateProcessor
 import com.yangdai.opennote.presentation.util.getOrCreateDirectory
 import com.yangdai.opennote.presentation.util.timestampToFormatLocalDateTime
 import com.yangdai.opennote.presentation.viewmodel.SharedViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
 import kotlin.math.abs
 
@@ -150,6 +156,7 @@ fun NoteScreen(
     val noteState by sharedViewModel.noteStateFlow.collectAsStateWithLifecycle()
     val folderNoteCounts by sharedViewModel.folderWithNoteCountsFlow.collectAsStateWithLifecycle()
     val html by sharedViewModel.html.collectAsStateWithLifecycle()
+    val outline by sharedViewModel.outline.collectAsStateWithLifecycle()
     val actionState by sharedViewModel.dataActionStateFlow.collectAsStateWithLifecycle()
     val settingsState by sharedViewModel.settingsStateFlow.collectAsStateWithLifecycle()
 
@@ -171,7 +178,7 @@ fun NoteScreen(
     var isReadView by remember { mutableStateOf(initialReadView) }
     var isEditorAndPreviewSynced by remember { mutableStateOf(false) }
     var isSearching by remember { mutableStateOf(false) }
-
+    var headerRange by remember { mutableStateOf<IntRange?>(null) }
     var findAndReplaceState by remember { mutableStateOf(FindAndReplaceState()) }
     LaunchedEffect(findAndReplaceState.searchWord, sharedViewModel.contentState.text) {
         findAndReplaceState = findAndReplaceState.copy(
@@ -180,6 +187,7 @@ fun NoteScreen(
         )
     }
 
+    var isDrawerOpen by rememberSaveable { mutableStateOf(false) }
     var showFolderDialog by rememberSaveable { mutableStateOf(false) }
     var showListDialog by rememberSaveable { mutableStateOf(false) }
     var showTableDialog by rememberSaveable { mutableStateOf(false) }
@@ -295,12 +303,12 @@ fun NoteScreen(
                         }
                     }
                 } else false
-            },
-        topBar = {
+            }, topBar = {
             TopAppBar(title = {
-                FilledTonalButton(modifier = Modifier.sizeIn(maxWidth = 160.dp), onClick = {
-                    showFolderDialog = true
-                }) {
+                FilledTonalButton(
+                    modifier = Modifier.sizeIn(maxWidth = 160.dp),
+                    onClick = { showFolderDialog = true }
+                ) {
                     Text(
                         text = folderName, maxLines = 1, modifier = Modifier.basicMarquee()
                     )
@@ -447,8 +455,7 @@ fun NoteScreen(
                         onClick = { triggerPrint.value = true })
                 }
             })
-        },
-        bottomBar = {
+        }, bottomBar = {
             if (noteState.isStandard) AnimatedVisibility(
                 visible = !isReadView,
                 enter = slideInVertically { fullHeight -> fullHeight },
@@ -480,8 +487,7 @@ fun NoteScreen(
                     },
                     onTemplateClick = {
                         showTemplateBottomSheet = true
-                    }
-                )
+                    })
             }
         }) { paddingValues ->
         Column(
@@ -495,15 +501,16 @@ fun NoteScreen(
                     isStandard = noteState.isStandard,
                     state = findAndReplaceState,
                     onStateUpdate = { findAndReplaceState = it })
-                else Column(
+                else Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp)
+                        .padding(start = 16.dp, end = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     // 标题文本
                     BasicTextField(
                         modifier = Modifier
-                            .fillMaxWidth()
+                            .weight(1f)
                             .onFocusChanged { isTitleFocused = it.isFocused },
                         state = sharedViewModel.titleState,
                         readOnly = isReadView,
@@ -525,35 +532,12 @@ fun NoteScreen(
                             }
                         })
 
-                    // 笔记信息
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
+                    IconButton(
+                        onClick = { isDrawerOpen = true }
                     ) {
-
-                        Text(
-                            text = """${stringResource(R.string.edited)}$timestamp""",
-                            style = MaterialTheme.typography.titleSmall.copy(
-                                lineHeightStyle = LineHeightStyle(
-                                    trim = LineHeightStyle.Trim.None,
-                                    alignment = LineHeightStyle.Alignment.Proportional
-                                )
-                            ),
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-
-                        Text(
-                            text = if (noteState.isStandard) stringResource(R.string.standard_mode) else stringResource(
-                                R.string.lite_mode
-                            ),
-                            style = MaterialTheme.typography.titleSmall.copy(
-                                lineHeightStyle = LineHeightStyle(
-                                    trim = LineHeightStyle.Trim.None,
-                                    alignment = LineHeightStyle.Alignment.Proportional
-                                )
-                            ),
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        Icon(
+                            painter = painterResource(R.drawable.right_panel_open),
+                            contentDescription = "Open Drawer"
                         )
                     }
                 }
@@ -571,10 +555,10 @@ fun NoteScreen(
                 modifier = Modifier.fillMaxSize(),
                 readMode = isReadView,
                 state = sharedViewModel.contentState,
+                headerRange = headerRange,
                 searchWord = findAndReplaceState.searchWord,
                 onFocusChanged = { isContentFocused = it },
-                onTemplateClick = { showTemplateBottomSheet = true }
-            )
+                onTemplateClick = { showTemplateBottomSheet = true })
             else {
 
                 val scrollState = rememberScrollState()
@@ -598,6 +582,7 @@ fun NoteScreen(
                             state = sharedViewModel.contentState,
                             scrollState = scrollState,
                             isLintActive = settingsState.isLintActive,
+                            headerRange = headerRange,
                             findAndReplaceState = findAndReplaceState,
                             onFindAndReplaceUpdate = { findAndReplaceState = it },
                             onTableButtonClick = { showTableDialog = true },
@@ -677,6 +662,7 @@ fun NoteScreen(
                                 readMode = isReadView,
                                 scrollState = scrollState,
                                 isLintActive = settingsState.isLintActive,
+                                headerRange = headerRange,
                                 findAndReplaceState = findAndReplaceState,
                                 onFindAndReplaceUpdate = { findAndReplaceState = it },
                                 onTableButtonClick = { showTableDialog = true },
@@ -728,6 +714,82 @@ fun NoteScreen(
         }
     }
 
+    NoteSideSheet(
+        modifier = Modifier.fillMaxSize(),
+        isDrawerOpen = isDrawerOpen,
+        onDismiss = { isDrawerOpen = false },
+        isLargeScreen = isLargeScreen,
+        showMask = true,
+        drawerContent = {
+            NoteSideSheetItem(
+                key = "UUID",
+                value = noteState.id.toString(),
+                shouldFormat = false
+            )
+
+            NoteSideSheetItem(
+                key = stringResource(R.string.edited),
+                value = timestamp
+            )
+
+            NoteSideSheetItem(
+                key = stringResource(R.string.mode),
+                value = if (noteState.isStandard) stringResource(R.string.standard_mode)
+                else stringResource(R.string.lite_mode)
+            )
+
+            var textState by remember { mutableStateOf(TextState()) }
+
+            LaunchedEffect(Unit) {
+                withContext(Dispatchers.Default) {
+                    textState = TextState.fromText(sharedViewModel.contentState.text)
+                }
+            }
+
+            NoteSideSheetItem(
+                key = stringResource(R.string.char_count),
+                value = textState.charCount.toString()
+            )
+
+            NoteSideSheetItem(
+                key = stringResource(R.string.word_count),
+                value = textState.wordCountWithPunctuation.toString()
+            )
+
+            NoteSideSheetItem(
+                key = stringResource(R.string.word_count_without_punctuation),
+                value = textState.wordCountWithoutPunctuation.toString()
+            )
+
+            NoteSideSheetItem(
+                key = stringResource(R.string.line_count),
+                value = textState.lineCount.toString()
+            )
+
+            NoteSideSheetItem(
+                key = stringResource(R.string.paragraph_count),
+                value = textState.paragraphCount.toString()
+            )
+
+            HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
+
+            if (outline.children.isNotEmpty())
+                Text(
+                    modifier = Modifier.padding(bottom = 8.dp),
+                    text = stringResource(R.string.outline),
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    fontWeight = FontWeight.Bold
+                )
+
+            OutlineView(
+                outline = outline,
+                onHeaderClick = { range ->
+                    headerRange = range
+                }
+            )
+        })
+
     if (showAudioDialog) {
         AudioSelectionDialog(
             rootUri = settingsState.storagePath.toUri(),
@@ -735,13 +797,11 @@ fun NoteScreen(
             onAudioSelected = {
                 sharedViewModel.onNoteEvent(
                     NoteEvent.Edit(
-                        Constants.Editor.TEXT,
-                        "<audio src=\"$it\" controls></audio>"
+                        Constants.Editor.TEXT, "<audio src=\"$it\" controls></audio>"
                     )
                 )
                 showAudioDialog = false
-            }
-        )
+            })
     }
 
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -759,8 +819,7 @@ fun NoteScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     IconButton(
-                        modifier = Modifier.padding(end = 8.dp, top = 8.dp),
-                        onClick = {
+                        modifier = Modifier.padding(end = 8.dp, top = 8.dp), onClick = {
                             coroutineScope.launch {
                                 sheetState.hide()
                             }.invokeOnCompletion {
@@ -768,8 +827,7 @@ fun NoteScreen(
                                     showTemplateBottomSheet = false
                                 }
                             }
-                        }
-                    ) {
+                        }) {
                         Icon(imageVector = Icons.Default.Close, contentDescription = "Close sheet")
                     }
                 }
@@ -778,8 +836,7 @@ fun NoteScreen(
         ) {
             TemplateFilesList(
                 rootUri = settingsState.storagePath.toUri(), // 传入根URI
-                context = context.applicationContext,
-                saveCurrentNoteAsTemplate = {
+                context = context.applicationContext, saveCurrentNoteAsTemplate = {
                     val noteName = if (sharedViewModel.titleState.text.isBlank()) "Untitled"
                     else sharedViewModel.titleState.text.toString()
                     val fileName = "$noteName.md"
@@ -809,11 +866,9 @@ fun NoteScreen(
                             showTemplateBottomSheet = false
                         }
                     }
-                },
-                onFileSelected = { content ->
+                }, onFileSelected = { content ->
                     val temple = TemplateProcessor(
-                        settingsState.dateFormatter,
-                        settingsState.timeFormatter
+                        settingsState.dateFormatter, settingsState.timeFormatter
                     ).process(content)
                     // 处理选中的模板内容
                     coroutineScope.launch {
@@ -823,14 +878,12 @@ fun NoteScreen(
                             showTemplateBottomSheet = false
                             sharedViewModel.onNoteEvent(
                                 NoteEvent.Edit(
-                                    Constants.Editor.TEXT,
-                                    temple
+                                    Constants.Editor.TEXT, temple
                                 )
                             )
                         }
                     }
-                }
-            )
+                })
         }
     }
 

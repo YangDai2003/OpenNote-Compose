@@ -258,7 +258,7 @@ fun AdaptiveTopSearchbar(
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AdaptiveSearchBar(
+private fun AdaptiveSearchBar(
     modifier: Modifier = Modifier,
     isDocked: Boolean,
     expanded: Boolean,

@@ -36,7 +36,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.yangdai.opennote.R
-import com.yangdai.opennote.presentation.component.text.CustomTextField
+import com.yangdai.opennote.presentation.component.note.CustomTextField
 import com.yangdai.opennote.presentation.util.Constants
 import com.yangdai.opennote.presentation.util.getOrCreateDirectory
 import com.yangdai.opennote.presentation.util.rememberCustomTabsIntent

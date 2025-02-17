@@ -19,7 +19,7 @@
     <string name="light">关</string>
     <string name="dark">开</string>
     <string name="dynamic_only_android_12">动态颜色</string>
-    <string name="edited">最后编辑时间：</string>
+    <string name="edited">最后编辑时间</string>
     <string name="search_history">搜索历史</string>
     <string name="content">正文</string>
     <string name="delete">删除</string>
@@ -35,7 +35,15 @@
     <string name="restore">恢复</string>
     <string name="app_info">关于应用</string>
     <string name="version">版本号</string>
-    <string name="shareContent">欢迎使用\"Open Note\"，这是一款轻量化、美观且符合Material 3设计风格的应用。应用提供本地存储功能，无需网络也能随时记录你的想法。高效的搜索功能可以帮助你快速找到你的笔记，而文件夹分类功能则可以帮助你更好地组织你的笔记。此外，应用还提供文本OCR功能，可以将图片中的文字转换为可编辑的文本。我们的目标是为你提供最便捷、最高效的笔记体验。下载地址：https://play.google.com/store/apps/details?id=com.yangdai.opennote</string>
+    <string name="shareContent">
+        OpenNote 是一款现代化的安卓笔记应用，完全使用 Compose 构建。\n
+        它提供了创建、编辑、删除笔记和文件夹，支持排序和过滤、垃圾箱功能以及高级功能如查找替换、笔记模板、本地图片视频音频导入、Markdown、LaTeX 数学公式和 Mermaid 图表支持等。\n
+        应用具有响应式设计，适用于各种设备尺寸。\n
+        立即下载体验吧：\n
+        - [Google Play](https://play.google.com/store/apps/details?id=com.yangdai.opennote)\n
+        - [IzzyOnDroid](https://apt.izzysoft.de/fdroid/index/apk/com.yangdai.opennote)\n
+        - [GitHub](https://github.com/YangDai2003/OpenNote-Compose/releases)\n
+    </string>
     <string name="export">导出</string>
     <string name="share">分享</string>
     <string name="name">名称</string>
@@ -54,9 +62,9 @@
     <string name="language_description">选择应用语言</string>
     <string name="data">数据</string>
     <string name="security">安全</string>
-    <string name="import_files_description">批量导入文本类型的文件（比如：.txt, .md, .html）。文件名会作为标题，并自动判断是否为MARKDOWN类型。</string>
-    <string name="backup_description">将所有文件夹和其所包含的笔记备份为一个JSON文件，保存到｛OpenNote/Backup｝。</string>
-    <string name="restore_description">将所选的JSON备份文件中的数据写入到数据库中。如果数据冲突，备份文件将覆盖数据库中的笔记。</string>
+    <string name="import_files_description">批量导入文本类型的文件（比如：.txt, .md, .html）。文件名会作为标题，并自动判断是否为 MARKDOWN 类型。</string>
+    <string name="backup_description">将所有文件夹和其所包含的笔记备份为一个JSON文件，保存到 ｛OpenNote/Backup｝ 。</string>
+    <string name="restore_description">将所选的 JSON 备份文件中的数据写入到数据库中。如果数据冲突，备份文件将覆盖数据库中的笔记。</string>
     <string name="reset_database_description">清空数据库中的所有内容（包括所有笔记和文件夹）。</string>
     <string name="backup">备份</string>
     <string name="recovery">还原</string>
@@ -160,4 +168,18 @@
     <string name="clean">清理</string>
     <string name="free_up_space">释放存储空间</string>
     <string name="free_up_detail">OpenNote 文件夹中所有未在笔记中引用的图片、音频和视频资源将被删除。</string>
+    <string name="text_overflow">文本溢出</string>
+    <string name="card_size">卡片尺寸</string>
+    <string name="ellipsis">省略号</string>
+    <string name="clip">裁切</string>
+    <string name="default_size">正常</string>
+    <string name="compact">紧凑</string>
+    <string name="flat">平铺</string>
+    <string name="overview">概览</string>
+    <string name="char_count">字符数</string>
+    <string name="word_count">词数</string>
+    <string name="word_count_without_punctuation">词数(不含标点符号)</string>
+    <string name="line_count">行数</string>
+    <string name="paragraph_count">段落数</string>
+    <string name="outline">大纲</string>
 </resources>

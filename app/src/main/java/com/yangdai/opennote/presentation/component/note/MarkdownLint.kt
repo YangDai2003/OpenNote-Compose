@@ -1,4 +1,4 @@
-package com.yangdai.opennote.presentation.component.text
+package com.yangdai.opennote.presentation.component.note
 
 class MarkdownLint {
     companion object {

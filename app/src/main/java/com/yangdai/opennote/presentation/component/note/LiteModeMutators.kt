@@ -1,4 +1,4 @@
-package com.yangdai.opennote.presentation.component.text
+package com.yangdai.opennote.presentation.component.note
 
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue

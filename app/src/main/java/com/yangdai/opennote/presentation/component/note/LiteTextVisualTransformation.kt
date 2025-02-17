@@ -1,4 +1,4 @@
-package com.yangdai.opennote.presentation.component.text
+package com.yangdai.opennote.presentation.component.note
 
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.AnnotatedString
@@ -15,7 +15,6 @@ import androidx.compose.ui.text.input.OffsetMapping
 import androidx.compose.ui.text.input.TransformedText
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextDecoration
-import androidx.compose.ui.text.style.TextIndent
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
@@ -146,8 +145,10 @@ class LiteTextVisualTransformation(
 
             override fun visit(heading: Heading) {
                 val span = heading.sourceSpans.first()
-                val range = span.inputIndex until (span.inputIndex + span.length + 1)
-                headerRanges.add(range to heading.level)
+                if (span.inputIndex + span.length + 1 <= text.length){
+                    val range = span.inputIndex until (span.inputIndex + span.length + 1)
+                    headerRanges.add(range to heading.level)
+                }
                 visitChildren(heading)
             }
         })
@@ -318,28 +319,22 @@ class LiteTextVisualTransformation(
 
         private val HEADER_LINE_STYLES = listOf(
             ParagraphStyle(
-                lineHeight = 1.5.em,
-                textIndent = TextIndent.None,
+                lineHeight = 2.em,
                 platformStyle = PlatformParagraphStyle(includeFontPadding = true)
             ), ParagraphStyle(
-                lineHeight = 1.3.em,
-                textIndent = TextIndent.None,
+                lineHeight = 1.5.em,
                 platformStyle = PlatformParagraphStyle(includeFontPadding = true)
             ), ParagraphStyle(
                 lineHeight = 1.15.em,
-                textIndent = TextIndent.None,
                 platformStyle = PlatformParagraphStyle(includeFontPadding = true)
             ), ParagraphStyle(
                 lineHeight = 1.em,
-                textIndent = TextIndent.None,
                 platformStyle = PlatformParagraphStyle(includeFontPadding = true)
             ), ParagraphStyle(
                 lineHeight = 0.83.em,
-                textIndent = TextIndent.None,
                 platformStyle = PlatformParagraphStyle(includeFontPadding = true)
             ), ParagraphStyle(
                 lineHeight = 0.67.em,
-                textIndent = TextIndent.None,
                 platformStyle = PlatformParagraphStyle(includeFontPadding = true)
             )
         )

@@ -14,6 +14,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.automirrored.outlined.TextSnippet
 import androidx.compose.material.icons.outlined.CloudCircle
+import androidx.compose.material.icons.outlined.GridView
 import androidx.compose.material.icons.outlined.Language
 import androidx.compose.material.icons.outlined.ModeEdit
 import androidx.compose.material.icons.outlined.Palette
@@ -121,6 +122,23 @@ fun SettingsListPane(
 
                 SettingItem(
                     modifier = Modifier.clickable {
+                        navigateToDetail(SettingsItem(7, R.string.list))
+                    },
+                    leadingContent = {
+                        Icon(
+                            imageVector = Icons.Outlined.GridView,
+                            contentDescription = "Grid"
+                        )
+                    },
+                    headlineText = stringResource(R.string.list),
+                    supportingText = stringResource(R.string.text_overflow) + "  •  "
+                            + stringResource(R.string.card_size)
+                )
+
+                SettingsSectionDivider()
+
+                SettingItem(
+                    modifier = Modifier.clickable {
                         navigateToDetail(SettingsItem(4, R.string.editor))
                     },
                     leadingContent = {
@@ -206,7 +224,9 @@ fun SettingsListPane(
                         )
                     },
                     headlineText = stringResource(R.string.security),
-                    supportingText = stringResource(R.string.screen_protection) + "  •  " + stringResource(R.string.password)
+                    supportingText = stringResource(R.string.screen_protection) + "  •  " + stringResource(
+                        R.string.password
+                    )
                 )
 
                 SettingsSectionDivider()

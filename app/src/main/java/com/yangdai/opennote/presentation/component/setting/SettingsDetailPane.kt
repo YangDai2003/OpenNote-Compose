@@ -135,6 +135,10 @@ fun SettingsDetailPane(
                 6 -> {
                     SecurityPane(sharedViewModel = sharedViewModel)
                 }
+
+                7 -> {
+                    ListPane(sharedViewModel = sharedViewModel)
+                }
             }
         }
     }

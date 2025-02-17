@@ -1,4 +1,4 @@
-package com.yangdai.opennote.presentation.component.text
+package com.yangdai.opennote.presentation.component.note
 
 import android.content.ClipData
 import android.net.Uri
@@ -63,6 +63,7 @@ fun StandardTextField(
     scrollState: ScrollState = rememberScrollState(),
     readMode: Boolean,
     isLintActive: Boolean,
+    headerRange: IntRange?,
     findAndReplaceState: FindAndReplaceState,
     onFindAndReplaceUpdate: (FindAndReplaceState) -> Unit,
     onListButtonClick: () -> Unit,
@@ -159,12 +160,27 @@ fun StandardTextField(
         }
     }
 
+    LaunchedEffect(headerRange) {
+        headerRange?.let {
+            // 获取该位置的文本边界
+            val bounds = textLayoutResult!!.getBoundingBox(headerRange.first)
+            // 计算滚动位置
+            val scrollPosition = (bounds.top - 50f).toInt().coerceAtLeast(0)
+            // 执行滚动
+            scrollState.animateScrollTo(scrollPosition)
+        }
+    }
+
     LaunchedEffect(findAndReplaceState.replaceType) {
         if (findAndReplaceState.replaceType != null) {
             if (findAndReplaceState.replaceType == ReplaceType.ALL) {
                 if (findAndReplaceState.searchWord.isBlank()) return@LaunchedEffect
                 val currentText = state.text.toString()
-                val newText = currentText.replace(findAndReplaceState.searchWord, findAndReplaceState.replaceWord, ignoreCase = false)
+                val newText = currentText.replace(
+                    findAndReplaceState.searchWord,
+                    findAndReplaceState.replaceWord,
+                    ignoreCase = false
+                )
                 state.setTextAndPlaceCursorAtEnd(newText)
             } else if (findAndReplaceState.replaceType == ReplaceType.CURRENT) {
                 if (findAndReplaceState.searchWord.isBlank()) return@LaunchedEffect

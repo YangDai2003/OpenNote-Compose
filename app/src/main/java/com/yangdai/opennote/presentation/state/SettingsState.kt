@@ -3,6 +3,8 @@ package com.yangdai.opennote.presentation.state
 import androidx.compose.runtime.Stable
 import com.yangdai.opennote.presentation.state.AppColor.entries
 import com.yangdai.opennote.presentation.state.AppTheme.entries
+import com.yangdai.opennote.presentation.state.ListNoteContentOverflowStyle.entries
+import com.yangdai.opennote.presentation.state.ListNoteContentSize.entries
 
 @Stable
 data class SettingsState(
@@ -23,8 +25,12 @@ data class SettingsState(
     val fontScale: Float = 1f,
     val backupFrequency: Int = 0,
     val password: String = "",
-    val biometricAuthEnabled: Boolean = false
+    val biometricAuthEnabled: Boolean = false,
+    val enumOverflowStyle: ListNoteContentOverflowStyle = ListNoteContentOverflowStyle.ELLIPSIS,
+    val enumContentSize: ListNoteContentSize = ListNoteContentSize.DEFAULT
 )
+
+
 
 enum class AppTheme(private val value: Int) {
     UNDEFINED(-1),
@@ -49,5 +55,26 @@ enum class AppColor(private val value: Int) {
     companion object {
         fun fromInt(value: Int) = entries.firstOrNull { it.value == value } ?: DYNAMIC
         fun AppColor.toInt() = value
+    }
+}
+
+enum class ListNoteContentOverflowStyle(private val value: Int) {
+    ELLIPSIS(0),
+    CLIP(1);
+
+    companion object {
+        fun fromInt(value: Int) = entries.firstOrNull { it.value == value } ?: ELLIPSIS
+        fun ListNoteContentOverflowStyle.toInt() = value
+    }
+}
+
+enum class ListNoteContentSize(private val value: Int) {
+    DEFAULT(0),
+    COMPACT(1),
+    FLAT(2);
+
+    companion object {
+        fun fromInt(value: Int) = entries.firstOrNull { it.value == value } ?: DEFAULT
+        fun ListNoteContentSize.toInt() = value
     }
 }

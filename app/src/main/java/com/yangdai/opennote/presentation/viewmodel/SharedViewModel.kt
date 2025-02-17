@@ -20,25 +20,26 @@ import com.yangdai.opennote.domain.usecase.OrderType
 import com.yangdai.opennote.domain.usecase.UseCases
 import com.yangdai.opennote.presentation.component.dialog.ExportType
 import com.yangdai.opennote.presentation.component.dialog.TaskItem
-import com.yangdai.opennote.presentation.component.text.add
-import com.yangdai.opennote.presentation.component.text.addHeader
-import com.yangdai.opennote.presentation.component.text.addInNewLine
-import com.yangdai.opennote.presentation.component.text.addMermaid
-import com.yangdai.opennote.presentation.component.text.addRule
-import com.yangdai.opennote.presentation.component.text.addTable
-import com.yangdai.opennote.presentation.component.text.addTask
-import com.yangdai.opennote.presentation.component.text.bold
-import com.yangdai.opennote.presentation.component.text.inlineBraces
-import com.yangdai.opennote.presentation.component.text.inlineBrackets
-import com.yangdai.opennote.presentation.component.text.inlineCode
-import com.yangdai.opennote.presentation.component.text.inlineMath
-import com.yangdai.opennote.presentation.component.text.italic
-import com.yangdai.opennote.presentation.component.text.mark
-import com.yangdai.opennote.presentation.component.text.quote
-import com.yangdai.opennote.presentation.component.text.strikeThrough
-import com.yangdai.opennote.presentation.component.text.tab
-import com.yangdai.opennote.presentation.component.text.unTab
-import com.yangdai.opennote.presentation.component.text.underline
+import com.yangdai.opennote.presentation.component.note.HeaderNode
+import com.yangdai.opennote.presentation.component.note.add
+import com.yangdai.opennote.presentation.component.note.addHeader
+import com.yangdai.opennote.presentation.component.note.addInNewLine
+import com.yangdai.opennote.presentation.component.note.addMermaid
+import com.yangdai.opennote.presentation.component.note.addRule
+import com.yangdai.opennote.presentation.component.note.addTable
+import com.yangdai.opennote.presentation.component.note.addTask
+import com.yangdai.opennote.presentation.component.note.bold
+import com.yangdai.opennote.presentation.component.note.inlineBraces
+import com.yangdai.opennote.presentation.component.note.inlineBrackets
+import com.yangdai.opennote.presentation.component.note.inlineCode
+import com.yangdai.opennote.presentation.component.note.inlineMath
+import com.yangdai.opennote.presentation.component.note.italic
+import com.yangdai.opennote.presentation.component.note.mark
+import com.yangdai.opennote.presentation.component.note.quote
+import com.yangdai.opennote.presentation.component.note.strikeThrough
+import com.yangdai.opennote.presentation.component.note.tab
+import com.yangdai.opennote.presentation.component.note.unTab
+import com.yangdai.opennote.presentation.component.note.underline
 import com.yangdai.opennote.presentation.event.DatabaseEvent
 import com.yangdai.opennote.presentation.event.FolderEvent
 import com.yangdai.opennote.presentation.event.ListEvent
@@ -48,6 +49,8 @@ import com.yangdai.opennote.presentation.state.AppColor
 import com.yangdai.opennote.presentation.state.AppTheme
 import com.yangdai.opennote.presentation.state.DataActionState
 import com.yangdai.opennote.presentation.state.DataState
+import com.yangdai.opennote.presentation.state.ListNoteContentOverflowStyle
+import com.yangdai.opennote.presentation.state.ListNoteContentSize
 import com.yangdai.opennote.presentation.state.NoteState
 import com.yangdai.opennote.presentation.state.SettingsState
 import com.yangdai.opennote.presentation.util.BackupManager
@@ -95,10 +98,14 @@ import org.commonmark.ext.heading.anchor.HeadingAnchorExtension
 import org.commonmark.ext.image.attributes.ImageAttributesExtension
 import org.commonmark.ext.ins.InsExtension
 import org.commonmark.ext.task.list.items.TaskListItemsExtension
+import org.commonmark.node.AbstractVisitor
+import org.commonmark.node.Heading
+import org.commonmark.parser.IncludeSourceSpans
 import org.commonmark.parser.Parser
 import org.commonmark.renderer.html.HtmlRenderer
 import java.io.OutputStreamWriter
 import javax.inject.Inject
+import kotlin.collections.first
 
 @HiltViewModel
 class SharedViewModel @Inject constructor(
@@ -154,11 +161,45 @@ class SharedViewModel @Inject constructor(
     // Markdown 渲染后的 HTML 内容
     @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
     val html = snapshotFlow { contentState.text }.debounce(100)
-        .mapLatest { renderer.render(parser.parse(it.toString())) }.flowOn(Dispatchers.Default)
+        .mapLatest { renderer.render(parser.parse(it.toString())) }
+        .flowOn(Dispatchers.Default)
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5_000L),
             initialValue = ""
+        )
+
+    private val parserForOutline =
+        Parser.builder().includeSourceSpans(IncludeSourceSpans.BLOCKS_AND_INLINES).build()
+
+    @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
+    val outline = snapshotFlow { contentState.text }.debounce(500)
+        .mapLatest {
+            val document = parserForOutline.parse(it.toString())
+            val root = HeaderNode("", 0, IntRange.EMPTY)
+            val headerStack = mutableListOf(root)
+            document.accept(object : AbstractVisitor() {
+                override fun visit(heading: Heading) {
+                    val span = heading.sourceSpans.first()
+                    val range = span.inputIndex until (span.inputIndex + span.length)
+                    val title = it.substring(range).replace("#", "").trim()
+                    val node = HeaderNode(title, heading.level, range)
+
+                    while (headerStack.last().level >= heading.level) {
+                        headerStack.removeAt(headerStack.lastIndex)
+                    }
+                    headerStack.last().children.add(node)
+                    headerStack.add(node)
+                    visitChildren(heading)
+                }
+            })
+            root
+        }
+        .flowOn(Dispatchers.Default)
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000L),
+            initialValue = HeaderNode("", 0, IntRange.EMPTY)
         )
 
     // 当前笔记的初始化状态，用于比较是否有修改
@@ -209,7 +250,9 @@ class SharedViewModel @Inject constructor(
         dataStoreRepository.booleanFlow(Constants.Preferences.IS_SCREEN_PROTECTED),
         dataStoreRepository.floatFlow(Constants.Preferences.FONT_SCALE),
         dataStoreRepository.intFlow(BackupManager.BACKUP_FREQUENCY_KEY),
-        dataStoreRepository.stringFlow(Constants.Preferences.PASSWORD)
+        dataStoreRepository.stringFlow(Constants.Preferences.PASSWORD),
+        dataStoreRepository.intFlow(Constants.Preferences.ENUM_OVERFLOW_STYLE),
+        dataStoreRepository.intFlow(Constants.Preferences.ENUM_CONTENT_SIZE)
     ) { values ->
         SettingsState(
             theme = AppTheme.fromInt(values[0] as Int),
@@ -229,7 +272,9 @@ class SharedViewModel @Inject constructor(
             isScreenProtected = values[14] as Boolean,
             fontScale = values[15] as Float,
             backupFrequency = values[16] as Int,
-            password = values[17] as String
+            password = values[17] as String,
+            enumOverflowStyle = ListNoteContentOverflowStyle.fromInt(values[18] as Int),
+            enumContentSize = ListNoteContentSize.fromInt(values[19] as Int)
         )
     }.flowOn(Dispatchers.IO).stateIn(
         scope = viewModelScope, started = SharingStarted.Eagerly, initialValue = SettingsState()
