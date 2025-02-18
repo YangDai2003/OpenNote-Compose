@@ -76,13 +76,13 @@ fun BaseScreen(
 
         // MaskBox is a custom composable that animates a mask over the screen
         MaskBox(
-            maskComplete = {
+            onMaskAnimationComplete = {
                 sharedViewModel.putPreferenceValue(
                     Constants.Preferences.IS_APP_IN_DARK_MODE,
                     !settingsState.isAppInDarkMode
                 )
             },
-            animFinish = {
+            onAnimationFinished = {
                 sharedViewModel.putPreferenceValue(Constants.Preferences.IS_SWITCH_ACTIVE, false)
                 if (settingsState.shouldFollowSystem) {
                     sharedViewModel.putPreferenceValue(
@@ -133,9 +133,9 @@ fun BaseScreen(
 
             AnimatedVisibility(visible = !loggedIn, enter = fadeIn(), exit = fadeOut()) {
                 LoginOverlayScreen(
-                    password = settingsState.password,
+                    storedPassword = settingsState.password,
                     biometricAuthEnabled = settingsState.biometricAuthEnabled,
-                    isCreatingPass = isCreatingPass,
+                    isCreatingPassword = isCreatingPass,
                     onCreatingCanceled = {
                         sharedViewModel.isCreatingPassword.value = false
                     },

@@ -13,36 +13,36 @@ import kotlin.math.tan
 private const val angleEpsilon = .001
 
 class GradientBrush(
-    private val angleDegrees: Double,
-    private var colors: List<Color>,
-    private var stops: List<Float>,
+    private val rotationAngle: Double,
+    private var gradientColors: List<Color>,
+    private var colorStops: List<Float>,
     private var scaleX: Float = 1f,
     private var scaleY: Float = 1f,
-    private var offset: Offset = Offset.Companion.Zero,
+    private var gradientOffset: Offset = Offset.Companion.Zero,
 ) : ShaderBrush() {
 
     init {
-        check(colors.size == stops.size) { "The number of stops and colors must match" }
-        check(colors.isNotEmpty()) { "Specify at least one color and stop" }
+        check(gradientColors.size == colorStops.size) { "The number of colorStops and gradientColors must match" }
+        check(gradientColors.isNotEmpty()) { "Specify at least one color and stop" }
     }
 
     override fun createShader(size: Size): Shader {
-        val normalizedAngle = angleDegrees % 360.0
+        val normalizedAngle = rotationAngle % 360.0
         val adjustedSize = Size(size.width * scaleX, size.height * scaleY)
 
         // Handle base cases (vertical and horizontal gradient) separately
         return when {
             abs(normalizedAngle % 180.0) < angleEpsilon -> {
                 val leftToRight = abs(normalizedAngle) < 90.0
-                createHorizontalGradient(adjustedSize, leftToRight, offset)
+                createHorizontalGradient(adjustedSize, leftToRight, gradientOffset)
             }
 
             abs(abs(normalizedAngle) - 90.0) < angleEpsilon -> {
                 val startsFromTop = normalizedAngle >= 0.0
-                createVerticalGradient(adjustedSize, startsFromTop, offset)
+                createVerticalGradient(adjustedSize, startsFromTop, gradientOffset)
             }
 
-            else -> createLinearGradient(adjustedSize, normalizedAngle, offset)
+            else -> createLinearGradient(adjustedSize, normalizedAngle, gradientOffset)
         }
     }
 
@@ -56,8 +56,8 @@ class GradientBrush(
         return LinearGradientShader(
             from = Offset(startX + offsetX, size.height / 2 + offsetY),
             to = Offset(endX + offsetX, size.height / 2 + offsetY),
-            colors = colors,
-            colorStops = stops
+            colors = gradientColors,
+            colorStops = colorStops
         )
     }
 
@@ -71,8 +71,8 @@ class GradientBrush(
         return LinearGradientShader(
             from = Offset(size.width / 2 + offsetX, startY + offsetY),
             to = Offset(size.width / 2 + offsetX, endY + offsetY),
-            colors = colors,
-            colorStops = stops
+            colors = gradientColors,
+            colorStops = colorStops
         )
     }
 
@@ -101,8 +101,8 @@ class GradientBrush(
         return LinearGradientShader(
             from = gradientStart,
             to = gradientEnd,
-            colors = colors,
-            colorStops = stops,
+            colors = gradientColors,
+            colorStops = colorStops,
         )
     }
 

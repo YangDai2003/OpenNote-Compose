@@ -8,7 +8,8 @@ class TemplateProcessor(
     defaultDateFormat: String = "yyyy-MM-dd",
     defaultTimeFormat: String = "HH:mm"
 ) {
-    private var defaultDateFormat: String = defaultDateFormat.takeIf { it.isNotBlank() } ?: "yyyy-MM-dd"
+    private var defaultDateFormat: String =
+        defaultDateFormat.takeIf { it.isNotBlank() } ?: "yyyy-MM-dd"
     private var defaultTimeFormat: String = defaultTimeFormat.takeIf { it.isNotBlank() } ?: "HH:mm"
 
     // 修改正则表达式以先匹配简单格式
@@ -24,11 +25,19 @@ class TemplateProcessor(
 
         // 先处理简单格式
         result = result.replace(simpleDatePattern.toRegex()) {
-            LocalDate.now().format(DateTimeFormatter.ofPattern(defaultDateFormat))
+            try {
+                LocalDate.now().format(DateTimeFormatter.ofPattern(defaultDateFormat))
+            } catch (_: Exception) {
+                LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+            }
         }
 
         result = result.replace(simpleTimePattern.toRegex()) {
-            LocalTime.now().format(DateTimeFormatter.ofPattern(defaultTimeFormat))
+            try {
+                LocalTime.now().format(DateTimeFormatter.ofPattern(defaultTimeFormat))
+            } catch (_: Exception) {
+                LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm"))
+            }
         }
 
         // 再处理带格式的模式
@@ -37,7 +46,7 @@ class TemplateProcessor(
             try {
                 LocalDate.now().format(DateTimeFormatter.ofPattern(format))
             } catch (_: Exception) {
-                LocalDate.now().format(DateTimeFormatter.ofPattern(defaultDateFormat))
+                LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
             }
         }
 
@@ -46,7 +55,7 @@ class TemplateProcessor(
             try {
                 LocalTime.now().format(DateTimeFormatter.ofPattern(format))
             } catch (_: Exception) {
-                LocalTime.now().format(DateTimeFormatter.ofPattern(defaultTimeFormat))
+                LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm"))
             }
         }
 

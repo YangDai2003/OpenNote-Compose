@@ -47,11 +47,11 @@ fun ShareDialog(
     },
     text = {
         Column(modifier = Modifier.fillMaxWidth()) {
-            TextOptionButton(text = stringResource(R.string.file)) {
+            TextOptionButton(buttonText = stringResource(R.string.file)) {
                 onConfirm(ShareType.FILE)
             }
 
-            TextOptionButton(text = stringResource(R.string.text)) {
+            TextOptionButton(buttonText = stringResource(R.string.text)) {
                 onConfirm(ShareType.TEXT)
             }
         }

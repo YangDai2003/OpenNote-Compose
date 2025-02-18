@@ -18,9 +18,10 @@ import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.draggable
 import androidx.compose.foundation.gestures.rememberDraggableState
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -37,30 +38,33 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.automirrored.outlined.ExitToApp
 import androidx.compose.material.icons.automirrored.outlined.MenuBook
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.outlined.Alarm
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.EditNote
 import androidx.compose.material.icons.outlined.LocalPrintshop
-import androidx.compose.material.icons.outlined.MoreVert
+import androidx.compose.material.icons.outlined.Save
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.SearchOff
 import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material.icons.outlined.SwapHoriz
 import androidx.compose.material.icons.outlined.Upload
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.PlainTooltip
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TooltipBox
 import androidx.compose.material3.TooltipDefaults
 import androidx.compose.material3.TopAppBar
@@ -80,7 +84,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
@@ -96,9 +99,9 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.unit.DpOffset
+import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastJoinToString
 import androidx.core.content.FileProvider
@@ -108,7 +111,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.yangdai.opennote.MainActivity
 import com.yangdai.opennote.R
 import com.yangdai.opennote.data.local.entity.NoteEntity
-import com.yangdai.opennote.presentation.component.note.TemplateFilesList
 import com.yangdai.opennote.presentation.component.dialog.AudioSelectionDialog
 import com.yangdai.opennote.presentation.component.dialog.ExportDialog
 import com.yangdai.opennote.presentation.component.dialog.FolderListDialog
@@ -125,9 +127,9 @@ import com.yangdai.opennote.presentation.component.note.LiteTextField
 import com.yangdai.opennote.presentation.component.note.MarkdownEditorRow
 import com.yangdai.opennote.presentation.component.note.NoteSideSheet
 import com.yangdai.opennote.presentation.component.note.NoteSideSheetItem
-import com.yangdai.opennote.presentation.component.note.OutlineView
 import com.yangdai.opennote.presentation.component.note.ReadView
 import com.yangdai.opennote.presentation.component.note.StandardTextField
+import com.yangdai.opennote.presentation.component.note.TemplateFilesList
 import com.yangdai.opennote.presentation.event.DatabaseEvent
 import com.yangdai.opennote.presentation.event.NoteEvent
 import com.yangdai.opennote.presentation.event.UiEvent
@@ -143,6 +145,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
 import kotlin.math.abs
+
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
@@ -169,7 +172,8 @@ fun NoteScreen(
             sharedViewModel.onNoteEvent(NoteEvent.Load(id, sharedContent))
         }
         onDispose {
-            sharedViewModel.onNoteEvent(NoteEvent.SaveOrUpdate)
+            if (!sharedViewModel.shouldShowSnackbar())
+                sharedViewModel.onNoteEvent(NoteEvent.SaveOrUpdate)
         }
     }
 
@@ -218,11 +222,9 @@ fun NoteScreen(
     val focusManager = LocalFocusManager.current
 
     LaunchedEffect(isReadView) {
-        if (isReadView) {
-            keyboardController?.hide()
-            focusManager.clearFocus()
-            isSearching = false
-        }
+        keyboardController?.hide()
+        focusManager.clearFocus()
+        isSearching = false
         if (!isLargeScreen) {
             coroutineScope.launch {
                 pagerState.animateScrollToPage(if (isReadView) 1 else 0)
@@ -243,14 +245,6 @@ fun NoteScreen(
         }
     }
 
-    var isTitleFocused by rememberSaveable { mutableStateOf(false) }
-    var isContentFocused by rememberSaveable { mutableStateOf(false) }
-
-    BackHandler(isTitleFocused || isContentFocused) {
-        focusManager.clearFocus()
-        keyboardController?.hide()
-    }
-
     val photoPicker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickMultipleVisualMedia(maxItems = 10)
     ) { uris ->
@@ -269,6 +263,18 @@ fun NoteScreen(
                 context.applicationContext, uri
             )
         )
+    }
+
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    BackHandler(sharedViewModel.shouldShowSnackbar()) {
+        if (sharedViewModel.shouldShowSnackbar())
+            coroutineScope.launch {
+                snackbarHostState.showSnackbar(
+                    "",
+                    duration = SnackbarDuration.Short
+                )
+            }
     }
 
     Scaffold(
@@ -303,159 +309,99 @@ fun NoteScreen(
                         }
                     }
                 } else false
-            }, topBar = {
-            TopAppBar(title = {
-                FilledTonalButton(
-                    modifier = Modifier.sizeIn(maxWidth = 160.dp),
-                    onClick = { showFolderDialog = true }
-                ) {
-                    Text(
-                        text = folderName, maxLines = 1, modifier = Modifier.basicMarquee()
-                    )
-                }
-            }, navigationIcon = {
-                IconButton(onClick = navigateUp) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-                        contentDescription = stringResource(id = R.string.navigate_back)
-                    )
-                }
-            }, actions = {
-
-                if (!isReadView) TooltipBox(
-                    positionProvider = TooltipDefaults.rememberTooltipPositionProvider(),
-                    tooltip = {
-                        PlainTooltip(content = { Text("Ctrl + F") })
-                    },
-                    state = rememberTooltipState(),
-                    focusable = false,
-                    enableUserInput = true
-                ) {
-                    IconButton(onClick = { isSearching = !isSearching }) {
-                        Icon(
-                            imageVector = if (isSearching) Icons.Outlined.SearchOff
-                            else Icons.Outlined.Search, contentDescription = "Search"
-                        )
-                    }
-                }
-
-                TooltipBox(
-                    positionProvider = TooltipDefaults.rememberTooltipPositionProvider(),
-                    tooltip = {
-                        PlainTooltip(content = { Text("Ctrl + P") })
-                    },
-                    state = rememberTooltipState(),
-                    focusable = false,
-                    enableUserInput = true
-                ) {
-                    IconButton(onClick = { isReadView = !isReadView }) {
-                        Icon(
-                            imageVector = if (isReadView) Icons.Outlined.EditNote
-                            else Icons.AutoMirrored.Outlined.MenuBook, contentDescription = "Mode"
-                        )
-                    }
-                }
-
-                if (noteState.isStandard) IconButton(onClick = {
-                    isEditorAndPreviewSynced = !isEditorAndPreviewSynced
-                }) {
-                    Icon(
-                        painter = painterResource(if (isEditorAndPreviewSynced) R.drawable.link_off else R.drawable.link),
-                        contentDescription = "Mode"
-                    )
-                }
-
-                var showMenu by remember { mutableStateOf(false) }
-
-                IconButton(onClick = { showMenu = !showMenu }) {
-                    Icon(
-                        imageVector = Icons.Outlined.MoreVert, contentDescription = "More"
-                    )
-                }
-
-                DropdownMenu(
-                    expanded = showMenu,
-                    offset = DpOffset(if (noteState.isStandard) 64.dp else 8.dp, 0.dp),
-                    onDismissRequest = { showMenu = false }) {
-
-                    DropdownMenuItem(leadingIcon = {
-                        Icon(
-                            imageVector = Icons.Outlined.SwapHoriz,
-                            contentDescription = "Switch Note Type"
-                        )
-                    }, text = {
+            },
+        topBar = {
+            TopAppBar(
+                title = {
+                    FilledTonalButton(
+                        modifier = Modifier.sizeIn(maxWidth = 160.dp),
+                        onClick = { showFolderDialog = true }
+                    ) {
                         Text(
-                            text = if (noteState.isStandard) stringResource(R.string.lite_mode)
-                            else stringResource(R.string.standard_mode)
+                            text = folderName, maxLines = 1, modifier = Modifier.basicMarquee()
                         )
-                    }, onClick = { sharedViewModel.onNoteEvent(NoteEvent.SwitchType) })
-
-                    DropdownMenuItem(
-                        leadingIcon = {
-                            Icon(
-                                imageVector = Icons.Outlined.Delete, contentDescription = "Delete"
-                            )
-                        },
-                        text = { Text(text = stringResource(id = R.string.delete)) },
-                        onClick = { sharedViewModel.onNoteEvent(NoteEvent.Delete) })
-
-                    DropdownMenuItem(leadingIcon = {
-                        Icon(
-                            imageVector = Icons.Outlined.Alarm, contentDescription = "Remind"
-                        )
-                    }, text = { Text(text = stringResource(id = R.string.remind)) }, onClick = {
-
-                        val intent =
-                            Intent(Intent.ACTION_INSERT).setData(CalendarContract.Events.CONTENT_URI)
-                                .putExtra(
-                                    CalendarContract.Events.TITLE,
-                                    sharedViewModel.titleState.text.toString()
-                                ).putExtra(
-                                    CalendarContract.Events.DESCRIPTION,
-                                    sharedViewModel.contentState.text.toString()
+                    }
+                },
+                navigationIcon = {
+                    IconButton(onClick = {
+                        if (sharedViewModel.shouldShowSnackbar())
+                            coroutineScope.launch {
+                                snackbarHostState.showSnackbar(
+                                    "",
+                                    duration = SnackbarDuration.Short
                                 )
+                            }
+                        else
+                            navigateUp()
+                    }) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
+                            contentDescription = stringResource(id = R.string.navigate_back)
+                        )
+                    }
+                },
+                actions = {
 
-                        try {
-                            context.startActivity(intent)
-                        } catch (_: Exception) {
-                            Toast.makeText(
-                                context,
-                                context.getString(R.string.no_calendar_app_found),
-                                Toast.LENGTH_SHORT
-                            ).show()
+                    if (!isReadView) TooltipBox(
+                        positionProvider = TooltipDefaults.rememberTooltipPositionProvider(),
+                        tooltip = {
+                            PlainTooltip(content = { Text("Ctrl + F") })
+                        },
+                        state = rememberTooltipState(),
+                        focusable = false,
+                        enableUserInput = true
+                    ) {
+                        IconButton(onClick = { isSearching = !isSearching }) {
+                            Icon(
+                                imageVector = if (isSearching) Icons.Outlined.SearchOff
+                                else Icons.Outlined.Search, contentDescription = "Search"
+                            )
                         }
-                    })
+                    }
 
-                    DropdownMenuItem(
-                        leadingIcon = {
-                            Icon(
-                                imageVector = Icons.Outlined.Upload, contentDescription = "Export"
-                            )
+                    TooltipBox(
+                        positionProvider = TooltipDefaults.rememberTooltipPositionProvider(),
+                        tooltip = {
+                            PlainTooltip(content = { Text("Ctrl + P") })
                         },
-                        text = { Text(text = stringResource(R.string.export)) },
-                        onClick = { showExportDialog = true })
+                        state = rememberTooltipState(),
+                        focusable = false,
+                        enableUserInput = true
+                    ) {
+                        IconButton(onClick = { isReadView = !isReadView }) {
+                            Icon(
+                                imageVector = if (isReadView) Icons.Outlined.EditNote
+                                else Icons.AutoMirrored.Outlined.MenuBook,
+                                contentDescription = "Mode"
+                            )
+                        }
+                    }
 
-                    DropdownMenuItem(
-                        leadingIcon = {
-                            Icon(
-                                imageVector = Icons.Outlined.Share, contentDescription = "Share"
-                            )
-                        },
-                        text = { Text(text = stringResource(R.string.share)) },
-                        onClick = { showShareDialog = true })
+                    if (noteState.isStandard) IconButton(onClick = {
+                        isEditorAndPreviewSynced = !isEditorAndPreviewSynced
+                    }) {
+                        Icon(
+                            painter = painterResource(if (isEditorAndPreviewSynced) R.drawable.link_off else R.drawable.link),
+                            contentDescription = "Mode"
+                        )
+                    }
 
-                    if (noteState.isStandard) DropdownMenuItem(
-                        leadingIcon = {
-                            Icon(
-                                imageVector = Icons.Outlined.LocalPrintshop,
-                                contentDescription = "Print"
-                            )
-                        },
-                        text = { Text(text = stringResource(R.string.print)) },
-                        onClick = { triggerPrint.value = true })
+                    IconButton(
+                        onClick = {
+                            keyboardController?.hide()
+                            focusManager.clearFocus()
+                            isDrawerOpen = true
+                        }
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.right_panel_open),
+                            contentDescription = "Open Drawer"
+                        )
+                    }
                 }
-            })
-        }, bottomBar = {
+            )
+        },
+        bottomBar = {
             if (noteState.isStandard) AnimatedVisibility(
                 visible = !isReadView,
                 enter = slideInVertically { fullHeight -> fullHeight },
@@ -489,65 +435,96 @@ fun NoteScreen(
                         showTemplateBottomSheet = true
                     })
             }
-        }) { paddingValues ->
+        },
+        snackbarHost = {
+            SnackbarHost(hostState = snackbarHostState) {
+                Snackbar(
+                    content = { Text(stringResource(R.string.ask_save_note)) },
+                    action = {
+                        IconButton(onClick = {
+                            sharedViewModel.onNoteEvent(NoteEvent.SaveOrUpdate)
+                            navigateUp()
+                        }) {
+                            Icon(
+                                Icons.Outlined.Save,
+                                contentDescription = "Save"
+                            )
+                        }
+                    },
+                    dismissAction = {
+                        IconButton(onClick = navigateUp) {
+                            Icon(
+                                Icons.AutoMirrored.Outlined.ExitToApp,
+                                contentDescription = "Exit"
+                            )
+                        }
+                    }
+                )
+            }
+        }
+    ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
 
-            AnimatedContent(targetState = isSearching, contentAlignment = Alignment.TopCenter) {
+            AnimatedContent(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 4.dp),
+                targetState = isSearching,
+                contentAlignment = Alignment.TopCenter
+            ) {
                 if (it) FindAndReplaceField(
                     isStandard = noteState.isStandard,
                     state = findAndReplaceState,
                     onStateUpdate = { findAndReplaceState = it })
-                else Row(
+                else BasicTextField(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(start = 16.dp, end = 4.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    // 标题文本
-                    BasicTextField(
-                        modifier = Modifier
-                            .weight(1f)
-                            .onFocusChanged { isTitleFocused = it.isFocused },
-                        state = sharedViewModel.titleState,
-                        readOnly = isReadView,
-                        lineLimits = TextFieldLineLimits.SingleLine,
-                        textStyle = MaterialTheme.typography.headlineLarge.copy(color = MaterialTheme.colorScheme.onSurface),
-                        cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
-                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-                        decorator = { innerTextField ->
-                            Box {
-                                if (sharedViewModel.titleState.text.isEmpty()) {
-                                    Text(
-                                        text = stringResource(id = R.string.title),
-                                        style = MaterialTheme.typography.headlineLarge.copy(
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                                        )
+                        .padding(horizontal = 16.dp),
+                    state = sharedViewModel.titleState,
+                    readOnly = isReadView,
+                    lineLimits = TextFieldLineLimits.SingleLine,
+                    textStyle = MaterialTheme.typography.headlineLarge.copy(
+                        color = MaterialTheme.colorScheme.onSurface,
+                        textAlign = when (settingsState.titleAlignment) {
+                            1 -> TextAlign.Center
+                            2 -> TextAlign.Right
+                            else -> TextAlign.Left
+                        }
+                    ),
+                    cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                    decorator = { innerTextField ->
+                        TextFieldDefaults.DecorationBox(
+                            value = sharedViewModel.titleState.text.toString(),
+                            innerTextField = innerTextField,
+                            enabled = true,
+                            singleLine = true,
+                            visualTransformation = VisualTransformation.None,
+                            interactionSource = remember { MutableInteractionSource() },
+                            placeholder = {
+                                Text(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    text = stringResource(id = R.string.title),
+                                    style = MaterialTheme.typography.headlineLarge.copy(
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        textAlign = when (settingsState.titleAlignment) {
+                                            1 -> TextAlign.Center
+                                            2 -> TextAlign.Right
+                                            else -> TextAlign.Left
+                                        }
                                     )
-                                }
-                                innerTextField()
-                            }
-                        })
-
-                    IconButton(
-                        onClick = { isDrawerOpen = true }
-                    ) {
-                        Icon(
-                            painter = painterResource(R.drawable.right_panel_open),
-                            contentDescription = "Open Drawer"
+                                )
+                            },
+                            contentPadding = PaddingValues(0.dp),
+                            container = {}
                         )
                     }
-                }
+                )
             }
-
-            HorizontalDivider(
-                modifier = Modifier
-                    .padding(horizontal = 16.dp)
-                    .padding(top = 4.dp, bottom = 8.dp)
-            )
 
             /*-------------------------------------------------*/
 
@@ -557,7 +534,6 @@ fun NoteScreen(
                 state = sharedViewModel.contentState,
                 headerRange = headerRange,
                 searchWord = findAndReplaceState.searchWord,
-                onFocusChanged = { isContentFocused = it },
                 onTemplateClick = { showTemplateBottomSheet = true })
             else {
 
@@ -606,7 +582,6 @@ fun NoteScreen(
                                     )
                                 )
                             },
-                            onFocusChanged = { isContentFocused = it },
                             onImageReceived = {
                                 sharedViewModel.onDatabaseEvent(
                                     DatabaseEvent.ImportImages(
@@ -686,7 +661,6 @@ fun NoteScreen(
                                         )
                                     )
                                 },
-                                onFocusChanged = { isContentFocused = it },
                                 onImageReceived = {
                                     sharedViewModel.onDatabaseEvent(
                                         DatabaseEvent.ImportImages(
@@ -719,7 +693,145 @@ fun NoteScreen(
         isDrawerOpen = isDrawerOpen,
         onDismiss = { isDrawerOpen = false },
         isLargeScreen = isLargeScreen,
-        showMask = true,
+        outline = outline,
+        onHeaderClick = { headerRange = it },
+        actionContent = {
+            TooltipBox(
+                positionProvider = TooltipDefaults.rememberTooltipPositionProvider(),
+                tooltip = {
+                    PlainTooltip(content = {
+                        Text(
+                            text = if (noteState.isStandard) stringResource(R.string.lite_mode)
+                            else stringResource(R.string.standard_mode)
+                        )
+                    })
+                },
+                state = rememberTooltipState(),
+                focusable = false,
+                enableUserInput = true
+            ) {
+                IconButton(onClick = { sharedViewModel.onNoteEvent(NoteEvent.SwitchType) }) {
+                    Icon(
+                        imageVector = Icons.Outlined.SwapHoriz,
+                        tint = MaterialTheme.colorScheme.onSurface,
+                        contentDescription = "Switch Note Type"
+                    )
+                }
+            }
+
+            TooltipBox(
+                positionProvider = TooltipDefaults.rememberTooltipPositionProvider(),
+                tooltip = {
+                    PlainTooltip(content = { Text(text = stringResource(id = R.string.delete)) })
+                },
+                state = rememberTooltipState(),
+                focusable = false,
+                enableUserInput = true
+            ) {
+                IconButton(onClick = { sharedViewModel.onNoteEvent(NoteEvent.Delete) }) {
+                    Icon(
+                        imageVector = Icons.Outlined.Delete,
+                        tint = MaterialTheme.colorScheme.onSurface,
+                        contentDescription = "Delete"
+                    )
+                }
+            }
+
+            TooltipBox(
+                positionProvider = TooltipDefaults.rememberTooltipPositionProvider(),
+                tooltip = {
+                    PlainTooltip(content = { Text(text = stringResource(id = R.string.remind)) })
+                },
+                state = rememberTooltipState(),
+                focusable = false,
+                enableUserInput = true
+            ) {
+                IconButton(onClick = {
+                    val intent =
+                        Intent(Intent.ACTION_INSERT).setData(CalendarContract.Events.CONTENT_URI)
+                            .putExtra(
+                                CalendarContract.Events.TITLE,
+                                sharedViewModel.titleState.text.toString()
+                            ).putExtra(
+                                CalendarContract.Events.DESCRIPTION,
+                                sharedViewModel.contentState.text.toString()
+                            )
+
+                    try {
+                        context.startActivity(intent)
+                    } catch (_: Exception) {
+                        Toast.makeText(
+                            context,
+                            context.getString(R.string.no_calendar_app_found),
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                }) {
+                    Icon(
+                        imageVector = Icons.Outlined.Alarm,
+                        tint = MaterialTheme.colorScheme.onSurface,
+                        contentDescription = "Remind"
+                    )
+                }
+            }
+
+            TooltipBox(
+                positionProvider = TooltipDefaults.rememberTooltipPositionProvider(),
+                tooltip = {
+                    PlainTooltip(content = { Text(text = stringResource(R.string.export)) })
+                },
+                state = rememberTooltipState(),
+                focusable = false,
+                enableUserInput = true
+            ) {
+                IconButton(onClick = { showExportDialog = true }) {
+                    Icon(
+                        imageVector = Icons.Outlined.Upload,
+                        tint = MaterialTheme.colorScheme.onSurface,
+                        contentDescription = "Export"
+                    )
+                }
+            }
+
+            TooltipBox(
+                positionProvider = TooltipDefaults.rememberTooltipPositionProvider(),
+                tooltip = {
+                    PlainTooltip(content = { Text(text = stringResource(R.string.share)) })
+                },
+                state = rememberTooltipState(),
+                focusable = false,
+                enableUserInput = true
+            ) {
+                IconButton(onClick = { showShareDialog = true }) {
+                    Icon(
+                        imageVector = Icons.Outlined.Share,
+                        tint = MaterialTheme.colorScheme.onSurface,
+                        contentDescription = "Share"
+                    )
+                }
+            }
+            AnimatedVisibility(
+                noteState.isStandard
+            ) {
+                TooltipBox(
+                    positionProvider = TooltipDefaults.rememberTooltipPositionProvider(),
+                    tooltip = {
+                        PlainTooltip(content = { Text(text = stringResource(R.string.print)) })
+                    },
+                    state = rememberTooltipState(),
+                    focusable = false,
+                    enableUserInput = true
+                ) {
+                    IconButton(onClick = { triggerPrint.value = true }) {
+                        Icon(
+                            imageVector = Icons.Outlined.LocalPrintshop,
+                            tint = MaterialTheme.colorScheme.onSurface,
+                            contentDescription = "Print"
+                        )
+                    }
+                }
+            }
+        },
         drawerContent = {
             NoteSideSheetItem(
                 key = "UUID",
@@ -769,24 +881,6 @@ fun NoteScreen(
             NoteSideSheetItem(
                 key = stringResource(R.string.paragraph_count),
                 value = textState.paragraphCount.toString()
-            )
-
-            HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
-
-            if (outline.children.isNotEmpty())
-                Text(
-                    modifier = Modifier.padding(bottom = 8.dp),
-                    text = stringResource(R.string.outline),
-                    style = MaterialTheme.typography.titleLarge,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    fontWeight = FontWeight.Bold
-                )
-
-            OutlineView(
-                outline = outline,
-                onHeaderClick = { range ->
-                    headerRange = range
-                }
             )
         })
 

@@ -44,63 +44,77 @@ private data class AnimState(
     val clickX: Float = 0f, val clickY: Float = 0f, val maskRadius: Float = 0f
 )
 
+/**
+ * A composable function that creates a masking effect, either expanding or shrinking, around a click point.
+ *
+ * This function provides a visual transition effect where a circular mask either expands from or shrinks
+ * towards a specified point on the screen. It captures a screenshot of the current view and then uses
+ * this screenshot to create the masking effect.
+ *
+ * @param animationDurationMillis The duration of the mask animation in milliseconds. Defaults to 650ms.
+ * @param onMaskAnimationComplete A callback function that is invoked when the mask animation type has completed the capture
+ * process, but the animation is still running. It provides the [MaskAnimModel] representing whether
+ * the animation is expanding or shrinking.
+ * @param onAnimationFinished A callback function that is invoked when the entire mask animation is finished.
+ * This is triggered after the expanding or shrinking animation has completed.
+ */
 @Composable
 fun MaskBox(
-    animTime: Long = 650L,
-    maskComplete: (MaskAnimModel) -> Unit,
-    animFinish: () -> Unit,
+    animationDurationMillis: Long = 650L,
+    onMaskAnimationComplete: (MaskAnimModel) -> Unit,
+    onAnimationFinished: () -> Unit,
     content: @Composable (MaskAnimActive) -> Unit,
 ) {
-    var maskAnimModel by remember { mutableStateOf(MaskAnimModel.EXPEND) }
-    var viewBounds by remember { mutableStateOf<Rect?>(null) }
+    var maskAnimationState by remember { mutableStateOf(MaskAnimModel.EXPEND) }
+    var viewRect by remember { mutableStateOf<Rect?>(null) }
     val paint by remember { mutableStateOf(Paint(Paint.ANTI_ALIAS_FLAG)) }
 
     var animState by remember { mutableStateOf(AnimState()) }
-    var viewScreenshot by remember { mutableStateOf<Bitmap?>(null) }
+    var screenshotBitmap by remember { mutableStateOf<Bitmap?>(null) }
     DisposableEffect(Unit) {
         onDispose {
-            viewScreenshot?.recycle()
+            screenshotBitmap?.recycle()
         }
     }
 
-    val rootView = LocalView.current.rootView
-    val maskAnimActive: MaskAnimActive = clickEvent@{ animModel, x, y ->
-        val bitmapBound = viewBounds ?: return@clickEvent
+    val windowRootView = LocalView.current.rootView
+    val maskAnimActive: MaskAnimActive = clickEvent@{ animModel, clickX, clickY ->
+        val viewRect = viewRect ?: return@clickEvent
         animState = animState.copy(
-            clickX = x,
-            clickY = y,
+            clickX = clickX,
+            clickY = clickY,
             maskRadius = if (animModel == MaskAnimModel.EXPEND) 0f else hypot(
-                rootView.width.toFloat(),
-                rootView.height.toFloat()
+                windowRootView.width.toFloat(),
+                windowRootView.height.toFloat()
             )
         )
-        maskAnimModel = animModel
-        viewScreenshot?.recycle()
-        viewScreenshot = createBitmap(
-            bitmapBound.width.roundToInt(),
-            bitmapBound.height.roundToInt()
+        maskAnimationState = animModel
+        screenshotBitmap?.recycle()
+        screenshotBitmap = createBitmap(
+            viewRect.width.roundToInt(),
+            viewRect.height.roundToInt()
         ).applyCanvas {
-            translate(-bitmapBound.left, -bitmapBound.top)
-            rootView.draw(this)
-            maskComplete(animModel)
+            translate(-viewRect.left, -viewRect.top)
+            windowRootView.draw(this)
+            onMaskAnimationComplete(animModel)
         }
         ValueAnimator.ofFloat(
             animState.maskRadius,
             if (animModel == MaskAnimModel.EXPEND) hypot(
-                rootView.width.toFloat(),
-                rootView.height.toFloat()
+                windowRootView.width.toFloat(),
+                windowRootView.height.toFloat()
             )
             else 0f
         ).apply {
-            duration = animTime
+            duration = animationDurationMillis
             interpolator = AccelerateDecelerateInterpolator()
             addUpdateListener {
                 animState = animState.copy(maskRadius = it.animatedValue as Float)
             }
             addListener(onEnd = {
-                viewScreenshot?.recycle()
-                viewScreenshot = null
-                animFinish()
+                screenshotBitmap?.recycle()
+                screenshotBitmap = null
+                onAnimationFinished()
             })
         }.start()
     }
@@ -108,17 +122,17 @@ fun MaskBox(
         modifier = Modifier
             .fillMaxSize()
             .onGloballyPositioned {
-                viewBounds = it.boundsInWindow()
+                viewRect = it.boundsInWindow()
             }
             .drawWithCache {
                 onDrawWithContent {
                     clipRect {
                         this@onDrawWithContent.drawContent()
                     }
-                    viewScreenshot?.let { bitmap ->
+                    screenshotBitmap?.let { bitmap ->
                         with(drawContext.canvas.nativeCanvas) {
                             val layer = saveLayer(null, null)
-                            when (maskAnimModel) {
+                            when (maskAnimationState) {
                                 MaskAnimModel.EXPEND -> {
                                     drawBitmap(bitmap, 0f, 0f, null)
                                     paint.xfermode = PorterDuffXfermode(PorterDuff.Mode.CLEAR)

@@ -27,15 +27,15 @@ fun ExportDialog(
     },
     text = {
         Column(modifier = Modifier.fillMaxWidth()) {
-            TextOptionButton(text = "TXT") {
+            TextOptionButton(buttonText = "TXT") {
                 onConfirm(ExportType.TXT)
             }
 
-            TextOptionButton(text = "MARKDOWN") {
+            TextOptionButton(buttonText = "MARKDOWN") {
                 onConfirm(ExportType.MARKDOWN)
             }
 
-            TextOptionButton(text = "HTML") {
+            TextOptionButton(buttonText = "HTML") {
                 onConfirm(ExportType.HTML)
             }
         }

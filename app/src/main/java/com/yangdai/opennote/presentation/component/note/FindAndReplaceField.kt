@@ -1,15 +1,13 @@
 package com.yangdai.opennote.presentation.component.note
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -22,22 +20,22 @@ import androidx.compose.material.icons.outlined.LocationSearching
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.OutlinedTextFieldDefaults.Container
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import com.yangdai.opennote.R
 
@@ -78,6 +76,7 @@ fun FindAndReplaceField(
             leadingIcon = Icons.Outlined.LocationSearching,
             suffix = {
                 Text(
+                    modifier = Modifier.padding(end = 8.dp),
                     text = if (state.searchWord.isBlank()) "" else state.matchCount.toString(),
                     style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
                 )
@@ -149,32 +148,22 @@ fun CustomTextField(
     modifier: Modifier = Modifier,
     value: String,
     onValueChange: (String) -> Unit,
-    leadingIcon: ImageVector? = null,
+    isError: Boolean = false,
+    leadingIcon: ImageVector,
     suffix: @Composable (() -> Unit)? = null,
     placeholderText: String = ""
 ) {
     val focusManager = LocalFocusManager.current
-    var isFocused by remember { mutableStateOf(false) }
+    val interactionSource = remember { MutableInteractionSource() }
+
     BasicTextField(
         modifier = modifier
             .fillMaxWidth()
-            .height(48.dp)
-            .background(
-                color = MaterialTheme.colorScheme.surfaceVariant, shape = MaterialTheme.shapes.small
-            )
-            .border(
-                width = 2.dp,
-                color = if (isFocused) MaterialTheme.colorScheme.primary.copy(alpha = 0.8f) else MaterialTheme.colorScheme.surfaceVariant,
-                shape = MaterialTheme.shapes.small
-            )
-            .onFocusChanged {
-                isFocused = it.isFocused
-            },
+            .height(48.dp),
         value = value,
-        onValueChange = {
-            onValueChange(it)
-        },
+        onValueChange = { onValueChange(it) },
         singleLine = true,
+        interactionSource = interactionSource,
         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
         keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
         textStyle = MaterialTheme.typography.bodyLarge.copy(
@@ -182,32 +171,49 @@ fun CustomTextField(
         ),
         cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
         decorationBox = { innerTextField ->
-            Row(
-                modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 9.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                if (leadingIcon != null) {
+            TextFieldDefaults.DecorationBox(
+                value = value,
+                interactionSource = interactionSource,
+                visualTransformation = VisualTransformation.None,
+                innerTextField = innerTextField,
+                singleLine = true,
+                enabled = true,
+                leadingIcon = {
                     Icon(
                         imageVector = leadingIcon,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(0.8f)
+                        contentDescription = null
                     )
-                    Spacer(modifier = Modifier.width(8.dp))
-                }
-                Box(Modifier.weight(1f)) {
-                    if (value.isEmpty()) Text(
-                        modifier = Modifier.align(Alignment.CenterStart),
+                },
+                placeholder = {
+                    Text(
                         text = placeholderText,
                         style = MaterialTheme.typography.bodyMedium.copy(
                             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
                         )
                     )
-                    innerTextField()
+                },
+                suffix = suffix,
+                contentPadding = PaddingValues(0.dp),
+                container = {
+                    Container(
+                        enabled = true,
+                        isError = isError,
+                        interactionSource = interactionSource,
+                        colors = OutlinedTextFieldDefaults.colors()
+                            .copy(
+                                focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                                disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                                errorContainerColor = MaterialTheme.colorScheme.errorContainer,
+                                focusedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                                unfocusedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                                disabledTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                                errorTextColor = MaterialTheme.colorScheme.onErrorContainer
+                            ),
+                        shape = MaterialTheme.shapes.small
+                    )
                 }
-                Spacer(modifier = Modifier.width(8.dp))
-                if (suffix != null) suffix()
-            }
-        })
+            )
+        }
+    )
 }

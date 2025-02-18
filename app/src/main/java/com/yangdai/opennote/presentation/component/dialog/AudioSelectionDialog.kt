@@ -59,15 +59,15 @@ fun AudioSelectionDialog(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 TextOptionButton(
-                    text = stringResource(R.string.select_audio),
-                    onClick = {
+                    buttonText = stringResource(R.string.select_audio),
+                    onButtonClick = {
                         audioPickerLauncher.launch("audio/*")
                     }
                 )
 
                 TextOptionButton(
-                    text = stringResource(R.string.record_audio),
-                    onClick = {
+                    buttonText = stringResource(R.string.record_audio),
+                    onButtonClick = {
                         val intent = Intent(MediaStore.Audio.Media.RECORD_SOUND_ACTION)
                         try {
                             recordAudioLauncher.launch(intent)

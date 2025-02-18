@@ -8,7 +8,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.defaultMinSize
@@ -59,7 +58,8 @@ import com.yangdai.opennote.presentation.util.Constants
 import com.yangdai.opennote.presentation.util.Constants.DEFAULT_MAX_LINES
 import com.yangdai.opennote.presentation.viewmodel.SharedViewModel
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AdaptiveTopSearchbar(
     modifier: Modifier = Modifier,

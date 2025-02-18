@@ -15,6 +15,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.MenuBook
 import androidx.compose.material.icons.outlined.EditNote
 import androidx.compose.material.icons.outlined.FormatSize
+import androidx.compose.material.icons.outlined.Save
 import androidx.compose.material.icons.outlined.Spellcheck
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -230,6 +231,66 @@ fun EditorPane(sharedViewModel: SharedViewModel) {
                 }
             }
         }
+
+        HorizontalDivider()
+
+        ListItem(headlineContent = { Text(text = stringResource(R.string.title_align)) })
+
+        val alignOptions = listOf(
+            stringResource(R.string.left),
+            stringResource(R.string.center),
+            stringResource(R.string.right)
+        )
+
+        SingleChoiceSegmentedButtonRow(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 16.dp)
+                .padding(bottom = 16.dp)
+        ) {
+            alignOptions.forEachIndexed { index, _ ->
+                SegmentedButton(
+                    shape = SegmentedButtonDefaults.itemShape(
+                        index = index,
+                        count = alignOptions.size
+                    ),
+                    onClick = {
+                        hapticFeedback.performHapticFeedback(HapticFeedbackType.SegmentTick)
+                        sharedViewModel.putPreferenceValue(Constants.Preferences.TITLE_ALIGN, index)
+                    },
+                    selected = settingsState.titleAlignment == index
+                ) {
+                    Text(alignOptions[index], maxLines = 1, modifier = Modifier.basicMarquee())
+                }
+            }
+        }
+
+        HorizontalDivider()
+
+        ListItem(
+            leadingContent = {
+                Icon(
+                    imageVector = Icons.Outlined.Save,
+                    contentDescription = "Auto save"
+                )
+            },
+            headlineContent = { Text(text = stringResource(R.string.auto_save)) },
+            trailingContent = {
+                Switch(
+                    checked = settingsState.isAutoSaveEnabled,
+                    onCheckedChange = { checked ->
+                        if (checked)
+                            hapticFeedback.performHapticFeedback(HapticFeedbackType.ToggleOn)
+                        else
+                            hapticFeedback.performHapticFeedback(HapticFeedbackType.ToggleOff)
+                        sharedViewModel.putPreferenceValue(
+                            Constants.Preferences.IS_AUTO_SAVE_ENABLED,
+                            checked
+                        )
+                    }
+                )
+            }
+        )
 
         HorizontalDivider()
 

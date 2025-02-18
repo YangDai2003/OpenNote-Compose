@@ -43,7 +43,6 @@ import com.yangdai.opennote.presentation.util.rememberCustomTabsIntent
 import com.yangdai.opennote.presentation.viewmodel.SharedViewModel
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-import java.time.format.DateTimeParseException
 
 @Composable
 fun TemplatePane(sharedViewModel: SharedViewModel) {
@@ -55,6 +54,9 @@ fun TemplatePane(sharedViewModel: SharedViewModel) {
 
     var currentDateFormatted by remember { mutableStateOf("") }
     var currentTimeFormatted by remember { mutableStateOf("") }
+
+    var isDateInvalid by remember { mutableStateOf(false) }
+    var isTimeInvalid by remember { mutableStateOf(false) }
 
     val customTabsIntent = rememberCustomTabsIntent()
     val context = LocalContext.current
@@ -72,21 +74,26 @@ fun TemplatePane(sharedViewModel: SharedViewModel) {
 
     // Update formatted date and time whenever formatters change
     LaunchedEffect(currentDateFormatter, currentTimeFormatter) {
-        try {
+        runCatching {
             val now = LocalDateTime.now()
             val dateFormatter =
                 DateTimeFormatter.ofPattern(if (currentDateFormatter.isBlank()) "yyyy-MM-DD" else currentDateFormatter)
             currentDateFormatted = now.format(dateFormatter)
-        } catch (_: DateTimeParseException) {
-            currentDateFormatted = "Invalid Format"
+        }.onFailure {
+            isDateInvalid = true
+        }.onSuccess {
+            isDateInvalid = false
         }
-        try {
+
+        runCatching {
             val now = LocalDateTime.now()
             val timeFormatter =
                 DateTimeFormatter.ofPattern(if (currentTimeFormatter.isBlank()) "HH:mm" else currentTimeFormatter)
             currentTimeFormatted = now.format(timeFormatter)
-        } catch (_: DateTimeParseException) {
-            currentTimeFormatted = "Invalid Format"
+        }.onFailure {
+            isTimeInvalid = true
+        }.onSuccess {
+            isTimeInvalid = false
         }
     }
 
@@ -134,9 +141,11 @@ fun TemplatePane(sharedViewModel: SharedViewModel) {
                 Text(text = annotatedString)
             })
 
-        Row(Modifier
-            .widthIn(max = 600.dp)
-            .padding(horizontal = 16.dp)) {
+        Row(
+            Modifier
+                .widthIn(max = 600.dp)
+                .padding(horizontal = 16.dp)
+        ) {
             CustomTextField(
                 value = currentDateFormatter,
                 onValueChange = {
@@ -145,6 +154,7 @@ fun TemplatePane(sharedViewModel: SharedViewModel) {
                         Constants.Preferences.DATE_FORMATTER, it
                     )
                 },
+                isError = isDateInvalid,
                 leadingIcon = Icons.Outlined.DateRange,
                 placeholderText = "YYYY-MM-DD"
             )
@@ -185,9 +195,11 @@ fun TemplatePane(sharedViewModel: SharedViewModel) {
                 Text(text = annotatedString)
             })
 
-        Row(Modifier
-            .widthIn(max = 600.dp)
-            .padding(horizontal = 16.dp)) {
+        Row(
+            Modifier
+                .widthIn(max = 600.dp)
+                .padding(horizontal = 16.dp)
+        ) {
             CustomTextField(
                 value = currentTimeFormatter,
                 onValueChange = {
@@ -196,6 +208,7 @@ fun TemplatePane(sharedViewModel: SharedViewModel) {
                         Constants.Preferences.TIME_FORMATTER, it
                     )
                 },
+                isError = isTimeInvalid,
                 leadingIcon = Icons.Outlined.AccessTime,
                 placeholderText = "HH:mm"
             )

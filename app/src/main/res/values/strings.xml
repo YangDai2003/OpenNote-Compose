@@ -119,7 +119,7 @@
     <string name="default_editing_mode_for_note">The default editing mode a new note will start with.</string>
     <string name="editing_view">Editing view</string>
     <string name="reading_view">Reading view</string>
-    <string name="sponsor">Sponsor</string>
+    <string name="sponsor">Sponsor developer ☕</string>
     <string name="notes">" notes"</string>
     <string name="note">" note"</string>
     <string name="image">Image</string>
@@ -184,4 +184,10 @@
     <string name="line_count">Lines</string>
     <string name="paragraph_count">Paragraphs</string>
     <string name="outline">Outline</string>
+    <string name="auto_save">Auto save</string>
+    <string name="ask_save_note">Save note?</string>
+    <string name="title_align">Title alignment</string>
+    <string name="left">Left</string>
+    <string name="center">Center</string>
+    <string name="right">Right</string>
 </resources>

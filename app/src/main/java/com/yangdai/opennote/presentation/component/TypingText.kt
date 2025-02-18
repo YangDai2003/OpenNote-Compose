@@ -18,27 +18,52 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.text.TextStyle
 
+/**
+ * A composable function that displays text with a typing animation effect.
+ *
+ * This composable simulates the effect of text being typed out character by character.
+ * It achieves this by animating an index that controls how many characters of the target
+ * text are displayed at any given time. The animation can be customized using
+ * [animationSpec], and the text's appearance can be modified with [style].
+ *
+ * @param text The text to be displayed with the typing effect.
+ * @param modifier Modifiers to be applied to the root layout (Box) of this composable.
+ * @param animationSpec The animation specification for controlling the typing speed and easing.
+ *                      Defaults to a linear animation that takes 80 milliseconds per character.
+ * @param style The text style to be applied to the displayed text. Defaults to the current
+ *              [LocalTextStyle].
+ * @param reserveSpace Whether to reserve space for the full text even during the animation.
+ *                     If true, a transparent version of the full text is rendered in the background,
+ *                     ensuring that the layout doesn't shift as the text is typed. Defaults to true.
+ *
+ * Example Usage:
+ * ```
+ * TypingText(
+ *     text = "Hello, World!",
+ *     modifier = Modifier.padding(16.dp),
+ *     animationSpec = tween(durationMillis = 5000, easing = LinearEasing), // Slower animation
+ */
 @Composable
 fun TypingText(
     text: String,
     modifier: Modifier = Modifier,
-    spec: AnimationSpec<Int> = tween(durationMillis = text.length * 80, easing = LinearEasing),
+    animationSpec: AnimationSpec<Int> = tween(durationMillis = text.length * 80, easing = LinearEasing),
     style: TextStyle = LocalTextStyle.current,
-    preoccupySpace: Boolean = true
+    reserveSpace: Boolean = true
 ) {
-    var textToAnimate by remember { mutableStateOf("") }
+    var animatedText by remember { mutableStateOf("") }
     val index = remember {
         Animatable(initialValue = 0, typeConverter = Int.VectorConverter)
     }
 
     LaunchedEffect(text) {
         index.snapTo(0)
-        textToAnimate = text
-        index.animateTo(text.length, spec)
+        animatedText = text
+        index.animateTo(text.length, animationSpec)
     }
 
     Box(modifier = modifier) {
-        if (preoccupySpace && index.isRunning) {
+        if (reserveSpace && index.isRunning) {
             Text(
                 text = text,
                 style = style,
@@ -47,7 +72,7 @@ fun TypingText(
         }
 
         Text(
-            text = textToAnimate.substring(0, index.value) + if (index.isRunning) " |" else "",
+            text = animatedText.substring(0, index.value) + if (index.isRunning) " |" else "",
             style = style
         )
     }

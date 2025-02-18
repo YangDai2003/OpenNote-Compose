@@ -252,7 +252,9 @@ class SharedViewModel @Inject constructor(
         dataStoreRepository.intFlow(BackupManager.BACKUP_FREQUENCY_KEY),
         dataStoreRepository.stringFlow(Constants.Preferences.PASSWORD),
         dataStoreRepository.intFlow(Constants.Preferences.ENUM_OVERFLOW_STYLE),
-        dataStoreRepository.intFlow(Constants.Preferences.ENUM_CONTENT_SIZE)
+        dataStoreRepository.intFlow(Constants.Preferences.ENUM_CONTENT_SIZE),
+        dataStoreRepository.booleanFlow(Constants.Preferences.IS_AUTO_SAVE_ENABLED),
+        dataStoreRepository.intFlow(Constants.Preferences.TITLE_ALIGN)
     ) { values ->
         SettingsState(
             theme = AppTheme.fromInt(values[0] as Int),
@@ -274,7 +276,9 @@ class SharedViewModel @Inject constructor(
             backupFrequency = values[16] as Int,
             password = values[17] as String,
             enumOverflowStyle = ListNoteContentOverflowStyle.fromInt(values[18] as Int),
-            enumContentSize = ListNoteContentSize.fromInt(values[19] as Int)
+            enumContentSize = ListNoteContentSize.fromInt(values[19] as Int),
+            isAutoSaveEnabled = values[20] as Boolean,
+            titleAlignment = values[21] as Int
         )
     }.flowOn(Dispatchers.IO).stateIn(
         scope = viewModelScope, started = SharingStarted.Eagerly, initialValue = SettingsState()
@@ -577,9 +581,8 @@ class SharedViewModel @Inject constructor(
                         timestamp = System.currentTimeMillis()
                     )
                     if (note.id != null) {
-                        if (note.title != _oNote.title || note.content != _oNote.content || note.isMarkdown != _oNote.isMarkdown || note.folderId != _oNote.folderId) useCases.updateNote(
-                            note
-                        )
+                        if (note.title != _oNote.title || note.content != _oNote.content || note.isMarkdown != _oNote.isMarkdown || note.folderId != _oNote.folderId)
+                            useCases.updateNote(note)
                     } else {
                         if (note.title.isNotBlank() || note.content.isNotBlank()) {
                             val newId = useCases.addNote(note)
@@ -589,6 +592,19 @@ class SharedViewModel @Inject constructor(
                 }
             }
         }
+    }
+
+    fun shouldShowSnackbar(): Boolean {
+        val isNoteChanged = contentState.text.toString() != _oNote.content
+                || titleState.text.toString() != _oNote.title
+                || noteStateFlow.value.isStandard != _oNote.isMarkdown
+                || noteStateFlow.value.folderId != _oNote.folderId
+        val isAutoSaveEnabled =
+            dataStoreRepository.getBooleanValue(Constants.Preferences.IS_AUTO_SAVE_ENABLED, true)
+        val isNoteEmpty = contentState.text.isBlank() && titleState.text.isBlank()
+        val isNewNote = noteStateFlow.value.id == null
+        if (isAutoSaveEnabled) return false
+        return if (isNewNote) !isNoteEmpty else isNoteChanged
     }
 
     private val _dataActionState = MutableStateFlow(DataActionState())

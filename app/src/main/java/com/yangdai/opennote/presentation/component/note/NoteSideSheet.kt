@@ -3,6 +3,9 @@ package com.yangdai.opennote.presentation.component.note
 import android.util.Log
 import androidx.activity.BackEventCompat
 import androidx.activity.compose.PredictiveBackHandler
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
@@ -24,16 +27,17 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowRight
-import androidx.compose.material.icons.automirrored.filled.ViewSidebar
 import androidx.compose.material.icons.filled.ArrowDropDown
-import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
 import androidx.compose.material3.adaptive.currentWindowDpSize
@@ -57,7 +61,6 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.text.withStyle
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
@@ -70,6 +73,7 @@ import java.util.Locale
 import kotlin.coroutines.cancellation.CancellationException
 import kotlin.math.roundToInt
 
+
 @OptIn(ExperimentalMaterial3AdaptiveApi::class)
 @Composable
 fun NoteSideSheet(
@@ -78,9 +82,11 @@ fun NoteSideSheet(
     onDismiss: () -> Unit,
     isLargeScreen: Boolean,
     animationDuration: Int = 300,
-    maskColor: Color = Color.Black.copy(alpha = 0.6f),
-    showMask: Boolean = false,
+    maskColor: Color = Color.Black,
     cornerRadius: Dp = 32.dp,
+    outline: HeaderNode,
+    onHeaderClick: (IntRange) -> Unit,
+    actionContent: @Composable ColumnScope.() -> Unit,
     drawerContent: @Composable ColumnScope.() -> Unit
 ) {
     val scope = rememberCoroutineScope()
@@ -97,13 +103,23 @@ fun NoteSideSheet(
 
     // Width of the drawer in pixels
     val drawerWidthPx = remember(density, drawerWidth) { with(density) { drawerWidth.toPx() } }
+    val actionWidthPx = remember(density) { with(density) { 50.dp.toPx() } }
 
     // Offset for the drawer animation
-    val offsetX = remember { Animatable(if (isDrawerOpen) 0f else drawerWidthPx) }
+    val offsetX = remember { Animatable(if (isDrawerOpen) 0f else drawerWidthPx + actionWidthPx) }
+
+    // Offset for the mask animation
+    val maskAlpha = remember { Animatable(if (isDrawerOpen) 0.6f else 0f) }
 
     // Launch animation when the drawer state changes
     LaunchedEffect(isDrawerOpen) {
-        val targetOffsetX = if (isDrawerOpen) 0f else drawerWidthPx
+        val targetMaskAlpha = if (isDrawerOpen) 0.6f else 0f
+        maskAlpha.animateTo(
+            targetValue = targetMaskAlpha, animationSpec = tween(durationMillis = animationDuration)
+        )
+    }
+    LaunchedEffect(isDrawerOpen) {
+        val targetOffsetX = if (isDrawerOpen) 0f else drawerWidthPx + actionWidthPx
         offsetX.animateTo(
             targetValue = targetOffsetX, animationSpec = tween(durationMillis = animationDuration)
         )
@@ -125,29 +141,48 @@ fun NoteSideSheet(
 
     Box(modifier = modifier.fillMaxSize()) {
 
-        // Mask overlay when the drawer is open
-        if (isDrawerOpen && showMask) {
+        AnimatedVisibility(
+            maskAlpha.value > 0f,
+            modifier = Modifier.fillMaxSize(),
+            enter = EnterTransition.None,
+            exit = ExitTransition.None
+        ) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(maskColor)
+                    .background(maskColor.copy(alpha = maskAlpha.value))
                     .pointerInput(Unit) {
                         detectTapGestures(onTap = { onDismiss() })
-                    }
-            )
+                    })
         }
 
-        Box(
+        Column(
+            modifier = Modifier
+                .statusBarsPadding()
+                .offset { IntOffset(x = (offsetX.value - drawerWidthPx).roundToInt(), y = 0) }
+                .align(Alignment.TopEnd)
+                .background(
+                    color = MaterialTheme.colorScheme.surface,
+                    shape = RoundedCornerShape(
+                        topStart = cornerRadius,
+                        bottomStart = cornerRadius
+                    )
+                )
+                .pointerInput(Unit) {},
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Top,
+            content = actionContent
+        )
+
+        Surface(
             modifier = Modifier
                 .fillMaxHeight()
                 .width(drawerWidth)
                 .offset { IntOffset(x = offsetX.value.roundToInt(), y = 0) }
                 .align(Alignment.CenterEnd)
-                .background(
-                    color = MaterialTheme.colorScheme.surface,
-                    shape = RoundedCornerShape(topStart = cornerRadius, bottomStart = cornerRadius)
-                )
-                .pointerInput(Unit) {}
+                .pointerInput(Unit) {},
+            shape = RoundedCornerShape(topStart = cornerRadius, bottomStart = cornerRadius),
+            shadowElevation = 8.dp
         ) {
             Column(
                 modifier = Modifier
@@ -156,13 +191,15 @@ fun NoteSideSheet(
                     .navigationBarsPadding()
                     .padding(start = 16.dp, end = 12.dp)
             ) {
+                var showDetail by rememberSaveable { mutableStateOf(true) }
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(
-                        stringResource(R.string.overview),
+                        text = stringResource(R.string.overview),
+                        modifier = Modifier.clickable { showDetail = !showDetail },
                         style = MaterialTheme.typography.titleLarge,
                         color = MaterialTheme.colorScheme.onSurface,
                         fontWeight = FontWeight.Bold
@@ -175,8 +212,32 @@ fun NoteSideSheet(
                         )
                     }
                 }
-                Spacer(modifier = Modifier.height(8.dp))
-                drawerContent()
+
+                AnimatedVisibility(visible = showDetail) {
+                    SelectionContainer {
+                        Column {
+                            Spacer(modifier = Modifier.height(8.dp))
+                            drawerContent()
+                        }
+                    }
+                }
+
+                HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
+
+                if (outline.children.isNotEmpty())
+                    Text(
+                        modifier = Modifier.padding(bottom = 8.dp),
+                        text = stringResource(R.string.outline),
+                        style = MaterialTheme.typography.titleLarge,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        fontWeight = FontWeight.Bold
+                    )
+
+                LazyColumn {
+                    items(outline.children) { header ->
+                        HeaderItem(header, 0, onHeaderClick)
+                    }
+                }
             }
         }
     }
@@ -248,20 +309,6 @@ data class HeaderNode(
 )
 
 @Composable
-fun OutlineView(
-    outline: HeaderNode,
-    onHeaderClick: (IntRange) -> Unit
-) {
-    LazyColumn {
-        outline.children.forEach { header ->
-            item {
-                HeaderItem(header, 0, onHeaderClick)
-            }
-        }
-    }
-}
-
-@Composable
 private fun HeaderItem(
     header: HeaderNode,
     depth: Int,
@@ -310,32 +357,5 @@ private fun HeaderItem(
         header.children.forEach { child ->
             HeaderItem(child, depth + 1, onHeaderClick)
         }
-    }
-}
-
-@Preview
-@Composable
-private fun CustomSideDrawerOverlayPreview() {
-    var isDrawerOpen by remember { mutableStateOf(false) }
-    Scaffold(
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = { isDrawerOpen = true }
-            ) {
-                Icon(Icons.AutoMirrored.Filled.ViewSidebar, contentDescription = "Open Drawer")
-            }
-        }
-    ) { padding ->
-        NoteSideSheet(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding),
-            isDrawerOpen = isDrawerOpen,
-            onDismiss = { isDrawerOpen = false },
-            isLargeScreen = false,
-            showMask = true,
-            drawerContent = {
-                NoteSideSheetItem("Key", "Value")
-            })
     }
 }

@@ -24,23 +24,28 @@ fun Timeline(
             .fillMaxHeight()
             .width(thickness)
     ) {
-        val lineThickness = thickness.toPx()
+        val canvasHeight = size.height
+        val lineThicknessPx = thickness.toPx()
+        val halfLineThicknessPx = lineThicknessPx / 2
 
-        // 绘制主体部分
+        // Defining the gradient colors outside for better readability and reusability
+        val gradientColors = listOf(
+            color.copy(alpha = 0.2f),
+            color.copy(alpha = 1f),
+            color.copy(alpha = 1f),
+            color.copy(alpha = 0.4f)
+        )
+
+        // Drawing the main vertical line with a gradient
         drawLine(
             brush = Brush.verticalGradient(
-                colors = listOf(
-                    color.copy(alpha = 0.2f),
-                    color.copy(alpha = 1f),
-                    color.copy(alpha = 1f),
-                    color.copy(alpha = 0.4f)
-                ),
+                colors = gradientColors,
                 startY = 0f,
-                endY = size.height
+                endY = canvasHeight
             ),
-            strokeWidth = lineThickness,
-            start = Offset(thickness.toPx() / 2, 0f),
-            end = Offset(thickness.toPx() / 2, size.height),
+            strokeWidth = lineThicknessPx,
+            start = Offset(halfLineThicknessPx, 0f),
+            end = Offset(halfLineThicknessPx, canvasHeight),
             cap = StrokeCap.Round
         )
     }

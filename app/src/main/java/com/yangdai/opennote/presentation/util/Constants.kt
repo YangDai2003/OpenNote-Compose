@@ -37,6 +37,8 @@ object Constants {
         const val FONT_SCALE = "FONT_SCALE"
         const val ENUM_OVERFLOW_STYLE = "ENUM_OVERFLOW_STYLE"
         const val ENUM_CONTENT_SIZE = "ENUM_WIDGET_SIZE"
+        const val IS_AUTO_SAVE_ENABLED = "IS_AUTO_SAVE_ENABLED"
+        const val TITLE_ALIGN = "TITLE_ALIGN"
     }
 
     object Editor {

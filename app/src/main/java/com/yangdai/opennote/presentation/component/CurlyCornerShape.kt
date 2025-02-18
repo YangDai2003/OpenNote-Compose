@@ -2,7 +2,6 @@ package com.yangdai.opennote.presentation.component
 
 import androidx.compose.foundation.shape.CornerBasedShape
 import androidx.compose.foundation.shape.CornerSize
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.shape.ZeroCornerSize
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Outline
@@ -11,10 +10,21 @@ import androidx.compose.ui.unit.LayoutDirection
 import kotlin.math.cos
 import kotlin.math.sin
 
-@Suppress("SameParameterValue")
+/**
+ * A custom shape with curly edges, resembling a circle with sinusoidal indentations.
+ *
+ * This shape creates an outline that appears as a circle with "curly" or "wavy"
+ * edges, achieved by applying a sine wave function to the circle's radius. The
+ * amplitude and the number of curls (waves) can be adjusted.
+ *
+ * @property curlAmplitude The amplitude of the sine wave, controlling the depth of the curls.
+ *               A higher value results in deeper curls. Defaults to 16.0.
+ * @property curlCount The number of curls (waves) around the circle's circumference.
+ *                A higher count results in more frequent curls. Defaults to 12.
+ */
 class CurlyCornerShape(
-    private val amp: Double = 16.0,
-    private val count: Int = 12,
+    private val curlAmplitude: Double = 16.0,
+    private val curlCount: Int = 12,
 ) : CornerBasedShape(
     topStart = ZeroCornerSize,
     topEnd = ZeroCornerSize,
@@ -22,18 +32,29 @@ class CurlyCornerShape(
     bottomStart = ZeroCornerSize
 ) {
 
-    private fun sineCircleXYatAngle(
-        d1: Double,
-        d2: Double,
-        d3: Double,
-        d4: Double,
-        d5: Double,
-        i: Int,
-    ): List<Double> = (i.toDouble() * d5).run {
-        listOf(
-            (sin(this) * d4 + d3) * cos(d5) + d1,
-            (sin(this) * d4 + d3) * sin(d5) + d2
-        )
+    /**
+     * Calculates the x and y coordinates of a point on the curly circle at a given angle.
+     *
+     * @param centerX The x-coordinate of the center of the circle.
+     * @param centerY The y-coordinate of the center of the circle.
+     * @param baseRadius The base radius of the circle.
+     * @param amplitude The amplitude of the sine wave.
+     * @param angle The angle in radians.
+     * @return A Pair containing the x and y coordinates of the point.
+     */
+    private fun calculateCurlyCirclePoint(
+        centerX: Double,
+        centerY: Double,
+        baseRadius: Double,
+        amplitude: Double,
+        angle: Double,
+    ): Pair<Double, Double> {
+        // Calculate the radius with the sine wave applied.
+        val radius = baseRadius + amplitude * sin(curlCount * angle)
+        // Calculate x and y coordinates using polar coordinates.
+        val x = centerX + radius * cos(angle)
+        val y = centerY + radius * sin(angle)
+        return Pair(x, y)
     }
 
     override fun createOutline(
@@ -44,29 +65,28 @@ class CurlyCornerShape(
         bottomStart: Float,
         layoutDirection: LayoutDirection
     ): Outline {
-        val d = 2.0
-        val r2: Double = size.width / d
-        var r13: Double = size.height / d
-        val r18 = size.width / 2.0 - amp
+        val centerX = size.width / 2.0
+        val centerY = size.height / 2.0
+        val baseRadius = centerX - curlAmplitude
         val path = Path()
-        path.moveTo((d * r2 - amp).toFloat(), r13.toFloat())
-        var i = 0
-        while (true) {
-            val i2 = i + 1
-            val d3 = r13
-            val r5: List<Double> = sineCircleXYatAngle(
-                r2, r13, r18, amp, Math.toRadians(
-                    i.toDouble()
-                ), count
-            )
-            path.lineTo(r5[0].toFloat(), r5[1].toFloat())
-            if (i2 >= 360) {
-                path.close()
-                return Outline.Generic(path)
-            }
-            i = i2
-            r13 = d3
+
+        // Start at the rightmost point
+        val startPoint = calculateCurlyCirclePoint(centerX, centerY, baseRadius, curlAmplitude, 0.0)
+        path.moveTo(startPoint.first.toFloat(), startPoint.second.toFloat())
+
+        // Iterate through 360 degrees to draw the curly circle
+        for (angleDegrees in 1..360) {
+            // Convert the angle to radians.
+            val angleRadians = Math.toRadians(angleDegrees.toDouble())
+
+            // calculate the current point
+            val currentPoint = calculateCurlyCirclePoint(centerX, centerY, baseRadius, curlAmplitude, angleRadians)
+
+            path.lineTo(currentPoint.first.toFloat(), currentPoint.second.toFloat())
         }
+
+        path.close()
+        return Outline.Generic(path)
     }
 
     override fun copy(
@@ -74,10 +94,8 @@ class CurlyCornerShape(
         topEnd: CornerSize,
         bottomEnd: CornerSize,
         bottomStart: CornerSize,
-    ) = RoundedCornerShape(
-        topStart = topStart,
-        topEnd = topEnd,
-        bottomEnd = bottomEnd,
-        bottomStart = bottomStart
+    ): CurlyCornerShape = CurlyCornerShape(
+        curlAmplitude = this.curlAmplitude,
+        curlCount = this.curlCount
     )
 }

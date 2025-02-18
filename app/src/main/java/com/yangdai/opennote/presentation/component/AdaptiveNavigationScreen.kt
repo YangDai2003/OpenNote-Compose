@@ -22,7 +22,7 @@ fun AdaptiveNavigationScreen(
     isLargeScreen: Boolean,
     drawerState: DrawerState,
     gesturesEnabled: Boolean,
-    drawerContent: @Composable (ColumnScope.() -> Unit),
+    drawerContent: @Composable ColumnScope.() -> Unit,
     content: @Composable () -> Unit
 ) = if (isLargeScreen) {
     PermanentNavigationScreen(
@@ -31,25 +31,24 @@ fun AdaptiveNavigationScreen(
     )
 } else {
     ModalNavigationScreen(
-        drawerContent = drawerContent,
         drawerState = drawerState,
         gesturesEnabled = gesturesEnabled,
+        drawerContent = drawerContent,
         content = content
     )
 }
 
 @Composable
-fun ModalNavigationScreen(
-    drawerContent: @Composable (ColumnScope.() -> Unit),
+private fun ModalNavigationScreen(
     drawerState: DrawerState,
     gesturesEnabled: Boolean,
+    drawerContent: @Composable ColumnScope.() -> Unit,
     content: @Composable () -> Unit
 ) = ModalNavigationDrawer(
     drawerContent = {
-        ModalDrawerSheet(
-            drawerState = drawerState,
-            content = drawerContent
-        )
+        ModalDrawerSheet(drawerState = drawerState) {
+            drawerContent()
+        }
     },
     drawerState = drawerState,
     gesturesEnabled = gesturesEnabled,
@@ -57,14 +56,14 @@ fun ModalNavigationScreen(
 )
 
 @Composable
-fun PermanentNavigationScreen(
-    drawerContent: @Composable (ColumnScope.() -> Unit),
+private fun PermanentNavigationScreen(
+    drawerContent: @Composable ColumnScope.() -> Unit,
     content: @Composable () -> Unit
 ) = PermanentNavigationDrawer(
     drawerContent = {
-        PermanentDrawerSheet(
-            content = drawerContent
-        )
+        PermanentDrawerSheet {
+            drawerContent()
+        }
     },
     content = content
 )

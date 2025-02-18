@@ -52,7 +52,7 @@ fun DrawerContent(
     selectedDrawerIndex: Int,
     onLockClick: () -> Unit,
     navigateTo: (Screen) -> Unit,
-    onClick: (Int, FolderEntity) -> Unit
+    onDrawerItemClicked: (Int, FolderEntity) -> Unit
 ) = Column(
     modifier = Modifier
         .fillMaxWidth()
@@ -92,18 +92,16 @@ fun DrawerContent(
     DrawerItem(
         icon = Icons.Outlined.Book,
         label = stringResource(R.string.all_notes),
-        isSelected = selectedDrawerIndex == 0
-    ) {
-        onClick(0, FolderEntity())
-    }
+        isSelected = selectedDrawerIndex == 0,
+        onClick = { onDrawerItemClicked(0, FolderEntity()) }
+    )
 
     DrawerItem(
         icon = Icons.Outlined.Delete,
         label = stringResource(R.string.trash),
-        isSelected = selectedDrawerIndex == 1
-    ) {
-        onClick(1, FolderEntity())
-    }
+        isSelected = selectedDrawerIndex == 1,
+        onClick = { onDrawerItemClicked(1, FolderEntity()) }
+    )
 
     HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp))
 
@@ -118,10 +116,9 @@ fun DrawerContent(
         icon = if (!isFoldersExpended) Icons.AutoMirrored.Outlined.KeyboardArrowRight else Icons.Outlined.KeyboardArrowDown,
         label = stringResource(R.string.folders),
         badge = folderNoteCounts.size.toString(),
-        isSelected = false
-    ) {
-        isFoldersExpended = !isFoldersExpended
-    }
+        isSelected = false,
+        onClick = { isFoldersExpended = !isFoldersExpended }
+    )
 
     AnimatedVisibility(visible = isFoldersExpended) {
         Column {
@@ -133,10 +130,9 @@ fun DrawerContent(
                             ?: MaterialTheme.colorScheme.primary,
                         label = pair.first.name,
                         badge = pair.second.toString(),
-                        isSelected = selectedDrawerIndex == index + 2
-                    ) {
-                        onClick(index + 2, pair.first)
-                    }
+                        isSelected = selectedDrawerIndex == index + 2,
+                        onClick = { onDrawerItemClicked(index + 2, pair.first) }
+                    )
                 }
             }
         }
@@ -146,13 +142,14 @@ fun DrawerContent(
         modifier = Modifier
             .fillMaxWidth()
             .padding(NavigationDrawerItemDefaults.ItemPadding),
-        onClick = { navigateTo(Folders) }) {
+        onClick = { navigateTo(Folders) }
+    ) {
         Text(text = stringResource(R.string.manage_folders), textAlign = TextAlign.Center)
     }
 }
 
 @Composable
-fun DrawerItem(
+private fun DrawerItem(
     icon: ImageVector,
     iconTint: Color = MaterialTheme.colorScheme.onSurface,
     label: String,

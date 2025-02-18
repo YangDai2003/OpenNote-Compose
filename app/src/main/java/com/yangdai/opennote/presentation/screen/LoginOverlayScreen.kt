@@ -21,9 +21,9 @@ import com.yangdai.opennote.presentation.util.BiometricPromptManager
 
 @Composable
 fun LoginOverlayScreen(
-    password: String,
+    storedPassword: String,
     biometricAuthEnabled: Boolean,
-    isCreatingPass: Boolean,
+    isCreatingPassword: Boolean,
     onCreatingCanceled: () -> Unit,
     onPassCreated: (String) -> Unit,
     onAuthenticated: () -> Unit,
@@ -54,7 +54,7 @@ fun LoginOverlayScreen(
             Toast.makeText(LocalContext.current, message, Toast.LENGTH_SHORT).show()
     }
 
-    val enrollLauncher =
+    val enrollBiometricsLauncher =
         rememberLauncherForActivityResult(contract = ActivityResultContracts.StartActivityForResult()) {
 
         }
@@ -68,7 +68,7 @@ fun LoginOverlayScreen(
                         BiometricManager.Authenticators.BIOMETRIC_STRONG
                     )
                 }
-                enrollLauncher.launch(enrollIntent)
+                enrollBiometricsLauncher.launch(enrollIntent)
             } else {
                 onAuthenticationNotEnrolled()
             }
@@ -79,9 +79,9 @@ fun LoginOverlayScreen(
     val negativeButtonText = stringResource(android.R.string.cancel)
 
     NumberLockScreen(
-        password = password,
-        biometricAuthEnabled = biometricAuthEnabled,
-        isCreatingPass = isCreatingPass,
+        storedPassword = storedPassword,
+        isBiometricAuthEnabled = biometricAuthEnabled,
+        isCreatingPassword = isCreatingPassword,
         onCreatingCanceled = onCreatingCanceled,
         onPassCreated = onPassCreated,
         onFingerprintClick = {

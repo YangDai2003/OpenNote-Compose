@@ -58,11 +58,11 @@ fun AnimatedGradientText(
     val brush =
         remember(gradientXScale, offsetX, gradientAngle, gradientColors, gradientStops) {
             GradientBrush(
-                angleDegrees = gradientAngle,
-                colors = gradientColors,
-                stops = gradientStops,
+                rotationAngle = gradientAngle,
+                gradientColors = gradientColors,
+                colorStops = gradientStops,
                 scaleX = gradientXScale,
-                offset = Offset(offsetX, 0f),
+                gradientOffset = Offset(offsetX, 0f),
             )
         }
 

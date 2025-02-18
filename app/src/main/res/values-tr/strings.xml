@@ -116,7 +116,7 @@
     <string name="default_editing_mode_for_note">Yeni bir not başladığında kullanılacak varsayılan düzenleme modu.</string>
     <string name="editing_view">Düzenleme görünümü</string>
     <string name="reading_view">Okuma görünümü</string>
-    <string name="sponsor">Sponsor</string>
+    <string name="sponsor">Bir Geliştiriciye Sponsor Olun ☕</string>
     <string name="notes">" notlar"</string>
     <string name="note">" not"</string>
     <string name="image">Resim</string>
@@ -181,4 +181,10 @@
     <string name="line_count">Satır</string>
     <string name="paragraph_count">Paragraf</string>
     <string name="outline">Anahat</string>
+    <string name="auto_save">Otomatik kaydet</string>
+    <string name="ask_save_note">Notu kaydet?</string>
+    <string name="title_align">Başlık hizalama</string>
+    <string name="left">Sol</string>
+    <string name="center">Orta</string>
+    <string name="right">Sağ</string>
 </resources>

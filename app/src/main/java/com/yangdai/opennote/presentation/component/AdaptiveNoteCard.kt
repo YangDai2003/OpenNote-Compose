@@ -1,6 +1,5 @@
 package com.yangdai.opennote.presentation.component
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
@@ -28,6 +27,25 @@ import com.yangdai.opennote.R
 import com.yangdai.opennote.data.local.entity.NoteEntity
 import com.yangdai.opennote.presentation.util.timestampToFormatLocalDateTime
 
+/**
+ * A composable function that displays a note card in either a list or grid layout,
+ * adapting its appearance based on the `isListView` parameter.
+ *
+ * It delegates the actual rendering to either [ColumnNoteCard] or [GridNoteCard] based on the `isListView` value.
+ *
+ * @param modifier Modifier to be applied to the note card.
+ * @param isListView Boolean indicating whether to display the note in a list layout (true) or a grid layout (false).
+ * @param note The [NoteEntity] to be displayed in the card.
+ * @param maxLines The maximum number of lines of text to display in the note's content.
+ * @param textOverflow The overflow strategy to apply to the note's content if it exceeds the maximum number of lines.
+ * @param isEnabled Boolean indicating whether the note is currently enabled.
+ * @param isSelected Boolean indicating whether the note is currently selected.
+ * @param onNoteClick Lambda function to be called when the note card is clicked. It receives the [NoteEntity] as a parameter.
+ * @param onEnableChange Lambda function to be called when the enabled state of the note changes. It receives a Boolean representing the new enabled state.
+ *
+ * @see ColumnNoteCard
+ * @see GridNoteCard
+ */
 @Composable
 fun AdaptiveNoteCard(
     modifier: Modifier = Modifier,
@@ -95,10 +113,8 @@ private fun NoteCardContent(
     }
 }
 
-
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun GridNoteCard(
+private fun GridNoteCard(
     modifier: Modifier = Modifier,
     note: NoteEntity,
     maxLines: Int,
@@ -116,7 +132,8 @@ fun GridNoteCard(
             .fillMaxWidth()
             .combinedClickable(
                 onLongClick = { onEnableChange(true) },
-                onClick = { onNoteClick(note) })
+                onClick = { onNoteClick(note) }
+            )
     ) {
         if (isEnabled) Checkbox(
             checked = isSelected,
@@ -129,9 +146,8 @@ fun GridNoteCard(
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun ColumnNoteCard(
+private fun ColumnNoteCard(
     modifier: Modifier = Modifier,
     note: NoteEntity,
     maxLines: Int,
@@ -186,9 +202,10 @@ fun ColumnNoteCard(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .combinedClickable(onLongClick = {
-                    onEnableChange(true)
-                }, onClick = { onNoteClick(note) })
+                .combinedClickable(
+                    onLongClick = { onEnableChange(true) },
+                    onClick = { onNoteClick(note) }
+                )
         ) {
             if (isEnabled) Checkbox(
                 checked = isSelected,

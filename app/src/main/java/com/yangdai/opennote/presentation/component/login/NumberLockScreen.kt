@@ -67,9 +67,9 @@ fun NumberLockScreenPreview() {
 @SuppressLint("UnusedBoxWithConstraintsScope")
 @Composable
 fun NumberLockScreen(
-    password: String = "1234",
-    biometricAuthEnabled: Boolean = false,
-    isCreatingPass: Boolean = false,
+    storedPassword: String = "1234",
+    isBiometricAuthEnabled: Boolean = false,
+    isCreatingPassword: Boolean = false,
     onCreatingCanceled: () -> Unit = {},
     onPassCreated: (String) -> Unit = {},
     onFingerprintClick: () -> Unit = {},
@@ -143,7 +143,7 @@ fun NumberLockScreen(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {
-                    if (isCreatingPass) {
+                    if (isCreatingPassword) {
                         if (inputPassword.length < 4)
                             Text(
                                 stringResource(R.string.create_password),
@@ -158,12 +158,12 @@ fun NumberLockScreen(
                     Spacer(modifier = Modifier.height(48.dp))
                     PasswordCircles(
                         modifier = Modifier.graphicsLayer { translationX = offsetX },
-                        passwordLength = if (isCreatingPass) {
+                        passwordLength = if (isCreatingPassword) {
                             if (inputPassword.length < 4) inputPassword.length else inputPassword2.length
                         } else inputPassword.length,
                         isError = isError
                     )
-                    if (isCreatingPass) {
+                    if (isCreatingPassword) {
                         Spacer(modifier = Modifier.height(padding))
                         TextButton(
                             onClick = onCreatingCanceled
@@ -179,11 +179,11 @@ fun NumberLockScreen(
                     verticalArrangement = Arrangement.Center
                 ) {
                     NumberPad(
-                        biometricAuthEnabled = biometricAuthEnabled,
+                        biometricAuthEnabled = isBiometricAuthEnabled,
                         size = buttonSize,
                         padding = padding,
                         onNumberClick = { number ->
-                            if (isCreatingPass)
+                            if (isCreatingPassword)
                                 if (inputPassword.length < 4) {
                                     inputPassword += number
                                 } else {
@@ -205,7 +205,7 @@ fun NumberLockScreen(
                                 if (inputPassword.length < 4) {
                                     inputPassword += number
                                     if (inputPassword.length == 4) {
-                                        if (inputPassword == password) {
+                                        if (inputPassword == storedPassword) {
                                             onAuthenticated()
                                         } else {
                                             hapticFeedback.performHapticFeedback(HapticFeedbackType.Reject)
@@ -215,7 +215,7 @@ fun NumberLockScreen(
                                 }
                         },
                         onDeleteClick = {
-                            if (isCreatingPass) {
+                            if (isCreatingPassword) {
                                 if (inputPassword.length < 4 && inputPassword.isNotEmpty())
                                     inputPassword = inputPassword.dropLast(1)
                                 else
@@ -245,7 +245,7 @@ fun NumberLockScreen(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {
-                    if (isCreatingPass) {
+                    if (isCreatingPassword) {
                         if (inputPassword.length < 4)
                             Text(
                                 stringResource(R.string.create_password),
@@ -260,7 +260,7 @@ fun NumberLockScreen(
                     Spacer(modifier = Modifier.height(48.dp))
                     PasswordCircles(
                         modifier = Modifier.graphicsLayer { translationX = offsetX },
-                        passwordLength = if (isCreatingPass) {
+                        passwordLength = if (isCreatingPassword) {
                             if (inputPassword.length < 4) inputPassword.length else inputPassword2.length
                         } else inputPassword.length,
                         isError = isError
@@ -276,11 +276,11 @@ fun NumberLockScreen(
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
                     NumberPad(
-                        biometricAuthEnabled = biometricAuthEnabled,
+                        biometricAuthEnabled = isBiometricAuthEnabled,
                         size = buttonSize,
                         padding = padding,
                         onNumberClick = { number ->
-                            if (isCreatingPass)
+                            if (isCreatingPassword)
                                 if (inputPassword.length < 4) {
                                     inputPassword += number
                                 } else {
@@ -302,7 +302,7 @@ fun NumberLockScreen(
                                 if (inputPassword.length < 4) {
                                     inputPassword += number
                                     if (inputPassword.length == 4) {
-                                        if (inputPassword == password) {
+                                        if (inputPassword == storedPassword) {
                                             onAuthenticated()
                                         } else {
                                             hapticFeedback.performHapticFeedback(HapticFeedbackType.Reject)
@@ -312,7 +312,7 @@ fun NumberLockScreen(
                                 }
                         },
                         onDeleteClick = {
-                            if (isCreatingPass) {
+                            if (isCreatingPassword) {
                                 if (inputPassword.length < 4 && inputPassword.isNotEmpty())
                                     inputPassword = inputPassword.dropLast(1)
                                 else
@@ -327,7 +327,7 @@ fun NumberLockScreen(
                         },
                         onFingerprintClick = onFingerprintClick
                     )
-                    if (isCreatingPass) {
+                    if (isCreatingPassword) {
                         Spacer(modifier = Modifier.height(padding))
                         TextButton(
                             onClick = onCreatingCanceled

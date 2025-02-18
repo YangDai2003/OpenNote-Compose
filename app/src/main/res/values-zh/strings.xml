@@ -63,7 +63,7 @@
     <string name="data">数据</string>
     <string name="security">安全</string>
     <string name="import_files_description">批量导入文本类型的文件（比如：.txt, .md, .html）。文件名会作为标题，并自动判断是否为 MARKDOWN 类型。</string>
-    <string name="backup_description">将所有文件夹和其所包含的笔记备份为一个JSON文件，保存到 ｛OpenNote/Backup｝ 。</string>
+    <string name="backup_description">将所有文件夹和其所包含的笔记备份为一个JSON文件，保存到｛OpenNote/Backup｝。</string>
     <string name="restore_description">将所选的 JSON 备份文件中的数据写入到数据库中。如果数据冲突，备份文件将覆盖数据库中的笔记。</string>
     <string name="reset_database_description">清空数据库中的所有内容（包括所有笔记和文件夹）。</string>
     <string name="backup">备份</string>
@@ -117,7 +117,7 @@
     <string name="default_editing_mode_for_note">创建新笔记时默认使用的编辑模式。</string>
     <string name="editing_view">编辑视图</string>
     <string name="reading_view">阅读视图</string>
-    <string name="sponsor">赞助，给开发者一点鼓励</string>
+    <string name="sponsor">赞助，给开发者一点鼓励 ☕</string>
     <string name="notes">个笔记</string>
     <string name="note">个笔记</string>
     <string name="image">图片</string>
@@ -182,4 +182,10 @@
     <string name="line_count">行数</string>
     <string name="paragraph_count">段落数</string>
     <string name="outline">大纲</string>
+    <string name="auto_save">自动保存</string>
+    <string name="ask_save_note">要保存笔记吗?</string>
+    <string name="title_align">标题位置</string>
+    <string name="left">靠左</string>
+    <string name="center">居中</string>
+    <string name="right">靠右</string>
 </resources>

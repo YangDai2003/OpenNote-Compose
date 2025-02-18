@@ -117,7 +117,7 @@
     <string name="default_editing_mode_for_note">Der Standardbearbeitungsmodus, mit dem eine neue Notiz beginnt.</string>
     <string name="editing_view">Bearbeitungs-Ansicht</string>
     <string name="reading_view">Lese-Ansicht</string>
-    <string name="sponsor">Spenden</string>
+    <string name="sponsor">Entwickler sponsern ☕</string>
     <string name="notes">" Notizen"</string>
     <string name="note">" Notiz"</string>
     <string name="image">Foto</string>
@@ -182,4 +182,10 @@
     <string name="line_count">Zeilen</string>
     <string name="paragraph_count">Absätze</string>
     <string name="outline">Gliederung</string>
+    <string name="auto_save">Automatisches Speichern</string>
+    <string name="ask_save_note">Notiz speichern?</string>
+    <string name="title_align">Titelausrichtung</string>
+    <string name="left">Links</string>
+    <string name="center">Mitte</string>
+    <string name="right">Rechts</string>
 </resources>

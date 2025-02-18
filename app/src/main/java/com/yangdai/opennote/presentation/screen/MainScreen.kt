@@ -106,6 +106,7 @@ import com.yangdai.opennote.presentation.state.ListNoteContentSize
 import com.yangdai.opennote.presentation.viewmodel.SharedViewModel
 import kotlinx.coroutines.launch
 
+
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun MainScreen(

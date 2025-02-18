@@ -16,7 +16,6 @@ import androidx.compose.foundation.content.consume
 import androidx.compose.foundation.content.contentReceiver
 import androidx.compose.foundation.content.hasMediaType
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
@@ -32,7 +31,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
@@ -60,7 +58,7 @@ import kotlin.math.sin
 fun StandardTextField(
     modifier: Modifier,
     state: TextFieldState,
-    scrollState: ScrollState = rememberScrollState(),
+    scrollState: ScrollState,
     readMode: Boolean,
     isLintActive: Boolean,
     headerRange: IntRange?,
@@ -73,7 +71,6 @@ fun StandardTextField(
     onImageButtonClick: () -> Unit,
     onAudioButtonClick: () -> Unit,
     onVideoButtonClick: () -> Unit,
-    onFocusChanged: (Boolean) -> Unit,
     onImageReceived: (List<Uri>) -> Unit
 ) {
 
@@ -205,7 +202,6 @@ fun StandardTextField(
         // The contentReceiver modifier is used to receive text content from the clipboard or drag-and-drop operations.
         modifier = modifier
             .contentReceiver(receiveContentListener)
-            .onFocusChanged { onFocusChanged(it.isFocused) }
             .onPreviewKeyEvent { keyEvent ->
                 if (keyEvent.type == KeyEventType.KeyDown) {
                     if (keyEvent.isCtrlPressed) {
