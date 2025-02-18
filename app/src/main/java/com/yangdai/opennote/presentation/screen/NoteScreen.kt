@@ -472,7 +472,7 @@ fun NoteScreen(
             AnimatedContent(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 4.dp),
+                    .padding(bottom = 6.dp),
                 targetState = isSearching,
                 contentAlignment = Alignment.TopCenter
             ) {
