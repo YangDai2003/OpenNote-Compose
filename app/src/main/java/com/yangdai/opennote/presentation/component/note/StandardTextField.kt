@@ -38,6 +38,7 @@ import androidx.compose.ui.graphics.PointMode
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.isCtrlPressed
@@ -122,15 +123,12 @@ fun StandardTextField(
 
     LaunchedEffect(state.text, findAndReplaceState.searchWord, isLintActive, readMode) {
         withContext(Dispatchers.Default) {
-            lintErrors = if (isLintActive)
-                MarkdownLint().validate(state.text.toString())
-            else
-                emptyList()
-
-            indices = if (!readMode)
-                findAllIndices(state.text.toString(), findAndReplaceState.searchWord)
-            else
-                emptyList()
+            lintErrors =
+                if (isLintActive) MarkdownLint().validate(state.text.toString())
+                else emptyList()
+            indices =
+                if (!readMode) findAllIndices(state.text.toString(), findAndReplaceState.searchWord)
+                else emptyList()
         }
     }
 
@@ -373,47 +371,36 @@ fun StandardTextField(
                     .clipToBounds()
                     .drawBehind {
                         textLayoutResult?.let { layoutResult ->
+                            // 提前计算滚动偏移,避免重复计算
+                            val scrollOffset = Offset(0f, -scrollState.value.toFloat())
                             val text = state.text.toString()
 
-                            if (findAndReplaceState.searchWord.isNotEmpty()) {
-
-                                indices.forEachIndexed { index, (start, end) ->
-                                    if (start < end && end <= text.length) {
-                                        // 获取整个范围的Path
-                                        val path: Path = layoutResult.getPathForRange(start, end)
-                                        // 调整滚动偏移
-                                        val scrollOffset = scrollState.value.toFloat()
-                                        path.translate(Offset(0f, -scrollOffset))
-
-                                        // 当前选中项使用黄色，其他使用青色
-                                        val highlightColor = if (index == currentIndex) {
-                                            Color.Green
-                                        } else {
-                                            Color.Cyan
+                            // 批量绘制搜索高亮
+                            if (findAndReplaceState.searchWord.isNotBlank()) {
+                                // 使用 withTransform 避免多次 translate
+                                withTransform({ translate(scrollOffset.x, scrollOffset.y) }) {
+                                    indices.forEachIndexed { index, (start, end) ->
+                                        if (start < end && end <= text.length) {
+                                            val path = layoutResult.getPathForRange(start, end)
+                                            drawPath(
+                                                path = path,
+                                                color = if (index == currentIndex) Color.Green else Color.Cyan,
+                                                alpha = 0.5f,
+                                            )
                                         }
-
-                                        drawPath(
-                                            path = path,
-                                            color = highlightColor,
-                                            alpha = 0.5f,
-                                        )
                                     }
                                 }
                             }
 
-                            lintErrors.forEach { (start, end) ->
-                                if (start < end && end <= text.length) {
-                                    val path: Path = layoutResult.getPathForRange(start, end)
-                                    // 调整滚动偏移
-                                    val scrollOffset = scrollState.value.toFloat()
-                                    path.translate(Offset(0f, -scrollOffset))
-
-                                    // 绘制波浪线
-                                    drawWavyUnderline(
-                                        drawScope = this,
-                                        path = path,
-                                        phase = phase
-                                    )
+                            // 批量绘制波浪线
+                            if (isLintActive) {
+                                withTransform({ translate(scrollOffset.x, scrollOffset.y) }) {
+                                    lintErrors.forEach { (start, end) ->
+                                        if (start < end && end <= text.length) {
+                                            val path = layoutResult.getPathForRange(start, end)
+                                            drawWavyUnderline(this, path, phase)
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -432,17 +419,15 @@ fun StandardTextField(
 }
 
 private fun findAllIndices(text: String, word: String): List<Pair<Int, Int>> {
-    val indices = mutableListOf<Pair<Int, Int>>()
-    if (word.isBlank()) return indices
+    if (word.isBlank()) return emptyList()
 
-    var startIndex = 0
-    while (startIndex <= text.length) {
-        val index = text.indexOf(word, startIndex)
-        if (index == -1) break
-        indices.add(index to (index + word.length))
-        startIndex = index + word.length
+    return buildList {
+        var index = text.indexOf(word)
+        while (index != -1) {
+            add(index to (index + word.length))
+            index = text.indexOf(word, index + 1)
+        }
     }
-    return indices
 }
 
 private fun drawWavyUnderline(
@@ -453,26 +438,29 @@ private fun drawWavyUnderline(
     wavelength: Float = 25f
 ) {
     val bounds = path.getBounds()
+
+    // 预计算正弦波点数
+    val pointCount = ((bounds.right - bounds.left) * 2).toInt()
+    if (pointCount <= 0) return
+
+    val points = FloatArray(pointCount * 2)
     val startX = bounds.left
     val y = bounds.bottom + 2f
 
-    val pathPoints = mutableListOf<Offset>()
-    var x = startX
-
-    while (x < bounds.right) {
-        // 添加相位偏移使波浪动起来
-        val yOffset = (amplitude * sin((x * (2f * PI / wavelength)) + phase)).toFloat()
-        pathPoints.add(Offset(x, y + yOffset))
-        x += 0.5f // 减小步长使波浪更平滑
+    // 批量计算波浪点
+    for (i in 0 until pointCount) {
+        val x = startX + i * 0.5f
+        val yOffset = amplitude * sin((x * (2f * PI / wavelength)) + phase).toFloat()
+        points[i * 2] = x
+        points[i * 2 + 1] = y + yOffset
     }
 
-    if (pathPoints.size > 1) {
-        drawScope.drawPoints(
-            points = pathPoints,
-            pointMode = PointMode.Polygon,
-            color = Color.Red,
-            strokeWidth = 1.5f,
-            cap = StrokeCap.Round // 添加圆角端点使线条更平滑
-        )
-    }
+    // 单次绘制所有点
+    drawScope.drawPoints(
+        points = points.toList().chunked(2).map { (x, y) -> Offset(x, y) },
+        pointMode = PointMode.Polygon,
+        color = Color.Red,
+        strokeWidth = 1.5f,
+        cap = StrokeCap.Round
+    )
 }

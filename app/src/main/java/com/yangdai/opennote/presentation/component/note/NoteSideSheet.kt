@@ -28,21 +28,26 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowRight
 import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.outlined.UnfoldLess
+import androidx.compose.material.icons.outlined.UnfoldMore
+import androidx.compose.material3.DrawerDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MenuDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
 import androidx.compose.material3.adaptive.currentWindowDpSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -61,7 +66,6 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.text.withStyle
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.core.text.isDigitsOnly
@@ -83,7 +87,6 @@ fun NoteSideSheet(
     isLargeScreen: Boolean,
     animationDuration: Int = 300,
     maskColor: Color = Color.Black,
-    cornerRadius: Dp = 32.dp,
     outline: HeaderNode,
     onHeaderClick: (IntRange) -> Unit,
     actionContent: @Composable ColumnScope.() -> Unit,
@@ -162,10 +165,10 @@ fun NoteSideSheet(
                 .offset { IntOffset(x = (offsetX.value - drawerWidthPx).roundToInt(), y = 0) }
                 .align(Alignment.TopEnd)
                 .background(
-                    color = MaterialTheme.colorScheme.surface,
-                    shape = RoundedCornerShape(
-                        topStart = cornerRadius,
-                        bottomStart = cornerRadius
+                    color = MenuDefaults.containerColor,
+                    shape = MaterialTheme.shapes.large.copy(
+                        topEnd = CornerSize(0),
+                        bottomEnd = CornerSize(0)
                     )
                 )
                 .pointerInput(Unit) {},
@@ -181,8 +184,13 @@ fun NoteSideSheet(
                 .offset { IntOffset(x = offsetX.value.roundToInt(), y = 0) }
                 .align(Alignment.CenterEnd)
                 .pointerInput(Unit) {},
-            shape = RoundedCornerShape(topStart = cornerRadius, bottomStart = cornerRadius),
-            shadowElevation = 8.dp
+            color = DrawerDefaults.modalContainerColor,
+            shape = MaterialTheme.shapes.extraLarge.copy(
+                topEnd = CornerSize(0),
+                bottomEnd = CornerSize(0)
+            ),
+            shadowElevation = 2.dp,
+            tonalElevation = DrawerDefaults.ModalDrawerElevation
         ) {
             Column(
                 modifier = Modifier
@@ -224,18 +232,45 @@ fun NoteSideSheet(
 
                 HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
 
-                if (outline.children.isNotEmpty())
-                    Text(
-                        modifier = Modifier.padding(bottom = 8.dp),
-                        text = stringResource(R.string.outline),
-                        style = MaterialTheme.typography.titleLarge,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        fontWeight = FontWeight.Bold
-                    )
+                // 添加一个状态来跟踪是否全部展开
+                var isAllExpanded by rememberSaveable { mutableStateOf(true) }
+
+                if (outline.children.isNotEmpty()) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 8.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = stringResource(R.string.outline),
+                            style = MaterialTheme.typography.titleLarge,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            fontWeight = FontWeight.Bold
+                        )
+
+                        IconButton(
+                            onClick = { isAllExpanded = !isAllExpanded }
+                        ) {
+                            Icon(
+                                imageVector = if (isAllExpanded) Icons.Outlined.UnfoldLess
+                                else Icons.Outlined.UnfoldMore,
+                                contentDescription = "fold",
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                }
 
                 LazyColumn {
                     items(outline.children) { header ->
-                        HeaderItem(header, 0, onHeaderClick)
+                        HeaderItem(
+                            header = header,
+                            depth = 0,
+                            onHeaderClick = onHeaderClick,
+                            parentExpanded = isAllExpanded
+                        )
                     }
                 }
             }
@@ -301,6 +336,7 @@ fun NoteSideSheetItem(
     )
 }
 
+@Stable
 data class HeaderNode(
     val title: String,
     val level: Int,
@@ -312,10 +348,14 @@ data class HeaderNode(
 private fun HeaderItem(
     header: HeaderNode,
     depth: Int,
+    parentExpanded: Boolean,
     onHeaderClick: (IntRange) -> Unit
 ) {
     var expanded by rememberSaveable { mutableStateOf(true) }
-
+    // 当父级展开状态改变时，同步更新当前节点的展开状态
+    LaunchedEffect(parentExpanded) {
+        expanded = parentExpanded
+    }
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -330,10 +370,8 @@ private fun HeaderItem(
                         expanded = !expanded
                     }
                 },
-                imageVector = if (expanded)
-                    Icons.Default.ArrowDropDown
-                else
-                    Icons.AutoMirrored.Filled.ArrowRight,
+                imageVector = if (expanded) Icons.Default.ArrowDropDown
+                else Icons.AutoMirrored.Filled.ArrowRight,
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 contentDescription = null
             )
@@ -355,7 +393,12 @@ private fun HeaderItem(
 
     if (expanded) {
         header.children.forEach { child ->
-            HeaderItem(child, depth + 1, onHeaderClick)
+            HeaderItem(
+                header = child,
+                depth = depth + 1,
+                onHeaderClick = onHeaderClick,
+                parentExpanded = parentExpanded
+            )
         }
     }
 }

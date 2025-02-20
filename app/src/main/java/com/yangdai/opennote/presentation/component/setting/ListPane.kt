@@ -35,13 +35,14 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.yangdai.opennote.R
 import com.yangdai.opennote.data.local.entity.NoteEntity
-import com.yangdai.opennote.presentation.component.AdaptiveNoteCard
-import com.yangdai.opennote.presentation.component.Timeline
+import com.yangdai.opennote.presentation.component.main.AdaptiveNoteCard
+import com.yangdai.opennote.presentation.component.main.Timeline
 import com.yangdai.opennote.presentation.state.ListNoteContentOverflowStyle
 import com.yangdai.opennote.presentation.state.ListNoteContentOverflowStyle.Companion.toInt
 import com.yangdai.opennote.presentation.state.ListNoteContentSize
 import com.yangdai.opennote.presentation.state.ListNoteContentSize.Companion.toInt
 import com.yangdai.opennote.presentation.util.Constants
+import com.yangdai.opennote.presentation.util.rememberDateTimeFormatter
 import com.yangdai.opennote.presentation.viewmodel.SharedViewModel
 
 @Composable
@@ -89,6 +90,7 @@ fun ListPane(sharedViewModel: SharedViewModel) {
                 else -> Int.MAX_VALUE
             }
         }
+        val dateTimeFormatter = rememberDateTimeFormatter()
         LazyVerticalStaggeredGrid(
             modifier = Modifier.fillMaxSize(),
             state = state,
@@ -109,13 +111,14 @@ fun ListPane(sharedViewModel: SharedViewModel) {
                             .fillMaxWidth()
                             .animateItem(),
                         isListView = settingsState.isListView,
-                        note = note,
-                        maxLines = maxLines,
-                        textOverflow = textOverflow,
-                        isEnabled = false,
-                        isSelected = false,
-                        onEnableChange = { },
-                        onNoteClick = { }
+                        displayedNote = note,
+                        dateFormatter = dateTimeFormatter,
+                        contentMaxLines = maxLines,
+                        contentTextOverflow = textOverflow,
+                        isEditMode = false,
+                        isNoteSelected = false,
+                        onEditModeChange = { },
+                        onSelectNote = { }
                     )
                 }
             }

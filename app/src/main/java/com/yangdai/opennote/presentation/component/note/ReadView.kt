@@ -5,19 +5,23 @@ package com.yangdai.opennote.presentation.component.note
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
+import android.content.Intent
 import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Paint
 import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.print.PrintAttributes
 import android.print.PrintManager
+import android.view.View
 import android.view.ViewGroup
 import android.webkit.JavascriptInterface
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
+import android.webkit.WebView.enableSlowWholeDocumentDraw
 import android.webkit.WebViewClient
 import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.ScrollState
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
@@ -34,8 +38,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.content.FileProvider
+import androidx.core.graphics.createBitmap
 import androidx.core.net.toUri
 import androidx.documentfile.provider.DocumentFile
 import com.yangdai.opennote.presentation.component.image.FullscreenImageDialog
@@ -48,6 +55,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.ByteArrayOutputStream
+import java.io.File
+import java.io.FileOutputStream
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
 
@@ -81,10 +90,12 @@ fun ReadView(
     printEnabled: MutableState<Boolean>,
     scrollSynchronized: Boolean,
     scrollState: ScrollState = rememberScrollState(),
-    settingsState: SettingsState
+    settingsState: SettingsState,
+    launchShareIntent: MutableState<Boolean>
 ) {
 
     val colorScheme = MaterialTheme.colorScheme
+    val backgroundColor = colorScheme.surface
     val markdownStyles = remember(colorScheme) {
         MarkdownStyles.fromColorScheme(colorScheme)
     }
@@ -99,144 +110,163 @@ fun ReadView(
     val data by remember(html, markdownStyles, codeTheme) {
         mutableStateOf(
             """
-                    <!DOCTYPE html>
-                    <html>
-                    <head>
-                    <meta name="viewport" content="width=device-width, initial-scale=1">
-                    <script>
-                        function handleImageClick(src) {
-                            window.imageInterface.onImageClick(src);
-                        }
+            <!DOCTYPE html>
+            <html>
+            <head>
+            <meta name="viewport" content="width=device-width, initial-scale=1">
+            <script>
+                function handleImageClick(src) {
+                    window.imageInterface.onImageClick(src);
+                }
+                
+                function setupVideoHandlers() {
+                    document.querySelectorAll('video').forEach((video, index) => {
+                        const videoName = video.getAttribute('src');
+                        const id = 'video_' + index;
+                        video.setAttribute('data-id', id);
+                        window.videoPathHandler.processVideo(videoName, id);
                         
-                        function setupVideoHandlers() {
-                            document.querySelectorAll('video').forEach((video, index) => {
-                                const videoName = video.getAttribute('src');
-                                const id = 'video_' + index;
-                                video.setAttribute('data-id', id);
-                                window.videoPathHandler.processVideo(videoName, id);
-                                
-                                // 设置视频控件样式
-                                video.style.width = '100%';
-                                video.controls = true;
-                                
-                                // 禁用下载和全屏
-                                video.controlsList = "nodownload nofullscreen";
-                                
-                                // 禁用右键菜单
-                                video.oncontextmenu = function(e) {
-                                    e.preventDefault();
-                                    return false;
-                                };
-                            });
-                        }
+                        // 设置视频控件样式
+                        video.style.width = '100%';
+                        video.controls = true;
                         
-                        function setupAudioHandlers() {
-                            document.querySelectorAll('audio').forEach((audio, index) => {
-                                const audioName = audio.getAttribute('src');
-                                const id = 'audio_' + index;
-                                audio.setAttribute('data-id', id);
-                                window.audioPathHandler.processAudio(audioName, id);
-                                
-                                // 设置音频控件样式
-                                audio.style.width = '100%';
-                                audio.controls = true;
-                                
-                                // 禁用下载
-                                audio.controlsList = "nodownload";
-                                
-                                // 禁用右键菜单
-                                audio.oncontextmenu = function(e) {
-                                    e.preventDefault();
-                                    return false;
-                                };
-                            });
-                        }
-
-                        function setupImageHandlers() {
-                            document.querySelectorAll('img').forEach((img, index) => {
-                                const imageName = img.getAttribute('src');
-                                const id = 'img_' + index;
-                                img.setAttribute('data-id', id);
-                                window.imagePathHandler.processImage(imageName, id);
-                                
-                                let touchTimeout;
-                                let touchStartTime;
-                                
-                                img.onclick = function() {
-                                    handleImageClick(this.src);
-                                };
-                                
-                                img.oncontextmenu = function(e) {
-                                    return false;
-                                };
-                                
-                                img.addEventListener('touchstart', function(e) {
-                                    touchStartTime = Date.now();
-                                });
-                                
-                                img.addEventListener('touchend', function(e) {
-                                    // 如果触摸时间小于500ms,认为是点击操作
-                                    if (Date.now() - touchStartTime < 500) {
-                                        return; // 允许点击事件继续传播
-                                    }
-                                    e.preventDefault(); // 阻止长按操作
-                                });
-                                
-                                // 禁用拖拽
-                                img.draggable = false;
-                            });
-                        }
+                        // 禁用下载和全屏
+                        video.controlsList = "nodownload nofullscreen";
                         
-                        document.addEventListener('DOMContentLoaded', () => {
-                            setupImageHandlers();
-                            setupAudioHandlers();
-                            setupVideoHandlers();
-                        });
-                    </script>
-                    <script>
-                        MathJax = {
-                            tex: {
-                                inlineMath: [['$', '$'], ['\\(', '\\)']]
-                            }
+                        // 禁用右键菜单
+                        video.oncontextmenu = function(e) {
+                            e.preventDefault();
+                            return false;
                         };
-                    </script>
-                    <script type="text/javascript" id="MathJax-script" async
-                        src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
-                    </script>
-                    <script type="module">
-                      import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
-                      mermaid.initialize({ startOnLoad: true });
-                    </script>
-                    <link href="$codeTheme" rel="stylesheet" />
-                    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
-                    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
-                    <style type="text/css">
-                        body { color: ${markdownStyles.hexTextColor}; padding: 0px; margin: 0px; }
-                        img { max-width: 100%; height: auto; }
-                        img {
-                            -webkit-touch-callout: none; /* 禁用长按呼出菜单 */
-                            pointer-events: auto !important; /* 确保点击事件可以工作 */
+                    });
+                }
+                
+                function setupAudioHandlers() {
+                    document.querySelectorAll('audio').forEach((audio, index) => {
+                        const audioName = audio.getAttribute('src');
+                        const id = 'audio_' + index;
+                        audio.setAttribute('data-id', id);
+                        window.audioPathHandler.processAudio(audioName, id);
+                        
+                        // 设置音频控件样式
+                        audio.style.width = '100%';
+                        audio.controls = true;
+                        
+                        // 禁用下载
+                        audio.controlsList = "nodownload";
+                        
+                        // 禁用右键菜单
+                        audio.oncontextmenu = function(e) {
+                            e.preventDefault();
+                            return false;
+                        };
+                    });
+                }
+
+                function setupImageHandlers() {
+                    document.querySelectorAll('img').forEach((img, index) => {
+                        const imageName = img.getAttribute('src');
+                        const id = 'img_' + index;
+                        img.setAttribute('data-id', id);
+                        window.imagePathHandler.processImage(imageName, id);
+                        
+                        let touchTimeout;
+                        let touchStartTime;
+                        
+                        img.onclick = function() {
+                            handleImageClick(this.src);
+                        };
+                        
+                        img.oncontextmenu = function(e) {
+                            return false;
+                        };
+                        
+                        img.addEventListener('touchstart', function(e) {
+                            touchStartTime = Date.now();
+                        });
+                        
+                        img.addEventListener('touchend', function(e) {
+                            // 如果触摸时间小于500ms,认为是点击操作
+                            if (Date.now() - touchStartTime < 500) {
+                                return; // 允许点击事件继续传播
+                            }
+                            e.preventDefault(); // 阻止长按操作
+                        });
+                        
+                        // 禁用拖拽
+                        img.draggable = false;
+                    });
+                }
+                
+                document.addEventListener('DOMContentLoaded', () => {
+                    setupImageHandlers();
+                    setupAudioHandlers();
+                    setupVideoHandlers();
+                });
+            </script>
+            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.21/dist/katex.min.css" integrity="sha384-zh0CIslj+VczCZtlzBcjt5ppRcsAmDnRem7ESsYwWwg3m/OaJ2l4x7YBZl9Kxxib" crossorigin="anonymous">
+            <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.21/dist/katex.min.js" integrity="sha384-Rma6DA2IPUwhNxmrB/7S3Tno0YY7sFu9WSYMCuulLhIqYSGZ2gKCJWIqhBWqMQfh" crossorigin="anonymous"></script>
+            <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.21/dist/contrib/auto-render.min.js" integrity="sha384-hCXGrW6PitJEwbkoStFjeJxv+fSOOQKOPbJxSfM6G5sWZjAyWhXiTIIAmQqnlLlh" crossorigin="anonymous"
+                 onload="renderMathInElement(document.body);"></script>
+            <script>
+                document.addEventListener("DOMContentLoaded", function() {
+                    renderMathInElement(document.body, {
+                      // customised options
+                      // • auto-render specific keys, e.g.:
+                      delimiters: [
+                          {left: '$$', right: '$$', display: true},
+                          {left: '$', right: '$', display: false},
+                          {left: '\\(', right: '\\)', display: false},
+                          {left: '\\[', right: '\\]', display: true}
+                      ],
+                      // • rendering keys, e.g.:
+                      throwOnError : false
+                    });
+                });
+            </script>
+            <script type="module">
+                import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+                mermaid.initialize({ startOnLoad: true });
+            </script>
+            <script>
+                document.addEventListener('DOMContentLoaded', () => {
+                    document.querySelectorAll('li').forEach(li => {
+                        if (li.querySelector('input[type="checkbox"]')) {
+                            li.style.listStyleType = 'none';
                         }
-                        a { color: ${markdownStyles.hexLinkColor}; }
-                        p code { background-color: ${markdownStyles.hexCodeBackgroundColor}; padding: 4px 4px 2px 4px; margin: 4px; border-radius: 4px; font-family: monospace; }
-                        td code { background-color: ${markdownStyles.hexCodeBackgroundColor}; padding: 4px 4px 2px 4px; margin: 4px; border-radius: 4px; font-family: monospace; }
-                        pre { background-color: ${markdownStyles.hexPreBackgroundColor}; display: block; padding: 16px; overflow-x: auto; }
-                        blockquote { border-left: 4px solid ${markdownStyles.hexQuoteBackgroundColor}; padding-left: 0px; margin-left: 0px; padding-right: 0px; margin-right: 0px; }
-                        blockquote > * { margin-left: 16px; padding: 0px; }
-                        blockquote blockquote { margin: 16px; }
-                        table { border-collapse: collapse; display: block; white-space: nowrap; overflow-x: auto; margin-right: 1px; }
-                        th, td { border: 1px solid ${markdownStyles.hexBorderColor}; padding: 6px 13px; line-height: 1.5; }
-                        tr:nth-child(even) { background-color: ${markdownStyles.hexPreBackgroundColor}; }
-                        video::-webkit-media-controls-fullscreen-button {
-                            display: none !important;
-                        }
-                    </style>
-                    </head>
-                    <body>
-                    $html
-                    </body>
-                    </html>
-                """.trimIndent()
+                    });
+                });
+            </script>
+            <link href="$codeTheme" rel="stylesheet" />
+            <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+            <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+            <style type="text/css">
+                body { color: ${markdownStyles.hexTextColor}; padding-left: 16px; padding-right: 16px; padding-top: 0; padding-bottom: 0; margin: 0; }
+                img { max-width: 100%; height: auto; }
+                img {
+                    -webkit-touch-callout: none; /* 禁用长按呼出菜单 */
+                    pointer-events: auto !important; /* 确保点击事件可以工作 */
+                }
+                a { color: ${markdownStyles.hexLinkColor}; }
+                p code { background-color: ${markdownStyles.hexCodeBackgroundColor}; padding: 4px 4px 2px 4px; margin: 4px; border-radius: 4px; font-family: monospace; }
+                td code { background-color: ${markdownStyles.hexCodeBackgroundColor}; padding: 4px 4px 2px 4px; margin: 4px; border-radius: 4px; font-family: monospace; }
+                pre { background-color: ${markdownStyles.hexPreBackgroundColor}; display: block; padding: 16px; overflow-x: auto; }
+                blockquote { border-left: 4px solid ${markdownStyles.hexQuoteBackgroundColor}; padding-left: 0px; margin-left: 0px; padding-right: 0px; margin-right: 0px; }
+                blockquote > * { margin-left: 16px; padding: 0px; }
+                blockquote blockquote { margin: 16px; }
+                table { border-collapse: collapse; display: block; white-space: nowrap; overflow-x: auto; margin-right: 1px; }
+                th, td { border: 1px solid ${markdownStyles.hexBorderColor}; padding: 6px 13px; line-height: 1.5; }
+                tr:nth-child(even) { background-color: ${markdownStyles.hexPreBackgroundColor}; }
+                video::-webkit-media-controls-fullscreen-button {
+                    display: none !important;
+                }
+            </style>
+            </head>
+            <body>
+            $html
+            </body>
+            </html>
+        """.trimIndent()
         )
     }
 
@@ -284,15 +314,26 @@ fun ReadView(
         if (!printEnabled.value) return@LaunchedEffect
         webView?.let {
             createWebPrintJob(it, activity, noteName)
-            printEnabled.value = false
         }
+        printEnabled.value = false
+    }
+    val context = LocalContext.current
+    LaunchedEffect(launchShareIntent.value) {
+        if (!launchShareIntent.value) return@LaunchedEffect
+        withContext(Dispatchers.IO) {
+            webView?.let {
+                try {
+                    shareBitmap(context, webView!!, noteName)
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
+        }
+        launchShareIntent.value = false
     }
 
-    val backgroundColor = MaterialTheme.colorScheme.surface
     AndroidView(
-        modifier = modifier
-            .fillMaxSize()
-            .clip(RectangleShape),
+        modifier = modifier.clip(RectangleShape),
         factory = {
             WebView(it).also { webView = it }.apply {
                 layoutParams = ViewGroup.LayoutParams(
@@ -434,7 +475,10 @@ fun ReadView(
                                     withContext(Dispatchers.IO) {
                                         val retriever = MediaMetadataRetriever()
                                         try {
-                                            retriever.setDataSource(context.applicationContext, videoUri.toUri())
+                                            retriever.setDataSource(
+                                                context.applicationContext,
+                                                videoUri.toUri()
+                                            )
                                             val bitmap = retriever.getFrameAtTime(0)
                                             val base64 = bitmapToBase64(bitmap)
                                             "data:image/jpeg;base64,$base64"
@@ -469,6 +513,7 @@ fun ReadView(
                 settings.allowContentAccess = true
                 settings.allowFileAccessFromFileURLs = true
                 settings.allowUniversalAccessFromFileURLs = true
+                setLayerType(View.LAYER_TYPE_HARDWARE, null)
                 settings.domStorageEnabled = true
                 settings.javaScriptEnabled = true
                 settings.loadsImagesAutomatically = true
@@ -480,6 +525,7 @@ fun ReadView(
                 settings.displayZoomControls = false
                 settings.useWideViewPort = false
                 settings.loadWithOverviewMode = false
+                enableSlowWholeDocumentDraw()
             }
         },
         update = {
@@ -504,6 +550,64 @@ fun ReadView(
             onDismiss = { showDialog = false },
             imageUrl = clickedImageUrl,
         )
+}
+
+private fun shareBitmap(context: Context, webView: WebView, noteName: String) {
+
+    // 创建临时文件
+    val file = File(context.cacheDir, "${noteName}_${System.currentTimeMillis()}_preview.jpg")
+
+    val bitmap = convertHtmlToBitmap(webView)
+    if (bitmap == null) return
+    val canvas = Canvas(bitmap)
+    webView.draw(canvas)
+
+    // 保存位图到文件
+    FileOutputStream(file).use { stream ->
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 90, stream)
+        bitmap.recycle()
+    }
+
+    // 创建FileProvider的URI
+    val imageUri = FileProvider.getUriForFile(
+        context,
+        "${context.packageName}.fileprovider",
+        file
+    )
+
+    // 创建分享Intent
+    val shareIntent = Intent(Intent.ACTION_SEND).apply {
+        type = "image/*"
+        putExtra(Intent.EXTRA_STREAM, imageUri)
+        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+    }
+
+    val chooserIntent = Intent.createChooser(shareIntent, null)
+    context.startActivity(chooserIntent)
+}
+
+private fun convertHtmlToBitmap(webView: WebView): Bitmap? {
+    webView.measure(
+        View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED),
+        View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
+    )
+    //layout of webview
+    webView.layout(0, 0, webView.measuredWidth, webView.measuredHeight)
+
+    webView.isDrawingCacheEnabled = true
+    webView.buildDrawingCache()
+    //create Bitmap if measured height and width >0
+    val b = if (webView.measuredWidth > 0 && webView.measuredHeight > 0)
+        createBitmap(webView.measuredWidth, webView.measuredHeight)
+    else null
+    // Draw bitmap on canvas
+    b?.let {
+        Canvas(b).apply {
+            drawBitmap(it, 0f, b.height.toFloat(), Paint())
+            webView.draw(this)
+        }
+    }
+    return b
 }
 
 private fun createWebPrintJob(webView: WebView, activity: Activity?, name: String) {

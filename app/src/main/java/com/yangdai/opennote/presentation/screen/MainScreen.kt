@@ -47,7 +47,6 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -89,11 +88,11 @@ import com.yangdai.opennote.MainActivity
 import com.yangdai.opennote.R
 import com.yangdai.opennote.data.local.entity.FolderEntity
 import com.yangdai.opennote.data.local.entity.NoteEntity
-import com.yangdai.opennote.presentation.component.AdaptiveNavigationScreen
-import com.yangdai.opennote.presentation.component.AdaptiveNoteCard
-import com.yangdai.opennote.presentation.component.AdaptiveTopSearchbar
-import com.yangdai.opennote.presentation.component.DrawerContent
-import com.yangdai.opennote.presentation.component.Timeline
+import com.yangdai.opennote.presentation.component.main.AdaptiveNavigationScreen
+import com.yangdai.opennote.presentation.component.main.AdaptiveNoteCard
+import com.yangdai.opennote.presentation.component.main.AdaptiveTopSearchbar
+import com.yangdai.opennote.presentation.component.main.DrawerContent
+import com.yangdai.opennote.presentation.component.main.Timeline
 import com.yangdai.opennote.presentation.component.dialog.ExportDialog
 import com.yangdai.opennote.presentation.component.dialog.FolderListDialog
 import com.yangdai.opennote.presentation.component.dialog.OrderSectionDialog
@@ -103,6 +102,7 @@ import com.yangdai.opennote.presentation.event.ListEvent
 import com.yangdai.opennote.presentation.navigation.Screen
 import com.yangdai.opennote.presentation.state.ListNoteContentOverflowStyle
 import com.yangdai.opennote.presentation.state.ListNoteContentSize
+import com.yangdai.opennote.presentation.util.rememberDateTimeFormatter
 import com.yangdai.opennote.presentation.viewmodel.SharedViewModel
 import kotlinx.coroutines.launch
 
@@ -110,26 +110,25 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun MainScreen(
-    sharedViewModel: SharedViewModel = hiltViewModel(LocalActivity.current as MainActivity),
+    viewModel: SharedViewModel = hiltViewModel(LocalActivity.current as MainActivity),
     isLargeScreen: Boolean,
     navigateToNote: (Long) -> Unit,
     navigateToScreen: (Screen) -> Unit
 ) {
 
-    val dataState by sharedViewModel.mainScreenDataStateFlow.collectAsStateWithLifecycle()
-    val settingsState by sharedViewModel.settingsStateFlow.collectAsStateWithLifecycle()
-    val folderNoteCounts by sharedViewModel.folderWithNoteCountsFlow.collectAsStateWithLifecycle()
-    val dataActionState by sharedViewModel.dataActionStateFlow.collectAsStateWithLifecycle()
+    val mainScreenData by viewModel.mainScreenDataStateFlow.collectAsStateWithLifecycle()
+    val settings by viewModel.settingsStateFlow.collectAsStateWithLifecycle()
+    val folderNoteCountsList by viewModel.folderWithNoteCountsFlow.collectAsStateWithLifecycle()
+    val dataAction by viewModel.dataActionStateFlow.collectAsStateWithLifecycle()
 
     val staggeredGridState = rememberLazyStaggeredGridState()
-    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
-
+    val navigationDrawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+    val scope = rememberCoroutineScope()
     // Search bar state, reset when configuration changes
-    var isSearchBarActivated by remember { mutableStateOf(false) }
-
+    var isSearchActive by remember { mutableStateOf(false) }
     // Selected drawer item and folder, 0 for all, 1 for trash, others for folder index
-    var selectedDrawerIndex by rememberSaveable { mutableIntStateOf(0) }
-    var selectedFolder by rememberSaveable(stateSaver = object :
+    var selectedNavDrawerIndex by rememberSaveable { mutableIntStateOf(0) }
+    var currentFolder by rememberSaveable(stateSaver = object :
         Saver<FolderEntity, Triple<Long?, String, Int?>> {
         override fun restore(value: Triple<Long?, String, Int?>): FolderEntity {
             return FolderEntity(value.first, value.second, value.third)
@@ -141,76 +140,68 @@ fun MainScreen(
     }) { mutableStateOf(FolderEntity()) }
 
     // Record whether multi-select mode has been enabled, selected items and whether all items have been selected
-    var isMultiSelectionModeEnabled by remember { mutableStateOf(false) }
-    var selectedNotes by remember { mutableStateOf<Set<NoteEntity>>(emptySet()) }
+    var isMultiSelectEnabled by remember { mutableStateOf(false) }
+    var selectedNotesSet by remember { mutableStateOf<Set<NoteEntity>>(emptySet()) }
     var allNotesSelected by remember { mutableStateOf(false) }
 
     // Whether to show the floating button, determined by the scroll state of the grid, the selected drawer, the search bar, and whether multi-select mode is enabled
-    val isFloatingButtonVisible by remember {
+    val isAddNoteFabVisible by remember {
         derivedStateOf {
-            selectedDrawerIndex != 1 && !isSearchBarActivated && !isMultiSelectionModeEnabled
+            selectedNavDrawerIndex != 1 && !isSearchActive && !isMultiSelectEnabled
                     && !staggeredGridState.isScrollInProgress
         }
     }
 
     // Reset multi-select mode
     fun initializeNoteSelection() {
-        isMultiSelectionModeEnabled = false
-        selectedNotes = emptySet()
+        isMultiSelectEnabled = false
+        selectedNotesSet = emptySet()
         allNotesSelected = false
     }
 
     // select all and deselect all, triggered by the checkbox in the bottom bar
     LaunchedEffect(allNotesSelected) {
-        selectedNotes = if (allNotesSelected) selectedNotes.plus(dataState.notes)
-        else selectedNotes.minus(dataState.notes.toSet())
+        selectedNotesSet = if (allNotesSelected) mainScreenData.notes.toSet()
+        else emptySet()
     }
 
     // Back logic for better user experience
-    BackHandler(isMultiSelectionModeEnabled) {
-        if (isMultiSelectionModeEnabled) {
-            initializeNoteSelection()
-        }
+    BackHandler(isMultiSelectEnabled) {
+        initializeNoteSelection()
     }
 
-    var isFolderDialogVisible by remember { mutableStateOf(false) }
-    var isExportDialogVisible by remember { mutableStateOf(false) }
-
-    val coroutineScope = rememberCoroutineScope()
-
-    val toolbarVisible by rememberSaveable(selectedDrawerIndex) {
-        mutableStateOf(selectedDrawerIndex != 0)
-    }
+    var isMoveToFolderDialogVisible by remember { mutableStateOf(false) }
+    var isExportNotesDialogVisible by remember { mutableStateOf(false) }
 
     AdaptiveNavigationScreen(
         isLargeScreen = isLargeScreen,
-        drawerState = drawerState,
-        gesturesEnabled = !isMultiSelectionModeEnabled && !isSearchBarActivated,
+        drawerState = navigationDrawerState,
+        gesturesEnabled = !isMultiSelectEnabled && !isSearchActive,
         drawerContent = {
             DrawerContent(
-                folderNoteCounts = folderNoteCounts,
-                selectedDrawerIndex = selectedDrawerIndex,
-                showLock = settingsState.password.isNotEmpty(),
+                folderNoteCounts = folderNoteCountsList,
+                selectedDrawerIndex = selectedNavDrawerIndex,
+                showLock = settings.password.isNotEmpty(),
                 onLockClick = {
-                    sharedViewModel.authenticated.value = false
-                    coroutineScope.launch {
-                        drawerState.apply {
+                    viewModel.authenticated.value = false
+                    scope.launch {
+                        navigationDrawerState.apply {
                             close()
                         }
                     }
                 },
                 navigateTo = { navigateToScreen(it) }
-            ) { position, folderEntity ->
-                if (selectedDrawerIndex != position) {
+            ) { index, folderEntity ->
+                if (selectedNavDrawerIndex != index) {
                     initializeNoteSelection()
-                    selectedDrawerIndex = position
-                    selectedFolder = folderEntity
-                    when (position) {
-                        0 -> sharedViewModel.onListEvent(ListEvent.Sort(trash = false))
+                    selectedNavDrawerIndex = index
+                    currentFolder = folderEntity
+                    when (index) {
+                        0 -> viewModel.onListEvent(ListEvent.Sort(trash = false))
 
-                        1 -> sharedViewModel.onListEvent(ListEvent.Sort(trash = true))
+                        1 -> viewModel.onListEvent(ListEvent.Sort(trash = true))
 
-                        else -> sharedViewModel.onListEvent(
+                        else -> viewModel.onListEvent(
                             ListEvent.Sort(
                                 filterFolder = true,
                                 folderId = folderEntity.id
@@ -218,8 +209,8 @@ fun MainScreen(
                         )
                     }
                 }
-                coroutineScope.launch {
-                    drawerState.apply {
+                scope.launch {
+                    navigationDrawerState.apply {
                         close()
                     }
                 }
@@ -228,12 +219,12 @@ fun MainScreen(
     ) {
         Scaffold(
             topBar = {
-                if (toolbarVisible) {
+                if (selectedNavDrawerIndex != 0) {
                     TopAppBar(
                         title = {
                             Text(
-                                text = if (selectedDrawerIndex == 1) stringResource(id = R.string.trash)
-                                else selectedFolder.name,
+                                text = if (selectedNavDrawerIndex == 1) stringResource(id = R.string.trash)
+                                else currentFolder.name,
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis
                             )
@@ -241,10 +232,10 @@ fun MainScreen(
                         navigationIcon = {
                             if (!isLargeScreen) {
                                 IconButton(
-                                    enabled = !isMultiSelectionModeEnabled,
+                                    enabled = !isMultiSelectEnabled,
                                     onClick = {
-                                        coroutineScope.launch {
-                                            drawerState.apply {
+                                        scope.launch {
+                                            navigationDrawerState.apply {
                                                 if (isClosed) open() else close()
                                             }
                                         }
@@ -263,19 +254,19 @@ fun MainScreen(
                                 mutableStateOf(false)
                             }
 
-                            IconButton(onClick = { sharedViewModel.onListEvent(ListEvent.ChangeViewMode) }) {
+                            IconButton(onClick = { viewModel.onListEvent(ListEvent.ChangeViewMode) }) {
                                 Icon(
-                                    imageVector = if (!settingsState.isListView) Icons.Outlined.ViewAgenda else Icons.Outlined.GridView,
+                                    imageVector = if (!settings.isListView) Icons.Outlined.ViewAgenda else Icons.Outlined.GridView,
                                     contentDescription = "View Mode"
                                 )
                             }
-                            IconButton(onClick = { sharedViewModel.onListEvent(ListEvent.ToggleOrderSection) }) {
+                            IconButton(onClick = { viewModel.onListEvent(ListEvent.ToggleOrderSection) }) {
                                 Icon(
                                     imageVector = Icons.Outlined.SortByAlpha,
                                     contentDescription = "Sort"
                                 )
                             }
-                            if (selectedDrawerIndex == 1) {
+                            if (selectedNavDrawerIndex == 1) {
                                 IconButton(onClick = { showMenu = !showMenu }) {
                                     Icon(
                                         imageVector = Icons.Outlined.MoreVert,
@@ -295,8 +286,8 @@ fun MainScreen(
                                         },
                                         text = { Text(text = stringResource(id = R.string.restore_all)) },
                                         onClick = {
-                                            sharedViewModel.onListEvent(
-                                                ListEvent.RestoreNotes(dataState.notes)
+                                            viewModel.onListEvent(
+                                                ListEvent.RestoreNotes(mainScreenData.notes)
                                             )
                                         })
 
@@ -309,8 +300,8 @@ fun MainScreen(
                                         },
                                         text = { Text(text = stringResource(id = R.string.delete_all)) },
                                         onClick = {
-                                            sharedViewModel.onListEvent(
-                                                ListEvent.DeleteNotes(dataState.notes, false)
+                                            viewModel.onListEvent(
+                                                ListEvent.DeleteNotes(mainScreenData.notes, false)
                                             )
                                         })
                                 }
@@ -337,7 +328,7 @@ fun MainScreen(
             },
             bottomBar = {
                 AnimatedVisibility(
-                    visible = isMultiSelectionModeEnabled,
+                    visible = isMultiSelectEnabled,
                     enter = slideInVertically { fullHeight -> fullHeight },
                     exit = slideOutVertically { fullHeight -> fullHeight }
                 ) {
@@ -362,7 +353,7 @@ fun MainScreen(
 
                                 Text(text = stringResource(R.string.checked))
 
-                                Text(text = selectedNotes.size.toString())
+                                Text(text = selectedNotesSet.size.toString())
                             }
 
                             Row(
@@ -370,10 +361,10 @@ fun MainScreen(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
 
-                                if (selectedDrawerIndex == 1) {
+                                if (selectedNavDrawerIndex == 1) {
                                     TextButton(onClick = {
-                                        sharedViewModel.onListEvent(
-                                            ListEvent.RestoreNotes(selectedNotes)
+                                        viewModel.onListEvent(
+                                            ListEvent.RestoreNotes(selectedNotesSet)
                                         )
                                         initializeNoteSelection()
                                     }) {
@@ -391,7 +382,7 @@ fun MainScreen(
                                     }
                                 } else {
                                     TextButton(onClick = {
-                                        isExportDialogVisible = true
+                                        isExportNotesDialogVisible = true
                                     }) {
                                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                             Icon(
@@ -406,7 +397,7 @@ fun MainScreen(
                                         }
                                     }
 
-                                    TextButton(onClick = { isFolderDialogVisible = true }) {
+                                    TextButton(onClick = { isMoveToFolderDialogVisible = true }) {
                                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                             Icon(
                                                 imageVector = Icons.AutoMirrored.Outlined.DriveFileMove,
@@ -422,10 +413,10 @@ fun MainScreen(
                                 }
 
                                 TextButton(onClick = {
-                                    sharedViewModel.onListEvent(
+                                    viewModel.onListEvent(
                                         ListEvent.DeleteNotes(
-                                            selectedNotes,
-                                            selectedDrawerIndex != 1
+                                            selectedNotesSet,
+                                            selectedNavDrawerIndex != 1
                                         )
                                     )
                                     initializeNoteSelection()
@@ -447,7 +438,6 @@ fun MainScreen(
                     }
                 }
             },
-            floatingActionButtonPosition = FabPosition.End,
             floatingActionButton = {
 
                 val hapticFeedback = LocalHapticFeedback.current
@@ -462,15 +452,15 @@ fun MainScreen(
                     modifier = Modifier
                         .scale(scale)
                         .animateFloatingActionButton(
-                            visible = isFloatingButtonVisible,
+                            visible = isAddNoteFabVisible,
                             alignment = Alignment.BottomEnd
                         ),
                     onClick = {
                         hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
-                        sharedViewModel.onListEvent(
+                        viewModel.onListEvent(
                             ListEvent.OpenOrCreateNote(
                                 null,
-                                selectedFolder.id
+                                currentFolder.id
                             )
                         )
                         navigateToNote(-1)
@@ -483,12 +473,12 @@ fun MainScreen(
             }) { innerPadding ->
 
             // 确保不被遮挡
-            val layoutDirection = LocalLayoutDirection.current
-            val displayCutout = WindowInsets.displayCutout.asPaddingValues()
-            val paddingValues = remember(layoutDirection, displayCutout) {
+            val direction = LocalLayoutDirection.current
+            val cutOutInsets = WindowInsets.displayCutout.asPaddingValues()
+            val paddingValues = remember(direction, cutOutInsets) {
                 PaddingValues(
-                    start = displayCutout.calculateStartPadding(layoutDirection),
-                    end = displayCutout.calculateEndPadding(layoutDirection)
+                    start = cutOutInsets.calculateStartPadding(direction),
+                    end = cutOutInsets.calculateEndPadding(direction)
                 )
             }
 
@@ -499,20 +489,20 @@ fun MainScreen(
                     .semantics { isTraversalGroup = true }
             ) {
 
-                if (!toolbarVisible) {
+                if (selectedNavDrawerIndex == 0) {
                     AdaptiveTopSearchbar(
                         modifier = Modifier
                             .zIndex(1f)
                             .align(Alignment.TopCenter)
                             .semantics { traversalIndex = 0f },
-                        enabled = !isMultiSelectionModeEnabled,
+                        enabled = !isMultiSelectEnabled,
                         isLargeScreen = isLargeScreen,
-                        onSearchBarActivationChange = { activated ->
-                            isSearchBarActivated = activated
+                        onSearchBarActivationChange = { isActive ->
+                            isSearchActive = isActive
                         },
                         onDrawerStateChange = {
-                            coroutineScope.launch {
-                                drawerState.apply {
+                            scope.launch {
+                                navigationDrawerState.apply {
                                     if (isClosed) open() else close()
                                 }
                             }
@@ -521,12 +511,12 @@ fun MainScreen(
                 }
 
                 // 如果没有笔记，不显示，性能优化
-                if (dataState.notes.isEmpty()) {
+                if (mainScreenData.notes.isEmpty()) {
                     return@Box
                 }
 
                 AnimatedVisibility(
-                    visible = settingsState.isListView,
+                    visible = settings.isListView,
                     enter = fadeIn(),
                     exit = fadeOut()
                 ) {
@@ -541,9 +531,9 @@ fun MainScreen(
 
                 val statusBarPadding = WindowInsets.statusBars.asPaddingValues()
                 val contentPadding =
-                    remember(statusBarPadding, innerPadding, settingsState.isListView) {
+                    remember(statusBarPadding, innerPadding, settings.isListView) {
 
-                        if (!settingsState.isListView) PaddingValues(
+                        if (!settings.isListView) PaddingValues(
                             top = statusBarPadding.calculateTopPadding() + 78.dp,
                             start = 16.dp,
                             end = 16.dp,
@@ -555,58 +545,60 @@ fun MainScreen(
                             bottom = innerPadding.calculateBottomPadding()
                         )
                     }
-                val textOverflow = remember(settingsState.enumOverflowStyle) {
-                    when (settingsState.enumOverflowStyle) {
+                val textOverflow = remember(settings.enumOverflowStyle) {
+                    when (settings.enumOverflowStyle) {
                         ListNoteContentOverflowStyle.CLIP -> TextOverflow.Clip
                         else -> TextOverflow.Ellipsis
                     }
                 }
-                val maxLines = remember(settingsState.enumContentSize) {
-                    when (settingsState.enumContentSize) {
+                val maxLines = remember(settings.enumContentSize) {
+                    when (settings.enumContentSize) {
                         ListNoteContentSize.DEFAULT -> 12
                         ListNoteContentSize.COMPACT -> 6
                         else -> Int.MAX_VALUE
                     }
                 }
+                val dateTimeFormatter = rememberDateTimeFormatter()
                 LazyVerticalStaggeredGrid(
                     modifier = Modifier
                         .fillMaxSize()
                         .semantics { traversalIndex = 1f },
                     state = staggeredGridState,
                     // The staggered grid layout is adaptive, with a minimum column width of 160dp(mdpi)
-                    columns = if (!settingsState.isListView) StaggeredGridCells.Adaptive(160.dp)
-                    else StaggeredGridCells.Fixed(1),
-                    verticalItemSpacing = 8.dp,
+                    columns = if (settings.isListView) StaggeredGridCells.Fixed(1)
+                    else StaggeredGridCells.Adaptive(160.dp),
+                    verticalItemSpacing = if (settings.isListView) 12.dp else 8.dp,
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     // for better edgeToEdge experience
                     contentPadding = contentPadding,
                     content = {
                         items(
-                            items = dataState.notes,
-                            key = { item: NoteEntity -> item.id!! },
-                            contentType = { item: NoteEntity -> item }
+                            items = mainScreenData.notes,
+                            key = { note: NoteEntity -> note.id!! },
+                            contentType = { note: NoteEntity -> note }
                         ) { note ->
                             AdaptiveNoteCard(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .animateItem(),
-                                isListView = settingsState.isListView,
-                                note = note,
-                                maxLines = maxLines,
-                                textOverflow = textOverflow,
-                                isEnabled = isMultiSelectionModeEnabled,
-                                isSelected = selectedNotes.contains(note),
-                                onEnableChange = { isMultiSelectionModeEnabled = it },
-                                onNoteClick = {
-                                    if (isMultiSelectionModeEnabled) {
-                                        selectedNotes =
-                                            if (selectedNotes.contains(it)) selectedNotes.minus(
+                                isListView = settings.isListView,
+                                displayedNote = note,
+                                dateFormatter = dateTimeFormatter,
+                                contentMaxLines = maxLines,
+                                contentTextOverflow = textOverflow,
+                                isEditMode = isMultiSelectEnabled,
+                                isNoteSelected = selectedNotesSet.contains(note),
+                                onEditModeChange = { isMultiSelectEnabled = it },
+                                onSelectNote = {
+                                    if (isMultiSelectEnabled) {
+                                        selectedNotesSet =
+                                            if (selectedNotesSet.contains(it)) selectedNotesSet.minus(
                                                 it
                                             )
-                                            else selectedNotes.plus(it)
+                                            else selectedNotesSet.plus(it)
                                     } else {
-                                        if (selectedDrawerIndex != 1) {
-                                            sharedViewModel.onListEvent(
+                                        if (selectedNavDrawerIndex != 1) {
+                                            viewModel.onListEvent(
                                                 ListEvent.OpenOrCreateNote(
                                                     it,
                                                     null
@@ -624,54 +616,54 @@ fun MainScreen(
                 )
             }
 
-            if (dataState.isOrderSectionVisible) {
+            if (mainScreenData.isOrderSectionVisible) {
                 OrderSectionDialog(
-                    noteOrder = dataState.noteOrder,
+                    noteOrder = mainScreenData.noteOrder,
                     onOrderChange = {
-                        sharedViewModel.onListEvent(
+                        viewModel.onListEvent(
                             ListEvent.Sort(
                                 noteOrder = it,
-                                trash = selectedDrawerIndex == 1,
-                                filterFolder = selectedDrawerIndex != 0 && selectedDrawerIndex != 1,
-                                folderId = selectedFolder.id
+                                trash = selectedNavDrawerIndex == 1,
+                                filterFolder = selectedNavDrawerIndex != 0 && selectedNavDrawerIndex != 1,
+                                folderId = currentFolder.id
                             )
                         )
                     },
-                    onDismiss = { sharedViewModel.onListEvent(ListEvent.ToggleOrderSection) }
+                    onDismiss = { viewModel.onListEvent(ListEvent.ToggleOrderSection) }
                 )
             }
 
-            if (isExportDialogVisible) {
+            if (isExportNotesDialogVisible) {
                 val context = LocalContext.current
-                ExportDialog(onDismissRequest = { isExportDialogVisible = false }) {
-                    sharedViewModel.onDatabaseEvent(
+                ExportDialog(onDismissRequest = { isExportNotesDialogVisible = false }) {
+                    viewModel.onDatabaseEvent(
                         DatabaseEvent.ExportFiles(
                             context.applicationContext,
-                            selectedNotes.toList(),
+                            selectedNotesSet.toList(),
                             it
                         )
                     )
-                    isExportDialogVisible = false
+                    isExportNotesDialogVisible = false
                 }
             }
 
-            if (isFolderDialogVisible) {
+            if (isMoveToFolderDialogVisible) {
                 FolderListDialog(
                     hint = stringResource(R.string.destination_folder),
-                    oFolderId = selectedFolder.id,
-                    folders = folderNoteCounts.map { it.first },
-                    onDismissRequest = { isFolderDialogVisible = false }
+                    oFolderId = currentFolder.id,
+                    folders = folderNoteCountsList.map { it.first },
+                    onDismissRequest = { isMoveToFolderDialogVisible = false }
                 ) {
-                    sharedViewModel.onListEvent(ListEvent.MoveNotes(selectedNotes, it))
+                    viewModel.onListEvent(ListEvent.MoveNotes(selectedNotesSet, it))
                     initializeNoteSelection()
                 }
             }
 
             ProgressDialog(
-                isLoading = dataActionState.loading,
-                progress = dataActionState.progress,
-                message = dataActionState.message,
-                onDismissRequest = sharedViewModel::cancelDataAction
+                isLoading = dataAction.loading,
+                progress = dataAction.progress,
+                message = dataAction.message,
+                onDismissRequest = viewModel::cancelDataAction
             )
         }
     }

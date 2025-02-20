@@ -1,4 +1,4 @@
-package com.yangdai.opennote.presentation.component
+package com.yangdai.opennote.presentation.component.main
 
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.material3.DrawerState

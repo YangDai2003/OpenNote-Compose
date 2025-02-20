@@ -14,7 +14,6 @@ import androidx.core.app.TaskStackBuilder
 import androidx.core.net.toUri
 import androidx.documentfile.provider.DocumentFile
 import com.yangdai.opennote.MainActivity
-import java.util.Date
 
 fun Intent.isTextMimeType() = type?.startsWith(Constants.MIME_TYPE_TEXT) == true
 
@@ -93,9 +92,9 @@ fun getOrCreateDirectory(
     }
 }
 
-fun Long.timestampToFormatLocalDateTime(): String {
-    return DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT)
-        .format(Date(this))
+@Composable
+fun rememberDateTimeFormatter(): DateFormat {
+    return remember { DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT) }
 }
 
 @Composable

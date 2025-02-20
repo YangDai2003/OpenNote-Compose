@@ -1,4 +1,4 @@
-package com.yangdai.opennote.presentation.component
+package com.yangdai.opennote.presentation.component.main
 
 import android.content.res.Configuration
 import androidx.activity.compose.LocalActivity

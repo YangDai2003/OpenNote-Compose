@@ -184,7 +184,7 @@
     <string name="line_count">Lines</string>
     <string name="paragraph_count">Paragraphs</string>
     <string name="outline">Outline</string>
-    <string name="auto_save">Auto save</string>
+    <string name="auto_save">Autosave</string>
     <string name="ask_save_note">Save note?</string>
     <string name="title_align">Title alignment</string>
     <string name="left">Left</string>

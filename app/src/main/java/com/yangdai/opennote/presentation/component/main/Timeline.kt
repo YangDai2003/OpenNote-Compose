@@ -1,4 +1,4 @@
-package com.yangdai.opennote.presentation.component
+package com.yangdai.opennote.presentation.component.main
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.fillMaxHeight

@@ -1,4 +1,4 @@
-package com.yangdai.opennote.presentation.component
+package com.yangdai.opennote.presentation.component.main
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
@@ -32,6 +32,7 @@ import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -43,7 +44,8 @@ import androidx.compose.ui.unit.dp
 import com.yangdai.opennote.R
 import com.yangdai.opennote.data.local.entity.FolderEntity
 import com.yangdai.opennote.presentation.navigation.Screen
-import com.yangdai.opennote.presentation.navigation.Screen.*
+import com.yangdai.opennote.presentation.navigation.Screen.Folders
+import com.yangdai.opennote.presentation.navigation.Screen.Settings
 
 @Composable
 fun DrawerContent(
@@ -60,14 +62,14 @@ fun DrawerContent(
 ) {
 
     Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 12.dp, horizontal = 20.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
     ) {
         if (showLock)
-            IconButton(
-                modifier = Modifier.padding(12.dp),
-                onClick = onLockClick
-            ) {
+            IconButton(onClick = onLockClick) {
                 Icon(
                     imageVector = Icons.Outlined.Lock,
                     contentDescription = "lock",
@@ -77,10 +79,7 @@ fun DrawerContent(
 
         Spacer(modifier = Modifier.weight(1f))
 
-        IconButton(
-            modifier = Modifier.padding(12.dp),
-            onClick = { navigateTo(Settings) }
-        ) {
+        IconButton(onClick = { navigateTo(Settings) }) {
             Icon(
                 imageVector = Icons.Outlined.Settings,
                 contentDescription = "Open Settings",
@@ -160,7 +159,7 @@ private fun DrawerItem(
     modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding),
     icon = {
         Icon(
-            modifier = Modifier.padding(horizontal = 12.dp),
+            modifier = Modifier.padding(horizontal = 4.dp),
             imageVector = icon,
             tint = iconTint,
             contentDescription = "Leading Icon"
@@ -170,7 +169,7 @@ private fun DrawerItem(
         Text(
             text = label,
             color = MaterialTheme.colorScheme.onSurface,
-            fontWeight = FontWeight.Bold,
+            fontWeight = FontWeight.SemiBold,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis
         )
@@ -181,7 +180,7 @@ private fun DrawerItem(
             style = MaterialTheme.typography.labelMedium
         )
     },
-    shape = MaterialTheme.shapes.large,
+    shape = MaterialTheme.shapes.medium,
     selected = isSelected,
     onClick = onClick
 )

@@ -228,8 +228,7 @@ fun FullscreenImageDialog(
                             }) {
                             Icon(
                                 imageVector = Icons.Default.Download,
-                                contentDescription = "Download Image",
-                                tint = Color.White
+                                contentDescription = "Download Image"
                             )
                         }
                     }
@@ -249,8 +248,7 @@ fun FullscreenImageDialog(
             ) {
                 Icon(
                     imageVector = Icons.Default.Close,
-                    contentDescription = "Close",
-                    tint = Color.White
+                    contentDescription = "Close"
                 )
             }
         }

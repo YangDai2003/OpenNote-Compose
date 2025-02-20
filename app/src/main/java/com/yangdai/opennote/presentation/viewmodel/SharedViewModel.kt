@@ -53,6 +53,7 @@ import com.yangdai.opennote.presentation.state.ListNoteContentOverflowStyle
 import com.yangdai.opennote.presentation.state.ListNoteContentSize
 import com.yangdai.opennote.presentation.state.NoteState
 import com.yangdai.opennote.presentation.state.SettingsState
+import com.yangdai.opennote.presentation.state.TextState
 import com.yangdai.opennote.presentation.util.BackupManager
 import com.yangdai.opennote.presentation.util.Constants
 import com.yangdai.opennote.presentation.util.getFileName
@@ -157,10 +158,11 @@ class SharedViewModel @Inject constructor(
     // 被打开的笔记的标题和内容的状态，唯一的数据源
     val titleState = TextFieldState()
     val contentState = TextFieldState()
+    val contentSnapshotFlow = snapshotFlow { contentState.text }
 
     // Markdown 渲染后的 HTML 内容
     @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
-    val html = snapshotFlow { contentState.text }.debounce(100)
+    val html = contentSnapshotFlow.debounce(100)
         .mapLatest { renderer.render(parser.parse(it.toString())) }
         .flowOn(Dispatchers.Default)
         .stateIn(
@@ -169,11 +171,21 @@ class SharedViewModel @Inject constructor(
             initialValue = ""
         )
 
+    @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
+    val textState = contentSnapshotFlow.debounce(100)
+        .mapLatest { TextState.fromText(it) }
+        .flowOn(Dispatchers.Default)
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000L),
+            initialValue = TextState()
+        )
+
     private val parserForOutline =
         Parser.builder().includeSourceSpans(IncludeSourceSpans.BLOCKS_AND_INLINES).build()
 
     @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
-    val outline = snapshotFlow { contentState.text }.debounce(500)
+    val outline = contentSnapshotFlow.debounce(500)
         .mapLatest {
             val document = parserForOutline.parse(it.toString())
             val root = HeaderNode("", 0, IntRange.EMPTY)
@@ -224,7 +236,7 @@ class SharedViewModel @Inject constructor(
             )
             parser = Parser.builder().extensions(extensions).build()
             renderer = HtmlRenderer.builder().extensions(extensions).build()
-            delay(300)
+            delay(300L)
             //任务完成后将 isLoading 设置为 false 以隐藏启动屏幕
             isLoading.value = false
         }

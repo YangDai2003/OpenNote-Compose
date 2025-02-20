@@ -105,7 +105,7 @@ fun AnimatedNavHost(
             it.arguments?.getParcelable<Intent>(NavController.KEY_DEEP_LINK_INTENT)
         }?.parseSharedContent(context.applicationContext)
         NoteScreen(
-            id = id,
+            noteId = id,
             isLargeScreen = isLargeScreen,
             sharedContent = sharedContent,
             navigateUp = { navController.navigateBackWithHapticFeedback(hapticFeedback) }

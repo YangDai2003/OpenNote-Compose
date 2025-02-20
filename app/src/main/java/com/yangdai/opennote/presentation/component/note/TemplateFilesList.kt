@@ -16,9 +16,10 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -29,7 +30,7 @@ import com.yangdai.opennote.R
 import com.yangdai.opennote.presentation.util.Constants
 import com.yangdai.opennote.presentation.util.getOrCreateDirectory
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @Composable
 fun TemplateFilesList(
@@ -38,15 +39,12 @@ fun TemplateFilesList(
     saveCurrentNoteAsTemplate: () -> Unit,
     onFileSelected: (String) -> Unit
 ) {
-    val templateFiles = remember {
+    var templateFiles by remember {
         mutableStateOf<List<DocumentFile>>(emptyList())
     }
 
-    val coroutineScope = rememberCoroutineScope()
-
-    // 获取模板文件列表
     LaunchedEffect(Unit) {
-        coroutineScope.launch(Dispatchers.IO) {
+        withContext(Dispatchers.IO) {
             val openNoteDir = getOrCreateDirectory(
                 context, rootUri, Constants.File.OPENNOTE
             )
@@ -61,7 +59,7 @@ fun TemplateFilesList(
                         it.name?.endsWith(".markdown") == true
             } ?: emptyList()
 
-            templateFiles.value = files
+            templateFiles = files
         }
     }
 
@@ -71,10 +69,14 @@ fun TemplateFilesList(
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        items(templateFiles.value) { file ->
+        items(templateFiles) { file ->
             ListItem(
                 headlineContent = {
-                    Text(text = file.name ?: "Untitled", maxLines = 1, modifier = Modifier.basicMarquee())
+                    Text(
+                        text = file.name ?: "Untitled",
+                        maxLines = 1,
+                        modifier = Modifier.basicMarquee()
+                    )
                 },
                 modifier = Modifier
                     .clip(CircleShape)

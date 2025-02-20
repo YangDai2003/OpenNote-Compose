@@ -20,11 +20,13 @@ import com.yangdai.opennote.presentation.component.TextOptionButton
 enum class ShareType {
     FILE,
     TEXT,
-    COPY
+    COPY,
+    IMAGE
 }
 
 @Composable
 fun ShareDialog(
+    isStandard: Boolean,
     onDismissRequest: () -> Unit,
     onConfirm: (ShareType) -> Unit
 ) = AlertDialog(
@@ -54,6 +56,11 @@ fun ShareDialog(
             TextOptionButton(buttonText = stringResource(R.string.text)) {
                 onConfirm(ShareType.TEXT)
             }
+
+            if (isStandard)
+                TextOptionButton(buttonText = stringResource(R.string.image) + " (BETA)") {
+                    onConfirm(ShareType.IMAGE)
+                }
         }
     },
     confirmButton = {}
@@ -63,6 +70,7 @@ fun ShareDialog(
 @Preview
 fun ShareDialogPreview() {
     ShareDialog(
+        isStandard = true,
         onDismissRequest = {},
         onConfirm = {}
     )

@@ -41,7 +41,7 @@ import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.automirrored.outlined.ExitToApp
 import androidx.compose.material.icons.automirrored.outlined.MenuBook
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.outlined.Alarm
+import androidx.compose.material.icons.outlined.AddAlert
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.EditNote
 import androidx.compose.material.icons.outlined.LocalPrintshop
@@ -133,12 +133,11 @@ import com.yangdai.opennote.presentation.component.note.TemplateFilesList
 import com.yangdai.opennote.presentation.event.DatabaseEvent
 import com.yangdai.opennote.presentation.event.NoteEvent
 import com.yangdai.opennote.presentation.event.UiEvent
-import com.yangdai.opennote.presentation.state.TextState
 import com.yangdai.opennote.presentation.util.Constants
 import com.yangdai.opennote.presentation.util.SharedContent
 import com.yangdai.opennote.presentation.util.TemplateProcessor
 import com.yangdai.opennote.presentation.util.getOrCreateDirectory
-import com.yangdai.opennote.presentation.util.timestampToFormatLocalDateTime
+import com.yangdai.opennote.presentation.util.rememberDateTimeFormatter
 import com.yangdai.opennote.presentation.viewmodel.SharedViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -146,52 +145,59 @@ import kotlinx.coroutines.withContext
 import java.io.File
 import kotlin.math.abs
 
-
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun NoteScreen(
-    sharedViewModel: SharedViewModel = hiltViewModel(LocalActivity.current as MainActivity),
-    id: Long,
+    viewModel: SharedViewModel = hiltViewModel(LocalActivity.current as MainActivity),
+    noteId: Long,
     isLargeScreen: Boolean,
     sharedContent: SharedContent?,
     navigateUp: () -> Unit
 ) {
-    val noteState by sharedViewModel.noteStateFlow.collectAsStateWithLifecycle()
-    val folderNoteCounts by sharedViewModel.folderWithNoteCountsFlow.collectAsStateWithLifecycle()
-    val html by sharedViewModel.html.collectAsStateWithLifecycle()
-    val outline by sharedViewModel.outline.collectAsStateWithLifecycle()
-    val actionState by sharedViewModel.dataActionStateFlow.collectAsStateWithLifecycle()
-    val settingsState by sharedViewModel.settingsStateFlow.collectAsStateWithLifecycle()
+    val noteState by viewModel.noteStateFlow.collectAsStateWithLifecycle()
+    val folderNoteCounts by viewModel.folderWithNoteCountsFlow.collectAsStateWithLifecycle()
+    val html by viewModel.html.collectAsStateWithLifecycle()
+    val outline by viewModel.outline.collectAsStateWithLifecycle()
+    val noteTextDetails by viewModel.textState.collectAsStateWithLifecycle()
+    val dataAction by viewModel.dataActionStateFlow.collectAsStateWithLifecycle()
+    val appSettings by viewModel.settingsStateFlow.collectAsStateWithLifecycle()
 
     // 确保屏幕旋转等配置变更时，不会重复加载笔记
-    var previousId by rememberSaveable { mutableStateOf<Long?>(null) }
+    var lastLoadedNoteId by rememberSaveable { mutableStateOf<Long?>(null) }
 
     DisposableEffect(Unit) {
-        if (id != previousId) {
-            previousId = id
-            sharedViewModel.onNoteEvent(NoteEvent.Load(id, sharedContent))
+        if (noteId != lastLoadedNoteId) {
+            lastLoadedNoteId = noteId
+            viewModel.onNoteEvent(NoteEvent.Load(noteId, sharedContent))
         }
         onDispose {
-            if (!sharedViewModel.shouldShowSnackbar())
-                sharedViewModel.onNoteEvent(NoteEvent.SaveOrUpdate)
+            if (!viewModel.shouldShowSnackbar())
+                viewModel.onNoteEvent(NoteEvent.SaveOrUpdate)
         }
     }
 
+    val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
     val pagerState = rememberPagerState(pageCount = { 2 })
-    val initialReadView = settingsState.isDefaultViewForReading
-    var isReadView by remember { mutableStateOf(initialReadView) }
-    var isEditorAndPreviewSynced by remember { mutableStateOf(false) }
+    val isReadViewAtStart = appSettings.isDefaultViewForReading && noteId != -1L
+    var isReadView by rememberSaveable { mutableStateOf(isReadViewAtStart) }
+    var isEditorAndPreviewSynced by rememberSaveable { mutableStateOf(false) }
     var isSearching by remember { mutableStateOf(false) }
-    var headerRange by remember { mutableStateOf<IntRange?>(null) }
-    var findAndReplaceState by remember { mutableStateOf(FindAndReplaceState()) }
-    LaunchedEffect(findAndReplaceState.searchWord, sharedViewModel.contentState.text) {
-        findAndReplaceState = findAndReplaceState.copy(
-            matchCount = if (findAndReplaceState.searchWord.isNotBlank()) findAndReplaceState.searchWord.toRegex()
-                .findAll(sharedViewModel.contentState.text).count() else 0
-        )
+    var selectedHeader by remember { mutableStateOf<IntRange?>(null) }
+    var searchState by remember { mutableStateOf(FindAndReplaceState()) }
+    LaunchedEffect(searchState.searchWord, viewModel.contentState.text) {
+        withContext(Dispatchers.Default) {
+            searchState = searchState.copy(
+                matchCount = if (searchState.searchWord.isNotBlank())
+                    searchState.searchWord.toRegex()
+                        .findAll(viewModel.contentState.text)
+                        .count()
+                else 0
+            )
+        }
     }
 
-    var isDrawerOpen by rememberSaveable { mutableStateOf(false) }
+    var isSideSheetOpen by rememberSaveable { mutableStateOf(false) }
     var showFolderDialog by rememberSaveable { mutableStateOf(false) }
     var showListDialog by rememberSaveable { mutableStateOf(false) }
     var showTableDialog by rememberSaveable { mutableStateOf(false) }
@@ -202,20 +208,22 @@ fun NoteScreen(
     var showAudioDialog by rememberSaveable { mutableStateOf(false) }
     var showTemplateBottomSheet by remember { mutableStateOf(false) }
     val triggerPrint = remember { mutableStateOf(false) }
+    val launchShareIntent = remember { mutableStateOf(false) }
 
     // Folder name, default to "All Notes", or the name of the current folder the note is in
     var folderName by rememberSaveable { mutableStateOf("") }
     var timestamp by rememberSaveable { mutableStateOf("") }
-    val context = LocalContext.current
-    val coroutineScope = rememberCoroutineScope()
+    val dateTimeFormatter = rememberDateTimeFormatter()
 
     LaunchedEffect(noteState) {
-        folderName = noteState.folderId?.let { folderId ->
-            folderNoteCounts.find { it.first.id == folderId }?.first?.name
-        } ?: context.getString(R.string.all_notes)
-        timestamp = if (noteState.timestamp == null) System.currentTimeMillis()
-            .timestampToFormatLocalDateTime()
-        else noteState.timestamp!!.timestampToFormatLocalDateTime()
+        withContext(Dispatchers.Default) {
+            folderName = noteState.folderId?.let { folderId ->
+                folderNoteCounts.firstOrNull { it.first.id == folderId }?.first?.name
+            } ?: context.getString(R.string.all_notes)
+            timestamp =
+                if (noteState.timestamp == null) dateTimeFormatter.format(System.currentTimeMillis())
+                else dateTimeFormatter.format(noteState.timestamp)
+        }
     }
 
     val keyboardController = LocalSoftwareKeyboardController.current
@@ -240,7 +248,7 @@ fun NoteScreen(
     }
 
     LaunchedEffect(true) {
-        sharedViewModel.uiEventFlow.collect { event ->
+        viewModel.uiEventFlow.collect { event ->
             if (event is UiEvent.NavigateBack) navigateUp()
         }
     }
@@ -248,7 +256,7 @@ fun NoteScreen(
     val photoPicker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickMultipleVisualMedia(maxItems = 10)
     ) { uris ->
-        if (uris.isNotEmpty()) sharedViewModel.onDatabaseEvent(
+        if (uris.isNotEmpty()) viewModel.onDatabaseEvent(
             DatabaseEvent.ImportImages(
                 context.applicationContext, uris
             )
@@ -258,19 +266,19 @@ fun NoteScreen(
     val videoPicker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia()
     ) { uri ->
-        if (uri != null) sharedViewModel.onDatabaseEvent(
+        if (uri != null) viewModel.onDatabaseEvent(
             DatabaseEvent.ImportVideo(
                 context.applicationContext, uri
             )
         )
     }
 
-    val snackbarHostState = remember { SnackbarHostState() }
+    val messageBar = remember { SnackbarHostState() }
 
-    BackHandler(sharedViewModel.shouldShowSnackbar()) {
-        if (sharedViewModel.shouldShowSnackbar())
+    BackHandler(viewModel.shouldShowSnackbar()) {
+        if (viewModel.shouldShowSnackbar())
             coroutineScope.launch {
-                snackbarHostState.showSnackbar(
+                messageBar.showSnackbar(
                     "",
                     duration = SnackbarDuration.Short
                 )
@@ -324,9 +332,9 @@ fun NoteScreen(
                 },
                 navigationIcon = {
                     IconButton(onClick = {
-                        if (sharedViewModel.shouldShowSnackbar())
+                        if (viewModel.shouldShowSnackbar())
                             coroutineScope.launch {
-                                snackbarHostState.showSnackbar(
+                                messageBar.showSnackbar(
                                     "",
                                     duration = SnackbarDuration.Short
                                 )
@@ -390,7 +398,7 @@ fun NoteScreen(
                         onClick = {
                             keyboardController?.hide()
                             focusManager.clearFocus()
-                            isDrawerOpen = true
+                            isSideSheetOpen = true
                         }
                     ) {
                         Icon(
@@ -407,9 +415,9 @@ fun NoteScreen(
                 enter = slideInVertically { fullHeight -> fullHeight },
                 exit = slideOutVertically { fullHeight -> fullHeight }) {
                 MarkdownEditorRow(
-                    canRedo = sharedViewModel.contentState.undoState.canRedo,
-                    canUndo = sharedViewModel.contentState.undoState.canUndo,
-                    onEdit = { sharedViewModel.onNoteEvent(NoteEvent.Edit(it)) },
+                    canRedo = viewModel.contentState.undoState.canRedo,
+                    canUndo = viewModel.contentState.undoState.canUndo,
+                    onEdit = { viewModel.onNoteEvent(NoteEvent.Edit(it)) },
                     onTableButtonClick = { showTableDialog = true },
                     onListButtonClick = { showListDialog = true },
                     onTaskButtonClick = { showTaskDialog = true },
@@ -437,12 +445,12 @@ fun NoteScreen(
             }
         },
         snackbarHost = {
-            SnackbarHost(hostState = snackbarHostState) {
+            SnackbarHost(hostState = messageBar) {
                 Snackbar(
                     content = { Text(stringResource(R.string.ask_save_note)) },
                     action = {
                         IconButton(onClick = {
-                            sharedViewModel.onNoteEvent(NoteEvent.SaveOrUpdate)
+                            viewModel.onNoteEvent(NoteEvent.SaveOrUpdate)
                             navigateUp()
                         }) {
                             Icon(
@@ -478,18 +486,18 @@ fun NoteScreen(
             ) {
                 if (it) FindAndReplaceField(
                     isStandard = noteState.isStandard,
-                    state = findAndReplaceState,
-                    onStateUpdate = { findAndReplaceState = it })
+                    state = searchState,
+                    onStateUpdate = { searchState = it })
                 else BasicTextField(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp),
-                    state = sharedViewModel.titleState,
+                    state = viewModel.titleState,
                     readOnly = isReadView,
                     lineLimits = TextFieldLineLimits.SingleLine,
                     textStyle = MaterialTheme.typography.headlineLarge.copy(
                         color = MaterialTheme.colorScheme.onSurface,
-                        textAlign = when (settingsState.titleAlignment) {
+                        textAlign = when (appSettings.titleAlignment) {
                             1 -> TextAlign.Center
                             2 -> TextAlign.Right
                             else -> TextAlign.Left
@@ -499,7 +507,7 @@ fun NoteScreen(
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
                     decorator = { innerTextField ->
                         TextFieldDefaults.DecorationBox(
-                            value = sharedViewModel.titleState.text.toString(),
+                            value = viewModel.titleState.text.toString(),
                             innerTextField = innerTextField,
                             enabled = true,
                             singleLine = true,
@@ -511,7 +519,7 @@ fun NoteScreen(
                                     text = stringResource(id = R.string.title),
                                     style = MaterialTheme.typography.headlineLarge.copy(
                                         color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                        textAlign = when (settingsState.titleAlignment) {
+                                        textAlign = when (appSettings.titleAlignment) {
                                             1 -> TextAlign.Center
                                             2 -> TextAlign.Right
                                             else -> TextAlign.Left
@@ -527,40 +535,40 @@ fun NoteScreen(
             }
 
             /*-------------------------------------------------*/
+            val scrollState = rememberScrollState()
 
             if (!noteState.isStandard) LiteTextField(
                 modifier = Modifier.fillMaxSize(),
                 readMode = isReadView,
-                state = sharedViewModel.contentState,
-                headerRange = headerRange,
-                searchWord = findAndReplaceState.searchWord,
+                state = viewModel.contentState,
+                scrollState = scrollState,
+                headerRange = selectedHeader,
+                searchWord = searchState.searchWord,
                 onTemplateClick = { showTemplateBottomSheet = true })
             else {
 
-                val scrollState = rememberScrollState()
-
                 if (isLargeScreen) {
 
-                    var textFieldWeight by remember { mutableFloatStateOf(0.5f) }
+                    val interactionSource = remember { MutableInteractionSource() }
+                    var editorWeight by remember { mutableFloatStateOf(0.5f) }
                     val windowWidth = currentWindowSize().width.toFloat()
 
                     Row(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(horizontal = 16.dp),
+                        modifier = Modifier.fillMaxSize(),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         StandardTextField(
                             modifier = Modifier
                                 .fillMaxHeight()
-                                .weight(textFieldWeight),
+                                .weight(editorWeight)
+                                .padding(start = 16.dp, end = 8.dp),
                             readMode = isReadView,
-                            state = sharedViewModel.contentState,
+                            state = viewModel.contentState,
                             scrollState = scrollState,
-                            isLintActive = settingsState.isLintActive,
-                            headerRange = headerRange,
-                            findAndReplaceState = findAndReplaceState,
-                            onFindAndReplaceUpdate = { findAndReplaceState = it },
+                            isLintActive = appSettings.isLintActive,
+                            headerRange = selectedHeader,
+                            findAndReplaceState = searchState,
+                            onFindAndReplaceUpdate = { searchState = it },
                             onTableButtonClick = { showTableDialog = true },
                             onListButtonClick = { showListDialog = true },
                             onTaskButtonClick = { showTaskDialog = true },
@@ -583,63 +591,70 @@ fun NoteScreen(
                                 )
                             },
                             onImageReceived = {
-                                sharedViewModel.onDatabaseEvent(
+                                viewModel.onDatabaseEvent(
                                     DatabaseEvent.ImportImages(
                                         context.applicationContext, it
                                     )
                                 )
                             })
 
+                        // 按下宽12dp，正常宽4dp，有默认边距，所以使用sizeIn()限制宽度
                         VerticalDragHandle(
                             modifier = Modifier
-                                .padding(horizontal = 4.dp)
-                                .draggable(state = rememberDraggableState { delta ->
-                                    textFieldWeight =
-                                        (textFieldWeight + delta / windowWidth).coerceIn(
-                                            0.3f, 0.7f
-                                        )
-                                }, orientation = Orientation.Horizontal, onDragStopped = {
-                                    val positions = listOf(1f / 3f, 0.5f, 2f / 3f)
-                                    val closest =
-                                        positions.minByOrNull { abs(it - textFieldWeight) }
-                                    if (closest != null) {
-                                        textFieldWeight = closest
+                                .sizeIn(maxWidth = 12.dp, minWidth = 4.dp)
+                                .draggable(
+                                    interactionSource = interactionSource,
+                                    state = rememberDraggableState { delta ->
+                                        editorWeight =
+                                            (editorWeight + delta / windowWidth).coerceIn(
+                                                0.3f, 0.7f
+                                            )
+                                    },
+                                    orientation = Orientation.Horizontal,
+                                    onDragStopped = {
+                                        val positions = listOf(1f / 3f, 0.5f, 2f / 3f)
+                                        val closest =
+                                            positions.minByOrNull { abs(it - editorWeight) }
+                                        if (closest != null) {
+                                            editorWeight = closest
+                                        }
                                     }
-                                }),
+                                ),
+                            interactionSource = interactionSource
                         )
 
                         ReadView(
                             modifier = Modifier
                                 .fillMaxHeight()
-                                .weight(1f - textFieldWeight),
+                                .weight(1f - editorWeight),
                             html = html,
-                            noteName = sharedViewModel.titleState.text.toString(),
+                            noteName = viewModel.titleState.text.toString(),
                             printEnabled = triggerPrint,
-                            rootUri = settingsState.storagePath.toUri(),
+                            launchShareIntent = launchShareIntent,
+                            rootUri = appSettings.storagePath.toUri(),
                             scrollState = scrollState,
                             scrollSynchronized = isEditorAndPreviewSynced,
-                            settingsState = settingsState
+                            settingsState = appSettings
                         )
                     }
                 } else HorizontalPager(
                     state = pagerState,
                     beyondViewportPageCount = 1,
-                    userScrollEnabled = false,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = 16.dp)
-                ) { page: Int ->
-                    when (page) {
+                    userScrollEnabled = false
+                ) { currentPage: Int ->
+                    when (currentPage) {
                         0 -> {
                             StandardTextField(
-                                modifier = Modifier.fillMaxSize(),
-                                state = sharedViewModel.contentState,
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(horizontal = 16.dp),
+                                state = viewModel.contentState,
                                 readMode = isReadView,
                                 scrollState = scrollState,
-                                isLintActive = settingsState.isLintActive,
-                                headerRange = headerRange,
-                                findAndReplaceState = findAndReplaceState,
-                                onFindAndReplaceUpdate = { findAndReplaceState = it },
+                                isLintActive = appSettings.isLintActive,
+                                headerRange = selectedHeader,
+                                findAndReplaceState = searchState,
+                                onFindAndReplaceUpdate = { searchState = it },
                                 onTableButtonClick = { showTableDialog = true },
                                 onListButtonClick = { showListDialog = true },
                                 onTaskButtonClick = { showTaskDialog = true },
@@ -662,7 +677,7 @@ fun NoteScreen(
                                     )
                                 },
                                 onImageReceived = {
-                                    sharedViewModel.onDatabaseEvent(
+                                    viewModel.onDatabaseEvent(
                                         DatabaseEvent.ImportImages(
                                             context.applicationContext, it
                                         )
@@ -674,12 +689,13 @@ fun NoteScreen(
                             ReadView(
                                 modifier = Modifier.fillMaxSize(),
                                 html = html,
-                                noteName = sharedViewModel.titleState.text.toString(),
+                                noteName = viewModel.titleState.text.toString(),
                                 printEnabled = triggerPrint,
-                                rootUri = settingsState.storagePath.toUri(),
+                                launchShareIntent = launchShareIntent,
+                                rootUri = appSettings.storagePath.toUri(),
                                 scrollSynchronized = isEditorAndPreviewSynced,
                                 scrollState = scrollState,
-                                settingsState = settingsState
+                                settingsState = appSettings
                             )
                         }
                     }
@@ -690,11 +706,11 @@ fun NoteScreen(
 
     NoteSideSheet(
         modifier = Modifier.fillMaxSize(),
-        isDrawerOpen = isDrawerOpen,
-        onDismiss = { isDrawerOpen = false },
+        isDrawerOpen = isSideSheetOpen,
+        onDismiss = { isSideSheetOpen = false },
         isLargeScreen = isLargeScreen,
         outline = outline,
-        onHeaderClick = { headerRange = it },
+        onHeaderClick = { selectedHeader = it },
         actionContent = {
             TooltipBox(
                 positionProvider = TooltipDefaults.rememberTooltipPositionProvider(),
@@ -710,7 +726,7 @@ fun NoteScreen(
                 focusable = false,
                 enableUserInput = true
             ) {
-                IconButton(onClick = { sharedViewModel.onNoteEvent(NoteEvent.SwitchType) }) {
+                IconButton(onClick = { viewModel.onNoteEvent(NoteEvent.SwitchType) }) {
                     Icon(
                         imageVector = Icons.Outlined.SwapHoriz,
                         tint = MaterialTheme.colorScheme.onSurface,
@@ -728,7 +744,7 @@ fun NoteScreen(
                 focusable = false,
                 enableUserInput = true
             ) {
-                IconButton(onClick = { sharedViewModel.onNoteEvent(NoteEvent.Delete) }) {
+                IconButton(onClick = { viewModel.onNoteEvent(NoteEvent.Delete) }) {
                     Icon(
                         imageVector = Icons.Outlined.Delete,
                         tint = MaterialTheme.colorScheme.onSurface,
@@ -751,10 +767,10 @@ fun NoteScreen(
                         Intent(Intent.ACTION_INSERT).setData(CalendarContract.Events.CONTENT_URI)
                             .putExtra(
                                 CalendarContract.Events.TITLE,
-                                sharedViewModel.titleState.text.toString()
+                                viewModel.titleState.text.toString()
                             ).putExtra(
                                 CalendarContract.Events.DESCRIPTION,
-                                sharedViewModel.contentState.text.toString()
+                                viewModel.contentState.text.toString()
                             )
 
                     try {
@@ -768,7 +784,7 @@ fun NoteScreen(
                     }
                 }) {
                     Icon(
-                        imageVector = Icons.Outlined.Alarm,
+                        imageVector = Icons.Outlined.AddAlert,
                         tint = MaterialTheme.colorScheme.onSurface,
                         contentDescription = "Remind"
                     )
@@ -850,46 +866,38 @@ fun NoteScreen(
                 else stringResource(R.string.lite_mode)
             )
 
-            var textState by remember { mutableStateOf(TextState()) }
-
-            LaunchedEffect(Unit) {
-                withContext(Dispatchers.Default) {
-                    textState = TextState.fromText(sharedViewModel.contentState.text)
-                }
-            }
-
             NoteSideSheetItem(
                 key = stringResource(R.string.char_count),
-                value = textState.charCount.toString()
+                value = noteTextDetails.charCount.toString()
             )
 
             NoteSideSheetItem(
                 key = stringResource(R.string.word_count),
-                value = textState.wordCountWithPunctuation.toString()
+                value = noteTextDetails.wordCountWithPunctuation.toString()
             )
 
             NoteSideSheetItem(
                 key = stringResource(R.string.word_count_without_punctuation),
-                value = textState.wordCountWithoutPunctuation.toString()
+                value = noteTextDetails.wordCountWithoutPunctuation.toString()
             )
 
             NoteSideSheetItem(
                 key = stringResource(R.string.line_count),
-                value = textState.lineCount.toString()
+                value = noteTextDetails.lineCount.toString()
             )
 
             NoteSideSheetItem(
                 key = stringResource(R.string.paragraph_count),
-                value = textState.paragraphCount.toString()
+                value = noteTextDetails.paragraphCount.toString()
             )
         })
 
     if (showAudioDialog) {
         AudioSelectionDialog(
-            rootUri = settingsState.storagePath.toUri(),
+            rootUri = appSettings.storagePath.toUri(),
             onDismiss = { showAudioDialog = false },
             onAudioSelected = {
-                sharedViewModel.onNoteEvent(
+                viewModel.onNoteEvent(
                     NoteEvent.Edit(
                         Constants.Editor.TEXT, "<audio src=\"$it\" controls></audio>"
                     )
@@ -898,7 +906,7 @@ fun NoteScreen(
             })
     }
 
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val templateSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     if (showTemplateBottomSheet) {
         ModalBottomSheet(
             modifier = Modifier.statusBarsPadding(),
@@ -915,9 +923,9 @@ fun NoteScreen(
                     IconButton(
                         modifier = Modifier.padding(end = 8.dp, top = 8.dp), onClick = {
                             coroutineScope.launch {
-                                sheetState.hide()
+                                templateSheetState.hide()
                             }.invokeOnCompletion {
-                                if (!sheetState.isVisible) {
+                                if (!templateSheetState.isVisible) {
                                     showTemplateBottomSheet = false
                                 }
                             }
@@ -926,16 +934,16 @@ fun NoteScreen(
                     }
                 }
             },
-            sheetState = sheetState
+            sheetState = templateSheetState
         ) {
             TemplateFilesList(
-                rootUri = settingsState.storagePath.toUri(), // 传入根URI
+                rootUri = appSettings.storagePath.toUri(), // 传入根URI
                 context = context.applicationContext, saveCurrentNoteAsTemplate = {
-                    val noteName = if (sharedViewModel.titleState.text.isBlank()) "Untitled"
-                    else sharedViewModel.titleState.text.toString()
+                    val noteName = if (viewModel.titleState.text.isBlank()) "Untitled"
+                    else viewModel.titleState.text.toString()
                     val fileName = "$noteName.md"
-                    val fileContent = sharedViewModel.contentState.text.toString()
-                    val rootUri = settingsState.storagePath.toUri()
+                    val fileContent = viewModel.contentState.text.toString()
+                    val rootUri = appSettings.storagePath.toUri()
 
                     val openNoteDir = getOrCreateDirectory(
                         context.applicationContext, rootUri, Constants.File.OPENNOTE
@@ -954,23 +962,23 @@ fun NoteScreen(
                     }
 
                     coroutineScope.launch {
-                        sheetState.hide()
+                        templateSheetState.hide()
                     }.invokeOnCompletion {
-                        if (!sheetState.isVisible) {
+                        if (!templateSheetState.isVisible) {
                             showTemplateBottomSheet = false
                         }
                     }
                 }, onFileSelected = { content ->
                     val temple = TemplateProcessor(
-                        settingsState.dateFormatter, settingsState.timeFormatter
+                        appSettings.dateFormatter, appSettings.timeFormatter
                     ).process(content)
                     // 处理选中的模板内容
                     coroutineScope.launch {
-                        sheetState.hide()
+                        templateSheetState.hide()
                     }.invokeOnCompletion {
-                        if (!sheetState.isVisible) {
+                        if (!templateSheetState.isVisible) {
                             showTemplateBottomSheet = false
-                            sharedViewModel.onNoteEvent(
+                            viewModel.onNoteEvent(
                                 NoteEvent.Edit(
                                     Constants.Editor.TEXT, temple
                                 )
@@ -983,12 +991,12 @@ fun NoteScreen(
 
     if (showExportDialog) {
         ExportDialog(onDismissRequest = { showExportDialog = false }, onConfirm = {
-            sharedViewModel.onDatabaseEvent(
+            viewModel.onDatabaseEvent(
                 DatabaseEvent.ExportFiles(
                     context.applicationContext, listOf(
                         NoteEntity(
-                            title = sharedViewModel.titleState.text.toString(),
-                            content = sharedViewModel.contentState.text.toString(),
+                            title = viewModel.titleState.text.toString(),
+                            content = viewModel.contentState.text.toString(),
                             timestamp = System.currentTimeMillis()
                         )
                     ), it
@@ -1000,68 +1008,75 @@ fun NoteScreen(
 
     if (showShareDialog) {
         val clipboard = LocalClipboard.current
-        ShareDialog(onDismissRequest = { showShareDialog = false }, onConfirm = {
-            when (it) {
-                ShareType.COPY -> {
-                    val clipData = ClipData.newPlainText(
-                        "Markdown", sharedViewModel.contentState.text.toString()
-                    )
-                    val clipEntry = ClipEntry(clipData)
-                    coroutineScope.launch {
-                        clipboard.setClipEntry(clipEntry)
-                    }
-                    Toast.makeText(context, "Markdown 📋", Toast.LENGTH_SHORT).show()
-                }
-
-                ShareType.TEXT -> {
-                    val sendIntent: Intent = Intent().apply {
-                        action = Intent.ACTION_SEND
-                        putExtra(
-                            Intent.EXTRA_TITLE, sharedViewModel.titleState.text.toString()
+        ShareDialog(
+            isStandard = noteState.isStandard,
+            onDismissRequest = { showShareDialog = false },
+            onConfirm = {
+                when (it) {
+                    ShareType.COPY -> {
+                        val clipData = ClipData.newPlainText(
+                            "Markdown", viewModel.contentState.text.toString()
                         )
-                        putExtra(
-                            Intent.EXTRA_TEXT, sharedViewModel.contentState.text.toString()
-                        )
-                        type = "text/plain"
+                        val clipEntry = ClipEntry(clipData)
+                        coroutineScope.launch {
+                            clipboard.setClipEntry(clipEntry)
+                        }
+                        Toast.makeText(context, "Markdown 📋", Toast.LENGTH_SHORT).show()
                     }
-                    val shareIntent = Intent.createChooser(sendIntent, null)
-                    context.startActivity(shareIntent)
-                }
 
-                ShareType.FILE -> {
-                    val fileName =
-                        sharedViewModel.titleState.text.toString() + if (noteState.isStandard) ".md" else ".txt"
-                    val file = File(context.applicationContext.cacheDir, fileName)
-                    val fileContent = sharedViewModel.contentState.text.toString()
-                    file.writeText(fileContent)
-                    val fileUri = FileProvider.getUriForFile(
-                        context.applicationContext,
-                        "${context.applicationContext.packageName}.fileprovider",
-                        file
-                    )
-                    val sendIntent: Intent = Intent().apply {
-                        action = Intent.ACTION_SEND
-                        putExtra(Intent.EXTRA_STREAM, fileUri)
-                        type = "text/*"
-                        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                    ShareType.TEXT -> {
+                        val sendIntent: Intent = Intent().apply {
+                            action = Intent.ACTION_SEND
+                            putExtra(
+                                Intent.EXTRA_TITLE, viewModel.titleState.text.toString()
+                            )
+                            putExtra(
+                                Intent.EXTRA_TEXT, viewModel.contentState.text.toString()
+                            )
+                            type = "text/plain"
+                        }
+                        val shareIntent = Intent.createChooser(sendIntent, null)
+                        context.startActivity(shareIntent)
                     }
-                    val shareIntent = Intent.createChooser(sendIntent, null)
-                    context.startActivity(shareIntent)
+
+                    ShareType.FILE -> {
+                        val fileName =
+                            viewModel.titleState.text.toString() + if (noteState.isStandard) ".md" else ".txt"
+                        val file = File(context.applicationContext.cacheDir, fileName)
+                        val fileContent = viewModel.contentState.text.toString()
+                        file.writeText(fileContent)
+                        val fileUri = FileProvider.getUriForFile(
+                            context.applicationContext,
+                            "${context.applicationContext.packageName}.fileprovider",
+                            file
+                        )
+                        val sendIntent: Intent = Intent().apply {
+                            action = Intent.ACTION_SEND
+                            putExtra(Intent.EXTRA_STREAM, fileUri)
+                            type = "text/*"
+                            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                        }
+                        val shareIntent = Intent.createChooser(sendIntent, null)
+                        context.startActivity(shareIntent)
+                    }
+
+                    ShareType.IMAGE -> {
+                        launchShareIntent.value = true
+                    }
                 }
-            }
-            showShareDialog = false
-        })
+                showShareDialog = false
+            })
     }
 
     if (showTableDialog) {
         TableDialog(onDismissRequest = { showTableDialog = false }) { row, column ->
-            sharedViewModel.onNoteEvent(NoteEvent.Edit(Constants.Editor.TABLE, "$row,$column"))
+            viewModel.onNoteEvent(NoteEvent.Edit(Constants.Editor.TABLE, "$row,$column"))
         }
     }
 
     if (showListDialog) {
         ListDialog(onDismissRequest = { showListDialog = false }) {
-            sharedViewModel.onNoteEvent(
+            viewModel.onNoteEvent(
                 NoteEvent.Edit(
                     Constants.Editor.LIST, it.fastJoinToString(separator = "\n")
                 )
@@ -1071,14 +1086,14 @@ fun NoteScreen(
 
     if (showTaskDialog) {
         TaskDialog(onDismissRequest = { showTaskDialog = false }) {
-            sharedViewModel.addTasks(it)
+            viewModel.addTasks(it)
         }
     }
 
     if (showLinkDialog) {
-        LinkDialog(onDismissRequest = { showLinkDialog = false }) { name, uri ->
-            val insertText = "[${name}](${uri})"
-            sharedViewModel.onNoteEvent(NoteEvent.Edit(Constants.Editor.TEXT, insertText))
+        LinkDialog(onDismissRequest = { showLinkDialog = false }) { linkName, linkUri ->
+            val insertText = "[${linkName}](${linkUri})"
+            viewModel.onNoteEvent(NoteEvent.Edit(Constants.Editor.TEXT, insertText))
         }
     }
 
@@ -1088,14 +1103,14 @@ fun NoteScreen(
             oFolderId = noteState.folderId,
             folders = folderNoteCounts.map { it.first },
             onDismissRequest = { showFolderDialog = false }) {
-            sharedViewModel.onNoteEvent(NoteEvent.FolderChanged(it))
+            viewModel.onNoteEvent(NoteEvent.FolderChanged(it))
         }
     }
 
     ProgressDialog(
-        isLoading = actionState.loading,
-        progress = actionState.progress,
-        message = actionState.message,
-        onDismissRequest = sharedViewModel::cancelDataAction
+        isLoading = dataAction.loading,
+        progress = dataAction.progress,
+        message = dataAction.message,
+        onDismissRequest = viewModel::cancelDataAction
     )
 }

@@ -5,6 +5,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.content.MediaType
 import androidx.compose.foundation.content.ReceiveContentListener
 import androidx.compose.foundation.content.consume
@@ -14,7 +15,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
@@ -55,6 +55,7 @@ fun LiteTextField(
     modifier: Modifier = Modifier,
     readMode: Boolean = false,
     state: TextFieldState,
+    scrollState: ScrollState,
     searchWord: String,
     headerRange: IntRange?,
     onTemplateClick: () -> Unit
@@ -92,8 +93,9 @@ fun LiteTextField(
             }
         }
     }
+
     var textLayoutResult by remember { mutableStateOf<TextLayoutResult?>(null) }
-    val scrollState = rememberScrollState()
+
     LaunchedEffect(headerRange) {
         headerRange?.let {
             // 获取该位置的文本边界
