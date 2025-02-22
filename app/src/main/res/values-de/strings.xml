@@ -53,7 +53,6 @@
     <string name="task">Aufgabe</string>
     <string name="lite_mode">Lite</string>
     <string name="guide">Benutzerhandbuch</string>
-    <string name="no_text_found">Kein Text gefunden</string>
     <string name="no_password_set">Bitte legen Sie zuerst das Passwort für den Sperrbildschirm des Systems fest.</string>
     <string name="no_calendar_app_found">Keine Kalender-App gefunden</string>
     <string name="progress">Fortschritt</string>
@@ -99,11 +98,11 @@
     <string name="task_list">Aufgabenliste</string>
     <string name="mermaid_diagram">Mermaid-Diagramm</string>
     <string name="unlock_to_use_open_note">Freischalten, um Open Note zu verwenden</string>
-    <string name="account_cloud">Konto und Cloud-Dienste</string>
+    <string name="cloud">Cloud-Dienst</string>
     <string name="sync">Sync</string>
     <string name="the_feature_is_still_under_construction_and_is_still_unavailable">Die Funktion befindet sich noch in der Entwicklung und ist derzeit nicht verfügbar.</string>
     <string name="url">URL</string>
-    <string name="account">Konto</string>
+    <string name="username">Benutzername</string>
     <string name="pass">Passwort</string>
     <string name="color_picker">Farbwähler</string>
     <string name="navigate_back">Zurück navigieren</string>

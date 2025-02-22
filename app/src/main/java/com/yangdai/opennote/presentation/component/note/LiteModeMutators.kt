@@ -65,6 +65,8 @@ fun TextFieldValue.underline() = inlineWrap("++")
 
 fun TextFieldValue.strikeThrough() = inlineWrap("~~")
 
+fun TextFieldValue.highlight() = inlineWrap("==")
+
 fun TextFieldValue.inlineCode() = inlineWrap("`")
 
 fun TextFieldValue.brackets() = inlineWrap("[", "]")

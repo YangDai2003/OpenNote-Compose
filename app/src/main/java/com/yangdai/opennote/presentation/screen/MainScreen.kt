@@ -159,6 +159,22 @@ fun MainScreen(
         allNotesSelected = false
     }
 
+    LaunchedEffect(selectedNavDrawerIndex, currentFolder) {
+        initializeNoteSelection()
+        when (selectedNavDrawerIndex) {
+            0 -> viewModel.onListEvent(ListEvent.Sort(trash = false))
+
+            1 -> viewModel.onListEvent(ListEvent.Sort(trash = true))
+
+            else -> viewModel.onListEvent(
+                ListEvent.Sort(
+                    filterFolder = true,
+                    folderId = currentFolder.id
+                )
+            )
+        }
+    }
+
     // select all and deselect all, triggered by the checkbox in the bottom bar
     LaunchedEffect(allNotesSelected) {
         selectedNotesSet = if (allNotesSelected) mainScreenData.notes.toSet()
@@ -183,37 +199,22 @@ fun MainScreen(
                 selectedDrawerIndex = selectedNavDrawerIndex,
                 showLock = settings.password.isNotEmpty(),
                 onLockClick = {
-                    viewModel.authenticated.value = false
                     scope.launch {
                         navigationDrawerState.apply {
                             close()
                         }
                     }
+                    viewModel.authenticated.value = false
                 },
                 navigateTo = { navigateToScreen(it) }
             ) { index, folderEntity ->
-                if (selectedNavDrawerIndex != index) {
-                    initializeNoteSelection()
-                    selectedNavDrawerIndex = index
-                    currentFolder = folderEntity
-                    when (index) {
-                        0 -> viewModel.onListEvent(ListEvent.Sort(trash = false))
-
-                        1 -> viewModel.onListEvent(ListEvent.Sort(trash = true))
-
-                        else -> viewModel.onListEvent(
-                            ListEvent.Sort(
-                                filterFolder = true,
-                                folderId = folderEntity.id
-                            )
-                        )
-                    }
-                }
                 scope.launch {
                     navigationDrawerState.apply {
                         close()
                     }
                 }
+                selectedNavDrawerIndex = index
+                currentFolder = folderEntity
             }
         },
     ) {
@@ -575,7 +576,7 @@ fun MainScreen(
                         items(
                             items = mainScreenData.notes,
                             key = { note: NoteEntity -> note.id!! },
-                            contentType = { note: NoteEntity -> note }
+                            contentType = { "NoteItem" }
                         ) { note ->
                             AdaptiveNoteCard(
                                 modifier = Modifier
@@ -592,9 +593,8 @@ fun MainScreen(
                                 onSelectNote = {
                                     if (isMultiSelectEnabled) {
                                         selectedNotesSet =
-                                            if (selectedNotesSet.contains(it)) selectedNotesSet.minus(
-                                                it
-                                            )
+                                            if (selectedNotesSet.contains(it))
+                                                selectedNotesSet.minus(it)
                                             else selectedNotesSet.plus(it)
                                     } else {
                                         if (selectedNavDrawerIndex != 1) {

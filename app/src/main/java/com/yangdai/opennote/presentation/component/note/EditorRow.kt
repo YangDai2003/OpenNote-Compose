@@ -70,6 +70,7 @@ fun RichTextEditorRowPreview() {
         onItalicClick = {},
         onUnderlineClick = {},
         onStrikeThroughClick = {},
+        onHighlightClick = {},
         onCodeClick = {},
         onBracketsClick = {},
         onBracesClick = {},
@@ -141,6 +142,7 @@ fun RichTextEditorRow(
     onItalicClick: () -> Unit,
     onUnderlineClick: () -> Unit,
     onStrikeThroughClick: () -> Unit,
+    onHighlightClick: () -> Unit,
     onCodeClick: () -> Unit,
     onBracketsClick: () -> Unit,
     onBracesClick: () -> Unit,
@@ -248,6 +250,13 @@ fun RichTextEditorRow(
                 contentDescription = stringResource(id = R.string.strikethrough),
                 shortCutDescription = "Ctrl + D",
                 onClick = onStrikeThroughClick
+            )
+
+            IconButtonWithTooltip(
+                imageVector = Icons.Outlined.FormatPaint,
+                contentDescription = stringResource(id = R.string.mark),
+                shortCutDescription = "Ctrl + M",
+                onClick = onHighlightClick
             )
 
             IconButtonWithTooltip(

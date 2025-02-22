@@ -58,6 +58,7 @@ import com.yangdai.opennote.presentation.util.BackupManager
 import com.yangdai.opennote.presentation.util.Constants
 import com.yangdai.opennote.presentation.util.getFileName
 import com.yangdai.opennote.presentation.util.getOrCreateDirectory
+import com.yangdai.opennote.presentation.util.highlight.HighlightExtension
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -75,6 +76,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
@@ -172,7 +174,7 @@ class SharedViewModel @Inject constructor(
         )
 
     @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
-    val textState = contentSnapshotFlow.debounce(100)
+    val textState = contentSnapshotFlow.debounce(500)
         .mapLatest { TextState.fromText(it) }
         .flowOn(Dispatchers.Default)
         .stateIn(
@@ -232,11 +234,12 @@ class SharedViewModel @Inject constructor(
                 InsExtension.create(),
                 ImageAttributesExtension.create(),
                 StrikethroughExtension.create(),
-                TaskListItemsExtension.create()
+                TaskListItemsExtension.create(),
+                HighlightExtension.create()
             )
             parser = Parser.builder().extensions(extensions).build()
             renderer = HtmlRenderer.builder().extensions(extensions).build()
-            delay(300L)
+            delay(150L)
             //任务完成后将 isLoading 设置为 false 以隐藏启动屏幕
             isLoading.value = false
         }
@@ -446,9 +449,10 @@ class SharedViewModel @Inject constructor(
         folderId: Long? = null,
     ) {
         queryNotesJob?.cancel()
-        queryNotesJob =
-            useCases.getNotes(noteOrder, trash, filterFolder, folderId).flowOn(Dispatchers.IO)
-                .onEach { notes ->
+        queryNotesJob = viewModelScope.launch {
+            useCases.getNotes(noteOrder, trash, filterFolder, folderId)
+                .distinctUntilChanged()
+                .collect { notes ->
                     mainScreenDataStateFlow.update {
                         it.copy(
                             notes = notes,
@@ -458,7 +462,8 @@ class SharedViewModel @Inject constructor(
                             folderId = folderId
                         )
                     }
-                }.launchIn(viewModelScope)
+                }
+        }
     }
 
     private fun searchNotes(keyWord: String) {
@@ -573,8 +578,8 @@ class SharedViewModel @Inject constructor(
                             timestamp = _oNote.timestamp
                         )
                     }
-                    val sharedContentName = event.sharedContent?.fileName ?: ""
-                    val sharedContent = event.sharedContent?.content ?: ""
+                    val sharedContentName = event.sharedContent?.fileName.orEmpty()
+                    val sharedContent = event.sharedContent?.content.orEmpty()
 
                     titleState.setTextAndPlaceCursorAtEnd(_oNote.title + sharedContentName)
                     contentState.setTextAndPlaceCursorAtEnd(_oNote.content + sharedContent)
@@ -750,8 +755,8 @@ class SharedViewModel @Inject constructor(
                             it?.bufferedReader().use { reader ->
                                 val content = reader?.readText()
                                 val note = NoteEntity(
-                                    title = fileName?.substringBeforeLast(".") ?: "",
-                                    content = content ?: "",
+                                    title = fileName?.substringBeforeLast(".").orEmpty(),
+                                    content = content.orEmpty(),
                                     folderId = folderId,
                                     isMarkdown = (fileName?.endsWith(".md") == true) || (fileName?.endsWith(
                                         ".markdown"
@@ -885,7 +890,7 @@ class SharedViewModel @Inject constructor(
                     _dataActionState.update { it.copy(progress = 0.4f) }
 
                     runCatching {
-                        val backupData = Json.decodeFromString<BackupData>(json ?: "")
+                        val backupData = Json.decodeFromString<BackupData>(json.orEmpty())
                         _dataActionState.update { it.copy(progress = 0.6f) }
                         backupData.folders.forEach { folderEntity ->
                             useCases.addFolder(folderEntity)
@@ -896,7 +901,7 @@ class SharedViewModel @Inject constructor(
                     }.onFailure {
                         // 兼容旧版本
                         runCatching {
-                            val notes = Json.decodeFromString<List<NoteEntity>>(json ?: "")
+                            val notes = Json.decodeFromString<List<NoteEntity>>(json.orEmpty())
                             notes.forEachIndexed { _, noteEntity ->
                                 useCases.addNote(noteEntity)
                             }

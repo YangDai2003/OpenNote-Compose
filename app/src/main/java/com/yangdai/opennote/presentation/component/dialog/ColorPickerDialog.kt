@@ -72,7 +72,7 @@ fun ColorPickerDialog(
                     style = MaterialTheme.typography.titleLarge
                 )
                 Text(
-                    text = color?.toArgb()?.toHexColor() ?: "",
+                    text = color?.toArgb()?.toHexColor().orEmpty(),
                     color = color ?: Color.White,
                     style = MaterialTheme.typography.headlineSmall
                 )

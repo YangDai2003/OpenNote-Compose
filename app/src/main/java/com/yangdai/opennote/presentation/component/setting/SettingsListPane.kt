@@ -54,9 +54,7 @@ fun SettingsListPane(
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
 
     Scaffold(
-        modifier = Modifier
-            .fillMaxSize()
-            .nestedScroll(scrollBehavior.nestedScrollConnection),
+        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         containerColor = MaterialTheme.colorScheme.surfaceContainer,
         topBar = {
             LargeTopAppBar(
@@ -247,21 +245,21 @@ fun SettingsListPane(
 
                 // TODO 云同步
 
-//                SettingsSectionDivider()
-//
-//                SettingItem(
-//                    modifier = Modifier.clickable {
-//                        navigateToDetail(SettingsItem(2, R.string.account_cloud))
-//                    },
-//                    leadingContent = {
-//                        Icon(
-//                            imageVector = Icons.Outlined.CloudCircle,
-//                            contentDescription = "Account"
-//                        )
-//                    },
-//                    headlineText = stringResource(R.string.account_cloud),
-//                    supportingText = "WebDAV" + "  •  " + "Dropbox" + "  •  " + stringResource(R.string.sync)
-//                )
+                SettingsSectionDivider()
+
+                SettingItem(
+                    modifier = Modifier.clickable {
+                        navigateToDetail(SettingsItem(2, R.string.cloud))
+                    },
+                    leadingContent = {
+                        Icon(
+                            imageVector = Icons.Outlined.CloudCircle,
+                            contentDescription = "Cloud"
+                        )
+                    },
+                    headlineText = stringResource(R.string.cloud),
+                    supportingText = "WebDAV" + "  •  " + stringResource(R.string.sync)
+                )
             }
 
             SettingsSection {

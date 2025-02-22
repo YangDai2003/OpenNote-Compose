@@ -4,7 +4,8 @@ object Constants {
     const val DEFAULT_MAX_LINES = 3
     const val NAV_ANIMATION_TIME = 300
     const val MIME_TYPE_TEXT = "text/"
-    const val LINK = "app://open.yangdai-opennote.com"
+    const val LINK = "https://www.yangdai-opennote.com"
+    const val KEY_DESTINATION = "KEY_DESTINATION"
     object File {
         const val OPENNOTE = "OpenNote"
         const val OPENNOTE_BACKUP = "Backup"

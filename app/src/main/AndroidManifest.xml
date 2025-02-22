@@ -38,46 +38,52 @@
             android:showWhenLocked="true"
             android:turnScreenOn="true"
             android:windowSoftInputMode="adjustResize">
+
+            <!-- 主入口 -->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
+            <!-- 笔记创建相关 -->
             <intent-filter>
                 <action android:name="android.intent.action.CREATE_NOTE" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
+            <intent-filter>
+                <action android:name="com.google.android.gms.actions.CREATE_NOTE" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="text/*" />
+            </intent-filter>
 
+            <!-- 文本分享和处理 -->
             <intent-filter>
                 <action android:name="android.intent.action.SEND" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <data android:mimeType="text/*" />
             </intent-filter>
 
+            <!-- 文件查看和编辑 -->
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <action android:name="android.intent.action.EDIT" />
-
                 <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-
-                <data android:scheme="file" />
-                <data android:scheme="content" />
-                <data android:mimeType="text/*" />
+                <data android:scheme="file" android:mimeType="text/*"/>
+                <data android:scheme="content" android:mimeType="text/*"/>
             </intent-filter>
 
-            <intent-filter>
+            <!-- 应用深度链接 -->
+            <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
-                <action android:name="android.intent.action.EDIT" />
-
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-
-                <data android:scheme="app" />
-                <data android:host="open.yangdai-opennote.com" />
+                <data android:scheme="https" />
+                <data android:host="www.yangdai-opennote.com" />
                 <data android:pathPrefix="/note" />
+                <data android:scheme="https" />
+                <data android:host="www.yangdai-opennote.com" />
+                <data android:pathPrefix="/settings" />
             </intent-filter>
-
         </activity>
 
         <activity

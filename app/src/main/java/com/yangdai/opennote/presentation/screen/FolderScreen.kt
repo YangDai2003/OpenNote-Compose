@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -17,15 +16,13 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyGridItemScope
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.outlined.CreateNewFolder
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.DriveFileRenameOutline
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -74,9 +71,7 @@ fun FolderScreen(
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
 
     Scaffold(
-        modifier = Modifier
-            .fillMaxSize()
-            .nestedScroll(scrollBehavior.nestedScrollConnection),
+        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             LargeTopAppBar(
                 title = {
@@ -109,7 +104,7 @@ fun FolderScreen(
             columns = GridCells.Adaptive(360.dp),
             contentPadding = paddingValues
         ) {
-            items(folderNoteCounts, key = { it.first.id!! }) {
+            items(folderNoteCounts, key = { it.first.id!! }, contentType = { "FolderItem" }) {
                 FolderItem(
                     folder = it.first,
                     notesCountInFolder = it.second,
@@ -152,19 +147,12 @@ fun LazyGridItemScope.FolderItem(
     val folderColor by remember(folder, defaultColor) {
         mutableStateOf(if (folder.color != null) Color(folder.color) else defaultColor)
     }
-    val folderName by remember(folder) {
-        mutableStateOf(folder.name)
-    }
 
-    Card(
+    ElevatedCard(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 8.dp)
-            .animateItem(),
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = 4.dp
-        ),
-        shape = RoundedCornerShape(16.dp)
+            .animateItem()
     ) {
         Column(modifier = Modifier.clickable { isExpanded = !isExpanded }) {
             // Folder Header
@@ -184,7 +172,7 @@ fun LazyGridItemScope.FolderItem(
                 Spacer(modifier = Modifier.width(16.dp))
                 Column {
                     Text(
-                        text = folderName,
+                        text = folder.name,
                         style = MaterialTheme.typography.titleMedium.copy(
                             fontWeight = FontWeight.Bold,
                             color = folderColor
@@ -193,11 +181,11 @@ fun LazyGridItemScope.FolderItem(
                         overflow = TextOverflow.Ellipsis
                     )
                     val text =
-                        notesCountInFolder.toString() + if (notesCountInFolder == 1 || notesCountInFolder == 0) {
-                            stringResource(R.string.note)
-                        } else {
-                            stringResource(R.string.notes)
-                        }
+                        "$notesCountInFolder${
+                            if (notesCountInFolder == 1 || notesCountInFolder == 0)
+                                stringResource(R.string.note)
+                            else stringResource(R.string.notes)
+                        }"
                     Text(
                         text = text,
                         style = MaterialTheme.typography.bodyMedium.copy(

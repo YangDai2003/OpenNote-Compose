@@ -130,6 +130,8 @@ import com.yangdai.opennote.presentation.component.note.NoteSideSheetItem
 import com.yangdai.opennote.presentation.component.note.ReadView
 import com.yangdai.opennote.presentation.component.note.StandardTextField
 import com.yangdai.opennote.presentation.component.note.TemplateFilesList
+import com.yangdai.opennote.presentation.component.note.moveCursorLeftStateless
+import com.yangdai.opennote.presentation.component.note.moveCursorRightStateless
 import com.yangdai.opennote.presentation.event.DatabaseEvent
 import com.yangdai.opennote.presentation.event.NoteEvent
 import com.yangdai.opennote.presentation.event.UiEvent
@@ -287,7 +289,6 @@ fun NoteScreen(
 
     Scaffold(
         modifier = Modifier
-            .fillMaxSize()
             .imePadding()
             .onPreviewKeyEvent { keyEvent ->
                 if (keyEvent.type == KeyEventType.KeyDown && keyEvent.isCtrlPressed) {
@@ -491,7 +492,26 @@ fun NoteScreen(
                 else BasicTextField(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp),
+                        .padding(horizontal = 16.dp)
+                        .onPreviewKeyEvent { keyEvent ->
+                            if (keyEvent.type == KeyEventType.KeyDown) {
+                                when (keyEvent.key) {
+                                    Key.DirectionLeft -> {
+                                        viewModel.titleState.edit { moveCursorLeftStateless() }
+                                        true
+                                    }
+
+                                    Key.DirectionRight -> {
+                                        viewModel.titleState.edit { moveCursorRightStateless() }
+                                        true
+                                    }
+
+                                    else -> false
+                                }
+                            } else {
+                                false
+                            }
+                        },
                     state = viewModel.titleState,
                     readOnly = isReadView,
                     lineLimits = TextFieldLineLimits.SingleLine,
@@ -764,14 +784,17 @@ fun NoteScreen(
             ) {
                 IconButton(onClick = {
                     val intent =
-                        Intent(Intent.ACTION_INSERT).setData(CalendarContract.Events.CONTENT_URI)
-                            .putExtra(
+                        Intent(Intent.ACTION_INSERT).apply {
+                            data = CalendarContract.Events.CONTENT_URI
+                            putExtra(
                                 CalendarContract.Events.TITLE,
                                 viewModel.titleState.text.toString()
-                            ).putExtra(
+                            )
+                            putExtra(
                                 CalendarContract.Events.DESCRIPTION,
                                 viewModel.contentState.text.toString()
                             )
+                        }
 
                     try {
                         context.startActivity(intent)

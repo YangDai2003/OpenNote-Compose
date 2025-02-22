@@ -18,6 +18,8 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
+import com.yangdai.opennote.presentation.util.highlight.Highlight
+import com.yangdai.opennote.presentation.util.highlight.HighlightExtension
 import org.commonmark.ext.gfm.strikethrough.Strikethrough
 import org.commonmark.ext.gfm.strikethrough.StrikethroughExtension
 import org.commonmark.ext.ins.Ins
@@ -42,11 +44,13 @@ class LiteTextVisualTransformation(
         val boldItalicRanges: List<IntRange>,
         val strikethroughRanges: List<IntRange>,
         val underlineRanges: List<IntRange>,
+        val highlightRanges: List<IntRange>,
         val headerRanges: List<Pair<IntRange, Int>>,
         val searchWordRanges: List<IntRange>
     ) {
         companion object {
             val EMPTY = StyleRanges(
+                emptyList(),
                 emptyList(),
                 emptyList(),
                 emptyList(),
@@ -60,8 +64,13 @@ class LiteTextVisualTransformation(
     }
 
     private val parser =
-        Parser.builder().extensions(listOf(StrikethroughExtension.create(), InsExtension.create()))
-            .includeSourceSpans(IncludeSourceSpans.BLOCKS_AND_INLINES).build()
+        Parser.builder().extensions(
+            listOf(
+                StrikethroughExtension.create(),
+                InsExtension.create(),
+                HighlightExtension.create()
+            )
+        ).includeSourceSpans(IncludeSourceSpans.BLOCKS_AND_INLINES).build()
 
     override fun filter(text: AnnotatedString): TransformedText {
         val styleRanges = findAllRanges(text)
@@ -90,6 +99,7 @@ class LiteTextVisualTransformation(
         val boldItalicRanges = mutableListOf<IntRange>()
         val strikethroughRanges = mutableListOf<IntRange>()
         val underlineRanges = mutableListOf<IntRange>()
+        val highlightRanges = mutableListOf<IntRange>()
         val headerRanges = mutableListOf<Pair<IntRange, Int>>()
 
         // 遍历节点
@@ -139,13 +149,18 @@ class LiteTextVisualTransformation(
                         val span = customNode.sourceSpans.first()
                         underlineRanges.add(span.inputIndex until (span.inputIndex + span.length))
                     }
+
+                    is Highlight -> {
+                        val span = customNode.sourceSpans.first()
+                        highlightRanges.add(span.inputIndex until (span.inputIndex + span.length))
+                    }
                 }
                 visitChildren(customNode)
             }
 
             override fun visit(heading: Heading) {
                 val span = heading.sourceSpans.first()
-                if (span.inputIndex + span.length + 1 <= text.length){
+                if (span.inputIndex + span.length + 1 <= text.length) {
                     val range = span.inputIndex until (span.inputIndex + span.length + 1)
                     headerRanges.add(range to heading.level)
                 }
@@ -162,6 +177,7 @@ class LiteTextVisualTransformation(
             boldItalicRanges,
             strikethroughRanges,
             underlineRanges,
+            highlightRanges,
             headerRanges,
             searchWordRanges
         )
@@ -174,6 +190,7 @@ class LiteTextVisualTransformation(
         }
         ranges.boldRanges.forEach { range -> addStyle(BOLD_STYLE, range.first, range.last + 1) }
         ranges.italicRanges.forEach { range -> addStyle(ITALIC_STYLE, range.first, range.last + 1) }
+        ranges.highlightRanges.forEach { range -> addStyle(HIGHLIGHT_STYLE, range.first, range.last + 1) }
 
         val combinedRanges = (ranges.strikethroughRanges + ranges.underlineRanges).distinct()
         combinedRanges.forEach { range ->
@@ -218,6 +235,7 @@ class LiteTextVisualTransformation(
         ranges.italicRanges.forEach { range -> applyRangeStyle(range, 1, 1) }
         ranges.strikethroughRanges.forEach { range -> applyRangeStyle(range, 2, 2) }
         ranges.underlineRanges.forEach { range -> applyRangeStyle(range, 2, 2) }
+        ranges.highlightRanges.forEach { range -> applyRangeStyle(range, 2, 2) }
         ranges.headerRanges.forEach { (range, level) ->
             if (isInAffectedLines == null) {
                 addStyle(SYMBOL_STYLE, range.first, range.first + level + 1)
@@ -312,6 +330,10 @@ class LiteTextVisualTransformation(
         private val UNDERLINE_STYLE = SpanStyle(textDecoration = TextDecoration.Underline)
         private val STRIKETHROUGH_AND_UNDERLINE_STYLE =
             SpanStyle(textDecoration = TextDecoration.LineThrough + TextDecoration.Underline)
+        private val HIGHLIGHT_STYLE = SpanStyle(
+            color = Color.Black,
+            background = Color.Yellow.copy(alpha = 1f)
+        )
         private val CODE_STYLE = SpanStyle(
             fontFamily = FontFamily.Monospace, background = Color.LightGray.copy(alpha = 0.3f)
         )

@@ -54,7 +54,6 @@
     <string name="task">Task</string>
     <string name="lite_mode">Lite</string>
     <string name="guide">User guide</string>
-    <string name="no_text_found">No text found</string>
     <string name="no_password_set">Please set the system lock screen password first</string>
     <string name="no_calendar_app_found">No calendar app found</string>
     <string name="progress">Progress</string>
@@ -101,11 +100,11 @@
     <string name="task_list">Task List</string>
     <string name="mermaid_diagram">Mermaid Diagram</string>
     <string name="unlock_to_use_open_note">Unlock to use Open Note</string>
-    <string name="account_cloud">Account and cloud services</string>
+    <string name="cloud">Cloud service</string>
     <string name="sync">Sync</string>
     <string name="the_feature_is_still_under_construction_and_is_still_unavailable">The feature is still under construction and is still unavailable.</string>
     <string name="url">URL</string>
-    <string name="account">Account</string>
+    <string name="username">Username</string>
     <string name="pass">Password</string>
     <string name="color_picker">Color Picker</string>
     <string name="navigate_back">Navigate back</string>

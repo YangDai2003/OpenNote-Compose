@@ -117,7 +117,7 @@ fun SettingsDetailPane(
                 }
 
                 2 -> {
-                    AccountPane()
+                    CloudPane()
                 }
 
                 3 -> {

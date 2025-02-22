@@ -61,6 +61,18 @@ fun List<LineInfo>.findLineByOffset(offset: Int): LineInfo {
     return last()
 }
 
+fun TextFieldBuffer.moveCursorLeftStateless() {
+    if (selection.min > 0) {
+        selection = TextRange(selection.min - 1, selection.min - 1)
+    }
+}
+
+fun TextFieldBuffer.moveCursorRightStateless() {
+    if (selection.max < length) {
+        selection = TextRange(selection.max + 1, selection.max + 1)
+    }
+}
+
 class CursorState {
     var preferredRelativeX: Int? = null
     // 优化 4: 添加行信息缓存

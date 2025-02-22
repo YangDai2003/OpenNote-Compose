@@ -162,6 +162,7 @@ fun NoteSideSheet(
         Column(
             modifier = Modifier
                 .statusBarsPadding()
+                .padding(top = 12.dp)
                 .offset { IntOffset(x = (offsetX.value - drawerWidthPx).roundToInt(), y = 0) }
                 .align(Alignment.TopEnd)
                 .background(

@@ -1,7 +1,6 @@
 package com.yangdai.opennote.presentation.util
 
 import android.annotation.SuppressLint
-import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.icu.text.DateFormat
@@ -10,50 +9,57 @@ import androidx.browser.customtabs.CustomTabsIntent
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.remember
-import androidx.core.app.TaskStackBuilder
-import androidx.core.net.toUri
+import androidx.core.net.toFile
 import androidx.documentfile.provider.DocumentFile
-import com.yangdai.opennote.MainActivity
 
 fun Intent.isTextMimeType() = type?.startsWith(Constants.MIME_TYPE_TEXT) == true
 
 @Stable
-data class SharedContent(val fileName: String, val content: String)
+data class SharedContent(val fileName: String = "", val content: String = "")
 
 @SuppressLint("Range")
 fun Intent.parseSharedContent(context: Context): SharedContent {
     return when (action) {
         Intent.ACTION_SEND -> {
-            if (isTextMimeType()) {
-                SharedContent("", getStringExtra(Intent.EXTRA_TEXT) ?: "")
-            } else {
-                SharedContent("", "")
-            }
+            SharedContent(
+                fileName = getStringExtra(Intent.EXTRA_SUBJECT).orEmpty(),
+                content = getStringExtra(Intent.EXTRA_TEXT).orEmpty())
         }
 
-        Intent.ACTION_VIEW -> {
+        Intent.ACTION_VIEW, Intent.ACTION_EDIT -> {
+            var text = ""
+            var fileName = ""
             if (isTextMimeType()) {
-                var text = ""
-                var fileName = ""
                 try {
                     data?.let { uri ->
-                        context.contentResolver.openInputStream(uri)?.use { inputStream ->
-                            inputStream.bufferedReader().use { reader ->
-                                text = reader.readText()
-                            }
-                        }
                         fileName = getFileName(context, uri).toString()
+                        when (uri.scheme) {
+                            "content" -> {
+                                context.contentResolver.openInputStream(uri)?.use { inputStream ->
+                                    inputStream.bufferedReader().use { reader ->
+                                        text = reader.readText()
+                                    }
+                                }
+                            }
+
+                            "file" -> {
+                                val file = uri.toFile()
+                                file.bufferedReader().use { reader ->
+                                    text = reader.readText()
+                                }
+                            }
+
+                            else -> {}
+                        }
                     }
                 } catch (e: Exception) {
                     e.printStackTrace()
                 }
-                SharedContent(fileName, text)
-            } else {
-                SharedContent("", "")
             }
+            SharedContent(fileName, text)
         }
 
-        else -> SharedContent("", "")
+        else -> SharedContent()
     }
 }
 
@@ -104,16 +110,6 @@ fun rememberCustomTabsIntent(): CustomTabsIntent {
             .setShowTitle(true)
             .build()
     }
-}
-
-fun Context.sendPendingIntent(data: String) {
-    val intent = Intent(this, MainActivity::class.java)
-        .setData(data.toUri())
-    val pendingIntent = TaskStackBuilder.create(this).run {
-        addNextIntentWithParentStack(intent)
-        getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
-    }
-    pendingIntent?.send()
 }
 
 fun Int.toHexColor(): String {

@@ -74,6 +74,10 @@ fun AnimatedNavHost(
             mimeType = "text/*"
         },
         navDeepLink {
+            action = Intent.ACTION_EDIT
+            mimeType = "text/*"
+        },
+        navDeepLink {
             uriPattern = "$LINK/${Note.route}"
         }
     )

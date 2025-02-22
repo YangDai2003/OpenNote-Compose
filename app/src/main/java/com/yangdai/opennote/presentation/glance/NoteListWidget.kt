@@ -1,12 +1,14 @@
 package com.yangdai.opennote.presentation.glance
 
 import android.content.Context
+import android.content.Intent
 import android.os.Build
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.net.toUri
 import androidx.glance.GlanceId
 import androidx.glance.GlanceModifier
 import androidx.glance.GlanceTheme
@@ -44,8 +46,8 @@ import com.yangdai.opennote.MainActivity
 import com.yangdai.opennote.R
 import com.yangdai.opennote.data.di.AppModule
 import com.yangdai.opennote.data.local.entity.NoteEntity
+import com.yangdai.opennote.presentation.util.Constants
 import com.yangdai.opennote.presentation.util.Constants.LINK
-import com.yangdai.opennote.presentation.util.sendPendingIntent
 
 class NoteListWidget : GlanceAppWidget() {
 
@@ -104,12 +106,12 @@ class NoteListWidget : GlanceAppWidget() {
                         imageProvider = ImageProvider(R.drawable.add),
                         contentDescription = "Add",
                         onClick = actionRunCallback<NoteAction>(
-                            parameters = actionParametersOf(destinationKey to "-1")
+                            parameters = actionParametersOf(destinationKey to -1L)
                         )
                     )
                 }
             },
-            horizontalPadding = if (size.width > 250.dp) 16.dp else 2.dp
+            horizontalPadding = if (size.width > 250.dp) 16.dp else 4.dp
         ) {
             LazyColumn {
                 items(
@@ -126,7 +128,7 @@ class NoteListWidget : GlanceAppWidget() {
                                 .padding(4.dp)
                                 .clickable(
                                     actionRunCallback<NoteAction>(
-                                        parameters = actionParametersOf(destinationKey to it.id.toString())
+                                        parameters = actionParametersOf(destinationKey to it.id!!)
                                     )
                                 )
                         ) {
@@ -172,7 +174,7 @@ class NoteListWidget : GlanceAppWidget() {
 }
 
 
-private val destinationKey = ActionParameters.Key<String>("KEY_DESTINATION")
+private val destinationKey = ActionParameters.Key<Long>(Constants.KEY_DESTINATION)
 
 class NoteAction : ActionCallback {
     override suspend fun onAction(
@@ -180,7 +182,14 @@ class NoteAction : ActionCallback {
         glanceId: GlanceId,
         parameters: ActionParameters
     ) {
-        context.sendPendingIntent("$LINK/note/${parameters[destinationKey]}")
+        val noteId = parameters[destinationKey]
+        val intent = Intent(context, MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or      // 在新任务中启动
+                    Intent.FLAG_ACTIVITY_CLEAR_TASK       // 清除所有已存在的任务
+            data = "$LINK/note/$noteId".toUri()
+            action = Intent.ACTION_VIEW
+        }
+        context.startActivity(intent)
     }
 }
 

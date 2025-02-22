@@ -394,7 +394,7 @@ fun ReadView(
                                     it.name == imageName
                                 }
 
-                                val imageUri = imageFile?.uri?.toString() ?: ""
+                                val imageUri = imageFile?.uri?.toString().orEmpty()
 
                                 // 更新缓存
                                 if (imageUri.isNotEmpty()) {
@@ -434,7 +434,7 @@ fun ReadView(
                                     it.name == audioName
                                 }
 
-                                val audioUri = audioFile?.uri?.toString() ?: ""
+                                val audioUri = audioFile?.uri?.toString().orEmpty()
 
                                 withContext(Dispatchers.Main) {
                                     // 通过 JavaScript 更新音频 src
@@ -469,7 +469,7 @@ fun ReadView(
                                     it.name == videoName
                                 }
 
-                                val videoUri = videoFile?.uri?.toString() ?: ""
+                                val videoUri = videoFile?.uri?.toString().orEmpty()
                                 // 生成缩略图
                                 val thumbnail = if (videoUri.isNotEmpty()) {
                                     withContext(Dispatchers.IO) {

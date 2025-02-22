@@ -52,7 +52,6 @@
     <string name="task">Görev</string>
     <string name="lite_mode">Lite</string>
     <string name="guide">Kullanıcı kılavuzu</string>
-    <string name="no_text_found">Metin bulunamadı</string>
     <string name="no_password_set">Lütfen önce sistem kilit ekranı şifresini ayarlayın</string>
     <string name="no_calendar_app_found">Takvim uygulaması bulunamadı</string>
     <string name="progress">İlerleme</string>
@@ -98,11 +97,11 @@
     <string name="task_list">Görev Listesi</string>
     <string name="mermaid_diagram">Deniz Kızı Diyagramı</string>
     <string name="unlock_to_use_open_note">Open Note\'u kullanmak için kilidi açın</string>
-    <string name="account_cloud">Hesap ve bulut servisleri</string>
+    <string name="cloud">Bulut servisi</string>
     <string name="sync">Senkronize et</string>
     <string name="the_feature_is_still_under_construction_and_is_still_unavailable">Bu özellik hâlâ inşaat aşamasında ve kullanılamaz durumda.</string>
     <string name="url">URL</string>
-    <string name="account">Hesap</string>
+    <string name="username">Kullanıcı ismi</string>
     <string name="pass">Şifre</string>
     <string name="color_picker">Renk Seçici</string>
     <string name="navigate_back">Geri git</string>

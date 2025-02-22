@@ -53,7 +53,6 @@
     <string name="task">任务</string>
     <string name="lite_mode">轻量</string>
     <string name="guide">用户指南</string>
-    <string name="no_text_found">没有找到文字</string>
     <string name="no_password_set">请先设置系统锁屏密码</string>
     <string name="no_calendar_app_found">无可用的日历应用</string>
     <string name="progress">进度</string>
@@ -99,11 +98,11 @@
     <string name="task_list">任务列表</string>
     <string name="mermaid_diagram">Mermaid 图表</string>
     <string name="unlock_to_use_open_note">解锁以使用 Open Note</string>
-    <string name="account_cloud">账号和云服务</string>
+    <string name="cloud">云服务</string>
     <string name="sync">同步</string>
     <string name="the_feature_is_still_under_construction_and_is_still_unavailable">功能仍在构建中，暂不可用。</string>
     <string name="url">网址</string>
-    <string name="account">账号</string>
+    <string name="username">用户名</string>
     <string name="pass">密码</string>
     <string name="color_picker">颜色选择器</string>
     <string name="navigate_back">返回上级页面</string>

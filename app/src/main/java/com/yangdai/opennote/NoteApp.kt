@@ -19,7 +19,7 @@ class NoteApp : Application() {
             .setIcon(IconCompat.createWithResource(applicationContext, R.drawable.compose))
             .setIntent(
                 Intent(applicationContext, MainActivity::class.java).apply {
-                    action = Intent.ACTION_EDIT
+                    action = Intent.ACTION_VIEW
                     data = ("${Constants.LINK}/note/-1").toUri()
                 }
             )

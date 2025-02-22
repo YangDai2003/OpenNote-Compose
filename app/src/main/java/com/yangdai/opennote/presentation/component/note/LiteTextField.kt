@@ -149,6 +149,11 @@ fun LiteTextField(
                                         true
                                     }
 
+                                    Key.M -> {
+                                        applyChange(textFieldValue.highlight())
+                                        true
+                                    }
+
                                     Key.NumPad1, Key.One -> {
                                         applyChange(textFieldValue.header(1))
                                         true
@@ -248,6 +253,8 @@ fun LiteTextField(
                     applyChange(textFieldValue.underline())
                 }, onStrikeThroughClick = {
                     applyChange(textFieldValue.strikeThrough())
+                }, onHighlightClick = {
+                    applyChange(textFieldValue.highlight())
                 }, onCodeClick = {
                     applyChange(textFieldValue.inlineCode())
                 }, onBracketsClick = {
