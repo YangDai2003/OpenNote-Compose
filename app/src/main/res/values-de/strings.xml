@@ -187,4 +187,6 @@
     <string name="left">Links</string>
     <string name="center">Mitte</string>
     <string name="right">Rechts</string>
+    <string name="explore_and_share_community_note_templates">Erkunde und teile Notizvorlagen mit der Community</string>
+    <string name="scroll_sync">Scroll Sync</string>
 </resources>

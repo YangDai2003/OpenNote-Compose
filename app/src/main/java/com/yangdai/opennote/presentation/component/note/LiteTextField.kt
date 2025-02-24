@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.foundation.verticalScroll
@@ -39,6 +40,9 @@ import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextLayoutResult
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import com.yangdai.opennote.R
@@ -56,8 +60,9 @@ fun LiteTextField(
     readMode: Boolean = false,
     state: TextFieldState,
     scrollState: ScrollState,
-    searchWord: String,
     headerRange: IntRange?,
+    findAndReplaceState: FindAndReplaceState,
+    onFindAndReplaceUpdate: (FindAndReplaceState) -> Unit,
     onTemplateClick: () -> Unit
 ) {
 
@@ -104,6 +109,35 @@ fun LiteTextField(
             val scrollPosition = (bounds.top - 50f).toInt().coerceAtLeast(0)
             // 执行滚动
             scrollState.animateScrollTo(scrollPosition)
+        }
+    }
+
+    LaunchedEffect(findAndReplaceState.replaceType) {
+        if (findAndReplaceState.replaceType != null) {
+            if (findAndReplaceState.replaceType == ReplaceType.ALL) {
+                if (findAndReplaceState.searchWord.isBlank()) return@LaunchedEffect
+                val currentText = state.text.toString()
+                val newText = currentText.replace(
+                    findAndReplaceState.searchWord,
+                    findAndReplaceState.replaceWord
+                )
+                state.setTextAndPlaceCursorAtEnd(newText)
+            } else if (findAndReplaceState.replaceType == ReplaceType.CURRENT) {
+                if (findAndReplaceState.searchWord.isBlank()) return@LaunchedEffect
+                val currentText = state.text.toString()
+                val index = currentText.indexOf(findAndReplaceState.searchWord)
+                if (index != -1) {
+                    // 执行替换
+                    state.edit {
+                        replace(
+                            index,
+                            index + findAndReplaceState.searchWord.length,
+                            findAndReplaceState.replaceWord
+                        )
+                    }
+                }
+            }
+            onFindAndReplaceUpdate(findAndReplaceState.copy(replaceType = null))
         }
     }
 
@@ -200,6 +234,16 @@ fun LiteTextField(
                                     true
                                 }
 
+                                Key.DirectionUp -> {
+                                    textFieldValue = textFieldValue.moveCursorUp()
+                                    true
+                                }
+
+                                Key.DirectionDown -> {
+                                    textFieldValue = textFieldValue.moveCursorDown()
+                                    true
+                                }
+
                                 else -> false
                             }
                         }
@@ -212,9 +256,18 @@ fun LiteTextField(
                 applyChange(newText)
             },
             readOnly = readMode,
-            visualTransformation = remember(readMode, searchWord, textFieldValue.selection) {
+            keyboardOptions = KeyboardOptions(
+                capitalization = KeyboardCapitalization.Sentences,
+                keyboardType = KeyboardType.Text,
+                imeAction = ImeAction.None
+            ),
+            visualTransformation = remember(
+                readMode,
+                findAndReplaceState.searchWord,
+                textFieldValue.selection
+            ) {
                 LiteTextVisualTransformation(
-                    readMode, searchWord, textFieldValue.selection
+                    readMode, findAndReplaceState.searchWord, textFieldValue.selection
                 )
             },
             textStyle = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface),

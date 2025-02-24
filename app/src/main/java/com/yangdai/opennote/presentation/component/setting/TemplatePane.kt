@@ -1,5 +1,6 @@
 package com.yangdai.opennote.presentation.component.setting
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -11,9 +12,11 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.OpenInNew
 import androidx.compose.material.icons.outlined.AccessTime
 import androidx.compose.material.icons.outlined.DateRange
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -213,5 +216,25 @@ fun TemplatePane(sharedViewModel: SharedViewModel) {
                 placeholderText = "HH:mm"
             )
         }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        HorizontalDivider()
+
+        ListItem(
+            modifier = Modifier.clickable {
+                customTabsIntent.launchUrl(
+                    context,
+                    "https://github.com/YangDai2003/OpenNote-Compose/discussions/categories/community-templates".toUri()
+                )
+            },
+            headlineContent = { Text(text = stringResource(R.string.explore_and_share_community_note_templates)) },
+            trailingContent = {
+                Icon(
+                    Icons.AutoMirrored.Outlined.OpenInNew,
+                    contentDescription = "Explore"
+                )
+            }
+        )
     }
 }

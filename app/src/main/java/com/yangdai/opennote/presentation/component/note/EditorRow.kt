@@ -38,6 +38,7 @@ import androidx.compose.material.icons.outlined.VideoFile
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.PlainTooltip
 import androidx.compose.material3.Text
@@ -51,6 +52,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -102,6 +104,7 @@ fun IconButtonWithTooltip(
     enabled: Boolean = true,
     imageVector: ImageVector? = null,
     painter: Int? = null,
+    tint: Color = LocalContentColor.current,
     contentDescription: String,
     shortCutDescription: String? = null,
     onClick: () -> Unit
@@ -122,11 +125,13 @@ fun IconButtonWithTooltip(
         if (imageVector != null) {
             Icon(
                 imageVector = imageVector,
+                tint = tint,
                 contentDescription = contentDescription
             )
         } else {
             Icon(
                 painter = painterResource(id = painter!!),
+                tint = tint,
                 contentDescription = contentDescription
             )
         }

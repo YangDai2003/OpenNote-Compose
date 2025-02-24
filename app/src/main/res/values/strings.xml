@@ -189,4 +189,6 @@
     <string name="left">Left</string>
     <string name="center">Center</string>
     <string name="right">Right</string>
+    <string name="explore_and_share_community_note_templates">Explore and Share Note Templates with the Community</string>
+    <string name="scroll_sync">Scroll Sync</string>
 </resources>

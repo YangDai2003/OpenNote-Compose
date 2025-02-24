@@ -17,7 +17,9 @@ import androidx.compose.foundation.content.contentReceiver
 import androidx.compose.foundation.content.hasMediaType
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.foundation.text.input.delete
 import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -48,6 +50,9 @@ import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextLayoutResult
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.input.KeyboardType
 import com.yangdai.opennote.R
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -173,8 +178,7 @@ fun StandardTextField(
                 val currentText = state.text.toString()
                 val newText = currentText.replace(
                     findAndReplaceState.searchWord,
-                    findAndReplaceState.replaceWord,
-                    ignoreCase = false
+                    findAndReplaceState.replaceWord
                 )
                 state.setTextAndPlaceCursorAtEnd(newText)
             } else if (findAndReplaceState.replaceType == ReplaceType.CURRENT) {
@@ -350,6 +354,71 @@ fun StandardTextField(
                                 true
                             }
 
+                            Key.Enter, Key.NumPadEnter -> { // 改进换行键行为
+                                val currentText = state.text.toString()
+                                val selection = state.selection
+
+                                // 安全地获取当前行的内容
+                                val currentLineStart = currentText.lastIndexOf(
+                                    '\n',
+                                    (selection.start - 1).coerceIn(0, currentText.length)
+                                ).let {
+                                    if (it == -1) 0 else it + 1
+                                }
+                                val currentLineEnd =
+                                    currentText.indexOf('\n', selection.start).let {
+                                        if (it == -1) currentText.length else it
+                                    }
+
+                                // 确保起始位置小于结束位置
+                                if (currentLineStart >= currentLineEnd) {
+                                    state.edit {
+                                        add("\n")
+                                    }
+                                    return@onPreviewKeyEvent true
+                                }
+
+                                val currentLine =
+                                    currentText.substring(currentLineStart, currentLineEnd)
+                                val trimmedLine = currentLine.trim()
+
+                                // 获取行首的缩进
+                                val indentation = currentLine.takeWhile { it.isWhitespace() }
+
+                                // 处理空列表项
+                                if (selection.start == currentLineEnd &&
+                                    (trimmedLine == "- [ ]" || trimmedLine == "-" || trimmedLine.matches(
+                                        Regex("^\\d+\\.$")
+                                    ))
+                                ) {
+                                    state.edit {
+                                        delete(currentLineStart, currentLineEnd)
+                                    }
+                                    return@onPreviewKeyEvent true
+                                }
+
+                                val newLinePrefix = when {
+                                    trimmedLine.startsWith("- [ ] ") || trimmedLine.startsWith("- [x] ") -> "- [ ] " // 任务列表
+                                    trimmedLine.matches(Regex("^\\d+\\.\\s.*")) -> {
+                                        val nextNumber =
+                                            trimmedLine.substringBefore(".").toIntOrNull()?.plus(1)
+                                                ?: 1
+                                        "$nextNumber. " // 有序列表
+                                    }
+
+                                    trimmedLine.startsWith("- ") -> "- " // 无序列表
+                                    else -> ""
+                                }
+
+                                state.edit {
+                                    add("\n")
+                                    if (newLinePrefix.isNotEmpty()) {
+                                        add(indentation + newLinePrefix)
+                                    }
+                                }
+                                true
+                            }
+
                             else -> false
                         }
                     }
@@ -365,6 +434,11 @@ fun StandardTextField(
         onTextLayout = { result ->
             textLayoutResult = result.invoke()
         },
+        keyboardOptions = KeyboardOptions(
+            capitalization = KeyboardCapitalization.Sentences,
+            keyboardType = KeyboardType.Text,
+            imeAction = ImeAction.None
+        ),
         decorator = { innerTextField ->
             Box(
                 modifier = Modifier

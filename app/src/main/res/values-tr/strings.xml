@@ -186,4 +186,6 @@
     <string name="left">Sol</string>
     <string name="center">Orta</string>
     <string name="right">Sağ</string>
+    <string name="explore_and_share_community_note_templates">Topluluk ile not şablonlarını keşfedin ve paylaşın</string>
+    <string name="scroll_sync">Kaydırma Senkronizasyonu</string>
 </resources>

@@ -106,7 +106,7 @@ fun NoteSideSheet(
 
     // Width of the drawer in pixels
     val drawerWidthPx = remember(density, drawerWidth) { with(density) { drawerWidth.toPx() } }
-    val actionWidthPx = remember(density) { with(density) { 50.dp.toPx() } }
+    val actionWidthPx = remember(density) { with(density) { 48.dp.toPx() } }
 
     // Offset for the drawer animation
     val offsetX = remember { Animatable(if (isDrawerOpen) 0f else drawerWidthPx + actionWidthPx) }

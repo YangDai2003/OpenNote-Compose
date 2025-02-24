@@ -44,6 +44,8 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.outlined.AddAlert
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.EditNote
+import androidx.compose.material.icons.outlined.Link
+import androidx.compose.material.icons.outlined.LinkOff
 import androidx.compose.material.icons.outlined.LocalPrintshop
 import androidx.compose.material.icons.outlined.Save
 import androidx.compose.material.icons.outlined.Search
@@ -57,7 +59,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.PlainTooltip
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarDuration
@@ -65,13 +66,10 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.material3.TooltipBox
-import androidx.compose.material3.TooltipDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.VerticalDragHandle
 import androidx.compose.material3.adaptive.currentWindowSize
 import androidx.compose.material3.rememberModalBottomSheetState
-import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -97,7 +95,6 @@ import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.VisualTransformation
@@ -123,6 +120,7 @@ import com.yangdai.opennote.presentation.component.dialog.TableDialog
 import com.yangdai.opennote.presentation.component.dialog.TaskDialog
 import com.yangdai.opennote.presentation.component.note.FindAndReplaceField
 import com.yangdai.opennote.presentation.component.note.FindAndReplaceState
+import com.yangdai.opennote.presentation.component.note.IconButtonWithTooltip
 import com.yangdai.opennote.presentation.component.note.LiteTextField
 import com.yangdai.opennote.presentation.component.note.MarkdownEditorRow
 import com.yangdai.opennote.presentation.component.note.NoteSideSheet
@@ -314,6 +312,13 @@ fun NoteScreen(
                                 true
                             }
 
+                            Key.Tab -> {
+                                keyboardController?.hide()
+                                focusManager.clearFocus()
+                                isSideSheetOpen = true
+                                true
+                            }
+
                             else -> false
                         }
                     }
@@ -332,7 +337,11 @@ fun NoteScreen(
                     }
                 },
                 navigationIcon = {
-                    IconButton(onClick = {
+                    IconButtonWithTooltip(
+                        imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
+                        contentDescription = stringResource(id = R.string.navigate_back),
+                        shortCutDescription = "Esc"
+                    ) {
                         if (viewModel.shouldShowSnackbar())
                             coroutineScope.launch {
                                 messageBar.showSnackbar(
@@ -342,70 +351,45 @@ fun NoteScreen(
                             }
                         else
                             navigateUp()
-                    }) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-                            contentDescription = stringResource(id = R.string.navigate_back)
-                        )
                     }
                 },
                 actions = {
-
-                    if (!isReadView) TooltipBox(
-                        positionProvider = TooltipDefaults.rememberTooltipPositionProvider(),
-                        tooltip = {
-                            PlainTooltip(content = { Text("Ctrl + F") })
-                        },
-                        state = rememberTooltipState(),
-                        focusable = false,
-                        enableUserInput = true
-                    ) {
-                        IconButton(onClick = { isSearching = !isSearching }) {
-                            Icon(
-                                imageVector = if (isSearching) Icons.Outlined.SearchOff
-                                else Icons.Outlined.Search, contentDescription = "Search"
-                            )
+                    if (!isReadView)
+                        IconButtonWithTooltip(
+                            imageVector = if (isSearching) Icons.Outlined.SearchOff
+                            else Icons.Outlined.Search,
+                            contentDescription = "Find and replace",
+                            shortCutDescription = "Ctrl + F"
+                        ) {
+                            isSearching = !isSearching
                         }
+
+                    IconButtonWithTooltip(
+                        imageVector = if (isReadView) Icons.Outlined.EditNote
+                        else Icons.AutoMirrored.Outlined.MenuBook,
+                        contentDescription = "Mode",
+                        shortCutDescription = "Ctrl + P"
+                    ) {
+                        isReadView = !isReadView
                     }
 
-                    TooltipBox(
-                        positionProvider = TooltipDefaults.rememberTooltipPositionProvider(),
-                        tooltip = {
-                            PlainTooltip(content = { Text("Ctrl + P") })
-                        },
-                        state = rememberTooltipState(),
-                        focusable = false,
-                        enableUserInput = true
-                    ) {
-                        IconButton(onClick = { isReadView = !isReadView }) {
-                            Icon(
-                                imageVector = if (isReadView) Icons.Outlined.EditNote
-                                else Icons.AutoMirrored.Outlined.MenuBook,
-                                contentDescription = "Mode"
-                            )
+                    if (noteState.isStandard)
+                        IconButtonWithTooltip(
+                            imageVector = if (isEditorAndPreviewSynced) Icons.Outlined.LinkOff else Icons.Outlined.Link,
+                            contentDescription = stringResource(R.string.scroll_sync),
+                            shortCutDescription = stringResource(R.string.scroll_sync)
+                        ) {
+                            isEditorAndPreviewSynced = !isEditorAndPreviewSynced
                         }
-                    }
 
-                    if (noteState.isStandard) IconButton(onClick = {
-                        isEditorAndPreviewSynced = !isEditorAndPreviewSynced
-                    }) {
-                        Icon(
-                            painter = painterResource(if (isEditorAndPreviewSynced) R.drawable.link_off else R.drawable.link),
-                            contentDescription = "Mode"
-                        )
-                    }
-
-                    IconButton(
-                        onClick = {
-                            keyboardController?.hide()
-                            focusManager.clearFocus()
-                            isSideSheetOpen = true
-                        }
+                    IconButtonWithTooltip(
+                        painter = R.drawable.right_panel_open,
+                        contentDescription = "Open Drawer",
+                        shortCutDescription = "Ctrl + Tab"
                     ) {
-                        Icon(
-                            painter = painterResource(R.drawable.right_panel_open),
-                            contentDescription = "Open Drawer"
-                        )
+                        keyboardController?.hide()
+                        focusManager.clearFocus()
+                        isSideSheetOpen = true
                     }
                 }
             )
@@ -563,10 +547,10 @@ fun NoteScreen(
                 state = viewModel.contentState,
                 scrollState = scrollState,
                 headerRange = selectedHeader,
-                searchWord = searchState.searchWord,
+                findAndReplaceState = searchState,
+                onFindAndReplaceUpdate = { searchState = it },
                 onTemplateClick = { showTemplateBottomSheet = true })
             else {
-
                 if (isLargeScreen) {
 
                     val interactionSource = remember { MutableInteractionSource() }
@@ -732,142 +716,81 @@ fun NoteScreen(
         outline = outline,
         onHeaderClick = { selectedHeader = it },
         actionContent = {
-            TooltipBox(
-                positionProvider = TooltipDefaults.rememberTooltipPositionProvider(),
-                tooltip = {
-                    PlainTooltip(content = {
-                        Text(
-                            text = if (noteState.isStandard) stringResource(R.string.lite_mode)
-                            else stringResource(R.string.standard_mode)
+            IconButtonWithTooltip(
+                imageVector = Icons.Outlined.SwapHoriz,
+                tint = MaterialTheme.colorScheme.onSurface,
+                contentDescription = "Switch Note Type",
+                shortCutDescription = if (noteState.isStandard) stringResource(R.string.lite_mode)
+                else stringResource(R.string.standard_mode)
+            ) {
+                viewModel.onNoteEvent(NoteEvent.SwitchType)
+            }
+
+            IconButtonWithTooltip(
+                imageVector = Icons.Outlined.Delete,
+                tint = MaterialTheme.colorScheme.onSurface,
+                contentDescription = stringResource(R.string.delete),
+                shortCutDescription = stringResource(R.string.delete)
+            ){
+                viewModel.onNoteEvent(NoteEvent.Delete)
+            }
+
+            IconButtonWithTooltip(
+                imageVector = Icons.Outlined.AddAlert,
+                tint = MaterialTheme.colorScheme.onSurface,
+                contentDescription = stringResource(R.string.remind),
+                shortCutDescription = stringResource(R.string.remind)
+            ) {
+                val intent =
+                    Intent(Intent.ACTION_INSERT).apply {
+                        data = CalendarContract.Events.CONTENT_URI
+                        putExtra(
+                            CalendarContract.Events.TITLE,
+                            viewModel.titleState.text.toString()
                         )
-                    })
-                },
-                state = rememberTooltipState(),
-                focusable = false,
-                enableUserInput = true
-            ) {
-                IconButton(onClick = { viewModel.onNoteEvent(NoteEvent.SwitchType) }) {
-                    Icon(
-                        imageVector = Icons.Outlined.SwapHoriz,
-                        tint = MaterialTheme.colorScheme.onSurface,
-                        contentDescription = "Switch Note Type"
-                    )
-                }
-            }
-
-            TooltipBox(
-                positionProvider = TooltipDefaults.rememberTooltipPositionProvider(),
-                tooltip = {
-                    PlainTooltip(content = { Text(text = stringResource(id = R.string.delete)) })
-                },
-                state = rememberTooltipState(),
-                focusable = false,
-                enableUserInput = true
-            ) {
-                IconButton(onClick = { viewModel.onNoteEvent(NoteEvent.Delete) }) {
-                    Icon(
-                        imageVector = Icons.Outlined.Delete,
-                        tint = MaterialTheme.colorScheme.onSurface,
-                        contentDescription = "Delete"
-                    )
-                }
-            }
-
-            TooltipBox(
-                positionProvider = TooltipDefaults.rememberTooltipPositionProvider(),
-                tooltip = {
-                    PlainTooltip(content = { Text(text = stringResource(id = R.string.remind)) })
-                },
-                state = rememberTooltipState(),
-                focusable = false,
-                enableUserInput = true
-            ) {
-                IconButton(onClick = {
-                    val intent =
-                        Intent(Intent.ACTION_INSERT).apply {
-                            data = CalendarContract.Events.CONTENT_URI
-                            putExtra(
-                                CalendarContract.Events.TITLE,
-                                viewModel.titleState.text.toString()
-                            )
-                            putExtra(
-                                CalendarContract.Events.DESCRIPTION,
-                                viewModel.contentState.text.toString()
-                            )
-                        }
-
-                    try {
-                        context.startActivity(intent)
-                    } catch (_: Exception) {
-                        Toast.makeText(
-                            context,
-                            context.getString(R.string.no_calendar_app_found),
-                            Toast.LENGTH_SHORT
-                        ).show()
+                        putExtra(
+                            CalendarContract.Events.DESCRIPTION,
+                            viewModel.contentState.text.toString()
+                        )
                     }
-                }) {
-                    Icon(
-                        imageVector = Icons.Outlined.AddAlert,
-                        tint = MaterialTheme.colorScheme.onSurface,
-                        contentDescription = "Remind"
-                    )
+
+                try {
+                    context.startActivity(intent)
+                } catch (_: Exception) {
+                    Toast.makeText(
+                        context,
+                        context.getString(R.string.no_calendar_app_found),
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
             }
 
-            TooltipBox(
-                positionProvider = TooltipDefaults.rememberTooltipPositionProvider(),
-                tooltip = {
-                    PlainTooltip(content = { Text(text = stringResource(R.string.export)) })
-                },
-                state = rememberTooltipState(),
-                focusable = false,
-                enableUserInput = true
+            IconButtonWithTooltip(
+                imageVector = Icons.Outlined.Upload,
+                tint = MaterialTheme.colorScheme.onSurface,
+                contentDescription = stringResource(R.string.export),
+                shortCutDescription = stringResource(R.string.export)
             ) {
-                IconButton(onClick = { showExportDialog = true }) {
-                    Icon(
-                        imageVector = Icons.Outlined.Upload,
-                        tint = MaterialTheme.colorScheme.onSurface,
-                        contentDescription = "Export"
-                    )
-                }
+                showExportDialog = true
             }
 
-            TooltipBox(
-                positionProvider = TooltipDefaults.rememberTooltipPositionProvider(),
-                tooltip = {
-                    PlainTooltip(content = { Text(text = stringResource(R.string.share)) })
-                },
-                state = rememberTooltipState(),
-                focusable = false,
-                enableUserInput = true
-            ) {
-                IconButton(onClick = { showShareDialog = true }) {
-                    Icon(
-                        imageVector = Icons.Outlined.Share,
-                        tint = MaterialTheme.colorScheme.onSurface,
-                        contentDescription = "Share"
-                    )
-                }
+            IconButtonWithTooltip(
+                imageVector = Icons.Outlined.Share,
+                tint = MaterialTheme.colorScheme.onSurface,
+                contentDescription = stringResource(R.string.share),
+                shortCutDescription = stringResource(R.string.share)
+            ){
+                showShareDialog = true
             }
-            AnimatedVisibility(
-                noteState.isStandard
-            ) {
-                TooltipBox(
-                    positionProvider = TooltipDefaults.rememberTooltipPositionProvider(),
-                    tooltip = {
-                        PlainTooltip(content = { Text(text = stringResource(R.string.print)) })
-                    },
-                    state = rememberTooltipState(),
-                    focusable = false,
-                    enableUserInput = true
+
+            AnimatedVisibility(noteState.isStandard) {
+                IconButtonWithTooltip(
+                    imageVector = Icons.Outlined.LocalPrintshop,
+                    tint = MaterialTheme.colorScheme.onSurface,
+                    contentDescription = stringResource(R.string.print),
+                    shortCutDescription = stringResource(R.string.print)
                 ) {
-                    IconButton(onClick = { triggerPrint.value = true }) {
-                        Icon(
-                            imageVector = Icons.Outlined.LocalPrintshop,
-                            tint = MaterialTheme.colorScheme.onSurface,
-                            contentDescription = "Print"
-                        )
-                    }
+                    triggerPrint.value = true
                 }
             }
         },

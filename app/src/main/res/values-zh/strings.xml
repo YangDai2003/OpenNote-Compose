@@ -187,4 +187,6 @@
     <string name="left">靠左</string>
     <string name="center">居中</string>
     <string name="right">靠右</string>
+    <string name="explore_and_share_community_note_templates">在社区探索或分享笔记模板</string>
+    <string name="scroll_sync">滚动同步</string>
 </resources>
