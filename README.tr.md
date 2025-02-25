@@ -27,6 +27,7 @@ OpenNote, tamamen Jetpack Compose kullanılarak geliştirilmiş modern bir Andro
 - **Çöp Kutusu:** Notları kalıcı olarak silmeden önce çöp kutusuna taşıma özelliği sunar.
 
 ### Gelişmiş Yetenekler:
+- **Not Kenar Çubuğu**: Başlık seviyelerine göre otomatik olarak **not taslağı** oluşturur. İlgili bölüme gitmek için tıklayabilirsiniz. **Kelime sayısı, satır sayısı ve diğer bilgiler** tek bakışta görülebilir.
 - **Bul ve değiştir**: Not çok uzun ve belirli bir metnin yerini bulamıyor musunuz? Notu toplu olarak değiştirmek istiyorsunuz ancak tek tek düzenlemek çok can sıkıcı mı? Bu özelliği deneyin.
 - **Not Şablonları:** "Templates" klasöründeki notları şablon olarak ekleyebilir, tarih ve saat formatlamasını otomatik olarak uygular.
 - **Yerel Görsel Desteği:** Cihazdan doğrudan notlara görsel ekleyebilir ve uygulama içinde önizleme yapabilirsiniz.

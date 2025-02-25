@@ -27,6 +27,7 @@ OpenNote is a modern Android note-taking application built entirely with Compose
 - **Trash Bin:** Securely move notes to a trash bin for temporary storage before permanent deletion.
 
 ### Advanced Capabilities:
+- **Note SideSheet**: Automatically generates a **note outline** based on heading levels, allowing you to click and scroll to the corresponding section. Displays **word count, line count, and more** at a glance.
 - **Find and replace**: The note is too long and you can't find the location of a certain text? Want to modify it in batches but it's too annoying to edit one by one? Try this feature.
 - **Note Templates:** Insert notes from the "Templates" folder as templates, with automatic date and time formatting.
 - **Local Image, Video and Audio Support:** Directly import local images, videos and audio from the device into notes, with in-app preview.
