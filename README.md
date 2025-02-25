@@ -51,7 +51,7 @@ OpenNote is a modern Android note-taking application built entirely with Compose
 
 <div style="overflow-x: auto; white-space: nowrap;">
 
-<img src="screenshots/Anim.gif" width="15%" alt=""/>
+<img src="screenshots/Anim_lock.gif" width="15%" alt=""/>
 <img src="screenshots/MainScreen.png" width="15%" alt=""/>
 <img src="screenshots/Drawer.png" width="15%" alt=""/>
 <img src="screenshots/Folders.png" width="15%" alt=""/>
