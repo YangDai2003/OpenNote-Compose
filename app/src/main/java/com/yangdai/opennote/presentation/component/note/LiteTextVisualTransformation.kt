@@ -18,6 +18,7 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
+import com.yangdai.opennote.presentation.theme.linkColor
 import com.yangdai.opennote.presentation.util.highlight.Highlight
 import com.yangdai.opennote.presentation.util.highlight.HighlightExtension
 import org.commonmark.ext.gfm.strikethrough.Strikethrough
@@ -419,7 +420,7 @@ class LiteTextVisualTransformation(
             color = Color(0xFFFF9800)
         )
         private val LINK_STYLE = SpanStyle(
-            color = Color.Blue,
+            color = linkColor,
             textDecoration = TextDecoration.Underline
         )
 
