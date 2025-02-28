@@ -416,13 +416,9 @@ class LiteTextVisualTransformation(
             fontFamily = FontFamily.Monospace, background = Color.LightGray.copy(alpha = 0.3f)
         )
         private val SEARCH_WORD_STYLE = SpanStyle(background = Color.Cyan.copy(alpha = 0.5f))
-        private val LIST_MARKER_STYLE = SpanStyle(
-            color = Color(0xFFFF9800)
-        )
-        private val LINK_STYLE = SpanStyle(
-            color = linkColor,
-            textDecoration = TextDecoration.Underline
-        )
+        private val LIST_MARKER_STYLE = SpanStyle(color = Color(0xFFFF9800))
+        private val LINK_STYLE =
+            SpanStyle(color = linkColor, textDecoration = TextDecoration.Underline)
 
         private val HEADER_LINE_STYLES = listOf(
             ParagraphStyle(
