@@ -8,7 +8,7 @@
     <string name="settings">Ayarlar</string>
     <string name="style">Stil</string>
     <string name="dark_mode">Karanlık mod</string>
-    <string name="color">Renk paleti</string>
+    <string name="color_platte">Renk paleti</string>
     <string name="language">Dil</string>
     <string name="password">Şifre</string>
     <string name="privacy_policy">Gizlilik politikası</string>
@@ -188,4 +188,14 @@
     <string name="right">Sağ</string>
     <string name="explore_and_share_community_note_templates">Topluluk ile not şablonlarını keşfedin ve paylaşın</string>
     <string name="scroll_sync">Kaydırma Senkronizasyonu</string>
+    <string name="widget">Widget</string>
+    <string name="color">Renk</string>
+    <string name="small">Küçük</string>
+    <string name="medium">Orta</string>
+    <string name="large">Büyük</string>
+    <string name="lines">İçerik satırı sayısı</string>
+    <string name="transparent">Şeffaf</string>
+    <string name="create_note">Not oluştur</string>
+    <string name="edit_text_file">Metin dosyasını düzenle</string>
+    <string name="create_text_file">Metin dosyası oluştur</string>
 </resources>

@@ -17,8 +17,8 @@ android {
         applicationId = "com.yangdai.opennote"
         minSdk = 29
         targetSdk = 35
-        versionCode = 1570
-        versionName = "1.5.7"
+        versionCode = 1580
+        versionName = "1.5.8"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -91,6 +91,7 @@ android {
 }
 
 dependencies {
+//    implementation (libs.sardine.android)
     implementation(libs.androidx.work.runtime.ktx)
     implementation(libs.androidx.documentfile)
     // ColorPicker

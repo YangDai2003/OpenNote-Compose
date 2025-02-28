@@ -28,7 +28,7 @@ class BackupWorker(
     override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
         try {
             val context = applicationContext
-            val dataStoreRepository = AppModule.provideDataStoreRepository(context)
+            val dataStoreRepository = AppModule.provideAppDataStoreRepository(context)
             val database = AppModule.provideNoteDatabase(context)
             val noteRepository = AppModule.provideNoteRepository(database)
             val folderRepository = AppModule.provideFolderRepository(database)

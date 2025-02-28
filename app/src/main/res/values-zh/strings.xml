@@ -9,7 +9,7 @@
     <string name="settings">设置</string>
     <string name="style">样式</string>
     <string name="dark_mode">深色模式</string>
-    <string name="color">调色盘</string>
+    <string name="color_platte">调色盘</string>
     <string name="language">语言</string>
     <string name="password">密码锁</string>
     <string name="privacy_policy">隐私权政策</string>
@@ -189,4 +189,14 @@
     <string name="right">靠右</string>
     <string name="explore_and_share_community_note_templates">在社区探索或分享笔记模板</string>
     <string name="scroll_sync">滚动同步</string>
+    <string name="widget">小部件</string>
+    <string name="color">颜色</string>
+    <string name="small">小</string>
+    <string name="medium">中</string>
+    <string name="large">大</string>
+    <string name="lines">笔记内容展示行数</string>
+    <string name="transparent">透明</string>
+    <string name="create_note">创建笔记</string>
+    <string name="edit_text_file">编辑文本文件</string>
+    <string name="create_text_file">创建文本文件</string>
 </resources>

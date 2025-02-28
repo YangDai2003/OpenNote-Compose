@@ -10,21 +10,20 @@ import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.core.stringSetPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
-import com.yangdai.opennote.domain.repository.DataStoreRepository
+import com.yangdai.opennote.domain.repository.WidgetDataStoreRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 
-
-private const val PREFERENCES_NAME = "settings_preferences"
+private const val PREFERENCES_NAME = "widget_preferences"
 
 private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = PREFERENCES_NAME)
 
-class DataStoreRepositoryImpl @Inject constructor(
+class WidgetDataStoreRepositoryImpl @Inject constructor(
     private val context: Context
-) : DataStoreRepository {
+) : WidgetDataStoreRepository {
 
     override suspend fun putString(key: String, value: String) {
         val preferencesKey = stringPreferencesKey(key)
@@ -64,7 +63,7 @@ class DataStoreRepositoryImpl @Inject constructor(
     override fun intFlow(key: String): Flow<Int> {
         val preferencesKey = intPreferencesKey(key)
         return context.dataStore.data.map { preferences ->
-            preferences[preferencesKey] ?: 0
+            preferences[preferencesKey] ?: 1
         }
     }
 

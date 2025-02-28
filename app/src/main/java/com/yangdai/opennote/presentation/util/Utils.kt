@@ -11,10 +11,12 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.remember
 import androidx.core.net.toFile
 import androidx.documentfile.provider.DocumentFile
+import kotlinx.serialization.Serializable
 
 fun Intent.isTextMimeType() = type?.startsWith(Constants.MIME_TYPE_TEXT) == true
 
 @Stable
+@Serializable
 data class SharedContent(val fileName: String = "", val content: String = "")
 
 @SuppressLint("Range")
@@ -23,7 +25,8 @@ fun Intent.parseSharedContent(context: Context): SharedContent {
         Intent.ACTION_SEND -> {
             SharedContent(
                 fileName = getStringExtra(Intent.EXTRA_SUBJECT).orEmpty(),
-                content = getStringExtra(Intent.EXTRA_TEXT).orEmpty())
+                content = getStringExtra(Intent.EXTRA_TEXT).orEmpty()
+            )
         }
 
         Intent.ACTION_VIEW, Intent.ACTION_EDIT -> {

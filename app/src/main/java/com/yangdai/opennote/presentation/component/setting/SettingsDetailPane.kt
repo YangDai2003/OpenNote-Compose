@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.HelpOutline
 import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.outlined.Widgets
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -17,18 +18,23 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
+import androidx.glance.appwidget.GlanceAppWidgetManager
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.window.core.layout.WindowWidthSizeClass
 import com.yangdai.opennote.MainActivity
 import com.yangdai.opennote.presentation.component.TopBarTitle
+import com.yangdai.opennote.presentation.glance.NoteListWidgetReceiver
 import com.yangdai.opennote.presentation.screen.SettingsItem
 import com.yangdai.opennote.presentation.viewmodel.SharedViewModel
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -38,6 +44,8 @@ fun SettingsDetailPane(
     navigateBackToList: () -> Unit
 ) {
     val activity = LocalActivity.current
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
     val isExpended =
         currentWindowAdaptiveInfo().windowSizeClass.windowWidthSizeClass == WindowWidthSizeClass.EXPANDED
     val scrollBehavior =
@@ -60,6 +68,19 @@ fun SettingsDetailPane(
                                 Icon(
                                     imageVector = Icons.AutoMirrored.Outlined.HelpOutline,
                                     contentDescription = "Helper"
+                                )
+                            }
+                        else if (selectedSettingsItem.index == 8)
+                            IconButton(onClick = {
+                                scope.launch {
+                                    GlanceAppWidgetManager(context).requestPinGlanceAppWidget(
+                                        NoteListWidgetReceiver::class.java
+                                    )
+                                }
+                            }) {
+                                Icon(
+                                    imageVector = Icons.Outlined.Widgets,
+                                    contentDescription = "Widgets"
                                 )
                             }
                     },
@@ -92,6 +113,19 @@ fun SettingsDetailPane(
                                 Icon(
                                     imageVector = Icons.AutoMirrored.Outlined.HelpOutline,
                                     contentDescription = "Helper"
+                                )
+                            }
+                        else if (selectedSettingsItem.index == 8)
+                            IconButton(onClick = {
+                                scope.launch {
+                                    GlanceAppWidgetManager(context).requestPinGlanceAppWidget(
+                                        NoteListWidgetReceiver::class.java
+                                    )
+                                }
+                            }) {
+                                Icon(
+                                    imageVector = Icons.Outlined.Widgets,
+                                    contentDescription = "Widgets"
                                 )
                             }
                     },
@@ -138,6 +172,10 @@ fun SettingsDetailPane(
 
                 7 -> {
                     ListPane(sharedViewModel = sharedViewModel)
+                }
+
+                8 -> {
+                    WidgetPane()
                 }
             }
         }

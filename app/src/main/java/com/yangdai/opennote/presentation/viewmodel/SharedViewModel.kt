@@ -1,5 +1,6 @@
 package com.yangdai.opennote.presentation.viewmodel
 
+import android.content.Intent
 import android.util.Log
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.text.input.TextFieldState
@@ -14,7 +15,7 @@ import androidx.lifecycle.viewModelScope
 import com.yangdai.opennote.data.local.Database
 import com.yangdai.opennote.data.local.entity.BackupData
 import com.yangdai.opennote.data.local.entity.NoteEntity
-import com.yangdai.opennote.domain.repository.DataStoreRepository
+import com.yangdai.opennote.domain.repository.AppDataStoreRepository
 import com.yangdai.opennote.domain.usecase.NoteOrder
 import com.yangdai.opennote.domain.usecase.OrderType
 import com.yangdai.opennote.domain.usecase.UseCases
@@ -113,12 +114,13 @@ import kotlin.collections.first
 @HiltViewModel
 class SharedViewModel @Inject constructor(
     private val database: Database,
-    private val dataStoreRepository: DataStoreRepository,
+    private val appDataStoreRepository: AppDataStoreRepository,
     private val useCases: UseCases
 ) : ViewModel() {
 
     val authenticated = MutableStateFlow(false)
     val isCreatingPassword = MutableStateFlow(false)
+    val intent = MutableStateFlow<Intent?>(null)
 
     // 起始页加载状态，初始值为 true
     val isLoading: StateFlow<Boolean>
@@ -218,7 +220,7 @@ class SharedViewModel @Inject constructor(
 
     // 当前笔记的初始化状态，用于比较是否有修改
     private var _oNote: NoteEntity = NoteEntity(
-        timestamp = System.currentTimeMillis(), isMarkdown = dataStoreRepository.getBooleanValue(
+        timestamp = System.currentTimeMillis(), isMarkdown = appDataStoreRepository.getBooleanValue(
             Constants.Preferences.IS_DEFAULT_LITE_MODE, false
         ).not()
     )
@@ -248,28 +250,28 @@ class SharedViewModel @Inject constructor(
 
     @Suppress("TYPE_INTERSECTION_AS_REIFIED_WARNING")
     val settingsStateFlow: StateFlow<SettingsState> = combine(
-        dataStoreRepository.intFlow(Constants.Preferences.APP_THEME),
-        dataStoreRepository.intFlow(Constants.Preferences.APP_COLOR),
-        dataStoreRepository.booleanFlow(Constants.Preferences.BIOMETRIC_AUTH_ENABLED),
-        dataStoreRepository.booleanFlow(Constants.Preferences.IS_APP_IN_DARK_MODE),
-        dataStoreRepository.booleanFlow(Constants.Preferences.SHOULD_FOLLOW_SYSTEM),
-        dataStoreRepository.booleanFlow(Constants.Preferences.IS_SWITCH_ACTIVE),
-        dataStoreRepository.booleanFlow(Constants.Preferences.IS_LIST_VIEW),
-        dataStoreRepository.booleanFlow(Constants.Preferences.IS_APP_IN_AMOLED_MODE),
-        dataStoreRepository.booleanFlow(Constants.Preferences.IS_DEFAULT_VIEW_FOR_READING),
-        dataStoreRepository.booleanFlow(Constants.Preferences.IS_DEFAULT_LITE_MODE),
-        dataStoreRepository.booleanFlow(Constants.Preferences.IS_LINT_ACTIVE),
-        dataStoreRepository.stringFlow(Constants.Preferences.STORAGE_PATH),
-        dataStoreRepository.stringFlow(Constants.Preferences.DATE_FORMATTER),
-        dataStoreRepository.stringFlow(Constants.Preferences.TIME_FORMATTER),
-        dataStoreRepository.booleanFlow(Constants.Preferences.IS_SCREEN_PROTECTED),
-        dataStoreRepository.floatFlow(Constants.Preferences.FONT_SCALE),
-        dataStoreRepository.intFlow(BackupManager.BACKUP_FREQUENCY_KEY),
-        dataStoreRepository.stringFlow(Constants.Preferences.PASSWORD),
-        dataStoreRepository.intFlow(Constants.Preferences.ENUM_OVERFLOW_STYLE),
-        dataStoreRepository.intFlow(Constants.Preferences.ENUM_CONTENT_SIZE),
-        dataStoreRepository.booleanFlow(Constants.Preferences.IS_AUTO_SAVE_ENABLED),
-        dataStoreRepository.intFlow(Constants.Preferences.TITLE_ALIGN)
+        appDataStoreRepository.intFlow(Constants.Preferences.APP_THEME),
+        appDataStoreRepository.intFlow(Constants.Preferences.APP_COLOR),
+        appDataStoreRepository.booleanFlow(Constants.Preferences.BIOMETRIC_AUTH_ENABLED),
+        appDataStoreRepository.booleanFlow(Constants.Preferences.IS_APP_IN_DARK_MODE),
+        appDataStoreRepository.booleanFlow(Constants.Preferences.SHOULD_FOLLOW_SYSTEM),
+        appDataStoreRepository.booleanFlow(Constants.Preferences.IS_SWITCH_ACTIVE),
+        appDataStoreRepository.booleanFlow(Constants.Preferences.IS_LIST_VIEW),
+        appDataStoreRepository.booleanFlow(Constants.Preferences.IS_APP_IN_AMOLED_MODE),
+        appDataStoreRepository.booleanFlow(Constants.Preferences.IS_DEFAULT_VIEW_FOR_READING),
+        appDataStoreRepository.booleanFlow(Constants.Preferences.IS_DEFAULT_LITE_MODE),
+        appDataStoreRepository.booleanFlow(Constants.Preferences.IS_LINT_ACTIVE),
+        appDataStoreRepository.stringFlow(Constants.Preferences.STORAGE_PATH),
+        appDataStoreRepository.stringFlow(Constants.Preferences.DATE_FORMATTER),
+        appDataStoreRepository.stringFlow(Constants.Preferences.TIME_FORMATTER),
+        appDataStoreRepository.booleanFlow(Constants.Preferences.IS_SCREEN_PROTECTED),
+        appDataStoreRepository.floatFlow(Constants.Preferences.FONT_SCALE),
+        appDataStoreRepository.intFlow(BackupManager.BACKUP_FREQUENCY_KEY),
+        appDataStoreRepository.stringFlow(Constants.Preferences.PASSWORD),
+        appDataStoreRepository.intFlow(Constants.Preferences.ENUM_OVERFLOW_STYLE),
+        appDataStoreRepository.intFlow(Constants.Preferences.ENUM_CONTENT_SIZE),
+        appDataStoreRepository.booleanFlow(Constants.Preferences.IS_AUTO_SAVE_ENABLED),
+        appDataStoreRepository.intFlow(Constants.Preferences.TITLE_ALIGN)
     ) { values ->
         SettingsState(
             theme = AppTheme.fromInt(values[0] as Int),
@@ -302,11 +304,11 @@ class SharedViewModel @Inject constructor(
     fun <T> putPreferenceValue(key: String, value: T) {
         viewModelScope.launch(Dispatchers.IO) {
             when (value) {
-                is Int -> dataStoreRepository.putInt(key, value)
-                is Float -> dataStoreRepository.putFloat(key, value)
-                is Boolean -> dataStoreRepository.putBoolean(key, value)
-                is String -> dataStoreRepository.putString(key, value)
-                is Set<*> -> dataStoreRepository.putStringSet(
+                is Int -> appDataStoreRepository.putInt(key, value)
+                is Float -> appDataStoreRepository.putFloat(key, value)
+                is Boolean -> appDataStoreRepository.putBoolean(key, value)
+                is String -> appDataStoreRepository.putString(key, value)
+                is Set<*> -> appDataStoreRepository.putStringSet(
                     key, value.filterIsInstance<String>().toSet()
                 )
 
@@ -316,7 +318,7 @@ class SharedViewModel @Inject constructor(
     }
 
     val historyStateFlow: StateFlow<Set<String>> =
-        dataStoreRepository.stringSetFlow(Constants.Preferences.SEARCH_HISTORY).stateIn(
+        appDataStoreRepository.stringSetFlow(Constants.Preferences.SEARCH_HISTORY).stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5_000),
             initialValue = setOf()
@@ -373,7 +375,7 @@ class SharedViewModel @Inject constructor(
 
             is ListEvent.ChangeViewMode -> {
                 viewModelScope.launch(Dispatchers.IO) {
-                    dataStoreRepository.putBoolean(
+                    appDataStoreRepository.putBoolean(
                         Constants.Preferences.IS_LIST_VIEW, settingsStateFlow.value.isListView.not()
                     )
                 }
@@ -415,7 +417,7 @@ class SharedViewModel @Inject constructor(
                 _oNote = event.noteEntity ?: NoteEntity(
                     folderId = event.folderId,
                     timestamp = System.currentTimeMillis(),
-                    isMarkdown = dataStoreRepository.getBooleanValue(
+                    isMarkdown = appDataStoreRepository.getBooleanValue(
                         Constants.Preferences.IS_DEFAULT_LITE_MODE, false
                     ).not()
                 )
@@ -475,12 +477,6 @@ class SharedViewModel @Inject constructor(
                 )
             }
         }.launchIn(viewModelScope)
-    }
-
-    fun addTasks(taskList: List<TaskItem>) {
-        taskList.forEach {
-            contentState.edit { addTask(it.task, it.checked) }
-        }
     }
 
     @OptIn(ExperimentalFoundationApi::class)
@@ -554,7 +550,12 @@ class SharedViewModel @Inject constructor(
                             ).toInt(), event.value.substringAfter(",", "1").toInt()
                         )
                     }
-
+                    Constants.Editor.TASK -> {
+                        val taskList = Json.decodeFromString<List<TaskItem>>(event.value)
+                        taskList.forEach {
+                            contentState.edit { addTask(it.task, it.checked) }
+                        }
+                    }
                     Constants.Editor.LIST -> contentState.edit { addInNewLine(event.value) }
                     Constants.Editor.TEXT -> contentState.edit { add(event.value) }
                 }
@@ -566,7 +567,7 @@ class SharedViewModel @Inject constructor(
                     if (event.id != _oNote.id && event.id != -1L) {
                         _oNote = useCases.getNoteById(event.id) ?: NoteEntity(
                             timestamp = System.currentTimeMillis(),
-                            isMarkdown = dataStoreRepository.booleanFlow(Constants.Preferences.IS_DEFAULT_LITE_MODE)
+                            isMarkdown = appDataStoreRepository.booleanFlow(Constants.Preferences.IS_DEFAULT_LITE_MODE)
                                 .first().not()
                         )
                     }
@@ -617,7 +618,7 @@ class SharedViewModel @Inject constructor(
                 || noteStateFlow.value.isStandard != _oNote.isMarkdown
                 || noteStateFlow.value.folderId != _oNote.folderId
         val isAutoSaveEnabled =
-            dataStoreRepository.getBooleanValue(Constants.Preferences.IS_AUTO_SAVE_ENABLED, true)
+            appDataStoreRepository.getBooleanValue(Constants.Preferences.IS_AUTO_SAVE_ENABLED, true)
         val isNoteEmpty = contentState.text.isBlank() && titleState.text.isBlank()
         val isNewNote = noteStateFlow.value.id == null
         if (isAutoSaveEnabled) return false
@@ -648,7 +649,10 @@ class SharedViewModel @Inject constructor(
                 startDataAction()
                 dataActionJob = viewModelScope.launch(Dispatchers.IO) {
                     val rootUri =
-                        dataStoreRepository.getStringValue(Constants.Preferences.STORAGE_PATH, "")
+                        appDataStoreRepository.getStringValue(
+                            Constants.Preferences.STORAGE_PATH,
+                            ""
+                        )
                             .toUri()
                     // 获取Open Note目录
                     val openNoteDir =
@@ -688,7 +692,10 @@ class SharedViewModel @Inject constructor(
                 startDataAction()
                 dataActionJob = viewModelScope.launch(Dispatchers.IO) {
                     val rootUri =
-                        dataStoreRepository.getStringValue(Constants.Preferences.STORAGE_PATH, "")
+                        appDataStoreRepository.getStringValue(
+                            Constants.Preferences.STORAGE_PATH,
+                            ""
+                        )
                             .toUri()
                     // 获取Open Note目录
                     val openNoteDir =
@@ -787,7 +794,10 @@ class SharedViewModel @Inject constructor(
 
                 dataActionJob = viewModelScope.launch(Dispatchers.IO) {
                     val rootUri =
-                        dataStoreRepository.getStringValue(Constants.Preferences.STORAGE_PATH, "")
+                        appDataStoreRepository.getStringValue(
+                            Constants.Preferences.STORAGE_PATH,
+                            ""
+                        )
                             .toUri()
                     // 获取Open Note目录
                     val openNoteDir =
@@ -835,7 +845,10 @@ class SharedViewModel @Inject constructor(
                 _dataActionState.update { it.copy(progress = 0.2f) }
                 dataActionJob = viewModelScope.launch(Dispatchers.IO) {
                     val rootUri =
-                        dataStoreRepository.getStringValue(Constants.Preferences.STORAGE_PATH, "")
+                        appDataStoreRepository.getStringValue(
+                            Constants.Preferences.STORAGE_PATH,
+                            ""
+                        )
                             .toUri()
                     // 获取Open Note目录
                     val openNoteDir =
@@ -928,7 +941,7 @@ class SharedViewModel @Inject constructor(
 
                     dataActionJob = viewModelScope.launch(Dispatchers.IO) {
 
-                        val rootUri = dataStoreRepository.getStringValue(
+                        val rootUri = appDataStoreRepository.getStringValue(
                             Constants.Preferences.STORAGE_PATH,
                             ""
                         ).toUri()

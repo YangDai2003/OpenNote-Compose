@@ -42,6 +42,12 @@ object Constants {
         const val TITLE_ALIGN = "TITLE_ALIGN"
     }
 
+    object Widget {
+        const val WIDGET_TEXT_SIZE = "WIDGET_TEXT_SIZE"
+        const val WIDGET_TEXT_LINES = "WIDGET_TEXT_LINES"
+        const val WIDGET_BACKGROUND_COLOR = "WIDGET_BACKGROUND_COLOR"
+    }
+
     object Editor {
         const val UNDO = "undo"
         const val REDO = "redo"
@@ -65,6 +71,7 @@ object Constants {
         const val INLINE_MATH = "inlineMath"
 
         const val TABLE = "table"
+        const val TASK = "task"
         const val LIST = "list"
         const val QUOTE = "quote"
         const val TAB = "tab"

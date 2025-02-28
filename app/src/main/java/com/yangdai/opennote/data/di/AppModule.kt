@@ -4,9 +4,10 @@ import android.content.Context
 import androidx.room.Room
 import com.yangdai.opennote.data.local.Database
 import com.yangdai.opennote.data.local.MIGRATION_1_2
-import com.yangdai.opennote.data.repository.DataStoreRepositoryImpl
+import com.yangdai.opennote.data.repository.AppDataStoreRepositoryImpl
 import com.yangdai.opennote.data.repository.FolderRepositoryImpl
 import com.yangdai.opennote.data.repository.NoteRepositoryImpl
+import com.yangdai.opennote.data.repository.WidgetDataStoreRepositoryImpl
 import com.yangdai.opennote.domain.usecase.AddFolder
 import com.yangdai.opennote.domain.repository.NoteRepository
 import com.yangdai.opennote.domain.usecase.AddNote
@@ -19,8 +20,9 @@ import com.yangdai.opennote.domain.usecase.UseCases
 import com.yangdai.opennote.domain.usecase.SearchNotes
 import com.yangdai.opennote.domain.usecase.UpdateFolder
 import com.yangdai.opennote.domain.usecase.UpdateNote
-import com.yangdai.opennote.domain.repository.DataStoreRepository
+import com.yangdai.opennote.domain.repository.AppDataStoreRepository
 import com.yangdai.opennote.domain.repository.FolderRepository
+import com.yangdai.opennote.domain.repository.WidgetDataStoreRepository
 import com.yangdai.opennote.domain.usecase.GetNoteById
 import com.yangdai.opennote.domain.usecase.GetNotesCountByFolderId
 import dagger.Module
@@ -36,8 +38,13 @@ object AppModule {
 
     @Singleton
     @Provides
-    fun provideDataStoreRepository(@ApplicationContext context: Context): DataStoreRepository =
-        DataStoreRepositoryImpl(context)
+    fun provideAppDataStoreRepository(@ApplicationContext context: Context): AppDataStoreRepository =
+        AppDataStoreRepositoryImpl(context)
+
+    @Singleton
+    @Provides
+    fun provideWidgetDataStoreRepository(@ApplicationContext context: Context): WidgetDataStoreRepository =
+        WidgetDataStoreRepositoryImpl(context)
 
     @Provides
     @Singleton

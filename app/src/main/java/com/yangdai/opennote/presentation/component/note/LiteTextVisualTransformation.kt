@@ -25,10 +25,13 @@ import org.commonmark.ext.gfm.strikethrough.StrikethroughExtension
 import org.commonmark.ext.ins.Ins
 import org.commonmark.ext.ins.InsExtension
 import org.commonmark.node.AbstractVisitor
+import org.commonmark.node.BulletList
 import org.commonmark.node.Code
 import org.commonmark.node.CustomNode
 import org.commonmark.node.Emphasis
 import org.commonmark.node.Heading
+import org.commonmark.node.Link
+import org.commonmark.node.OrderedList
 import org.commonmark.node.StrongEmphasis
 import org.commonmark.parser.IncludeSourceSpans
 import org.commonmark.parser.Parser
@@ -46,19 +49,17 @@ class LiteTextVisualTransformation(
         val underlineRanges: List<IntRange>,
         val highlightRanges: List<IntRange>,
         val headerRanges: List<Pair<IntRange, Int>>,
-        val searchWordRanges: List<IntRange>
+        val searchWordRanges: List<IntRange>,
+        val bulletListMarkerRanges: List<IntRange>,
+        val orderedListMarkerRanges: List<IntRange>,
+        val linkRanges: List<IntRange>
     ) {
         companion object {
             val EMPTY = StyleRanges(
-                emptyList(),
-                emptyList(),
-                emptyList(),
-                emptyList(),
-                emptyList(),
-                emptyList(),
-                emptyList(),
-                emptyList(),
-                emptyList()
+                emptyList(), emptyList(), emptyList(),
+                emptyList(), emptyList(), emptyList(),
+                emptyList(), emptyList(), emptyList(),
+                emptyList(), emptyList(), emptyList()
             )
         }
     }
@@ -101,6 +102,9 @@ class LiteTextVisualTransformation(
         val underlineRanges = mutableListOf<IntRange>()
         val highlightRanges = mutableListOf<IntRange>()
         val headerRanges = mutableListOf<Pair<IntRange, Int>>()
+        val bulletListMarkerRanges = mutableListOf<IntRange>()
+        val orderedListMarkerRanges = mutableListOf<IntRange>()
+        val linkRanges = mutableListOf<IntRange>()
 
         // 遍历节点
         document.accept(object : AbstractVisitor() {
@@ -136,6 +140,57 @@ class LiteTextVisualTransformation(
                         boldRanges.add(span.inputIndex until (span.inputIndex + span.length))
                     }
                 }
+            }
+
+            override fun visit(bulletList: BulletList) {
+                // Get all list items under the bullet list
+                var item = bulletList.firstChild
+                while (item != null) {
+                    val span = item.sourceSpans.firstOrNull()
+                    if (span != null) {
+                        // The marker is at the beginning of the list item
+                        // Extract marker length (typically 1 character + whitespace)
+                        val marker = bulletList.marker ?: "*"
+                        val markerLength = marker.length + 1 // +1 for space after marker
+
+                        // Add range for just the marker part
+                        bulletListMarkerRanges.add(span.inputIndex until (span.inputIndex + markerLength))
+                    }
+                    item = item.next
+                }
+                visitChildren(bulletList)
+            }
+
+            override fun visit(orderedList: OrderedList) {
+                // Get all list items under the ordered list
+                var item = orderedList.firstChild
+                var itemNumber = orderedList.markerStartNumber ?: 1
+
+                while (item != null) {
+                    val span = item.sourceSpans.firstOrNull()
+                    if (span != null) {
+                        // Calculate marker text (e.g., "1." or "2)")
+                        val delimiter = orderedList.markerDelimiter ?: "."
+                        val markerText = "$itemNumber$delimiter"
+                        val markerLength = markerText.length + 1 // +1 for space after marker
+
+                        // Add range for just the marker part
+                        orderedListMarkerRanges.add(span.inputIndex until (span.inputIndex + markerLength))
+                        itemNumber++
+                    }
+                    item = item.next
+                }
+                visitChildren(orderedList)
+            }
+
+            override fun visit(link: Link) {
+                val span = link.sourceSpans.firstOrNull()
+                if (span != null) {
+                    // The entire link including text and URL needs to be styled
+                    // Format is [text](url)
+                    linkRanges.add(span.inputIndex until (span.inputIndex + span.length))
+                }
+                visitChildren(link)
             }
 
             override fun visit(customNode: CustomNode) {
@@ -179,7 +234,10 @@ class LiteTextVisualTransformation(
             underlineRanges,
             highlightRanges,
             headerRanges,
-            searchWordRanges
+            searchWordRanges,
+            bulletListMarkerRanges,
+            orderedListMarkerRanges,
+            linkRanges
         )
     }
 
@@ -190,7 +248,13 @@ class LiteTextVisualTransformation(
         }
         ranges.boldRanges.forEach { range -> addStyle(BOLD_STYLE, range.first, range.last + 1) }
         ranges.italicRanges.forEach { range -> addStyle(ITALIC_STYLE, range.first, range.last + 1) }
-        ranges.highlightRanges.forEach { range -> addStyle(HIGHLIGHT_STYLE, range.first, range.last + 1) }
+        ranges.highlightRanges.forEach { range ->
+            addStyle(
+                HIGHLIGHT_STYLE,
+                range.first,
+                range.last + 1
+            )
+        }
 
         val combinedRanges = (ranges.strikethroughRanges + ranges.underlineRanges).distinct()
         combinedRanges.forEach { range ->
@@ -208,6 +272,19 @@ class LiteTextVisualTransformation(
         ranges.headerRanges.forEach { (range, level) ->
             addStyle(HEADER_STYLES[level - 1], range.first, range.last + 1)
             addStyle(HEADER_LINE_STYLES[level - 1], range.first, range.last + 1)
+        }
+
+        // Add styling for list markers
+        ranges.bulletListMarkerRanges.forEach { range ->
+            addStyle(LIST_MARKER_STYLE, range.first, range.last + 1)
+        }
+
+        ranges.orderedListMarkerRanges.forEach { range ->
+            addStyle(LIST_MARKER_STYLE, range.first, range.last + 1)
+        }
+
+        ranges.linkRanges.forEach { range ->
+            addStyle(LINK_STYLE, range.first, range.last + 1)
         }
     }
 
@@ -338,6 +415,13 @@ class LiteTextVisualTransformation(
             fontFamily = FontFamily.Monospace, background = Color.LightGray.copy(alpha = 0.3f)
         )
         private val SEARCH_WORD_STYLE = SpanStyle(background = Color.Cyan.copy(alpha = 0.5f))
+        private val LIST_MARKER_STYLE = SpanStyle(
+            color = Color(0xFFFF9800)
+        )
+        private val LINK_STYLE = SpanStyle(
+            color = Color.Blue,
+            textDecoration = TextDecoration.Underline
+        )
 
         private val HEADER_LINE_STYLES = listOf(
             ParagraphStyle(

@@ -94,7 +94,7 @@ fun StylePane(sharedViewModel: SharedViewModel) {
             PaletteImage()
         }
 
-        SettingsHeader(text = stringResource(R.string.color))
+        SettingsHeader(text = stringResource(R.string.color_platte))
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             Row(

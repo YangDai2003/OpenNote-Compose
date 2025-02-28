@@ -22,7 +22,6 @@ import android.webkit.WebView.enableSlowWholeDocumentDraw
 import android.webkit.WebViewClient
 import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.ScrollState
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.surfaceColorAtElevation
@@ -35,8 +34,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -46,7 +44,6 @@ import androidx.core.graphics.createBitmap
 import androidx.core.net.toUri
 import androidx.documentfile.provider.DocumentFile
 import com.yangdai.opennote.presentation.component.image.FullscreenImageDialog
-import com.yangdai.opennote.presentation.state.SettingsState
 import com.yangdai.opennote.presentation.theme.linkColor
 import com.yangdai.opennote.presentation.util.Constants
 import com.yangdai.opennote.presentation.util.rememberCustomTabsIntent
@@ -87,10 +84,10 @@ fun ReadView(
     html: String,
     rootUri: Uri,
     noteName: String,
-    printEnabled: MutableState<Boolean>,
     scrollSynchronized: Boolean,
-    scrollState: ScrollState = rememberScrollState(),
-    settingsState: SettingsState,
+    scrollState: ScrollState,
+    isAppInDarkMode: Boolean,
+    printEnabled: MutableState<Boolean>,
     launchShareIntent: MutableState<Boolean>
 ) {
 
@@ -99,8 +96,8 @@ fun ReadView(
     val markdownStyles = remember(colorScheme) {
         MarkdownStyles.fromColorScheme(colorScheme)
     }
-    val codeTheme = remember(settingsState.isAppInDarkMode) {
-        if (settingsState.isAppInDarkMode) {
+    val codeTheme = remember(isAppInDarkMode) {
+        if (isAppInDarkMode) {
             "https://cdn.jsdelivr.net/npm/prism-themes@1.9.0/themes/prism-material-dark.css"
         } else {
             "https://cdn.jsdelivr.net/npm/prism-themes@1.9.0/themes/prism-material-light.css"
@@ -124,7 +121,7 @@ fun ReadView(
                         const videoName = video.getAttribute('src');
                         const id = 'video_' + index;
                         video.setAttribute('data-id', id);
-                        window.videoPathHandler.processVideo(videoName, id);
+                        window.mediaPathHandler.processMedia(videoName, id, "video");
                         
                         // 设置视频控件样式
                         video.style.width = '100%';
@@ -146,7 +143,7 @@ fun ReadView(
                         const audioName = audio.getAttribute('src');
                         const id = 'audio_' + index;
                         audio.setAttribute('data-id', id);
-                        window.audioPathHandler.processAudio(audioName, id);
+                        window.mediaPathHandler.processMedia(audioName, id, "audio");
                         
                         // 设置音频控件样式
                         audio.style.width = '100%';
@@ -168,7 +165,7 @@ fun ReadView(
                         const imageName = img.getAttribute('src');
                         const id = 'img_' + index;
                         img.setAttribute('data-id', id);
-                        window.imagePathHandler.processImage(imageName, id);
+                        window.mediaPathHandler.processMedia(imageName, id, "image");
                         
                         let touchTimeout;
                         let touchStartTime;
@@ -332,8 +329,49 @@ fun ReadView(
         launchShareIntent.value = false
     }
 
+    var imagesDir by remember { mutableStateOf<DocumentFile?>(null) }
+    var audioDir by remember { mutableStateOf<DocumentFile?>(null) }
+    var videosDir by remember { mutableStateOf<DocumentFile?>(null) }
+    LaunchedEffect(rootUri) {
+        withContext(Dispatchers.IO) {
+            imagesDir = try {
+                DocumentFile.fromTreeUri(context.applicationContext, rootUri)
+                    ?.findFile(Constants.File.OPENNOTE)
+                    ?.findFile(Constants.File.OPENNOTE_IMAGES)
+            } catch (e: Exception) {
+                null
+            }
+            audioDir = try {
+                DocumentFile.fromTreeUri(context.applicationContext, rootUri)
+                    ?.findFile(Constants.File.OPENNOTE)
+                    ?.findFile(Constants.File.OPENNOTE_AUDIO)
+            } catch (e: Exception) {
+                null
+            }
+            videosDir = try {
+                DocumentFile.fromTreeUri(context.applicationContext, rootUri)
+                    ?.findFile(Constants.File.OPENNOTE)
+                    ?.findFile(Constants.File.OPENNOTE_VIDEOS)
+            } catch (e: Exception) {
+                null
+            }
+            // 目录加载完成后，重新触发媒体处理
+            withContext(Dispatchers.Main) {
+                webView?.evaluateJavascript(
+                    """
+                (function() {
+                    setupImageHandlers();
+                    setupAudioHandlers();
+                    setupVideoHandlers();
+                })();
+            """.trimIndent(), null
+                )
+            }
+        }
+    }
+
     AndroidView(
-        modifier = modifier.clip(RectangleShape),
+        modifier = modifier.clipToBounds(),
         factory = {
             WebView(it).also { webView = it }.apply {
                 layoutParams = ViewGroup.LayoutParams(
@@ -365,149 +403,114 @@ fun ReadView(
                 addJavascriptInterface(
                     object {
                         @JavascriptInterface
-                        fun processImage(imageName: String, id: String) {
+                        fun processMedia(mediaName: String, id: String, mediaType: String) {
                             coroutineScope.launch(Dispatchers.IO) {
-                                // 先检查缓存
-                                if (imageCache.containsKey(imageName)) {
-                                    withContext(Dispatchers.Main) {
-                                        webView?.evaluateJavascript(
-                                            """
-                                            (function() {
-                                                const img = document.querySelector('img[data-id="$id"]');
-                                                if (img) {
-                                                    img.src = '${imageCache[imageName]}';
-                                                }
-                                            })();
-                                            """.trimIndent(),
-                                            null
-                                        )
-                                    }
-                                    return@launch
-                                }
-
-                                val imagesDir =
-                                    DocumentFile.fromTreeUri(context.applicationContext, rootUri)
-                                        ?.findFile(Constants.File.OPENNOTE)
-                                        ?.findFile(Constants.File.OPENNOTE_IMAGES)
-
-                                val imageFile = imagesDir?.listFiles()?.find {
-                                    it.name == imageName
-                                }
-
-                                val imageUri = imageFile?.uri?.toString().orEmpty()
-
-                                // 更新缓存
-                                if (imageUri.isNotEmpty()) {
-                                    imageCache[imageName] = imageUri
-                                }
-
-                                withContext(Dispatchers.Main) {
-                                    // 通过 JavaScript 更新图片 src
-                                    webView?.evaluateJavascript(
-                                        """
-                                        (function() {
-                                            const img = document.querySelector('img[data-id="$id"]');
-                                            if (img && '${imageUri}' !== '') {
-                                                img.src = '${imageUri}';
-                                            }
-                                        })();
-                                        """.trimIndent(),
-                                        null
-                                    )
-                                }
-                            }
-                        }
-                    },
-                    "imagePathHandler"
-                )
-                addJavascriptInterface(
-                    object {
-                        @JavascriptInterface
-                        fun processAudio(audioName: String, id: String) {
-                            coroutineScope.launch(Dispatchers.IO) {
-                                val audioDir =
-                                    DocumentFile.fromTreeUri(context.applicationContext, rootUri)
-                                        ?.findFile(Constants.File.OPENNOTE)
-                                        ?.findFile(Constants.File.OPENNOTE_AUDIO)
-
-                                val audioFile = audioDir?.listFiles()?.find {
-                                    it.name == audioName
-                                }
-
-                                val audioUri = audioFile?.uri?.toString().orEmpty()
-
-                                withContext(Dispatchers.Main) {
-                                    // 通过 JavaScript 更新音频 src
-                                    webView?.evaluateJavascript(
-                                        """
+                                val mediaUri = when (mediaType) {
+                                    "image" -> {
+                                        // Check cache first for images
+                                        if (imageCache.containsKey(mediaName)) {
+                                            withContext(Dispatchers.Main) {
+                                                webView?.evaluateJavascript(
+                                                    """
                                     (function() {
-                                        const audio = document.querySelector('audio[data-id="$id"]');
-                                        if (audio && '${audioUri}' !== '') {
-                                            audio.src = '${audioUri}';
-                                        }
+                                        const img = document.querySelector('img[data-id="$id"]');
+                                        if (img) img.src = '${imageCache[mediaName]}';
                                     })();
-                                    """.trimIndent(),
-                                        null
-                                    )
-                                }
-                            }
-                        }
-                    },
-                    "audioPathHandler"
-                )
-                addJavascriptInterface(
-                    object {
-                        @JavascriptInterface
-                        fun processVideo(videoName: String, id: String) {
-                            coroutineScope.launch(Dispatchers.IO) {
-                                val videoDir =
-                                    DocumentFile.fromTreeUri(context.applicationContext, rootUri)
-                                        ?.findFile(Constants.File.OPENNOTE)
-                                        ?.findFile(Constants.File.OPENNOTE_VIDEOS)
-
-                                val videoFile = videoDir?.listFiles()?.find {
-                                    it.name == videoName
-                                }
-
-                                val videoUri = videoFile?.uri?.toString().orEmpty()
-                                // 生成缩略图
-                                val thumbnail = if (videoUri.isNotEmpty()) {
-                                    withContext(Dispatchers.IO) {
-                                        val retriever = MediaMetadataRetriever()
-                                        try {
-                                            retriever.setDataSource(
-                                                context.applicationContext,
-                                                videoUri.toUri()
-                                            )
-                                            val bitmap = retriever.getFrameAtTime(0)
-                                            val base64 = bitmapToBase64(bitmap)
-                                            "data:image/jpeg;base64,$base64"
-                                        } catch (e: Exception) {
-                                            ""
-                                        } finally {
-                                            retriever.release()
+                                    """.trimIndent(), null
+                                                )
+                                            }
+                                            return@launch
                                         }
+
+                                        val file =
+                                            imagesDir?.listFiles()?.find { it.name == mediaName }
+                                        val uri = file?.uri?.toString().orEmpty()
+
+                                        // Update image cache
+                                        if (uri.isNotEmpty()) {
+                                            imageCache[mediaName] = uri
+                                        }
+                                        uri
                                     }
-                                } else ""
+
+                                    "audio" -> {
+                                        val file =
+                                            audioDir?.listFiles()?.find { it.name == mediaName }
+                                        file?.uri?.toString().orEmpty()
+                                    }
+
+                                    "video" -> {
+                                        val file =
+                                            videosDir?.listFiles()?.find { it.name == mediaName }
+                                        file?.uri?.toString().orEmpty()
+                                    }
+
+                                    else -> ""
+                                }
+
+                                if (mediaUri.isEmpty()) return@launch
 
                                 withContext(Dispatchers.Main) {
-                                    webView?.evaluateJavascript(
-                                        """
-                                        (function() {
-                                            const video = document.querySelector('video[data-id="$id"]');
-                                            if (video && '${videoUri}' !== '') {
-                                                video.src = '${videoUri}';
-                                                video.poster = '${thumbnail}';
+                                    when (mediaType) {
+                                        "image" -> {
+                                            webView?.evaluateJavascript(
+                                                """
+                                (function() {
+                                    const img = document.querySelector('img[data-id="$id"]');
+                                    if (img) img.src = '$mediaUri';
+                                })();
+                                """.trimIndent(), null
+                                            )
+                                        }
+
+                                        "audio" -> {
+                                            webView?.evaluateJavascript(
+                                                """
+                                (function() {
+                                    const audio = document.querySelector('audio[data-id="$id"]');
+                                    if (audio) audio.src = '$mediaUri';
+                                })();
+                                """.trimIndent(), null
+                                            )
+                                        }
+
+                                        "video" -> {
+                                            // Generate thumbnail for videos
+                                            val thumbnail = withContext(Dispatchers.IO) {
+                                                val retriever = MediaMetadataRetriever()
+                                                try {
+                                                    retriever.setDataSource(
+                                                        context.applicationContext,
+                                                        mediaUri.toUri()
+                                                    )
+                                                    val bitmap = retriever.getFrameAtTime(0)
+                                                    val base64 = bitmapToBase64(bitmap)
+                                                    "data:image/jpeg;base64,$base64"
+                                                } catch (e: Exception) {
+                                                    ""
+                                                } finally {
+                                                    retriever.release()
+                                                }
                                             }
-                                        })();
-                                        """.trimIndent(),
-                                        null
-                                    )
+
+                                            webView?.evaluateJavascript(
+                                                """
+                                (function() {
+                                    const video = document.querySelector('video[data-id="$id"]');
+                                    if (video) {
+                                        video.src = '$mediaUri';
+                                        video.poster = '$thumbnail';
+                                    }
+                                })();
+                                """.trimIndent(), null
+                                            )
+                                        }
+                                    }
                                 }
                             }
                         }
                     },
-                    "videoPathHandler"
+                    "mediaPathHandler"
                 )
                 settings.allowFileAccess = true
                 settings.allowContentAccess = true
@@ -540,9 +543,10 @@ fun ReadView(
         },
         onReset = {
             imageCache.clear()
-            webView = null
+            it.clearHistory()
             it.stopLoading()
             it.destroy()
+            webView = null
         })
 
     if (showDialog)
@@ -564,7 +568,7 @@ private fun shareBitmap(context: Context, webView: WebView, noteName: String) {
 
     // 保存位图到文件
     FileOutputStream(file).use { stream ->
-        bitmap.compress(Bitmap.CompressFormat.JPEG, 90, stream)
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 85, stream)
         bitmap.recycle()
     }
 
@@ -633,7 +637,13 @@ private fun createWebPrintJob(webView: WebView, activity: Activity?, name: Strin
 private fun bitmapToBase64(bitmap: Bitmap?): String {
     if (bitmap == null) return ""
     return ByteArrayOutputStream().use { outputStream ->
-        bitmap.compress(Bitmap.CompressFormat.JPEG, 60, outputStream)
+        // Use a more efficient compression quality based on bitmap size
+        val quality = when {
+            bitmap.byteCount > 4 * 1024 * 1024 -> 40 // Large images
+            bitmap.byteCount > 1024 * 1024 -> 60 // Medium images
+            else -> 80 // Small images
+        }
+        bitmap.compress(Bitmap.CompressFormat.JPEG, quality, outputStream)
         Base64.encode(outputStream.toByteArray())
     }
 }

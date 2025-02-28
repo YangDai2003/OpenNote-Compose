@@ -2,7 +2,7 @@ package com.yangdai.opennote.domain.repository
 
 import kotlinx.coroutines.flow.Flow
 
-interface DataStoreRepository {
+interface WidgetDataStoreRepository {
 
     suspend fun putString(key: String, value: String)
     suspend fun putInt(key: String, value: Int)

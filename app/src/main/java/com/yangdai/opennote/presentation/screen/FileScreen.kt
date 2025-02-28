@@ -5,11 +5,9 @@ import android.content.Intent
 import android.provider.CalendarContract
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
-import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
@@ -21,7 +19,6 @@ import androidx.compose.foundation.gestures.rememberDraggableState
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -33,16 +30,12 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.text.input.TextFieldLineLimits
+import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
-import androidx.compose.material.icons.automirrored.outlined.ExitToApp
 import androidx.compose.material.icons.automirrored.outlined.MenuBook
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.outlined.AddAlert
-import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.EditNote
 import androidx.compose.material.icons.outlined.Link
 import androidx.compose.material.icons.outlined.LinkOff
@@ -54,25 +47,19 @@ import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material.icons.outlined.SwapHoriz
 import androidx.compose.material.icons.outlined.Upload
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Snackbar
-import androidx.compose.material3.SnackbarDuration
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.VerticalDragHandle
 import androidx.compose.material3.adaptive.currentWindowSize
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -82,7 +69,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.isCtrlPressed
@@ -96,21 +82,17 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastJoinToString
 import androidx.core.content.FileProvider
 import androidx.core.net.toUri
+import androidx.documentfile.provider.DocumentFile
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.yangdai.opennote.MainActivity
 import com.yangdai.opennote.R
 import com.yangdai.opennote.data.local.entity.NoteEntity
 import com.yangdai.opennote.presentation.component.dialog.AudioSelectionDialog
 import com.yangdai.opennote.presentation.component.dialog.ExportDialog
-import com.yangdai.opennote.presentation.component.dialog.FolderListDialog
 import com.yangdai.opennote.presentation.component.dialog.LinkDialog
 import com.yangdai.opennote.presentation.component.dialog.ListDialog
 import com.yangdai.opennote.presentation.component.dialog.ProgressDialog
@@ -129,60 +111,102 @@ import com.yangdai.opennote.presentation.component.note.NoteSideSheetItem
 import com.yangdai.opennote.presentation.component.note.ReadView
 import com.yangdai.opennote.presentation.component.note.StandardTextField
 import com.yangdai.opennote.presentation.component.note.TemplateFilesList
-import com.yangdai.opennote.presentation.component.note.moveCursorLeftStateless
-import com.yangdai.opennote.presentation.component.note.moveCursorRightStateless
 import com.yangdai.opennote.presentation.event.DatabaseEvent
-import com.yangdai.opennote.presentation.event.NoteEvent
-import com.yangdai.opennote.presentation.event.UiEvent
+import com.yangdai.opennote.presentation.event.FileEvent
 import com.yangdai.opennote.presentation.util.Constants
-import com.yangdai.opennote.presentation.util.SharedContent
 import com.yangdai.opennote.presentation.util.TemplateProcessor
 import com.yangdai.opennote.presentation.util.getOrCreateDirectory
-import com.yangdai.opennote.presentation.util.rememberDateTimeFormatter
-import com.yangdai.opennote.presentation.viewmodel.SharedViewModel
+import com.yangdai.opennote.presentation.viewmodel.FileViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import java.io.File
+import java.io.FileNotFoundException
+import java.io.FileOutputStream
+import java.io.IOException
 import kotlin.math.abs
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
-fun NoteScreen(
-    viewModel: SharedViewModel = hiltViewModel(LocalActivity.current as MainActivity),
-    noteId: Long,
+fun FileScreen(
+    viewModel: FileViewModel = hiltViewModel(),
+    uriStr: String,
     isLargeScreen: Boolean,
-    sharedContent: SharedContent?,
     navigateUp: () -> Unit
 ) {
     val noteState by viewModel.noteStateFlow.collectAsStateWithLifecycle()
-    val folderNoteCounts by viewModel.folderWithNoteCountsFlow.collectAsStateWithLifecycle()
     val html by viewModel.html.collectAsStateWithLifecycle()
     val outline by viewModel.outline.collectAsStateWithLifecycle()
     val noteTextDetails by viewModel.textState.collectAsStateWithLifecycle()
     val dataAction by viewModel.dataActionStateFlow.collectAsStateWithLifecycle()
     val appSettings by viewModel.settingsStateFlow.collectAsStateWithLifecycle()
 
+    val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
     // 确保屏幕旋转等配置变更时，不会重复加载笔记
-    var lastLoadedNoteId by rememberSaveable { mutableStateOf<Long?>(null) }
+    var lastLoadedUri by rememberSaveable { mutableStateOf<String?>(null) }
+    var oFileContent by rememberSaveable { mutableStateOf("") }
 
-    DisposableEffect(Unit) {
-        if (noteId != lastLoadedNoteId) {
-            lastLoadedNoteId = noteId
-            viewModel.onNoteEvent(NoteEvent.Load(noteId, sharedContent))
-        }
-        onDispose {
-            if (!viewModel.shouldShowSnackbar())
-                viewModel.onNoteEvent(NoteEvent.SaveOrUpdate)
+    LaunchedEffect(Unit) {
+        if (uriStr != lastLoadedUri) {
+            lastLoadedUri = uriStr
+            val uri = uriStr.toUri()
+            val appContext = context.applicationContext
+
+            withContext(Dispatchers.IO) {
+                val documentFile = DocumentFile.fromSingleUri(appContext, uri)
+                if (documentFile?.exists() == true && documentFile.canRead() && documentFile.canWrite()) {
+                    val fileName = documentFile.name.orEmpty()
+                    val fileContent = runCatching {
+                        appContext.contentResolver.openInputStream(uri)?.use { inputStream ->
+                            inputStream.bufferedReader().use { it.readText() }
+                        }.orEmpty()
+                    }.getOrElse { "" }
+                    withContext(Dispatchers.Main) {
+                        oFileContent = fileContent
+                        viewModel.titleState.setTextAndPlaceCursorAtEnd(fileName)
+                        viewModel.contentState.setTextAndPlaceCursorAtEnd(fileContent)
+                    }
+                } else {
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(appContext, "N/A", Toast.LENGTH_SHORT).show()
+                        navigateUp()
+                    }
+                }
+            }
         }
     }
 
-    val context = LocalContext.current
-    val coroutineScope = rememberCoroutineScope()
+    val needSave by remember {
+        derivedStateOf {
+            oFileContent != viewModel.contentState.text.toString()
+        }
+    }
+
+    fun saveChanges() {
+        if (!needSave) return
+        try {
+            val appCtx = context.applicationContext
+            val content = viewModel.contentState.text.toString()
+            val uri = uriStr.toUri()
+            coroutineScope.launch(Dispatchers.IO) {
+                appCtx.contentResolver.openFileDescriptor(uri, "rwt")?.use {
+                    FileOutputStream(it.fileDescriptor).use {
+                        it.write(content.toByteArray())
+                    }
+                }
+            }
+            oFileContent = content
+        } catch (e: FileNotFoundException) {
+            e.printStackTrace()
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
+    }
+
     val pagerState = rememberPagerState(pageCount = { 2 })
-    val isReadViewAtStart = appSettings.isDefaultViewForReading && noteId != -1L
-    var isReadView by rememberSaveable { mutableStateOf(isReadViewAtStart) }
+    var isReadView by rememberSaveable { mutableStateOf(false) }
     var isEditorAndPreviewSynced by rememberSaveable { mutableStateOf(false) }
     var isSearching by remember { mutableStateOf(false) }
     var selectedHeader by remember { mutableStateOf<IntRange?>(null) }
@@ -200,7 +224,6 @@ fun NoteScreen(
     }
 
     var isSideSheetOpen by rememberSaveable { mutableStateOf(false) }
-    var showFolderDialog by rememberSaveable { mutableStateOf(false) }
     var showListDialog by rememberSaveable { mutableStateOf(false) }
     var showTableDialog by rememberSaveable { mutableStateOf(false) }
     var showLinkDialog by rememberSaveable { mutableStateOf(false) }
@@ -211,22 +234,6 @@ fun NoteScreen(
     var showTemplateBottomSheet by remember { mutableStateOf(false) }
     val triggerPrint = remember { mutableStateOf(false) }
     val launchShareIntent = remember { mutableStateOf(false) }
-
-    // Folder name, default to "All Notes", or the name of the current folder the note is in
-    var folderName by rememberSaveable { mutableStateOf("") }
-    var timestamp by rememberSaveable { mutableStateOf("") }
-    val dateTimeFormatter = rememberDateTimeFormatter()
-
-    LaunchedEffect(noteState) {
-        withContext(Dispatchers.Default) {
-            folderName = noteState.folderId?.let { folderId ->
-                folderNoteCounts.firstOrNull { it.first.id == folderId }?.first?.name
-            } ?: context.getString(R.string.all_notes)
-            timestamp =
-                if (noteState.timestamp == null) dateTimeFormatter.format(System.currentTimeMillis())
-                else dateTimeFormatter.format(noteState.timestamp)
-        }
-    }
 
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current
@@ -246,12 +253,6 @@ fun NoteScreen(
         if (isReadView) {
             focusManager.clearFocus()
             isReadView = false
-        }
-    }
-
-    LaunchedEffect(true) {
-        viewModel.uiEventFlow.collect { event ->
-            if (event is UiEvent.NavigateBack) navigateUp()
         }
     }
 
@@ -275,18 +276,6 @@ fun NoteScreen(
         )
     }
 
-    val messageBar = remember { SnackbarHostState() }
-
-    BackHandler(viewModel.shouldShowSnackbar()) {
-        if (viewModel.shouldShowSnackbar())
-            coroutineScope.launch {
-                messageBar.showSnackbar(
-                    "",
-                    duration = SnackbarDuration.Short
-                )
-            }
-    }
-
     Scaffold(
         modifier = Modifier
             .imePadding()
@@ -304,6 +293,12 @@ fun NoteScreen(
                         }
                     } else {
                         when (keyEvent.key) {
+
+                            Key.S -> {
+                                saveChanges()
+                                true
+                            }
+
                             Key.P -> {
                                 isReadView = !isReadView
                                 true
@@ -329,33 +324,31 @@ fun NoteScreen(
         topBar = {
             TopAppBar(
                 title = {
-                    FilledTonalButton(
-                        modifier = Modifier.sizeIn(maxWidth = 160.dp),
-                        onClick = { showFolderDialog = true }
-                    ) {
-                        Text(
-                            text = folderName, maxLines = 1, modifier = Modifier.basicMarquee()
-                        )
-                    }
+                    Text(
+                        modifier = Modifier.basicMarquee(),
+                        text = viewModel.titleState.text.toString(),
+                        maxLines = 1
+                    )
                 },
                 navigationIcon = {
                     IconButtonWithTooltip(
                         imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
                         contentDescription = stringResource(id = R.string.navigate_back),
-                        shortCutDescription = "Esc"
-                    ) {
-                        if (viewModel.shouldShowSnackbar())
-                            coroutineScope.launch {
-                                messageBar.showSnackbar(
-                                    "",
-                                    duration = SnackbarDuration.Short
-                                )
-                            }
-                        else
-                            navigateUp()
-                    }
+                        shortCutDescription = "Esc",
+                        onClick = navigateUp
+                    )
                 },
                 actions = {
+
+                    IconButtonWithTooltip(
+                        enabled = needSave,
+                        imageVector = Icons.Outlined.Save,
+                        contentDescription = "Save Changes",
+                        shortCutDescription = "Ctrl + S"
+                    ) {
+                        saveChanges()
+                    }
+
                     if (!isReadView)
                         IconButtonWithTooltip(
                             imageVector = if (isSearching) Icons.Outlined.SearchOff
@@ -404,7 +397,7 @@ fun NoteScreen(
                 MarkdownEditorRow(
                     canRedo = viewModel.contentState.undoState.canRedo,
                     canUndo = viewModel.contentState.undoState.canUndo,
-                    onEdit = { viewModel.onNoteEvent(NoteEvent.Edit(it)) },
+                    onEdit = { viewModel.onFileEvent(FileEvent.Edit(it)) },
                     onTableButtonClick = { showTableDialog = true },
                     onListButtonClick = { showListDialog = true },
                     onTaskButtonClick = { showTaskDialog = true },
@@ -430,32 +423,6 @@ fun NoteScreen(
                         showTemplateBottomSheet = true
                     })
             }
-        },
-        snackbarHost = {
-            SnackbarHost(hostState = messageBar) {
-                Snackbar(
-                    content = { Text(stringResource(R.string.ask_save_note)) },
-                    action = {
-                        IconButton(onClick = {
-                            viewModel.onNoteEvent(NoteEvent.SaveOrUpdate)
-                            navigateUp()
-                        }) {
-                            Icon(
-                                Icons.Outlined.Save,
-                                contentDescription = "Save"
-                            )
-                        }
-                    },
-                    dismissAction = {
-                        IconButton(onClick = navigateUp) {
-                            Icon(
-                                Icons.AutoMirrored.Outlined.ExitToApp,
-                                contentDescription = "Exit"
-                            )
-                        }
-                    }
-                )
-            }
         }
     ) { paddingValues ->
         Column(
@@ -464,80 +431,16 @@ fun NoteScreen(
                 .padding(paddingValues)
         ) {
 
-            AnimatedContent(
+            AnimatedVisibility(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(bottom = 6.dp),
-                targetState = isSearching,
-                contentAlignment = Alignment.TopCenter
+                visible = isSearching
             ) {
-                if (it) FindAndReplaceField(
+                FindAndReplaceField(
                     isStandard = noteState.isStandard,
                     state = searchState,
                     onStateUpdate = { searchState = it })
-                else BasicTextField(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp)
-                        .onPreviewKeyEvent { keyEvent ->
-                            if (keyEvent.type == KeyEventType.KeyDown) {
-                                when (keyEvent.key) {
-                                    Key.DirectionLeft -> {
-                                        viewModel.titleState.edit { moveCursorLeftStateless() }
-                                        true
-                                    }
-
-                                    Key.DirectionRight -> {
-                                        viewModel.titleState.edit { moveCursorRightStateless() }
-                                        true
-                                    }
-
-                                    else -> false
-                                }
-                            } else {
-                                false
-                            }
-                        },
-                    state = viewModel.titleState,
-                    readOnly = isReadView,
-                    lineLimits = TextFieldLineLimits.SingleLine,
-                    textStyle = MaterialTheme.typography.headlineLarge.copy(
-                        color = MaterialTheme.colorScheme.onSurface,
-                        textAlign = when (appSettings.titleAlignment) {
-                            1 -> TextAlign.Center
-                            2 -> TextAlign.Right
-                            else -> TextAlign.Left
-                        }
-                    ),
-                    cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
-                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-                    decorator = { innerTextField ->
-                        TextFieldDefaults.DecorationBox(
-                            value = viewModel.titleState.text.toString(),
-                            innerTextField = innerTextField,
-                            enabled = true,
-                            singleLine = true,
-                            visualTransformation = VisualTransformation.None,
-                            interactionSource = remember { MutableInteractionSource() },
-                            placeholder = {
-                                Text(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    text = stringResource(id = R.string.title),
-                                    style = MaterialTheme.typography.headlineLarge.copy(
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                        textAlign = when (appSettings.titleAlignment) {
-                                            1 -> TextAlign.Center
-                                            2 -> TextAlign.Right
-                                            else -> TextAlign.Left
-                                        }
-                                    )
-                                )
-                            },
-                            contentPadding = PaddingValues(0.dp),
-                            container = {}
-                        )
-                    }
-                )
             }
 
             /*-------------------------------------------------*/
@@ -725,16 +628,7 @@ fun NoteScreen(
                 shortCutDescription = if (noteState.isStandard) stringResource(R.string.lite_mode)
                 else stringResource(R.string.standard_mode)
             ) {
-                viewModel.onNoteEvent(NoteEvent.SwitchType)
-            }
-
-            IconButtonWithTooltip(
-                imageVector = Icons.Outlined.Delete,
-                tint = MaterialTheme.colorScheme.onSurface,
-                contentDescription = stringResource(R.string.delete),
-                shortCutDescription = stringResource(R.string.delete)
-            ) {
-                viewModel.onNoteEvent(NoteEvent.Delete)
+                viewModel.onFileEvent(FileEvent.SwitchType)
             }
 
             IconButtonWithTooltip(
@@ -797,16 +691,6 @@ fun NoteScreen(
             }
         },
         drawerContent = {
-            NoteSideSheetItem(
-                key = "UUID",
-                value = noteState.id.toString(),
-                shouldFormat = false
-            )
-
-            NoteSideSheetItem(
-                key = stringResource(R.string.edited),
-                value = timestamp
-            )
 
             NoteSideSheetItem(
                 key = stringResource(R.string.mode),
@@ -845,8 +729,8 @@ fun NoteScreen(
             rootUri = appSettings.storagePath.toUri(),
             onDismiss = { showAudioDialog = false },
             onAudioSelected = {
-                viewModel.onNoteEvent(
-                    NoteEvent.Edit(
+                viewModel.onFileEvent(
+                    FileEvent.Edit(
                         Constants.Editor.TEXT, "<audio src=\"$it\" controls></audio>"
                     )
                 )
@@ -926,8 +810,8 @@ fun NoteScreen(
                     }.invokeOnCompletion {
                         if (!templateSheetState.isVisible) {
                             showTemplateBottomSheet = false
-                            viewModel.onNoteEvent(
-                                NoteEvent.Edit(
+                            viewModel.onFileEvent(
+                                FileEvent.Edit(
                                     Constants.Editor.TEXT, temple
                                 )
                             )
@@ -1018,14 +902,14 @@ fun NoteScreen(
 
     if (showTableDialog) {
         TableDialog(onDismissRequest = { showTableDialog = false }) { row, column ->
-            viewModel.onNoteEvent(NoteEvent.Edit(Constants.Editor.TABLE, "$row,$column"))
+            viewModel.onFileEvent(FileEvent.Edit(Constants.Editor.TABLE, "$row,$column"))
         }
     }
 
     if (showListDialog) {
         ListDialog(onDismissRequest = { showListDialog = false }) {
-            viewModel.onNoteEvent(
-                NoteEvent.Edit(
+            viewModel.onFileEvent(
+                FileEvent.Edit(
                     Constants.Editor.LIST, it.fastJoinToString(separator = "\n")
                 )
             )
@@ -1034,8 +918,8 @@ fun NoteScreen(
 
     if (showTaskDialog) {
         TaskDialog(onDismissRequest = { showTaskDialog = false }) {
-            viewModel.onNoteEvent(
-                NoteEvent.Edit(
+            viewModel.onFileEvent(
+                FileEvent.Edit(
                     Constants.Editor.TASK, Json.encodeToString<List<TaskItem>>(it)
                 )
             )
@@ -1045,17 +929,7 @@ fun NoteScreen(
     if (showLinkDialog) {
         LinkDialog(onDismissRequest = { showLinkDialog = false }) { linkName, linkUri ->
             val insertText = "[${linkName}](${linkUri})"
-            viewModel.onNoteEvent(NoteEvent.Edit(Constants.Editor.TEXT, insertText))
-        }
-    }
-
-    if (showFolderDialog) {
-        FolderListDialog(
-            hint = stringResource(R.string.destination_folder),
-            oFolderId = noteState.folderId,
-            folders = folderNoteCounts.map { it.first },
-            onDismissRequest = { showFolderDialog = false }) {
-            viewModel.onNoteEvent(NoteEvent.FolderChanged(it))
+            viewModel.onFileEvent(FileEvent.Edit(Constants.Editor.TEXT, insertText))
         }
     }
 

@@ -1,13 +1,19 @@
 package com.yangdai.opennote.presentation.screen
 
+import android.content.Intent
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.LocalActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
@@ -19,6 +25,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -47,14 +54,14 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.animateFloatingActionButton
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -76,6 +83,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.isTraversalGroup
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.traversalIndex
@@ -88,15 +96,17 @@ import com.yangdai.opennote.MainActivity
 import com.yangdai.opennote.R
 import com.yangdai.opennote.data.local.entity.FolderEntity
 import com.yangdai.opennote.data.local.entity.NoteEntity
+import com.yangdai.opennote.presentation.component.dialog.ActionType
+import com.yangdai.opennote.presentation.component.dialog.ExportDialog
+import com.yangdai.opennote.presentation.component.dialog.FolderListDialog
+import com.yangdai.opennote.presentation.component.dialog.FullscreenCreateOptionDialog
+import com.yangdai.opennote.presentation.component.dialog.OrderSectionDialog
+import com.yangdai.opennote.presentation.component.dialog.ProgressDialog
 import com.yangdai.opennote.presentation.component.main.AdaptiveNavigationScreen
 import com.yangdai.opennote.presentation.component.main.AdaptiveNoteCard
 import com.yangdai.opennote.presentation.component.main.AdaptiveTopSearchbar
 import com.yangdai.opennote.presentation.component.main.DrawerContent
 import com.yangdai.opennote.presentation.component.main.Timeline
-import com.yangdai.opennote.presentation.component.dialog.ExportDialog
-import com.yangdai.opennote.presentation.component.dialog.FolderListDialog
-import com.yangdai.opennote.presentation.component.dialog.OrderSectionDialog
-import com.yangdai.opennote.presentation.component.dialog.ProgressDialog
 import com.yangdai.opennote.presentation.event.DatabaseEvent
 import com.yangdai.opennote.presentation.event.ListEvent
 import com.yangdai.opennote.presentation.navigation.Screen
@@ -112,8 +122,8 @@ import kotlinx.coroutines.launch
 fun MainScreen(
     viewModel: SharedViewModel = hiltViewModel(LocalActivity.current as MainActivity),
     isLargeScreen: Boolean,
-    navigateToNote: (Long) -> Unit,
-    navigateToScreen: (Screen) -> Unit
+    navigateToScreen: (Screen) -> Unit,
+    handleIntent: (Intent) -> Unit
 ) {
 
     val mainScreenData by viewModel.mainScreenDataStateFlow.collectAsStateWithLifecycle()
@@ -188,6 +198,7 @@ fun MainScreen(
 
     var isMoveToFolderDialogVisible by remember { mutableStateOf(false) }
     var isExportNotesDialogVisible by remember { mutableStateOf(false) }
+    var isCreateOptionDialogVisible by remember { mutableStateOf(false) }
 
     AdaptiveNavigationScreen(
         isLargeScreen = isLargeScreen,
@@ -312,14 +323,12 @@ fun MainScreen(
                 }
 //                else {
 //                    AdaptiveSearchbar2 (
-//                        modifier = Modifier
-//                            .semantics { traversalIndex = 0f },
-//                        enabled = !isMultiSelectionModeEnabled,
+//                        enabled = !isMultiSelectEnabled,
 //                        isLargeScreen = isLargeScreen,
 //                        searchBarState = rememberSearchBarState(),
 //                        onDrawerStateChange = {
-//                            coroutineScope.launch {
-//                                drawerState.apply {
+//                            scope.launch {
+//                                navigationDrawerState.apply {
 //                                    if (isClosed) open() else close()
 //                                }
 //                            }
@@ -449,29 +458,50 @@ fun MainScreen(
                     label = "scale"
                 )
 
-                FloatingActionButton(
-                    modifier = Modifier
-                        .scale(scale)
-                        .animateFloatingActionButton(
-                            visible = isAddNoteFabVisible,
-                            alignment = Alignment.BottomEnd
-                        ),
-                    onClick = {
-                        hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
-                        viewModel.onListEvent(
-                            ListEvent.OpenOrCreateNote(
-                                null,
-                                currentFolder.id
-                            )
-                        )
-                        navigateToNote(-1)
-                    },
-                    interactionSource = interactionSource
+                AnimatedVisibility(
+                    visible = isAddNoteFabVisible,
+                    enter = fadeIn() + slideInHorizontally { it },
+                    exit = fadeOut() + slideOutHorizontally { it }
                 ) {
-                    Icon(imageVector = Icons.Outlined.Add, contentDescription = "Add")
+                    Surface(
+                        modifier = Modifier
+                            .scale(scale)
+                            .combinedClickable(
+                                interactionSource = interactionSource,
+                                indication = null,
+                                role = Role.Button,
+                                onClickLabel = "Create Note",
+                                onClick = {
+                                    hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
+                                    viewModel.onListEvent(
+                                        ListEvent.OpenOrCreateNote(
+                                            null,
+                                            currentFolder.id
+                                        )
+                                    )
+                                    navigateToScreen(Screen.Note(-1L))
+                                },
+                                onLongClickLabel = "Action Menu",
+                                onLongClick = {
+                                    isCreateOptionDialogVisible = true
+                                }
+                            ),
+                        shape = FloatingActionButtonDefaults.shape,
+                        color = FloatingActionButtonDefaults.containerColor,
+                        tonalElevation = 6.dp,
+                        shadowElevation = 6.dp,
+                    ) {
+                        Box(
+                            modifier = Modifier.defaultMinSize(56.dp, 56.dp),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            Icon(imageVector = Icons.Outlined.Add, contentDescription = "Add")
+                        }
+                    }
                 }
 
-            }) { innerPadding ->
+            }
+        ) { innerPadding ->
 
             // 确保不被遮挡
             val direction = LocalLayoutDirection.current
@@ -604,7 +634,7 @@ fun MainScreen(
                                                     null
                                                 )
                                             )
-                                            navigateToNote(it.id!!)
+                                            navigateToScreen(Screen.Note(it.id!!))
                                         } else {
                                             Unit
                                         }
@@ -615,56 +645,110 @@ fun MainScreen(
                     }
                 )
             }
+        }
 
-            if (mainScreenData.isOrderSectionVisible) {
-                OrderSectionDialog(
-                    noteOrder = mainScreenData.noteOrder,
-                    onOrderChange = {
-                        viewModel.onListEvent(
-                            ListEvent.Sort(
-                                noteOrder = it,
-                                trash = selectedNavDrawerIndex == 1,
-                                filterFolder = selectedNavDrawerIndex != 0 && selectedNavDrawerIndex != 1,
-                                folderId = currentFolder.id
-                            )
-                        )
-                    },
-                    onDismiss = { viewModel.onListEvent(ListEvent.ToggleOrderSection) }
-                )
-            }
-
-            if (isExportNotesDialogVisible) {
-                val context = LocalContext.current
-                ExportDialog(onDismissRequest = { isExportNotesDialogVisible = false }) {
-                    viewModel.onDatabaseEvent(
-                        DatabaseEvent.ExportFiles(
-                            context.applicationContext,
-                            selectedNotesSet.toList(),
-                            it
+        if (mainScreenData.isOrderSectionVisible) {
+            OrderSectionDialog(
+                noteOrder = mainScreenData.noteOrder,
+                onOrderChange = {
+                    viewModel.onListEvent(
+                        ListEvent.Sort(
+                            noteOrder = it,
+                            trash = selectedNavDrawerIndex == 1,
+                            filterFolder = selectedNavDrawerIndex != 0 && selectedNavDrawerIndex != 1,
+                            folderId = currentFolder.id
                         )
                     )
-                    isExportNotesDialogVisible = false
-                }
-            }
-
-            if (isMoveToFolderDialogVisible) {
-                FolderListDialog(
-                    hint = stringResource(R.string.destination_folder),
-                    oFolderId = currentFolder.id,
-                    folders = folderNoteCountsList.map { it.first },
-                    onDismissRequest = { isMoveToFolderDialogVisible = false }
-                ) {
-                    viewModel.onListEvent(ListEvent.MoveNotes(selectedNotesSet, it))
-                    initializeNoteSelection()
-                }
-            }
-
-            ProgressDialog(
-                isLoading = dataAction.loading,
-                progress = dataAction.progress,
-                message = dataAction.message,
-                onDismissRequest = viewModel::cancelDataAction
+                },
+                onDismiss = { viewModel.onListEvent(ListEvent.ToggleOrderSection) }
             )
+        }
+
+        val openDocumentLauncher = rememberLauncherForActivityResult(
+            ActivityResultContracts.OpenDocument()
+        ) { uri ->
+            uri?.let { documentUri ->
+                navigateToScreen(Screen.File(documentUri.toString()))
+            }
+        }
+
+        val createDocumentLauncher = rememberLauncherForActivityResult(
+            ActivityResultContracts.CreateDocument("text/*")
+        ) { uri ->
+            uri?.let { documentUri ->
+                navigateToScreen(Screen.File(documentUri.toString()))
+            }
+        }
+
+        if (isCreateOptionDialogVisible) {
+            FullscreenCreateOptionDialog(onDismiss = {
+                isCreateOptionDialogVisible = false
+            }) { type ->
+                when (type) {
+                    ActionType.CreateTextFile -> {
+                        isCreateOptionDialogVisible = false
+                        createDocumentLauncher.launch("untitled.md")
+                    }
+
+                    ActionType.EditTextFile -> {
+                        isCreateOptionDialogVisible = false
+                        openDocumentLauncher.launch(arrayOf("text/*"))
+                    }
+
+                    ActionType.CreateNote -> {
+                        isCreateOptionDialogVisible = false
+                        viewModel.onListEvent(
+                            ListEvent.OpenOrCreateNote(
+                                null,
+                                currentFolder.id
+                            )
+                        )
+                        navigateToScreen(Screen.Note(-1L))
+                    }
+                }
+            }
+        }
+
+        if (isExportNotesDialogVisible) {
+            val context = LocalContext.current
+            ExportDialog(onDismissRequest = { isExportNotesDialogVisible = false }) {
+                viewModel.onDatabaseEvent(
+                    DatabaseEvent.ExportFiles(
+                        context.applicationContext,
+                        selectedNotesSet.toList(),
+                        it
+                    )
+                )
+                isExportNotesDialogVisible = false
+            }
+        }
+
+        if (isMoveToFolderDialogVisible) {
+            FolderListDialog(
+                hint = stringResource(R.string.destination_folder),
+                oFolderId = currentFolder.id,
+                folders = folderNoteCountsList.map { it.first },
+                onDismissRequest = { isMoveToFolderDialogVisible = false }
+            ) {
+                viewModel.onListEvent(ListEvent.MoveNotes(selectedNotesSet, it))
+                initializeNoteSelection()
+            }
+        }
+
+        ProgressDialog(
+            isLoading = dataAction.loading,
+            progress = dataAction.progress,
+            message = dataAction.message,
+            onDismissRequest = viewModel::cancelDataAction
+        )
+    }
+
+    var receivedIntent by rememberSaveable { mutableStateOf(false) }
+    LaunchedEffect(Unit) {
+        if (!receivedIntent) {
+            val intent = viewModel.intent.value
+            if (intent != null) handleIntent(intent)
+            receivedIntent = true
         }
     }
 }

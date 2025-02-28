@@ -106,15 +106,13 @@ private fun NoteCardContent(
             }
         }
 
-        if (displayedNote.content.isNotEmpty()) {
-            Text(
-                text = displayedNote.content,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                overflow = contentTextOverflow,
-                maxLines = contentMaxLines
-            )
-        }
+        Text(
+            text = displayedNote.content,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            overflow = contentTextOverflow,
+            maxLines = contentMaxLines
+        )
     }
 }
 

@@ -30,17 +30,13 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.glance.appwidget.GlanceAppWidgetManager
 import com.yangdai.opennote.R
 import com.yangdai.opennote.presentation.component.TopBarTitle
-import com.yangdai.opennote.presentation.glance.NoteListWidgetReceiver
 import com.yangdai.opennote.presentation.screen.SettingsItem
-import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -69,21 +65,6 @@ fun SettingsListPane(
                 title = {
                     TopBarTitle(title = stringResource(id = R.string.settings))
                 },
-                actions = {
-                    val scope = rememberCoroutineScope()
-                    IconButton(onClick = {
-                        scope.launch {
-                            GlanceAppWidgetManager(context).requestPinGlanceAppWidget(
-                                NoteListWidgetReceiver::class.java
-                            )
-                        }
-                    }) {
-                        Icon(
-                            imageVector = Icons.Outlined.Widgets,
-                            contentDescription = "Widgets"
-                        )
-                    }
-                },
                 colors = TopAppBarDefaults.topAppBarColors()
                     .copy(
                         containerColor = MaterialTheme.colorScheme.surfaceContainer,
@@ -107,7 +88,7 @@ fun SettingsListPane(
                         navigateToDetail(SettingsItem(0, R.string.style))
                     },
                     headlineText = stringResource(R.string.style),
-                    supportingText = stringResource(R.string.dark_mode) + "  •  " + stringResource(R.string.color),
+                    supportingText = stringResource(R.string.dark_mode) + "  •  " + stringResource(R.string.color_platte),
                     leadingContent = {
                         Icon(
                             imageVector = Icons.Outlined.Palette,
@@ -259,6 +240,22 @@ fun SettingsListPane(
                     },
                     headlineText = stringResource(R.string.cloud),
                     supportingText = "WebDAV" + "  •  " + stringResource(R.string.sync)
+                )
+            }
+
+            SettingsSection {
+                SettingItem(
+                    modifier = Modifier.clickable {
+                        navigateToDetail(SettingsItem(8, R.string.widget))
+                    },
+                    leadingContent = {
+                        Icon(
+                            imageVector = Icons.Outlined.Widgets,
+                            contentDescription = "Widget"
+                        )
+                    },
+                    headlineText = stringResource(R.string.widget),
+                    supportingText = stringResource(R.string.font_size) + "  •  " + stringResource(R.string.color)
                 )
             }
 

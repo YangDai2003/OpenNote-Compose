@@ -38,6 +38,7 @@ import androidx.compose.material.icons.outlined.VideoFile
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.PlainTooltip
@@ -121,17 +122,19 @@ fun IconButtonWithTooltip(
     focusable = false,
     enableUserInput = true
 ) {
-    IconButton(onClick = onClick, enabled = enabled) {
+    IconButton(
+        onClick = onClick,
+        enabled = enabled,
+        colors = IconButtonDefaults.iconButtonColors().copy(contentColor = tint)
+    ) {
         if (imageVector != null) {
             Icon(
                 imageVector = imageVector,
-                tint = tint,
                 contentDescription = contentDescription
             )
         } else {
             Icon(
                 painter = painterResource(id = painter!!),
-                tint = tint,
                 contentDescription = contentDescription
             )
         }

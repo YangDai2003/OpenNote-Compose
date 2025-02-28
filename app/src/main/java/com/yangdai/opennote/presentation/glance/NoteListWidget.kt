@@ -6,6 +6,9 @@ import android.os.Build
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
@@ -31,6 +34,9 @@ import androidx.glance.appwidget.lazy.LazyColumn
 import androidx.glance.appwidget.lazy.items
 import androidx.glance.appwidget.provideContent
 import androidx.glance.background
+import androidx.glance.color.ColorProvider
+import androidx.glance.color.DynamicThemeColorProviders
+import androidx.glance.color.colorProviders
 import androidx.glance.layout.Alignment
 import androidx.glance.layout.Column
 import androidx.glance.layout.Row
@@ -49,6 +55,36 @@ import com.yangdai.opennote.data.local.entity.NoteEntity
 import com.yangdai.opennote.presentation.util.Constants
 import com.yangdai.opennote.presentation.util.Constants.LINK
 
+private val transparentColorProviders = colorProviders(
+    primary = ColorProvider(Color.Transparent, Color.Transparent),
+    onPrimary = DynamicThemeColorProviders.onPrimary,
+    primaryContainer = ColorProvider(Color.Transparent, Color.Transparent),
+    onPrimaryContainer = DynamicThemeColorProviders.onPrimaryContainer,
+    secondary = ColorProvider(Color.Transparent, Color.Transparent),
+    onSecondary = DynamicThemeColorProviders.onSecondary,
+    secondaryContainer = ColorProvider(Color.Transparent, Color.Transparent),
+    onSecondaryContainer = DynamicThemeColorProviders.onSecondaryContainer,
+    tertiary = ColorProvider(Color.Transparent, Color.Transparent),
+    onTertiary = DynamicThemeColorProviders.onTertiary,
+    tertiaryContainer = ColorProvider(Color.Transparent, Color.Transparent),
+    onTertiaryContainer = DynamicThemeColorProviders.onTertiaryContainer,
+    error = ColorProvider(Color.Transparent, Color.Transparent),
+    errorContainer = ColorProvider(Color.Transparent, Color.Transparent),
+    onError = DynamicThemeColorProviders.onError,
+    onErrorContainer = DynamicThemeColorProviders.onErrorContainer,
+    background = ColorProvider(Color.Transparent, Color.Transparent),
+    onBackground = DynamicThemeColorProviders.onBackground,
+    surface = ColorProvider(Color.Transparent, Color.Transparent),
+    onSurface = DynamicThemeColorProviders.onSurface,
+    surfaceVariant = ColorProvider(Color.Transparent, Color.Transparent),
+    onSurfaceVariant = DynamicThemeColorProviders.onSurfaceVariant,
+    outline = ColorProvider(Color.Transparent, Color.Transparent),
+    inverseOnSurface = ColorProvider(Color.Transparent, Color.Transparent),
+    inverseSurface = ColorProvider(Color.Transparent, Color.Transparent),
+    inversePrimary = ColorProvider(Color.Transparent, Color.Transparent),
+    widgetBackground = ColorProvider(Color.Transparent, Color.Transparent)
+)
+
 class NoteListWidget : GlanceAppWidget() {
 
     override val sizeMode = SizeMode.Exact
@@ -57,19 +93,61 @@ class NoteListWidget : GlanceAppWidget() {
 
         val database = AppModule.provideNoteDatabase(context.applicationContext)
         val noteRepository = AppModule.provideNoteRepository(database)
+        val widgetPreferences =
+            AppModule.provideWidgetDataStoreRepository(context.applicationContext)
 
         provideContent {
 
             val notes by noteRepository.getAllNotes().collectAsState(initial = emptyList())
+            val textLines by widgetPreferences.intFlow(Constants.Widget.WIDGET_TEXT_LINES)
+                .collectAsState(initial = 1)
+            val textSize by widgetPreferences.intFlow(Constants.Widget.WIDGET_TEXT_SIZE)
+                .collectAsState(initial = 1)
+            val backgroundColor by widgetPreferences.intFlow(Constants.Widget.WIDGET_BACKGROUND_COLOR)
+                .collectAsState(initial = 1)
 
-            GlanceTheme {
-                Content(notes.take(25))
+            GlanceTheme(
+                colors = if (backgroundColor == 1) GlanceTheme.colors else transparentColorProviders
+            ) {
+                Content(
+                    textLines = textLines,
+                    textSize = textSize,
+                    backgroundColor = backgroundColor,
+                    notes = notes.take(25)
+                )
             }
         }
     }
 
     @Composable
-    private fun Content(notes: List<NoteEntity> = emptyList()) {
+    private fun Content(
+        textLines: Int = 1,
+        textSize: Int = 1,
+        backgroundColor: Int = 1,
+        notes: List<NoteEntity> = emptyList()
+    ) {
+
+        val titleSize by remember(textSize) {
+            mutableStateOf(
+                when (textSize) {
+                    0 -> 14.sp
+                    1 -> 16.sp
+                    2 -> 18.sp
+                    else -> 16.sp
+                }
+            )
+        }
+
+        val contentSize by remember(textSize) {
+            mutableStateOf(
+                when (textSize) {
+                    0 -> 12.sp
+                    1 -> 14.sp
+                    2 -> 16.sp
+                    else -> 14.sp
+                }
+            )
+        }
 
         val size = LocalSize.current
 
@@ -94,21 +172,34 @@ class NoteListWidget : GlanceAppWidget() {
                         CircleIconButton(
                             imageProvider = ImageProvider(R.drawable.sync),
                             contentDescription = "Sync",
-                            backgroundColor = GlanceTheme.colors.widgetBackground,
+                            backgroundColor = if (backgroundColor == 1) GlanceTheme.colors.widgetBackground
+                            else null,
                             onClick = actionRunCallback<RefreshAction>()
                         )
                     }
 
                     Spacer(modifier = GlanceModifier.defaultWeight())
 
-                    SquareIconButton(
-                        modifier = GlanceModifier.size(48.dp),
-                        imageProvider = ImageProvider(R.drawable.add),
-                        contentDescription = "Add",
-                        onClick = actionRunCallback<NoteAction>(
-                            parameters = actionParametersOf(destinationKey to -1L)
+                    if (backgroundColor == 0)
+                        CircleIconButton(
+                            modifier = GlanceModifier.size(48.dp),
+                            imageProvider = ImageProvider(R.drawable.add),
+                            contentDescription = "Add",
+                            backgroundColor = null,
+                            contentColor = GlanceTheme.colors.onSurface,
+                            onClick = actionRunCallback<NoteAction>(
+                                parameters = actionParametersOf(destinationKey to -1L)
+                            )
                         )
-                    )
+                    else
+                        SquareIconButton(
+                            modifier = GlanceModifier.size(48.dp),
+                            imageProvider = ImageProvider(R.drawable.add),
+                            contentDescription = "Add",
+                            onClick = actionRunCallback<NoteAction>(
+                                parameters = actionParametersOf(destinationKey to -1L)
+                            )
+                        )
                 }
             },
             horizontalPadding = if (size.width > 250.dp) 16.dp else 4.dp
@@ -137,7 +228,7 @@ class NoteListWidget : GlanceAppWidget() {
                                 text = it.title,
                                 style = TextStyle(
                                     color = GlanceTheme.colors.onSurface,
-                                    fontSize = 14.sp
+                                    fontSize = titleSize
                                 ),
                                 maxLines = 1
                             )
@@ -146,9 +237,9 @@ class NoteListWidget : GlanceAppWidget() {
                                 text = it.content,
                                 style = TextStyle(
                                     color = GlanceTheme.colors.onSurfaceVariant,
-                                    fontSize = 12.sp
+                                    fontSize = contentSize
                                 ),
-                                maxLines = 2
+                                maxLines = textLines
                             )
                         }
                         Spacer(modifier = GlanceModifier.height(4.dp))
@@ -187,7 +278,6 @@ class NoteAction : ActionCallback {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or      // 在新任务中启动
                     Intent.FLAG_ACTIVITY_CLEAR_TASK       // 清除所有已存在的任务
             data = "$LINK/note/$noteId".toUri()
-            action = Intent.ACTION_VIEW
         }
         context.startActivity(intent)
     }
