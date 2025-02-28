@@ -57,7 +57,7 @@ OpenNote, tamamen Jetpack Compose kullanılarak geliştirilmiş modern bir Andro
 <img src="screenshots/Folders.png" width="15%" alt=""/>
 <img src="screenshots/Editor.png" width="15%" alt=""/>
 <img src="screenshots/ReadView.png" width="15%" alt=""/>
-<img src="screenshots/Setings.png" width="15%" alt=""/>
+<img src="screenshots/Settings.png" width="15%" alt=""/>
 <img src="screenshots/Widget.png" width="15%" alt=""/>
 <img src="screenshots/Screenshot_Math_Edit.png" width="15%" alt=""/>
 <img src="screenshots/Screenshot_Math_Preview.png" width="15%" alt=""/>
