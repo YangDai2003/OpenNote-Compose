@@ -82,23 +82,25 @@ various formats including TXT, MD (Markdown), and HTML.
 
 # Some Basic Markdown Syntax
 
-|    Element     |                 Syntax                 |
-|:--------------:|:--------------------------------------:|
-|    Heading     |   `# H1` <br/> `## H2`<br/> `### H3`   |
-|     Italic     |         `_italic_ or *italic*`         |
-|      Bold      |               `**bold**`               |
-|   Blockquote   |             `> Blockquote`             |
-|      Link      |   `[title](https://www.example.com)`   |
-|      Code      |              `` `code` ``              |
-|  Ordered List  | `1. List item 1`<br/> `2. List item 2` |
-| Unordered List |       `- Apple`<br/> `- Banana`        |
-|     Image      |       `![alt text](image.jpeg)`        |
+|    Element     |               Syntax               |
+|:--------------:|:----------------------------------:|
+|    Heading     | `# H1` <br/> `## H2`<br/> `### H3` |
+|     Italic     |       `_italic_ or *italic*`       |
+|      Bold      |       `**bold** or __bold__`       |
+|   Blockquote   |           `> Blockquote`           |
+|      Link      | `[title](https://www.example.com)` |
+|      Code      |            `` `code` ``            |
+|  Ordered List  | `1. List item 1 or 2) List item 2` |
+| Unordered List | `- Apple or + Banana or * Orange`  |
+|     Image      |     `![alt text](image.jpeg)`      |
 
 # Some Extended Markdown Syntax
 
 |    Element    |               Syntax               |
 |:-------------:|:----------------------------------:|
 | Strikethrough |        `~~Strikethrough~~`         |
+|   Underline   |          `++Underline++`           |
+|   Highlight   |           `==Marking==`            |
 |   Task List   | `- [x] Task 1`<br/> `- [ ] Task 2` |
 |  Heading ID   |      `# Heading {#custom-id}`      |
 

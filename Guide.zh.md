@@ -67,23 +67,25 @@ TXT、MD (Markdown) 和 HTML。
 
 # 一些基本的 Markdown 语法
 
-|  元素  |                   语法                   |
-|:----:|:--------------------------------------:|
-|  标题  |   `# H1` <br/> `## H2`<br/> `### H3`   |
-|  斜体  |         `_italic_ or *italic*`         |
-|  粗体  |               `**bold**`               |
-|  引用  |             `> Blockquote`             |
-|  链接  |   `[title](https://www.example.com)`   |
-| 行内代码 |              `` `code` ``              |
-| 有序列表 | `1. List item 1`<br/> `2. List item 2` |
-| 无序列表 |       `- Apple`<br/> `- Banana`        |
-|  图片  |       `![alt text](image.jpeg)`        |
+|  元素  |                 语法                 |
+|:----:|:----------------------------------:|
+|  标题  | `# H1` <br/> `## H2`<br/> `### H3` |
+|  斜体  |       `_italic_ 或者 *italic*`       |
+|  粗体  |       `**bold** 或者 __bold__`       |
+|  引用  |           `> Blockquote`           |
+|  链接  | `[title](https://www.example.com)` |
+| 行内代码 |            `` `code` ``            |
+| 有序列表 | `1. List item 1 或者 2) List item 2` |
+| 无序列表 | `- Apple 或者 + Banana 或者 * Orange`  |
+|  图片  |     `![alt text](image.jpeg)`      |
 
 # 一些扩展的 Markdown 语法
 
 |  元素   |                 语法                 |
 |:-----:|:----------------------------------:|
 |  删除线  |        `~~Strikethrough~~`         |
+|  下划线  |          `++Underline++`           |
+|  高亮   |           `==Marking==`            |
 | 任务列表  | `- [x] Task 1`<br/> `- [ ] Task 2` |
 | 标题 ID |      `# Heading {#custom-id}`      |
 
