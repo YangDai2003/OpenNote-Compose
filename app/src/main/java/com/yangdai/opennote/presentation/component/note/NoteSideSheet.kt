@@ -81,7 +81,6 @@ import kotlin.math.roundToInt
 @OptIn(ExperimentalMaterial3AdaptiveApi::class)
 @Composable
 fun NoteSideSheet(
-    modifier: Modifier = Modifier,
     isDrawerOpen: Boolean,
     onDismiss: () -> Unit,
     isLargeScreen: Boolean,
@@ -142,7 +141,7 @@ fun NoteSideSheet(
         }
     }
 
-    Box(modifier = modifier.fillMaxSize()) {
+    Box(Modifier.fillMaxSize()) {
 
         AnimatedVisibility(
             maskAlpha.value > 0f,

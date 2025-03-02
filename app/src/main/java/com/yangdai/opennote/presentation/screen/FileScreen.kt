@@ -159,10 +159,9 @@ fun FileScreen(
                 if (documentFile?.exists() == true && documentFile.canRead() && documentFile.canWrite()) {
                     val fileName = documentFile.name.orEmpty()
                     val fileContent = runCatching {
-                        appContext.contentResolver.openInputStream(uri)?.use { inputStream ->
-                            inputStream.bufferedReader().use { it.readText() }
-                        }.orEmpty()
-                    }.getOrElse { "" }
+                        appContext.contentResolver.openInputStream(uri)?.bufferedReader()
+                            ?.readText().orEmpty()
+                    }.getOrDefault("")
                     withContext(Dispatchers.Main) {
                         oFileContent = fileContent
                         viewModel.titleState.setTextAndPlaceCursorAtEnd(fileName)
@@ -614,7 +613,6 @@ fun FileScreen(
     }
 
     NoteSideSheet(
-        modifier = Modifier.fillMaxSize(),
         isDrawerOpen = isSideSheetOpen,
         onDismiss = { isSideSheetOpen = false },
         isLargeScreen = isLargeScreen,
@@ -743,9 +741,7 @@ fun FileScreen(
         ModalBottomSheet(
             modifier = Modifier.statusBarsPadding(),
             sheetGesturesEnabled = false,
-            onDismissRequest = {
-                showTemplateBottomSheet = false
-            },
+            onDismissRequest = { showTemplateBottomSheet = false },
             dragHandle = {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -770,7 +766,7 @@ fun FileScreen(
         ) {
             TemplateFilesList(
                 rootUri = appSettings.storagePath.toUri(), // 传入根URI
-                context = context.applicationContext, saveCurrentNoteAsTemplate = {
+                saveCurrentNoteAsTemplate = {
                     val noteName = if (viewModel.titleState.text.isBlank()) "Untitled"
                     else viewModel.titleState.text.toString()
                     val fileName = "$noteName.md"
@@ -800,7 +796,8 @@ fun FileScreen(
                             showTemplateBottomSheet = false
                         }
                     }
-                }, onFileSelected = { content ->
+                },
+                onFileSelected = { content ->
                     val temple = TemplateProcessor(
                         appSettings.dateFormatter, appSettings.timeFormatter
                     ).process(content)

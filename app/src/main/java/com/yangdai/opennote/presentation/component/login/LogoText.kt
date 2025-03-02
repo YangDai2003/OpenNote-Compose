@@ -20,25 +20,28 @@ import kotlinx.coroutines.delay
 @Composable
 fun LogoText() {
 
-    val animationDurationMillis = 2500
-    val animationDelayMillis = 5000L
+    val duration = 2500
+    val delay = 5000L
 
-    val animatable = remember { Animatable(-1f) }
+    val offsetAnimator = remember { Animatable(-1f) }
 
-    AnimatedGradientText(text = stringResource(id = R.string.app_name), offsetX = animatable.value)
+    AnimatedGradientText(
+        text = stringResource(id = R.string.app_name),
+        offsetX = offsetAnimator.value
+    )
 
     LaunchedEffect(Unit) {
         while (true) {
-            animatable.stop()
-            animatable.snapTo(-1f)
-            animatable.animateTo(
+            offsetAnimator.stop()
+            offsetAnimator.snapTo(-1f)
+            offsetAnimator.animateTo(
                 targetValue = 0f,
                 animationSpec = tween(
-                    durationMillis = animationDurationMillis,
+                    durationMillis = duration,
                     easing = CubicBezierEasing(0.3f, 0f, 0.4f, 1f),
                 )
             )
-            delay(animationDelayMillis)
+            delay(delay)
         }
     }
 }

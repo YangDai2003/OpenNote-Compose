@@ -79,8 +79,7 @@ fun AudioSelectionDialog(
                 )
             }
         },
-        confirmButton = {},
-        dismissButton = {}
+        confirmButton = {}
     )
 }
 

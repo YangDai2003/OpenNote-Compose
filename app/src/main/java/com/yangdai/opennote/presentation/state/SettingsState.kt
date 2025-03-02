@@ -28,7 +28,7 @@ data class SettingsState(
     val biometricAuthEnabled: Boolean = false,
     val enumOverflowStyle: ListNoteContentOverflowStyle = ListNoteContentOverflowStyle.ELLIPSIS,
     val enumContentSize: ListNoteContentSize = ListNoteContentSize.DEFAULT,
-    val isAutoSaveEnabled: Boolean = true,
+    val isAutoSaveEnabled: Boolean = false,
     val titleAlignment: Int = 0,
 )
 

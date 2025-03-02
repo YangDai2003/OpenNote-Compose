@@ -387,9 +387,8 @@ fun StandardTextField(
 
                                 // 处理空列表项
                                 if (selection.start == currentLineEnd &&
-                                    (trimmedLine == "- [ ]" || trimmedLine == "-" || trimmedLine.matches(
-                                        Regex("^\\d+\\.$")
-                                    ))
+                                    (trimmedLine == "- [ ]" || trimmedLine == "-" || trimmedLine == "*" || trimmedLine == "+"
+                                            || trimmedLine.matches(Regex("^\\d+\\.$")))
                                 ) {
                                     state.edit {
                                         delete(currentLineStart, currentLineEnd)
@@ -407,6 +406,8 @@ fun StandardTextField(
                                     }
 
                                     trimmedLine.startsWith("- ") -> "- " // 无序列表
+                                    trimmedLine.startsWith("* ") -> "* "
+                                    trimmedLine.startsWith("+ ") -> "+ "
                                     else -> ""
                                 }
 

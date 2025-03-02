@@ -32,7 +32,7 @@ fun RatingDialog(
     var rating by remember { mutableIntStateOf(0) }
 
     AlertDialog(
-        title = { Text(text = stringResource(id = R.string.rate_this_app)) },
+        title = { Text(text = stringResource(id = R.string.rate_this_app) + " 💖") },
         text = {
             Row(horizontalArrangement = Arrangement.SpaceEvenly) {
                 for (i in 1..5) {

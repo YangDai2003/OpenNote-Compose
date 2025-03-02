@@ -57,6 +57,8 @@ import com.yangdai.opennote.presentation.state.SettingsState
 import com.yangdai.opennote.presentation.state.TextState
 import com.yangdai.opennote.presentation.util.BackupManager
 import com.yangdai.opennote.presentation.util.Constants
+import com.yangdai.opennote.presentation.util.decryptBackupDataWithCompatibility
+import com.yangdai.opennote.presentation.util.encryptBackupData
 import com.yangdai.opennote.presentation.util.getFileName
 import com.yangdai.opennote.presentation.util.getOrCreateDirectory
 import com.yangdai.opennote.presentation.util.highlight.HighlightExtension
@@ -550,12 +552,14 @@ class SharedViewModel @Inject constructor(
                             ).toInt(), event.value.substringAfter(",", "1").toInt()
                         )
                     }
+
                     Constants.Editor.TASK -> {
                         val taskList = Json.decodeFromString<List<TaskItem>>(event.value)
                         taskList.forEach {
                             contentState.edit { addTask(it.task, it.checked) }
                         }
                     }
+
                     Constants.Editor.LIST -> contentState.edit { addInNewLine(event.value) }
                     Constants.Editor.TEXT -> contentState.edit { add(event.value) }
                 }
@@ -618,7 +622,7 @@ class SharedViewModel @Inject constructor(
                 || noteStateFlow.value.isStandard != _oNote.isMarkdown
                 || noteStateFlow.value.folderId != _oNote.folderId
         val isAutoSaveEnabled =
-            appDataStoreRepository.getBooleanValue(Constants.Preferences.IS_AUTO_SAVE_ENABLED, true)
+            appDataStoreRepository.getBooleanValue(Constants.Preferences.IS_AUTO_SAVE_ENABLED, false)
         val isNoteEmpty = contentState.text.isBlank() && titleState.text.isBlank()
         val isNewNote = noteStateFlow.value.id == null
         if (isAutoSaveEnabled) return false
@@ -848,8 +852,7 @@ class SharedViewModel @Inject constructor(
                         appDataStoreRepository.getStringValue(
                             Constants.Preferences.STORAGE_PATH,
                             ""
-                        )
-                            .toUri()
+                        ).toUri()
                     // 获取Open Note目录
                     val openNoteDir =
                         getOrCreateDirectory(context, rootUri, Constants.File.OPENNOTE)
@@ -862,9 +865,9 @@ class SharedViewModel @Inject constructor(
                         val folders = useCases.getFolders().first()
                         val backupData = BackupData(notes, folders)
                         val json = Json.encodeToString(backupData)
-                        _dataActionState.update {
-                            it.copy(progress = 0.5f)
-                        }
+                        _dataActionState.update { it.copy(progress = 0.4f) }
+                        val encryptedJson = encryptBackupData(json)
+                        _dataActionState.update { it.copy(progress = 0.6f) }
                         try {
                             val fileName = "${System.currentTimeMillis()}.json"
                             val file = dir.createFile("application/json", fileName)
@@ -873,7 +876,7 @@ class SharedViewModel @Inject constructor(
                                 context.contentResolver.openOutputStream(docFile.uri)
                                     ?.use { outputStream ->
                                         OutputStreamWriter(outputStream).use { writer ->
-                                            writer.write(json)
+                                            writer.write(encryptedJson)
                                         }
                                     }
                             }
@@ -894,16 +897,14 @@ class SharedViewModel @Inject constructor(
 
                 startDataAction()
                 _dataActionState.update { it.copy(progress = 0.2f) }
-
                 dataActionJob = viewModelScope.launch(Dispatchers.IO) {
 
-                    val json = contentResolver.openInputStream(uri)?.bufferedReader()
-                        .use { it?.readText() }
-
+                    val encryptedOrPlainJson =
+                        contentResolver.openInputStream(uri)?.bufferedReader()?.readText().orEmpty()
                     _dataActionState.update { it.copy(progress = 0.4f) }
-
                     runCatching {
-                        val backupData = Json.decodeFromString<BackupData>(json.orEmpty())
+                        val json = decryptBackupDataWithCompatibility(encryptedOrPlainJson)
+                        val backupData = Json.decodeFromString<BackupData>(json)
                         _dataActionState.update { it.copy(progress = 0.6f) }
                         backupData.folders.forEach { folderEntity ->
                             useCases.addFolder(folderEntity)
@@ -911,21 +912,9 @@ class SharedViewModel @Inject constructor(
                         backupData.notes.forEach { noteEntity ->
                             useCases.addNote(noteEntity)
                         }
-                    }.onFailure {
-                        // 兼容旧版本
-                        runCatching {
-                            val notes = Json.decodeFromString<List<NoteEntity>>(json.orEmpty())
-                            notes.forEachIndexed { _, noteEntity ->
-                                useCases.addNote(noteEntity)
-                            }
-                        }.onFailure { throwable ->
-                            _dataActionState.update {
-                                it.copy(
-                                    message = "Failed to decode backup data: ${throwable.localizedMessage ?: "error"}"
-                                )
-                            }
-                        }.onSuccess {
-                            _dataActionState.update { it.copy(progress = 1f) }
+                    }.onFailure { throwable ->
+                        _dataActionState.update {
+                            it.copy(message = "Recovery failed: ${throwable.localizedMessage ?: "Unknown error"}")
                         }
                     }.onSuccess {
                         _dataActionState.update { it.copy(progress = 1f) }

@@ -397,39 +397,40 @@ fun NoteScreen(
             )
         },
         bottomBar = {
-            if (noteState.isStandard) AnimatedVisibility(
-                visible = !isReadView,
-                enter = slideInVertically { fullHeight -> fullHeight },
-                exit = slideOutVertically { fullHeight -> fullHeight }) {
-                MarkdownEditorRow(
-                    canRedo = viewModel.contentState.undoState.canRedo,
-                    canUndo = viewModel.contentState.undoState.canUndo,
-                    onEdit = { viewModel.onNoteEvent(NoteEvent.Edit(it)) },
-                    onTableButtonClick = { showTableDialog = true },
-                    onListButtonClick = { showListDialog = true },
-                    onTaskButtonClick = { showTaskDialog = true },
-                    onLinkButtonClick = { showLinkDialog = true },
-                    onImageButtonClick = {
-                        photoPicker.launch(
-                            PickVisualMediaRequest(
-                                ActivityResultContracts.PickVisualMedia.ImageOnly
+            if (noteState.isStandard)
+                AnimatedVisibility(
+                    visible = !isReadView,
+                    enter = slideInVertically { fullHeight -> fullHeight },
+                    exit = slideOutVertically { fullHeight -> fullHeight }) {
+                    MarkdownEditorRow(
+                        canRedo = viewModel.contentState.undoState.canRedo,
+                        canUndo = viewModel.contentState.undoState.canUndo,
+                        onEdit = { viewModel.onNoteEvent(NoteEvent.Edit(it)) },
+                        onTableButtonClick = { showTableDialog = true },
+                        onListButtonClick = { showListDialog = true },
+                        onTaskButtonClick = { showTaskDialog = true },
+                        onLinkButtonClick = { showLinkDialog = true },
+                        onImageButtonClick = {
+                            photoPicker.launch(
+                                PickVisualMediaRequest(
+                                    ActivityResultContracts.PickVisualMedia.ImageOnly
+                                )
                             )
-                        )
-                    },
-                    onAudioButtonClick = {
-                        showAudioDialog = true
-                    },
-                    onVideoButtonClick = {
-                        videoPicker.launch(
-                            PickVisualMediaRequest(
-                                ActivityResultContracts.PickVisualMedia.VideoOnly
+                        },
+                        onAudioButtonClick = {
+                            showAudioDialog = true
+                        },
+                        onVideoButtonClick = {
+                            videoPicker.launch(
+                                PickVisualMediaRequest(
+                                    ActivityResultContracts.PickVisualMedia.VideoOnly
+                                )
                             )
-                        )
-                    },
-                    onTemplateClick = {
-                        showTemplateBottomSheet = true
-                    })
-            }
+                        },
+                        onTemplateClick = {
+                            showTemplateBottomSheet = true
+                        })
+                }
         },
         snackbarHost = {
             SnackbarHost(hostState = messageBar) {
@@ -711,7 +712,6 @@ fun NoteScreen(
     }
 
     NoteSideSheet(
-        modifier = Modifier.fillMaxSize(),
         isDrawerOpen = isSideSheetOpen,
         onDismiss = { isSideSheetOpen = false },
         isLargeScreen = isLargeScreen,
@@ -859,9 +859,7 @@ fun NoteScreen(
         ModalBottomSheet(
             modifier = Modifier.statusBarsPadding(),
             sheetGesturesEnabled = false,
-            onDismissRequest = {
-                showTemplateBottomSheet = false
-            },
+            onDismissRequest = { showTemplateBottomSheet = false },
             dragHandle = {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -886,7 +884,7 @@ fun NoteScreen(
         ) {
             TemplateFilesList(
                 rootUri = appSettings.storagePath.toUri(), // 传入根URI
-                context = context.applicationContext, saveCurrentNoteAsTemplate = {
+                saveCurrentNoteAsTemplate = {
                     val noteName = if (viewModel.titleState.text.isBlank()) "Untitled"
                     else viewModel.titleState.text.toString()
                     val fileName = "$noteName.md"
@@ -916,7 +914,8 @@ fun NoteScreen(
                             showTemplateBottomSheet = false
                         }
                     }
-                }, onFileSelected = { content ->
+                },
+                onFileSelected = { content ->
                     val temple = TemplateProcessor(
                         appSettings.dateFormatter, appSettings.timeFormatter
                     ).process(content)

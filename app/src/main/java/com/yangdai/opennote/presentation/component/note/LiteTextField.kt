@@ -40,6 +40,7 @@ import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextLayoutResult
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
@@ -241,6 +242,84 @@ fun LiteTextField(
 
                                 Key.DirectionDown -> {
                                     textFieldValue = textFieldValue.moveCursorDown()
+                                    true
+                                }
+
+                                Key.Enter, Key.NumPadEnter -> {
+                                    val currentText = textFieldValue.text
+                                    val selection = textFieldValue.selection
+
+                                    val currentLineStart = currentText.lastIndexOf(
+                                        '\n',
+                                        (selection.start - 1).coerceIn(0, currentText.length)
+                                    ).let {
+                                        if (it == -1) 0 else it + 1
+                                    }
+
+                                    val currentLineEnd =
+                                        currentText.indexOf('\n', selection.start).let {
+                                            if (it == -1) currentText.length else it
+                                        }
+
+                                    if (currentLineStart >= currentLineEnd) {
+                                        applyChange(textFieldValue.add("\n"))
+                                        return@onPreviewKeyEvent true
+                                    }
+
+                                    val currentLine =
+                                        currentText.substring(currentLineStart, currentLineEnd)
+                                    val trimmedLine = currentLine.trim()
+
+                                    val indentation = currentLine.takeWhile { it.isWhitespace() }
+
+                                    if (selection.start == currentLineEnd &&
+                                        (trimmedLine == "- [ ]" || trimmedLine == "-" || trimmedLine == "*" || trimmedLine == "+"
+                                                || trimmedLine.matches(Regex("^\\d+\\.$")))
+                                    ) {
+                                        val newText = StringBuilder(currentText)
+                                            .delete(currentLineStart, currentLineEnd)
+                                            .toString()
+
+                                        applyChange(
+                                            textFieldValue.copy(
+                                                text = newText,
+                                                selection = TextRange(currentLineStart)
+                                            )
+                                        )
+                                        return@onPreviewKeyEvent true
+                                    }
+
+                                    val newLinePrefix = when {
+                                        trimmedLine.startsWith("- [ ] ") || trimmedLine.startsWith("- [x] ") -> "- [ ] "
+                                        trimmedLine.matches(Regex("^\\d+\\.\\s.*")) -> {
+                                            val nextNumber =
+                                                trimmedLine.substringBefore(".").toIntOrNull()
+                                                    ?.plus(1) ?: 1
+                                            "$nextNumber. "
+                                        }
+
+                                        trimmedLine.startsWith("- ") -> "- "
+                                        trimmedLine.startsWith("* ") -> "* "
+                                        trimmedLine.startsWith("+ ") -> "+ "
+                                        else -> ""
+                                    }
+
+                                    val newText = StringBuilder(currentText)
+                                        .insert(
+                                            selection.start,
+                                            "\n" + (if (newLinePrefix.isNotEmpty()) indentation + newLinePrefix else "")
+                                        )
+                                        .toString()
+
+                                    val newCursorPosition = selection.start + 1 +
+                                            (if (newLinePrefix.isNotEmpty()) indentation.length + newLinePrefix.length else 0)
+
+                                    applyChange(
+                                        textFieldValue.copy(
+                                            text = newText,
+                                            selection = TextRange(newCursorPosition)
+                                        )
+                                    )
                                     true
                                 }
 

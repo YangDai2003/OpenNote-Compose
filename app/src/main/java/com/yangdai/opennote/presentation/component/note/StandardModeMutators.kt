@@ -75,6 +75,7 @@ fun TextFieldBuffer.moveCursorRightStateless() {
 
 class CursorState {
     var preferredRelativeX: Int? = null
+
     // 优化 4: 添加行信息缓存
     val linesCache = TextLinesCache()
 }
@@ -215,10 +216,10 @@ fun TextFieldBuffer.tab() {
 
     val initialSelection = selection
 
-    replace(lineStart, lineStart, "\t")
+    replace(lineStart, lineStart, "    ") // 4 spaces
     selection = TextRange(
-        initialSelection.min + "\t".length,
-        initialSelection.max + "\t".length
+        initialSelection.min + 4,
+        initialSelection.max + 4
     )
 }
 
@@ -230,15 +231,14 @@ fun TextFieldBuffer.unTab() {
         ?.let { it + 1 }
         ?: 0
 
-    val tabIndex = text.indexOf('\t', lineStart)
+    val tabIndex = text.indexOf("    ", lineStart)
     val initialSelection = selection
 
     if (tabIndex != -1 && tabIndex < selection.min) {
-        replace(tabIndex, tabIndex + 1, "")
-        val tabLength = 1
+        replace(tabIndex, tabIndex + 4, "")
         selection = TextRange(
-            initialSelection.min - tabLength,
-            initialSelection.max - tabLength
+            initialSelection.min - 4,
+            initialSelection.max - 4
         )
     }
 }

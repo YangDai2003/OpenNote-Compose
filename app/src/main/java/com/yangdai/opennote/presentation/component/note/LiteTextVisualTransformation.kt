@@ -23,6 +23,8 @@ import com.yangdai.opennote.presentation.util.highlight.Highlight
 import com.yangdai.opennote.presentation.util.highlight.HighlightExtension
 import org.commonmark.ext.gfm.strikethrough.Strikethrough
 import org.commonmark.ext.gfm.strikethrough.StrikethroughExtension
+import org.commonmark.ext.gfm.tables.TableRow
+import org.commonmark.ext.gfm.tables.TablesExtension
 import org.commonmark.ext.ins.Ins
 import org.commonmark.ext.ins.InsExtension
 import org.commonmark.node.AbstractVisitor
@@ -30,10 +32,16 @@ import org.commonmark.node.BulletList
 import org.commonmark.node.Code
 import org.commonmark.node.CustomNode
 import org.commonmark.node.Emphasis
+import org.commonmark.node.FencedCodeBlock
 import org.commonmark.node.Heading
+import org.commonmark.node.Image
+import org.commonmark.node.IndentedCodeBlock
 import org.commonmark.node.Link
+import org.commonmark.node.ListItem
 import org.commonmark.node.OrderedList
+import org.commonmark.node.Paragraph
 import org.commonmark.node.StrongEmphasis
+import org.commonmark.node.Text
 import org.commonmark.parser.IncludeSourceSpans
 import org.commonmark.parser.Parser
 
@@ -51,16 +59,18 @@ class LiteTextVisualTransformation(
         val highlightRanges: List<IntRange>,
         val headerRanges: List<Pair<IntRange, Int>>,
         val searchWordRanges: List<IntRange>,
-        val bulletListMarkerRanges: List<IntRange>,
-        val orderedListMarkerRanges: List<IntRange>,
-        val linkRanges: List<IntRange>
+        val markerRanges: List<IntRange>,
+        val linkRanges: List<IntRange>,
+        val fencedCodeBlockInfoRanges: List<IntRange>,
+        val codeBlockContentRanges: List<IntRange>
     ) {
         companion object {
             val EMPTY = StyleRanges(
                 emptyList(), emptyList(), emptyList(),
                 emptyList(), emptyList(), emptyList(),
                 emptyList(), emptyList(), emptyList(),
-                emptyList(), emptyList(), emptyList()
+                emptyList(), emptyList(), emptyList(),
+                emptyList()
             )
         }
     }
@@ -70,7 +80,8 @@ class LiteTextVisualTransformation(
             listOf(
                 StrikethroughExtension.create(),
                 InsExtension.create(),
-                HighlightExtension.create()
+                HighlightExtension.create(),
+                TablesExtension.create()
             )
         ).includeSourceSpans(IncludeSourceSpans.BLOCKS_AND_INLINES).build()
 
@@ -103,14 +114,14 @@ class LiteTextVisualTransformation(
         val underlineRanges = mutableListOf<IntRange>()
         val highlightRanges = mutableListOf<IntRange>()
         val headerRanges = mutableListOf<Pair<IntRange, Int>>()
-        val bulletListMarkerRanges = mutableListOf<IntRange>()
-        val orderedListMarkerRanges = mutableListOf<IntRange>()
+        val markerRanges = mutableListOf<IntRange>()
         val linkRanges = mutableListOf<IntRange>()
+        val fencedCodeBlockInfoRanges = mutableListOf<IntRange>()
+        val codeBlockContentRanges = mutableListOf<IntRange>()
 
         // 遍历节点
         document.accept(object : AbstractVisitor() {
             override fun visit(code: Code) {
-                // 使用sourceSpans获取准确位置
                 val span = code.sourceSpans.first()
                 codeRanges.add(span.inputIndex until (span.inputIndex + span.length))
             }
@@ -143,19 +154,41 @@ class LiteTextVisualTransformation(
                 }
             }
 
+            override fun visit(listItem: ListItem) {
+                val child = listItem.firstChild
+                val markerIndent = listItem.markerIndent ?: 0
+                if (child is Paragraph) {
+                    val node = child.firstChild
+                    if (node is Text) {
+                        val textNode = node
+                        val span = listItem.sourceSpans.firstOrNull()
+                        if (span != null) {
+                            val literal = textNode.literal
+                            val markerStart = span.inputIndex
+                            markerRanges.add(markerStart until (markerStart + markerIndent + 1))
+                            val matchResult = REGEX_TASK_LIST_ITEM.find(literal)
+                            if (matchResult != null) {
+                                val markerLength = 3 // Length of [x] or [ ]
+
+                                // Add the task list marker range to markerRanges
+                                markerRanges.add(markerStart + markerIndent + 2 until (markerStart + markerIndent + 2 + markerLength))
+                            }
+                        }
+                    }
+                }
+                visitChildren(listItem)
+            }
+
             override fun visit(bulletList: BulletList) {
-                // Get all list items under the bullet list
                 var item = bulletList.firstChild
                 while (item != null) {
                     val span = item.sourceSpans.firstOrNull()
                     if (span != null) {
-                        // The marker is at the beginning of the list item
-                        // Extract marker length (typically 1 character + whitespace)
+                        // The marker is at the beginning of the list item,  -, * or +
                         val marker = bulletList.marker ?: "*"
-                        val markerLength = marker.length + 1 // +1 for space after marker
-
-                        // Add range for just the marker part
-                        bulletListMarkerRanges.add(span.inputIndex until (span.inputIndex + markerLength))
+                        val markerLength = marker.length
+                        // Add the bullet marker range
+                        markerRanges.add(span.inputIndex until (span.inputIndex + markerLength))
                     }
                     item = item.next
                 }
@@ -163,21 +196,23 @@ class LiteTextVisualTransformation(
             }
 
             override fun visit(orderedList: OrderedList) {
-                // Get all list items under the ordered list
                 var item = orderedList.firstChild
-                var itemNumber = orderedList.markerStartNumber ?: 1
 
                 while (item != null) {
                     val span = item.sourceSpans.firstOrNull()
                     if (span != null) {
-                        // Calculate marker text (e.g., "1." or "2)")
-                        val delimiter = orderedList.markerDelimiter ?: "."
-                        val markerText = "$itemNumber$delimiter"
-                        val markerLength = markerText.length + 1 // +1 for space after marker
+                        // Extract the text from the source span
+                        val itemText =
+                            textString.substring(span.inputIndex, span.inputIndex + span.length)
 
-                        // Add range for just the marker part
-                        orderedListMarkerRanges.add(span.inputIndex until (span.inputIndex + markerLength))
-                        itemNumber++
+                        // Find the delimiter in the text
+                        val delimiter = orderedList.markerDelimiter ?: "."
+                        val delimiterIndex = itemText.indexOf(delimiter)
+
+                        if (delimiterIndex > 0) {
+                            // Add range for just the marker part
+                            markerRanges.add(span.inputIndex until (span.inputIndex + delimiterIndex + 1))
+                        }
                     }
                     item = item.next
                 }
@@ -192,6 +227,16 @@ class LiteTextVisualTransformation(
                     linkRanges.add(span.inputIndex until (span.inputIndex + span.length))
                 }
                 visitChildren(link)
+            }
+
+            override fun visit(image: Image) {
+                val span = image.sourceSpans.firstOrNull()
+                if (span != null) {
+                    // The entire image including alt text and URL needs to be styled
+                    // Format is ![alt text](url)
+                    linkRanges.add(span.inputIndex until (span.inputIndex + span.length))
+                }
+                visitChildren(image)
             }
 
             override fun visit(customNode: CustomNode) {
@@ -210,6 +255,26 @@ class LiteTextVisualTransformation(
                         val span = customNode.sourceSpans.first()
                         highlightRanges.add(span.inputIndex until (span.inputIndex + span.length))
                     }
+
+                    is TableRow -> {
+                        val span = customNode.sourceSpans.firstOrNull()
+                        if (span != null) {
+                            // Get the row's text
+                            val rowText =
+                                textString.substring(span.inputIndex, span.inputIndex + span.length)
+
+                            // Find all | characters in the row
+                            var charIndex = 0
+                            while (charIndex < rowText.length) {
+                                val pipeIndex = rowText.indexOf('|', charIndex)
+                                if (pipeIndex == -1) break
+
+                                // Add the | separator to marker ranges
+                                markerRanges.add((span.inputIndex + pipeIndex) until (span.inputIndex + pipeIndex + 1))
+                                charIndex = pipeIndex + 1
+                            }
+                        }
+                    }
                 }
                 visitChildren(customNode)
             }
@@ -221,6 +286,37 @@ class LiteTextVisualTransformation(
                     headerRanges.add(range to heading.level)
                 }
                 visitChildren(heading)
+            }
+
+            override fun visit(fencedCodeBlock: FencedCodeBlock) {
+                val span = fencedCodeBlock.sourceSpans.firstOrNull()
+                if (span != null) {
+                    // Get the opening fence marker (```language)
+                    val openingFence = span.inputIndex
+                    val infoString = fencedCodeBlock.info?.length ?: 0
+                    val openingMarkerLength = fencedCodeBlock.openingFenceLength ?: return
+
+                    markerRanges.add(openingFence until (openingFence + openingMarkerLength)) // ```
+                    fencedCodeBlockInfoRanges.add(openingFence + openingMarkerLength until (openingFence + openingMarkerLength + infoString)) // language
+
+                    val content = fencedCodeBlock.literal ?: ""
+                    val fence =
+                        openingFence + openingMarkerLength + infoString + content.length + 1 // +1 for \n after info string
+                    codeBlockContentRanges.add((openingFence + openingMarkerLength + infoString) until fence) // content
+
+                    val closingMarkerLength = fencedCodeBlock.closingFenceLength ?: return
+                    if (fence + closingMarkerLength <= textString.length) {
+                        markerRanges.add(fence until (fence + closingMarkerLength))
+                    }
+                }
+            }
+
+            override fun visit(indentedCodeBlock: IndentedCodeBlock) {
+                val span = indentedCodeBlock.sourceSpans.firstOrNull()
+                if (span != null) {
+                    val range = span.inputIndex until (span.inputIndex + span.length)
+                    codeBlockContentRanges.add(range)
+                }
             }
         })
 
@@ -236,9 +332,10 @@ class LiteTextVisualTransformation(
             highlightRanges,
             headerRanges,
             searchWordRanges,
-            bulletListMarkerRanges,
-            orderedListMarkerRanges,
-            linkRanges
+            markerRanges,
+            linkRanges,
+            fencedCodeBlockInfoRanges,
+            codeBlockContentRanges
         )
     }
 
@@ -250,11 +347,7 @@ class LiteTextVisualTransformation(
         ranges.boldRanges.forEach { range -> addStyle(BOLD_STYLE, range.first, range.last + 1) }
         ranges.italicRanges.forEach { range -> addStyle(ITALIC_STYLE, range.first, range.last + 1) }
         ranges.highlightRanges.forEach { range ->
-            addStyle(
-                HIGHLIGHT_STYLE,
-                range.first,
-                range.last + 1
-            )
+            addStyle(HIGHLIGHT_STYLE, range.first, range.last + 1)
         }
 
         val combinedRanges = (ranges.strikethroughRanges + ranges.underlineRanges).distinct()
@@ -276,16 +369,17 @@ class LiteTextVisualTransformation(
         }
 
         // Add styling for list markers
-        ranges.bulletListMarkerRanges.forEach { range ->
-            addStyle(LIST_MARKER_STYLE, range.first, range.last + 1)
+        ranges.markerRanges.forEach { range ->
+            addStyle(MARKER_STYLE, range.first, range.last + 1)
         }
-
-        ranges.orderedListMarkerRanges.forEach { range ->
-            addStyle(LIST_MARKER_STYLE, range.first, range.last + 1)
-        }
-
         ranges.linkRanges.forEach { range ->
             addStyle(LINK_STYLE, range.first, range.last + 1)
+        }
+        ranges.fencedCodeBlockInfoRanges.forEach { range ->
+            addStyle(KEYWORD_STYLE, range.first, range.last + 1)
+        }
+        ranges.codeBlockContentRanges.forEach { range ->
+            addStyle(CODE_BLOCK_STYLE, range.first, range.last + 1)
         }
     }
 
@@ -385,6 +479,7 @@ class LiteTextVisualTransformation(
     }
 
     companion object {
+        private val REGEX_TASK_LIST_ITEM = "^\\[([xX\\s])]\\s+(.*)".toRegex()
         private val SYMBOL_STYLE = SpanStyle(
             fontWeight = FontWeight.Thin,
             fontStyle = FontStyle.Normal,
@@ -415,8 +510,10 @@ class LiteTextVisualTransformation(
         private val CODE_STYLE = SpanStyle(
             fontFamily = FontFamily.Monospace, background = Color.LightGray.copy(alpha = 0.3f)
         )
+        private val CODE_BLOCK_STYLE = SpanStyle(fontFamily = FontFamily.Monospace)
         private val SEARCH_WORD_STYLE = SpanStyle(background = Color.Cyan.copy(alpha = 0.5f))
-        private val LIST_MARKER_STYLE = SpanStyle(color = Color(0xFFFF9800))
+        private val MARKER_STYLE = SpanStyle(color = Color(0xFFCE8D6E))
+        private val KEYWORD_STYLE = SpanStyle(color = Color(0xFFC67CBA))
         private val LINK_STYLE =
             SpanStyle(color = linkColor, textDecoration = TextDecoration.Underline)
 

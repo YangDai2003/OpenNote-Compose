@@ -48,7 +48,8 @@ fun TextFieldValue.moveCursorDown(): TextFieldValue {
         nextLineEnd - (nextLineStart + 1)
     }
 
-    val offsetInCurrentLine = selection.min - if (currentLineStart == -1) 0 else currentLineStart + 1
+    val offsetInCurrentLine =
+        selection.min - if (currentLineStart == -1) 0 else currentLineStart + 1
     val offsetInNextLine = offsetInCurrentLine.coerceAtMost(nextLineLength)
 
     return copy(
@@ -114,12 +115,12 @@ fun TextFieldValue.tab(): TextFieldValue {
 
     val initialSelection = selection
 
-    val newText = text.replaceRange(lineStart, lineStart, "\t")
+    val newText = text.replaceRange(lineStart, lineStart, "    ") // 4 spaces
     return TextFieldValue(
         text = newText,
         selection = TextRange(
-            initialSelection.min + "\t".length,
-            initialSelection.max + "\t".length
+            initialSelection.min + 4,
+            initialSelection.max + 4
         )
     )
 }
@@ -132,16 +133,16 @@ fun TextFieldValue.unTab(): TextFieldValue {
         ?.let { it + 1 }
         ?: 0
 
-    val tabIndex = text.indexOf('\t', lineStart)
+    val tabIndex = text.indexOf("    ", lineStart)
     val initialSelection = selection
 
     return if (tabIndex != -1 && tabIndex < selection.min) {
-        val newText = text.replaceRange(tabIndex, tabIndex + 1, "")
+        val newText = text.replaceRange(tabIndex, tabIndex + 4, "")
         TextFieldValue(
             text = newText,
             selection = TextRange(
-                initialSelection.min - 1,
-                initialSelection.max - 1
+                initialSelection.min - 4,
+                initialSelection.max - 4
             )
         )
     } else {

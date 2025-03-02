@@ -1,6 +1,5 @@
 package com.yangdai.opennote.presentation.component.note
 
-import android.content.Context
 import android.net.Uri
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
@@ -23,6 +22,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.documentfile.provider.DocumentFile
@@ -35,13 +35,14 @@ import kotlinx.coroutines.withContext
 @Composable
 fun TemplateFilesList(
     rootUri: Uri,
-    context: Context,
     saveCurrentNoteAsTemplate: () -> Unit,
     onFileSelected: (String) -> Unit
 ) {
     var templateFiles by remember {
         mutableStateOf<List<DocumentFile>>(emptyList())
     }
+
+    val context = LocalContext.current.applicationContext
 
     LaunchedEffect(Unit) {
         withContext(Dispatchers.IO) {

@@ -182,11 +182,9 @@ fun FullscreenImageDialog(
                 is ImageState.Success -> {
                     val bitmap = rememberBitmap(
                         context.applicationContext, state.imagePath, state.isPath
-                    )
-
-                    bitmap?.let {
+                    )?.also {
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-                            if (bitmap.hasGainmap()) {
+                            if (it.hasGainmap()) {
                                 isHdr = true
                                 activity?.window?.colorMode = ActivityInfo.COLOR_MODE_HDR
                                 dialogWindow?.colorMode = ActivityInfo.COLOR_MODE_HDR
@@ -194,17 +192,9 @@ fun FullscreenImageDialog(
                         }
                     }
 
-                    DisposableEffect(Unit) {
-                        onDispose {
-                            activity?.window?.colorMode = ActivityInfo.COLOR_MODE_DEFAULT
-                            dialogWindow?.colorMode = ActivityInfo.COLOR_MODE_DEFAULT
-                        }
-                    }
-
                     val painter = remember(bitmap) {
-                        bitmap?.asImageBitmap()?.let {
-                            BitmapPainter(it)
-                        } ?: ColorPainter(Color.Transparent)
+                        bitmap?.asImageBitmap()?.let { BitmapPainter(it) }
+                            ?: ColorPainter(Color.Transparent)
                     }
                     ZoomableImage(painter = painter, contentDescription = null)
                     if (isHdr) {
@@ -236,9 +226,7 @@ fun FullscreenImageDialog(
 
                 is ImageState.Error -> onDismiss()
 
-                is ImageState.Empty -> {
-                    // 显示占位内容
-                }
+                is ImageState.Empty -> {}
             }
             FilledTonalIconButton(
                 onClick = onDismiss,

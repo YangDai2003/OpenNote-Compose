@@ -138,16 +138,9 @@ fun MainScreen(
     var isSearchActive by remember { mutableStateOf(false) }
     // Selected drawer item and folder, 0 for all, 1 for trash, others for folder index
     var selectedNavDrawerIndex by rememberSaveable { mutableIntStateOf(0) }
-    var currentFolder by rememberSaveable(stateSaver = object :
-        Saver<FolderEntity, Triple<Long?, String, Int?>> {
-        override fun restore(value: Triple<Long?, String, Int?>): FolderEntity {
-            return FolderEntity(value.first, value.second, value.third)
-        }
-
-        override fun SaverScope.save(value: FolderEntity): Triple<Long?, String, Int?> {
-            return Triple(value.id, value.name, value.color)
-        }
-    }) { mutableStateOf(FolderEntity()) }
+    var currentFolder by rememberSaveable(stateSaver = FolderEntitySaver) {
+        mutableStateOf(FolderEntity())
+    }
 
     // Record whether multi-select mode has been enabled, selected items and whether all items have been selected
     var isMultiSelectEnabled by remember { mutableStateOf(false) }
@@ -173,9 +166,7 @@ fun MainScreen(
         initializeNoteSelection()
         when (selectedNavDrawerIndex) {
             0 -> viewModel.onListEvent(ListEvent.Sort(trash = false))
-
             1 -> viewModel.onListEvent(ListEvent.Sort(trash = true))
-
             else -> viewModel.onListEvent(
                 ListEvent.Sort(
                     filterFolder = true,
@@ -210,20 +201,12 @@ fun MainScreen(
                 selectedDrawerIndex = selectedNavDrawerIndex,
                 showLock = settings.password.isNotEmpty(),
                 onLockClick = {
-                    scope.launch {
-                        navigationDrawerState.apply {
-                            close()
-                        }
-                    }
+                    scope.launch { navigationDrawerState.close() }
                     viewModel.authenticated.value = false
                 },
                 navigateTo = { navigateToScreen(it) }
             ) { index, folderEntity ->
-                scope.launch {
-                    navigationDrawerState.apply {
-                        close()
-                    }
-                }
+                scope.launch { navigationDrawerState.close() }
                 selectedNavDrawerIndex = index
                 currentFolder = folderEntity
             }
@@ -355,14 +338,12 @@ fun MainScreen(
                                 modifier = Modifier.fillMaxHeight(),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-
                                 Checkbox(
                                     checked = allNotesSelected,
                                     onCheckedChange = { allNotesSelected = it }
                                 )
 
                                 Text(text = stringResource(R.string.checked))
-
                                 Text(text = selectedNotesSet.size.toString())
                             }
 
@@ -391,9 +372,7 @@ fun MainScreen(
                                         }
                                     }
                                 } else {
-                                    TextButton(onClick = {
-                                        isExportNotesDialogVisible = true
-                                    }) {
+                                    TextButton(onClick = { isExportNotesDialogVisible = true }) {
                                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                             Icon(
                                                 imageVector = Icons.Outlined.Upload,
@@ -646,109 +625,118 @@ fun MainScreen(
                 )
             }
         }
+    }
 
-        if (mainScreenData.isOrderSectionVisible) {
-            OrderSectionDialog(
-                noteOrder = mainScreenData.noteOrder,
-                onOrderChange = {
+    if (mainScreenData.isOrderSectionVisible) {
+        OrderSectionDialog(
+            noteOrder = mainScreenData.noteOrder,
+            onOrderChange = {
+                viewModel.onListEvent(
+                    ListEvent.Sort(
+                        noteOrder = it,
+                        trash = selectedNavDrawerIndex == 1,
+                        filterFolder = selectedNavDrawerIndex != 0 && selectedNavDrawerIndex != 1,
+                        folderId = currentFolder.id
+                    )
+                )
+            },
+            onDismiss = { viewModel.onListEvent(ListEvent.ToggleOrderSection) }
+        )
+    }
+
+    val openDocumentLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.OpenDocument()
+    ) { uri ->
+        uri?.let { documentUri ->
+            navigateToScreen(Screen.File(documentUri.toString()))
+        }
+    }
+
+    val createDocumentLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.CreateDocument("text/*")
+    ) { uri ->
+        uri?.let { documentUri ->
+            navigateToScreen(Screen.File(documentUri.toString()))
+        }
+    }
+
+    if (isCreateOptionDialogVisible) {
+        FullscreenCreateOptionDialog(onDismiss = {
+            isCreateOptionDialogVisible = false
+        }) { type ->
+            when (type) {
+                ActionType.CreateTextFile -> {
+                    isCreateOptionDialogVisible = false
+                    createDocumentLauncher.launch("untitled.md")
+                }
+
+                ActionType.EditTextFile -> {
+                    isCreateOptionDialogVisible = false
+                    openDocumentLauncher.launch(arrayOf("text/*"))
+                }
+
+                ActionType.CreateNote -> {
+                    isCreateOptionDialogVisible = false
                     viewModel.onListEvent(
-                        ListEvent.Sort(
-                            noteOrder = it,
-                            trash = selectedNavDrawerIndex == 1,
-                            filterFolder = selectedNavDrawerIndex != 0 && selectedNavDrawerIndex != 1,
-                            folderId = currentFolder.id
+                        ListEvent.OpenOrCreateNote(
+                            null,
+                            currentFolder.id
                         )
                     )
-                },
-                onDismiss = { viewModel.onListEvent(ListEvent.ToggleOrderSection) }
-            )
-        }
-
-        val openDocumentLauncher = rememberLauncherForActivityResult(
-            ActivityResultContracts.OpenDocument()
-        ) { uri ->
-            uri?.let { documentUri ->
-                navigateToScreen(Screen.File(documentUri.toString()))
-            }
-        }
-
-        val createDocumentLauncher = rememberLauncherForActivityResult(
-            ActivityResultContracts.CreateDocument("text/*")
-        ) { uri ->
-            uri?.let { documentUri ->
-                navigateToScreen(Screen.File(documentUri.toString()))
-            }
-        }
-
-        if (isCreateOptionDialogVisible) {
-            FullscreenCreateOptionDialog(onDismiss = {
-                isCreateOptionDialogVisible = false
-            }) { type ->
-                when (type) {
-                    ActionType.CreateTextFile -> {
-                        isCreateOptionDialogVisible = false
-                        createDocumentLauncher.launch("untitled.md")
-                    }
-
-                    ActionType.EditTextFile -> {
-                        isCreateOptionDialogVisible = false
-                        openDocumentLauncher.launch(arrayOf("text/*"))
-                    }
-
-                    ActionType.CreateNote -> {
-                        isCreateOptionDialogVisible = false
-                        viewModel.onListEvent(
-                            ListEvent.OpenOrCreateNote(
-                                null,
-                                currentFolder.id
-                            )
-                        )
-                        navigateToScreen(Screen.Note(-1L))
-                    }
+                    navigateToScreen(Screen.Note(-1L))
                 }
             }
         }
-
-        if (isExportNotesDialogVisible) {
-            val context = LocalContext.current
-            ExportDialog(onDismissRequest = { isExportNotesDialogVisible = false }) {
-                viewModel.onDatabaseEvent(
-                    DatabaseEvent.ExportFiles(
-                        context.applicationContext,
-                        selectedNotesSet.toList(),
-                        it
-                    )
-                )
-                isExportNotesDialogVisible = false
-            }
-        }
-
-        if (isMoveToFolderDialogVisible) {
-            FolderListDialog(
-                hint = stringResource(R.string.destination_folder),
-                oFolderId = currentFolder.id,
-                folders = folderNoteCountsList.map { it.first },
-                onDismissRequest = { isMoveToFolderDialogVisible = false }
-            ) {
-                viewModel.onListEvent(ListEvent.MoveNotes(selectedNotesSet, it))
-                initializeNoteSelection()
-            }
-        }
-
-        ProgressDialog(
-            isLoading = dataAction.loading,
-            progress = dataAction.progress,
-            message = dataAction.message,
-            onDismissRequest = viewModel::cancelDataAction
-        )
     }
+
+    if (isExportNotesDialogVisible) {
+        val context = LocalContext.current
+        ExportDialog(onDismissRequest = { isExportNotesDialogVisible = false }) {
+            viewModel.onDatabaseEvent(
+                DatabaseEvent.ExportFiles(
+                    context.applicationContext,
+                    selectedNotesSet.toList(),
+                    it
+                )
+            )
+            isExportNotesDialogVisible = false
+        }
+    }
+
+    if (isMoveToFolderDialogVisible) {
+        FolderListDialog(
+            hint = stringResource(R.string.destination_folder),
+            oFolderId = currentFolder.id,
+            folders = folderNoteCountsList.map { it.first },
+            onDismissRequest = { isMoveToFolderDialogVisible = false }
+        ) {
+            viewModel.onListEvent(ListEvent.MoveNotes(selectedNotesSet, it))
+            initializeNoteSelection()
+        }
+    }
+
+    ProgressDialog(
+        isLoading = dataAction.loading,
+        progress = dataAction.progress,
+        message = dataAction.message,
+        onDismissRequest = viewModel::cancelDataAction
+    )
 
     var receivedIntent by rememberSaveable { mutableStateOf(false) }
     LaunchedEffect(Unit) {
         if (!receivedIntent) {
-            val intent = viewModel.intent.value
-            if (intent != null) handleIntent(intent)
+            viewModel.intent.value?.let { handleIntent(it) }
             receivedIntent = true
         }
+    }
+}
+
+private object FolderEntitySaver : Saver<FolderEntity, Triple<Long?, String, Int?>> {
+    override fun restore(value: Triple<Long?, String, Int?>): FolderEntity {
+        return FolderEntity(value.first, value.second, value.third)
+    }
+
+    override fun SaverScope.save(value: FolderEntity): Triple<Long?, String, Int?> {
+        return Triple(value.id, value.name, value.color)
     }
 }

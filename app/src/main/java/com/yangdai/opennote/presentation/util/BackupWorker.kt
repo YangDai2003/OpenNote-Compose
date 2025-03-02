@@ -49,6 +49,7 @@ class BackupWorker(
                 val folders = useCases.getFolders().first()
                 val backupData = BackupData(notes, folders)
                 val json = Json.encodeToString(backupData)
+                val encryptedJson = encryptBackupData(json)
 
                 val fileName = "${System.currentTimeMillis()}.json"
                 val file = dir.createFile("application/json", fileName)
@@ -57,7 +58,7 @@ class BackupWorker(
                     context.contentResolver.openOutputStream(docFile.uri)
                         ?.use { outputStream ->
                             OutputStreamWriter(outputStream).use { writer ->
-                                writer.write(json)
+                                writer.write(encryptedJson)
                             }
                         }
                 }
