@@ -274,7 +274,7 @@ fun LiteTextField(
 
                                     if (selection.start == currentLineEnd &&
                                         (trimmedLine == "- [ ]" || trimmedLine == "-" || trimmedLine == "*" || trimmedLine == "+"
-                                                || trimmedLine.matches(Regex("^\\d+\\.$")))
+                                                || trimmedLine.matches(Regex("^\\d+\\.$")) || trimmedLine.matches(Regex("^\\d+\\)$")))
                                     ) {
                                         val newText = StringBuilder(currentText)
                                             .delete(currentLineStart, currentLineEnd)
@@ -297,7 +297,12 @@ fun LiteTextField(
                                                     ?.plus(1) ?: 1
                                             "$nextNumber. "
                                         }
-
+                                        trimmedLine.matches(Regex("^\\d+\\)\\s.*")) -> {
+                                            val nextNumber =
+                                                trimmedLine.substringBefore(")").toIntOrNull()
+                                                    ?.plus(1) ?: 1
+                                            "$nextNumber) "
+                                        }
                                         trimmedLine.startsWith("- ") -> "- "
                                         trimmedLine.startsWith("* ") -> "* "
                                         trimmedLine.startsWith("+ ") -> "+ "
