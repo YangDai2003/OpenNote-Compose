@@ -101,6 +101,18 @@ fun getOrCreateDirectory(
     }
 }
 
+fun findAllIndices(text: String, word: String): List<Pair<Int, Int>> {
+    if (word.isBlank()) return emptyList()
+
+    return buildList {
+        var index = text.indexOf(word)
+        while (index != -1) {
+            add(index to (index + word.length))
+            index = text.indexOf(word, index + 1)
+        }
+    }
+}
+
 @Composable
 fun rememberDateTimeFormatter(): DateFormat {
     return remember { DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT) }
@@ -117,4 +129,8 @@ fun rememberCustomTabsIntent(): CustomTabsIntent {
 
 fun Int.toHexColor(): String {
     return String.format("#%06X", 0xFFFFFF and this)
+}
+
+fun IntRange.overlaps(other: IntRange): Boolean {
+    return this.first <= other.last && other.first <= this.last
 }

@@ -110,6 +110,7 @@ import com.yangdai.opennote.presentation.component.main.Timeline
 import com.yangdai.opennote.presentation.event.DatabaseEvent
 import com.yangdai.opennote.presentation.event.ListEvent
 import com.yangdai.opennote.presentation.navigation.Screen
+import com.yangdai.opennote.presentation.state.ListNoteContentDisplayMode
 import com.yangdai.opennote.presentation.state.ListNoteContentOverflowStyle
 import com.yangdai.opennote.presentation.state.ListNoteContentSize
 import com.yangdai.opennote.presentation.util.rememberDateTimeFormatter
@@ -568,6 +569,11 @@ fun MainScreen(
                         else -> Int.MAX_VALUE
                     }
                 }
+                val isRaw by remember {
+                    derivedStateOf {
+                        settings.enumDisplayMode == ListNoteContentDisplayMode.RAW
+                    }
+                }
                 val dateTimeFormatter = rememberDateTimeFormatter()
                 LazyVerticalStaggeredGrid(
                     modifier = Modifier
@@ -577,7 +583,7 @@ fun MainScreen(
                     // The staggered grid layout is adaptive, with a minimum column width of 160dp(mdpi)
                     columns = if (settings.isListView) StaggeredGridCells.Fixed(1)
                     else StaggeredGridCells.Adaptive(160.dp),
-                    verticalItemSpacing = if (settings.isListView) 12.dp else 8.dp,
+                    verticalItemSpacing = 8.dp,
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     // for better edgeToEdge experience
                     contentPadding = contentPadding,
@@ -596,6 +602,7 @@ fun MainScreen(
                                 dateFormatter = dateTimeFormatter,
                                 contentMaxLines = maxLines,
                                 contentTextOverflow = textOverflow,
+                                isRaw = isRaw,
                                 isEditMode = isMultiSelectEnabled,
                                 isNoteSelected = selectedNotesSet.contains(note),
                                 onEditModeChange = { isMultiSelectEnabled = it },

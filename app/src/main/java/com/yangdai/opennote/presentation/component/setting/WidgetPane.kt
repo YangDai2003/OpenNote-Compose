@@ -2,7 +2,10 @@ package com.yangdai.opennote.presentation.component.setting
 
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -54,7 +57,7 @@ fun WidgetPane(
 
         SingleChoiceSegmentedButtonRow(
             modifier = Modifier
-                .fillMaxSize()
+                .fillMaxWidth()
                 .padding(horizontal = 16.dp)
                 .padding(bottom = 16.dp)
         ) {
@@ -98,7 +101,7 @@ fun WidgetPane(
 
         Slider(
             modifier = Modifier
-                .fillMaxSize()
+                .fillMaxWidth()
                 .padding(horizontal = 16.dp)
                 .padding(bottom = 16.dp),
             value = settingsState.textLines.toFloat(),
@@ -126,7 +129,7 @@ fun WidgetPane(
 
         SingleChoiceSegmentedButtonRow(
             modifier = Modifier
-                .fillMaxSize()
+                .fillMaxWidth()
                 .padding(horizontal = 16.dp)
                 .padding(bottom = 16.dp)
         ) {
@@ -151,5 +154,7 @@ fun WidgetPane(
                 Text(colorOptions[1], maxLines = 1, modifier = Modifier.basicMarquee())
             }
         }
+
+        Spacer(Modifier.navigationBarsPadding())
     }
 }

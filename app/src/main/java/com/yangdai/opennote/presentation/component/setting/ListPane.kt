@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
@@ -23,6 +24,7 @@ import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -37,6 +39,8 @@ import com.yangdai.opennote.R
 import com.yangdai.opennote.data.local.entity.NoteEntity
 import com.yangdai.opennote.presentation.component.main.AdaptiveNoteCard
 import com.yangdai.opennote.presentation.component.main.Timeline
+import com.yangdai.opennote.presentation.state.ListNoteContentDisplayMode
+import com.yangdai.opennote.presentation.state.ListNoteContentDisplayMode.Companion.toInt
 import com.yangdai.opennote.presentation.state.ListNoteContentOverflowStyle
 import com.yangdai.opennote.presentation.state.ListNoteContentOverflowStyle.Companion.toInt
 import com.yangdai.opennote.presentation.state.ListNoteContentSize
@@ -50,7 +54,7 @@ fun ListPane(sharedViewModel: SharedViewModel) {
 
     val settingsState by sharedViewModel.settingsStateFlow.collectAsStateWithLifecycle()
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    Box(Modifier.fillMaxSize()) {
 
         AnimatedVisibility(
             visible = settingsState.isListView,
@@ -90,6 +94,11 @@ fun ListPane(sharedViewModel: SharedViewModel) {
                 else -> Int.MAX_VALUE
             }
         }
+        val isRaw by remember {
+            derivedStateOf {
+                settingsState.enumDisplayMode == ListNoteContentDisplayMode.RAW
+            }
+        }
         val dateTimeFormatter = rememberDateTimeFormatter()
         LazyVerticalStaggeredGrid(
             modifier = Modifier.fillMaxSize(),
@@ -115,6 +124,7 @@ fun ListPane(sharedViewModel: SharedViewModel) {
                         dateFormatter = dateTimeFormatter,
                         contentMaxLines = maxLines,
                         contentTextOverflow = textOverflow,
+                        isRaw = isRaw,
                         isEditMode = false,
                         isNoteSelected = false,
                         onEditModeChange = { },
@@ -124,6 +134,10 @@ fun ListPane(sharedViewModel: SharedViewModel) {
             }
         )
 
+        val displayStyles = listOf(
+            stringResource(R.string.raw),
+            stringResource(R.string.preview)
+        )
         val overflowStyles = listOf(
             stringResource(R.string.ellipsis),
             stringResource(R.string.clip)
@@ -138,7 +152,8 @@ fun ListPane(sharedViewModel: SharedViewModel) {
             !state.isScrollInProgress,
             modifier = Modifier
                 .align(Alignment.BottomCenter)
-                .padding(horizontal = 16.dp),
+                .padding(horizontal = 16.dp)
+                .navigationBarsPadding(),
             enter = fadeIn(),
             exit = fadeOut()
         ) {
@@ -150,6 +165,32 @@ fun ListPane(sharedViewModel: SharedViewModel) {
                         .copy(alpha = 0.6f)
                 )
             ) {
+                SettingsHeader(stringResource(R.string.display_style))
+                SingleChoiceSegmentedButtonRow(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 8.dp),
+                ) {
+                    displayStyles.forEachIndexed { index, label ->
+                        SegmentedButton(
+                            shape = SegmentedButtonDefaults.itemShape(
+                                index = index,
+                                count = overflowStyles.size
+                            ),
+                            onClick = {
+                                hapticFeedback.performHapticFeedback(HapticFeedbackType.SegmentTick)
+                                sharedViewModel.putPreferenceValue(
+                                    Constants.Preferences.ENUM_DISPLAY_MODE,
+                                    index
+                                )
+                            },
+                            selected = index == settingsState.enumDisplayMode.toInt(),
+                            label = {
+                                Text(label)
+                            },
+                        )
+                    }
+                }
                 SettingsHeader(stringResource(R.string.text_overflow))
                 SingleChoiceSegmentedButtonRow(
                     modifier = Modifier
@@ -212,10 +253,10 @@ private val noteSamples = listOf(
     // 笔记内容很长, 英语
     NoteEntity(
         title = "Sample Note 1",
-        content = """This is a very long note content for sample note 1. 
-            |It's designed to test the display of long text when it overflows. 
-            |> Note: "The quick brown fox jumps over the lazy dog" is a pangram, a sentence that uses every letter of the English alphabet at least once. 
-            |This makes it ideal for testing text rendering, as it ensures that all characters are displayed correctly.
+        content = """This is a **very long** note content for sample note 1. 
+            |It's designed to _test_ the display of long text when it _overflows_. 
+            |> Note: ++**"The quick brown fox jumps over the lazy dog"**++ is a pangram, a sentence that uses every letter of the English alphabet at least once. 
+            |This makes it ideal for testing text rendering, as it ensures that all characters are displayed ==correctly==.
             |It's also useful for evaluating how the UI handles different letter shapes and sizes.
             |Repeated content for testing text overflow: 
             |- The quick brown fox jumps over the lazy dog. 
@@ -238,7 +279,7 @@ private val noteSamples = listOf(
     // 笔记标题为空, 中文
     NoteEntity(
         title = "",
-        content = "这是第二个笔记的示例内容，用来展示当笔记标题为空时的情况。",
+        content = "这是第二个笔记的示例内容，用来展示当~~笔记标题为空~~时的情况。",
         isMarkdown = true,
         timestamp = System.currentTimeMillis() - 1000
     ),

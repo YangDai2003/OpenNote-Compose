@@ -58,7 +58,6 @@ enum class ReplaceType {
 
 @Composable
 fun FindAndReplaceField(
-    isStandard: Boolean,
     state: FindAndReplaceState,
     onStateUpdate: (FindAndReplaceState) -> Unit
 ) = Column(
@@ -83,21 +82,19 @@ fun FindAndReplaceField(
             },
             placeholderText = stringResource(R.string.find)
         )
-        if (isStandard) {
-            IconButton(onClick = {
-                onStateUpdate(state.copy(scrollDirection = ScrollDirection.PREVIOUS))
-            }) {
-                Icon(
-                    imageVector = Icons.Outlined.ArrowUpward, contentDescription = "PREVIOUS"
-                )
-            }
-            IconButton(onClick = {
-                onStateUpdate(state.copy(scrollDirection = ScrollDirection.NEXT))
-            }) {
-                Icon(
-                    imageVector = Icons.Outlined.ArrowDownward, contentDescription = "Next"
-                )
-            }
+        IconButton(onClick = {
+            onStateUpdate(state.copy(scrollDirection = ScrollDirection.PREVIOUS))
+        }) {
+            Icon(
+                imageVector = Icons.Outlined.ArrowUpward, contentDescription = "PREVIOUS"
+            )
+        }
+        IconButton(onClick = {
+            onStateUpdate(state.copy(scrollDirection = ScrollDirection.NEXT))
+        }) {
+            Icon(
+                imageVector = Icons.Outlined.ArrowDownward, contentDescription = "Next"
+            )
         }
 
         IconButton(onClick = {

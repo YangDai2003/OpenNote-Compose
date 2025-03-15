@@ -50,6 +50,7 @@ import com.yangdai.opennote.presentation.state.AppColor
 import com.yangdai.opennote.presentation.state.AppTheme
 import com.yangdai.opennote.presentation.state.DataActionState
 import com.yangdai.opennote.presentation.state.DataState
+import com.yangdai.opennote.presentation.state.ListNoteContentDisplayMode
 import com.yangdai.opennote.presentation.state.ListNoteContentOverflowStyle
 import com.yangdai.opennote.presentation.state.ListNoteContentSize
 import com.yangdai.opennote.presentation.state.NoteState
@@ -57,11 +58,13 @@ import com.yangdai.opennote.presentation.state.SettingsState
 import com.yangdai.opennote.presentation.state.TextState
 import com.yangdai.opennote.presentation.util.BackupManager
 import com.yangdai.opennote.presentation.util.Constants
+import com.yangdai.opennote.presentation.util.PARSER
 import com.yangdai.opennote.presentation.util.decryptBackupDataWithCompatibility
 import com.yangdai.opennote.presentation.util.encryptBackupData
 import com.yangdai.opennote.presentation.util.getFileName
 import com.yangdai.opennote.presentation.util.getOrCreateDirectory
-import com.yangdai.opennote.presentation.util.highlight.HighlightExtension
+import com.yangdai.opennote.presentation.util.extension.highlight.HighlightExtension
+import com.yangdai.opennote.presentation.util.extension.properties.Properties
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -106,12 +109,10 @@ import org.commonmark.ext.ins.InsExtension
 import org.commonmark.ext.task.list.items.TaskListItemsExtension
 import org.commonmark.node.AbstractVisitor
 import org.commonmark.node.Heading
-import org.commonmark.parser.IncludeSourceSpans
 import org.commonmark.parser.Parser
 import org.commonmark.renderer.html.HtmlRenderer
 import java.io.OutputStreamWriter
 import javax.inject.Inject
-import kotlin.collections.first
 
 @HiltViewModel
 class SharedViewModel @Inject constructor(
@@ -169,7 +170,11 @@ class SharedViewModel @Inject constructor(
     // Markdown 渲染后的 HTML 内容
     @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
     val html = contentSnapshotFlow.debounce(100)
-        .mapLatest { renderer.render(parser.parse(it.toString())) }
+        .mapLatest {
+            var content = it.toString()
+            content = Properties.splitPropertiesAndContent(content).second
+            renderer.render(parser.parse(content))
+        }
         .flowOn(Dispatchers.Default)
         .stateIn(
             scope = viewModelScope,
@@ -187,13 +192,10 @@ class SharedViewModel @Inject constructor(
             initialValue = TextState()
         )
 
-    private val parserForOutline =
-        Parser.builder().includeSourceSpans(IncludeSourceSpans.BLOCKS_AND_INLINES).build()
-
     @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
     val outline = contentSnapshotFlow.debounce(500)
         .mapLatest {
-            val document = parserForOutline.parse(it.toString())
+            val document = PARSER.parse(it.toString())
             val root = HeaderNode("", 0, IntRange.EMPTY)
             val headerStack = mutableListOf(root)
             document.accept(object : AbstractVisitor() {
@@ -243,7 +245,7 @@ class SharedViewModel @Inject constructor(
             )
             parser = Parser.builder().extensions(extensions).build()
             renderer = HtmlRenderer.builder().extensions(extensions).build()
-            delay(150L)
+            delay(200L)
             //任务完成后将 isLoading 设置为 false 以隐藏启动屏幕
             isLoading.value = false
         }
@@ -272,6 +274,7 @@ class SharedViewModel @Inject constructor(
         appDataStoreRepository.stringFlow(Constants.Preferences.PASSWORD),
         appDataStoreRepository.intFlow(Constants.Preferences.ENUM_OVERFLOW_STYLE),
         appDataStoreRepository.intFlow(Constants.Preferences.ENUM_CONTENT_SIZE),
+        appDataStoreRepository.intFlow(Constants.Preferences.ENUM_DISPLAY_MODE),
         appDataStoreRepository.booleanFlow(Constants.Preferences.IS_AUTO_SAVE_ENABLED),
         appDataStoreRepository.intFlow(Constants.Preferences.TITLE_ALIGN)
     ) { values ->
@@ -296,8 +299,9 @@ class SharedViewModel @Inject constructor(
             password = values[17] as String,
             enumOverflowStyle = ListNoteContentOverflowStyle.fromInt(values[18] as Int),
             enumContentSize = ListNoteContentSize.fromInt(values[19] as Int),
-            isAutoSaveEnabled = values[20] as Boolean,
-            titleAlignment = values[21] as Int
+            enumDisplayMode = ListNoteContentDisplayMode.fromInt(values[20] as Int),
+            isAutoSaveEnabled = values[21] as Boolean,
+            titleAlignment = values[22] as Int
         )
     }.flowOn(Dispatchers.IO).stateIn(
         scope = viewModelScope, started = SharingStarted.Eagerly, initialValue = SettingsState()
@@ -622,7 +626,10 @@ class SharedViewModel @Inject constructor(
                 || noteStateFlow.value.isStandard != _oNote.isMarkdown
                 || noteStateFlow.value.folderId != _oNote.folderId
         val isAutoSaveEnabled =
-            appDataStoreRepository.getBooleanValue(Constants.Preferences.IS_AUTO_SAVE_ENABLED, false)
+            appDataStoreRepository.getBooleanValue(
+                Constants.Preferences.IS_AUTO_SAVE_ENABLED,
+                false
+            )
         val isNoteEmpty = contentState.text.isBlank() && titleState.text.isBlank()
         val isNewNote = noteStateFlow.value.id == null
         if (isAutoSaveEnabled) return false

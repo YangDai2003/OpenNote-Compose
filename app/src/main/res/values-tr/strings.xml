@@ -198,4 +198,6 @@
     <string name="create_note">Not oluştur</string>
     <string name="edit_text_file">Metin dosyasını düzenle</string>
     <string name="create_text_file">Metin dosyası oluştur</string>
+    <string name="raw">Ham</string>
+    <string name="display_style">Görüntüleme Stili</string>
 </resources>

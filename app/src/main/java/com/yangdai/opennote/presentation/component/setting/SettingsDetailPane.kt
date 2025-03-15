@@ -1,9 +1,14 @@
 package com.yangdai.opennote.presentation.component.setting
 
 import androidx.activity.compose.LocalActivity
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.HelpOutline
 import androidx.compose.material.icons.outlined.Close
@@ -13,7 +18,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
@@ -25,7 +29,9 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.glance.appwidget.GlanceAppWidgetManager
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.window.core.layout.WindowWidthSizeClass
@@ -56,12 +62,22 @@ fun SettingsDetailPane(
         modifier = modifier,
         topBar = {
             if (isExpended)
-                TopAppBar(
-                    title = {
-                        TopBarTitle(title = stringResource(selectedSettingsItem.titleId))
-                    },
-                    actions = {
-                        if (selectedSettingsItem.index == 4)
+                Row(
+                    modifier = Modifier
+                        .statusBarsPadding()
+                        .padding(horizontal = 16.dp)
+                        .fillMaxWidth()
+                        .height(64.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    TopBarTitle(title = stringResource(selectedSettingsItem.titleId))
+
+                    Row(
+                        horizontalArrangement = Arrangement.End,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        if (selectedSettingsItem.index == 4) {
                             IconButton(onClick = {
                                 activity?.requestShowKeyboardShortcuts()
                             }) {
@@ -70,7 +86,7 @@ fun SettingsDetailPane(
                                     contentDescription = "Helper"
                                 )
                             }
-                        else if (selectedSettingsItem.index == 8)
+                        } else if (selectedSettingsItem.index == 8) {
                             IconButton(onClick = {
                                 scope.launch {
                                     GlanceAppWidgetManager(context).requestPinGlanceAppWidget(
@@ -83,11 +99,9 @@ fun SettingsDetailPane(
                                     contentDescription = "Widgets"
                                 )
                             }
-                    },
-                    scrollBehavior = scrollBehavior,
-                    colors = TopAppBarDefaults.topAppBarColors()
-                        .copy(scrolledContainerColor = TopAppBarDefaults.topAppBarColors().containerColor)
-                )
+                        }
+                    }
+                }
             else
                 LargeTopAppBar(
                     navigationIcon = {
@@ -134,12 +148,13 @@ fun SettingsDetailPane(
                         .copy(scrolledContainerColor = TopAppBarDefaults.topAppBarColors().containerColor)
                 )
         }
-    ) {
+    ) { innerPadding ->
+        val layoutDirection = LocalLayoutDirection.current
         Box(
-            Modifier
-                .fillMaxSize()
-                .padding(it),
-            contentAlignment = Alignment.Center
+            Modifier.padding(
+                top = innerPadding.calculateTopPadding(),
+                end = innerPadding.calculateEndPadding(layoutDirection)
+            )
         ) {
             when (selectedSettingsItem.index) {
                 0 -> {

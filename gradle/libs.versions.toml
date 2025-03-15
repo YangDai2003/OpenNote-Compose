@@ -1,5 +1,5 @@
 [versions]
-agp = "8.8.2"
+agp = "8.9.0"
 colorpickerCompose = "1.1.2"
 documentfile = "1.0.1"
 glance = "1.1.1"
@@ -7,11 +7,10 @@ kotlin = "2.1.10"
 ksp = "2.1.10-1.0.30"
 kotlinxSerialization = "1.8.0"
 
-composeBom = "2025.02.00"
-composeAdaptive = "1.1.0-rc01"
+composeBom = "2025.03.00"
 activityCompose = "1.10.1"
 lifecycleRuntimeCompose = "2.8.7"
-navigationCompose = "2.8.8"
+navigationCompose = "2.8.9"
 
 junit = "4.13.2"
 junitVersion = "1.2.1"
@@ -58,17 +57,17 @@ androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-co
 androidx-lifecycle-runtime-compose = { group = "androidx.lifecycle", name = "lifecycle-runtime-compose", version.ref = "lifecycleRuntimeCompose" }
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }
 androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" }
-androidx-compose-foundation = { group = "androidx.compose.foundation", name = "foundation", version = "1.8.0-beta03" }
+androidx-compose-foundation = { group = "androidx.compose.foundation", name = "foundation", version = "1.8.0-rc01" }
 androidx-compose-ui = { group = "androidx.compose.ui", name = "ui" }
 androidx-compose-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" }
 androidx-compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
 androidx-compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
 androidx-compose-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
 androidx-compose-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
-androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3", version = "1.4.0-alpha09" }
-androidx-compose-material3-adaptive = { group = "androidx.compose.material3.adaptive", name = "adaptive", version.ref = "composeAdaptive" }
-androidx-compose-material3-adaptive-layout = { group = "androidx.compose.material3.adaptive", name = "adaptive-layout", version.ref = "composeAdaptive" }
-androidx-compose-material3-adaptive-navigation = { group = "androidx.compose.material3.adaptive", name = "adaptive-navigation", version.ref = "composeAdaptive" }
+androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3", version = "1.4.0-alpha10" }
+androidx-compose-material3-adaptive = { group = "androidx.compose.material3.adaptive", name = "adaptive" }
+androidx-compose-material3-adaptive-layout = { group = "androidx.compose.material3.adaptive", name = "adaptive-layout" }
+androidx-compose-material3-adaptive-navigation = { group = "androidx.compose.material3.adaptive", name = "adaptive-navigation" }
 androidx-compose-material-icons = { group = "androidx.compose.material", name = "material-icons-extended" }
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigationCompose" }
 

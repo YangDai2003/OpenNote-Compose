@@ -4,7 +4,8 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -88,11 +89,7 @@ fun DataPane(sharedViewModel: SharedViewModel) {
 
     val hapticFeedback = LocalHapticFeedback.current
 
-    Column(
-        Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-    ) {
+    Column(Modifier.verticalScroll(rememberScrollState())) {
 
         val parent = remember(settingsState.storagePath) {
             if (settingsState.storagePath.isEmpty()) null
@@ -304,6 +301,8 @@ fun DataPane(sharedViewModel: SharedViewModel) {
                 )
             }
         )
+
+        Spacer(Modifier.navigationBarsPadding())
     }
 
     if (showWarningDialog) {

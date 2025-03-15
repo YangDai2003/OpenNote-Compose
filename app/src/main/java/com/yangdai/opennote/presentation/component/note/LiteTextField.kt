@@ -25,6 +25,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -47,6 +48,9 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import com.yangdai.opennote.R
+import com.yangdai.opennote.presentation.util.findAllIndices
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 /* LiteTextField采用TextFieldValue作为内部状态，初始化文本仍旧采用StandardMode所使用的contentState:TextFieldState(),
  * applyChange函数用于更新文本内容，达到了同步contentState的目的，循环往复。
@@ -113,6 +117,39 @@ fun LiteTextField(
         }
     }
 
+    var indices by remember { mutableStateOf(emptyList<Pair<Int, Int>>()) }
+
+    LaunchedEffect(state.text, findAndReplaceState.searchWord, readMode) {
+        withContext(Dispatchers.Default) {
+            indices =
+                if (!readMode) findAllIndices(state.text.toString(), findAndReplaceState.searchWord)
+                else emptyList()
+        }
+    }
+
+    var currentIndex by remember { mutableIntStateOf(0) }
+
+    LaunchedEffect(findAndReplaceState.searchWord, indices, findAndReplaceState.scrollDirection) {
+        if (indices.isNotEmpty() && textLayoutResult != null && findAndReplaceState.scrollDirection != null) {
+            // 更新当前索引
+            currentIndex = when (findAndReplaceState.scrollDirection) {
+                ScrollDirection.NEXT -> (currentIndex + 1) % indices.size
+                ScrollDirection.PREVIOUS -> if (currentIndex <= 0) indices.size - 1 else currentIndex - 1
+            }
+
+            // 获取目标匹配项的位置
+            val targetMatch = indices[currentIndex]
+            // 获取该位置的文本边界
+            val bounds = textLayoutResult!!.getBoundingBox(targetMatch.first)
+            // 计算滚动位置
+            val scrollPosition = (bounds.top - 50f).toInt().coerceAtLeast(0)
+            // 执行滚动
+            scrollState.animateScrollTo(scrollPosition)
+            // 通知滚动完成
+            onFindAndReplaceUpdate(findAndReplaceState.copy(scrollDirection = null))
+        }
+    }
+
     LaunchedEffect(findAndReplaceState.replaceType) {
         if (findAndReplaceState.replaceType != null) {
             if (findAndReplaceState.replaceType == ReplaceType.ALL) {
@@ -125,17 +162,13 @@ fun LiteTextField(
                 state.setTextAndPlaceCursorAtEnd(newText)
             } else if (findAndReplaceState.replaceType == ReplaceType.CURRENT) {
                 if (findAndReplaceState.searchWord.isBlank()) return@LaunchedEffect
-                val currentText = state.text.toString()
-                val index = currentText.indexOf(findAndReplaceState.searchWord)
-                if (index != -1) {
-                    // 执行替换
-                    state.edit {
-                        replace(
-                            index,
-                            index + findAndReplaceState.searchWord.length,
-                            findAndReplaceState.replaceWord
-                        )
-                    }
+                // 检查索引是否有效
+                if (indices.isEmpty() || currentIndex >= indices.size) return@LaunchedEffect
+                // 获取要替换的位置
+                val (startIndex, endIndex) = indices[currentIndex]
+                // 执行替换
+                state.edit {
+                    replace(startIndex, endIndex, findAndReplaceState.replaceWord)
                 }
             }
             onFindAndReplaceUpdate(findAndReplaceState.copy(replaceType = null))
@@ -274,7 +307,9 @@ fun LiteTextField(
 
                                     if (selection.start == currentLineEnd &&
                                         (trimmedLine == "- [ ]" || trimmedLine == "-" || trimmedLine == "*" || trimmedLine == "+"
-                                                || trimmedLine.matches(Regex("^\\d+\\.$")) || trimmedLine.matches(Regex("^\\d+\\)$")))
+                                                || trimmedLine.matches(Regex("^\\d+\\.$")) || trimmedLine.matches(
+                                            Regex("^\\d+\\)$")
+                                        ))
                                     ) {
                                         val newText = StringBuilder(currentText)
                                             .delete(currentLineStart, currentLineEnd)
@@ -297,12 +332,14 @@ fun LiteTextField(
                                                     ?.plus(1) ?: 1
                                             "$nextNumber. "
                                         }
+
                                         trimmedLine.matches(Regex("^\\d+\\)\\s.*")) -> {
                                             val nextNumber =
                                                 trimmedLine.substringBefore(")").toIntOrNull()
                                                     ?.plus(1) ?: 1
                                             "$nextNumber) "
                                         }
+
                                         trimmedLine.startsWith("- ") -> "- "
                                         trimmedLine.startsWith("* ") -> "* "
                                         trimmedLine.startsWith("+ ") -> "+ "
@@ -336,9 +373,7 @@ fun LiteTextField(
                     }
                 },
             value = textFieldValue,
-            onValueChange = { newText ->
-                applyChange(newText)
-            },
+            onValueChange = { newText -> applyChange(newText) },
             readOnly = readMode,
             keyboardOptions = KeyboardOptions(
                 capitalization = KeyboardCapitalization.Sentences,
@@ -347,18 +382,17 @@ fun LiteTextField(
             ),
             visualTransformation = remember(
                 readMode,
-                findAndReplaceState.searchWord,
+                indices,
+                currentIndex,
                 textFieldValue.selection
             ) {
                 LiteTextVisualTransformation(
-                    readMode, findAndReplaceState.searchWord, textFieldValue.selection
+                    readMode, indices, currentIndex, textFieldValue.selection
                 )
             },
             textStyle = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface),
             cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
-            onTextLayout = { result ->
-                textLayoutResult = result
-            },
+            onTextLayout = { result -> textLayoutResult = result },
             decorationBox = { innerTextField ->
                 Box {
                     if (textFieldValue.text.isEmpty()) {

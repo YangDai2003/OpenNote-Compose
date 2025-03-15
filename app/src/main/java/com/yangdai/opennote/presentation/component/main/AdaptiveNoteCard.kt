@@ -4,6 +4,7 @@ import android.icu.text.DateFormat
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.expandIn
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
@@ -14,67 +15,80 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Circle
+import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
-import androidx.compose.material3.Icon
+import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.material3.Typography
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.ColorProducer
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.yangdai.opennote.R
 import com.yangdai.opennote.data.local.entity.NoteEntity
+import com.yangdai.opennote.presentation.util.parseMarkdownContent
 
 private object NoteCardDefaults {
     val MIN_INTERACTION_HEIGHT = 48.dp
-    val CARD_PADDING = 16.dp
+    val CARD_START_PADDING = 16.dp
     val ICON_SIZE = 8.dp
-    val CONTENT_PADDING = 10.dp
-    val VERTICAL_PADDING = 8.dp
+    val CHECKBOX_PADDING = 10.dp
+    val HEADER_BOTTOM_PADDING = 8.dp
+    val HEADER_TOP_PADDING = 4.dp
     val HORIZONTAL_PADDING = 10.dp
 }
 
 @Composable
 private fun NoteCardHeader(
     formattedTimestamp: String,
-    isMarkdown: Boolean
+    isStandard: Boolean,
+    colorScheme: ColorScheme = MaterialTheme.colorScheme,
+    typography: Typography = MaterialTheme.typography
 ) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(bottom = NoteCardDefaults.VERTICAL_PADDING)
+            .padding(
+                bottom = NoteCardDefaults.HEADER_BOTTOM_PADDING,
+                top = NoteCardDefaults.HEADER_TOP_PADDING
+            )
     ) {
-        Icon(
+        Canvas(
             modifier = Modifier
                 .align(Alignment.CenterStart)
-                .size(NoteCardDefaults.ICON_SIZE),
-            imageVector = Icons.Default.Circle,
-            tint = MaterialTheme.colorScheme.primary,
-            contentDescription = null
-        )
+                .size(NoteCardDefaults.ICON_SIZE)
+        ) {
+            drawCircle(
+                color = colorScheme.primary,
+                radius = size.minDimension / 2
+            )
+        }
 
-        Text(
+        BasicText(
             modifier = Modifier
                 .align(Alignment.CenterStart)
-                .padding(start = NoteCardDefaults.CARD_PADDING),
+                .padding(start = NoteCardDefaults.CARD_START_PADDING),
             text = formattedTimestamp,
-            style = MaterialTheme.typography.bodyMedium,
+            style = typography.bodyMedium,
             maxLines = 1,
-            overflow = TextOverflow.Ellipsis
+            overflow = TextOverflow.Ellipsis,
+            color = ColorProducer { colorScheme.onSurfaceVariant }
         )
 
-        Text(
+        BasicText(
             modifier = Modifier.align(Alignment.CenterEnd),
-            text = stringResource(if (isMarkdown) R.string.standard_mode else R.string.lite_mode),
-            style = MaterialTheme.typography.bodyMedium,
+            text = stringResource(if (isStandard) R.string.standard_mode else R.string.lite_mode),
+            style = typography.bodyMedium,
             maxLines = 1,
-            overflow = TextOverflow.Ellipsis
+            overflow = TextOverflow.Ellipsis,
+            color = ColorProducer { colorScheme.onSurfaceVariant }
         )
     }
 }
@@ -83,35 +97,43 @@ private fun NoteCardHeader(
 private fun NoteCardContent(
     displayedNote: NoteEntity,
     contentTextOverflow: TextOverflow,
-    contentMaxLines: Int
+    contentMaxLines: Int,
+    isRaw: Boolean,
+    colorScheme: ColorScheme = MaterialTheme.colorScheme
 ) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(
-                vertical = NoteCardDefaults.VERTICAL_PADDING,
+                vertical = NoteCardDefaults.HEADER_BOTTOM_PADDING,
                 horizontal = NoteCardDefaults.HORIZONTAL_PADDING
             )
     ) {
         if (displayedNote.title.isNotEmpty()) {
-            Text(
+            BasicText(
                 modifier = Modifier.basicMarquee(),
                 text = displayedNote.title,
                 style = MaterialTheme.typography.titleMedium,
-                maxLines = 1
+                maxLines = 1,
+                color = ColorProducer { colorScheme.onSurface }
             )
 
             if (displayedNote.content.isNotEmpty()) {
-                Spacer(modifier = Modifier.height(NoteCardDefaults.VERTICAL_PADDING))
+                Spacer(modifier = Modifier.height(NoteCardDefaults.HEADER_BOTTOM_PADDING))
             }
         }
 
-        Text(
-            text = displayedNote.content,
+        val annotatedString = remember(displayedNote.content, isRaw) {
+            if (!isRaw) parseMarkdownContent(displayedNote.content)
+            else AnnotatedString(displayedNote.content)
+        }
+
+        BasicText(
+            text = annotatedString,
             style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
             overflow = contentTextOverflow,
-            maxLines = contentMaxLines
+            maxLines = contentMaxLines,
+            color = ColorProducer { colorScheme.onSurfaceVariant }
         )
     }
 }
@@ -124,6 +146,7 @@ fun AdaptiveNoteCard(
     dateFormatter: DateFormat,
     contentMaxLines: Int,
     contentTextOverflow: TextOverflow,
+    isRaw: Boolean,
     isEditMode: Boolean,
     isNoteSelected: Boolean,
     onSelectNote: (NoteEntity) -> Unit,
@@ -136,14 +159,14 @@ fun AdaptiveNoteCard(
     ) {
         NoteCardHeader(
             formattedTimestamp = dateFormatter.format(displayedNote.timestamp),
-            isMarkdown = displayedNote.isMarkdown
+            isStandard = displayedNote.isMarkdown
         )
     }
 
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .then(if (isListView) Modifier.padding(start = NoteCardDefaults.CARD_PADDING) else Modifier),
+            .then(if (isListView) Modifier.padding(start = NoteCardDefaults.CARD_START_PADDING) else Modifier),
         colors = if (isNoteSelected) CardDefaults.outlinedCardColors() else CardDefaults.elevatedCardColors(),
         border = if (isNoteSelected) CardDefaults.outlinedCardBorder() else null
     ) {
@@ -161,14 +184,15 @@ fun AdaptiveNoteCard(
                     checked = isNoteSelected,
                     onCheckedChange = null,
                     modifier = Modifier
-                        .padding(NoteCardDefaults.CONTENT_PADDING)
+                        .padding(NoteCardDefaults.CHECKBOX_PADDING)
                         .align(Alignment.TopEnd)
                 )
             }
             NoteCardContent(
                 displayedNote = displayedNote,
                 contentTextOverflow = contentTextOverflow,
-                contentMaxLines = contentMaxLines
+                contentMaxLines = contentMaxLines,
+                isRaw = isRaw
             )
         }
     }

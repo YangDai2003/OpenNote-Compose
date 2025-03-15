@@ -10,9 +10,9 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
@@ -76,11 +76,7 @@ fun StylePane(sharedViewModel: SharedViewModel) {
     val isSystemDarkTheme = isSystemInDarkTheme()
     val hapticFeedback = LocalHapticFeedback.current
 
-    Column(
-        Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-    ) {
+    Column(Modifier.verticalScroll(rememberScrollState())) {
 
         Box(
             modifier = Modifier
@@ -184,9 +180,7 @@ fun StylePane(sharedViewModel: SharedViewModel) {
 
         SettingsHeader(text = stringResource(R.string.dark_mode))
 
-        Column(
-            Modifier.selectableGroup()
-        ) {
+        Column(Modifier.selectableGroup()) {
             modeOptions.forEachIndexed { index, text ->
                 Row(
                     Modifier
@@ -284,5 +278,7 @@ fun StylePane(sharedViewModel: SharedViewModel) {
                 }
             }
         }
+
+        Spacer(Modifier.navigationBarsPadding())
     }
 }

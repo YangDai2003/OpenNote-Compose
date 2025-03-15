@@ -28,6 +28,7 @@ data class SettingsState(
     val biometricAuthEnabled: Boolean = false,
     val enumOverflowStyle: ListNoteContentOverflowStyle = ListNoteContentOverflowStyle.ELLIPSIS,
     val enumContentSize: ListNoteContentSize = ListNoteContentSize.DEFAULT,
+    val enumDisplayMode: ListNoteContentDisplayMode = ListNoteContentDisplayMode.RAW,
     val isAutoSaveEnabled: Boolean = false,
     val titleAlignment: Int = 0,
 )
@@ -78,5 +79,15 @@ enum class ListNoteContentSize(private val value: Int) {
     companion object {
         fun fromInt(value: Int) = entries.firstOrNull { it.value == value } ?: DEFAULT
         fun ListNoteContentSize.toInt() = value
+    }
+}
+
+enum class ListNoteContentDisplayMode(private val value: Int) {
+    RAW(0),
+    PREVIEW(1);
+
+    companion object {
+        fun fromInt(value: Int) = entries.firstOrNull { it.value == value } ?: RAW
+        fun ListNoteContentDisplayMode.toInt() = value
     }
 }

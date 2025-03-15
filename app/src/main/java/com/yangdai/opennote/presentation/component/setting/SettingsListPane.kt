@@ -6,7 +6,9 @@ import android.os.Build
 import android.provider.Settings
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.calculateStartPadding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -33,6 +35,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import com.yangdai.opennote.R
 import com.yangdai.opennote.presentation.component.TopBarTitle
@@ -75,10 +78,13 @@ fun SettingsListPane(
         }
     ) { innerPadding ->
 
+        val layoutDirection = LocalLayoutDirection.current
         Column(
             Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
+                .padding(
+                    top = innerPadding.calculateTopPadding(),
+                    start = innerPadding.calculateStartPadding(layoutDirection)
+                )
                 .verticalScroll(rememberScrollState())
         ) {
 
@@ -276,6 +282,8 @@ fun SettingsListPane(
                     )
                 )
             }
+
+            Spacer(Modifier.navigationBarsPadding())
         }
     }
 }

@@ -1,4 +1,4 @@
-package com.yangdai.opennote.presentation.util.highlight
+package com.yangdai.opennote.presentation.util.extension.highlight
 
 import org.commonmark.node.Node
 import org.commonmark.renderer.NodeRenderer

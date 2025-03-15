@@ -437,7 +437,6 @@ fun FileScreen(
                 visible = isSearching
             ) {
                 FindAndReplaceField(
-                    isStandard = noteState.isStandard,
                     state = searchState,
                     onStateUpdate = { searchState = it })
             }

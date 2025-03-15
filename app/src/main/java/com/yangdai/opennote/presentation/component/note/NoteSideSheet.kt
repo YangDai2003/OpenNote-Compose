@@ -40,7 +40,6 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MenuDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
@@ -165,7 +164,7 @@ fun NoteSideSheet(
                 .offset { IntOffset(x = (offsetX.value - drawerWidthPx).roundToInt(), y = 0) }
                 .align(Alignment.TopEnd)
                 .background(
-                    color = MenuDefaults.containerColor,
+                    color = DrawerDefaults.modalContainerColor.copy(alpha = 0.9f),
                     shape = MaterialTheme.shapes.large.copy(
                         topEnd = CornerSize(0),
                         bottomEnd = CornerSize(0)
@@ -184,7 +183,7 @@ fun NoteSideSheet(
                 .offset { IntOffset(x = offsetX.value.roundToInt(), y = 0) }
                 .align(Alignment.CenterEnd)
                 .pointerInput(Unit) {},
-            color = DrawerDefaults.modalContainerColor,
+            color = DrawerDefaults.modalContainerColor.copy(alpha = 0.95f),
             shape = MaterialTheme.shapes.extraLarge.copy(
                 topEnd = CornerSize(0),
                 bottomEnd = CornerSize(0)

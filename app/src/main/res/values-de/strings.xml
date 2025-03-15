@@ -199,4 +199,6 @@
     <string name="create_note">Notiz erstellen</string>
     <string name="edit_text_file">Textdatei bearbeiten</string>
     <string name="create_text_file">Textdatei erstellen</string>
+    <string name="raw">Roh</string>
+    <string name="display_style">Anzeigestil</string>
 </resources>

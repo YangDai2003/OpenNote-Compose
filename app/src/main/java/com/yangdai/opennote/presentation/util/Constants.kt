@@ -6,6 +6,7 @@ object Constants {
     const val MIME_TYPE_TEXT = "text/"
     const val LINK = "https://www.yangdai-opennote.com"
     const val KEY_DESTINATION = "KEY_DESTINATION"
+
     object File {
         const val OPENNOTE = "OpenNote"
         const val OPENNOTE_BACKUP = "Backup"
@@ -38,6 +39,7 @@ object Constants {
         const val FONT_SCALE = "FONT_SCALE"
         const val ENUM_OVERFLOW_STYLE = "ENUM_OVERFLOW_STYLE"
         const val ENUM_CONTENT_SIZE = "ENUM_WIDGET_SIZE"
+        const val ENUM_DISPLAY_MODE = "ENUM_DISPLAY_MODE"
         const val IS_AUTO_SAVE_ENABLED = "IS_AUTO_SAVE_ENABLED"
         const val TITLE_ALIGN = "TITLE_ALIGN"
     }
@@ -81,5 +83,4 @@ object Constants {
 
         const val TEXT = "text"
     }
-
 }

@@ -201,4 +201,6 @@
     <string name="create_note">Create a note</string>
     <string name="edit_text_file">Edit a text file</string>
     <string name="create_text_file">Create a text file</string>
+    <string name="raw">Raw</string>
+    <string name="display_style">Display Style</string>
 </resources>

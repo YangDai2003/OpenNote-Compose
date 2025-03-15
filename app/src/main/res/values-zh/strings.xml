@@ -199,4 +199,6 @@
     <string name="create_note">创建笔记</string>
     <string name="edit_text_file">编辑文本文件</string>
     <string name="create_text_file">创建文本文件</string>
+    <string name="raw">原始</string>
+    <string name="display_style">展示风格</string>
 </resources>

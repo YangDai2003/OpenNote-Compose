@@ -1,4 +1,4 @@
-package com.yangdai.opennote.presentation.util.highlight
+package com.yangdai.opennote.presentation.util.extension.highlight
 
 import org.commonmark.Extension
 import org.commonmark.parser.Parser

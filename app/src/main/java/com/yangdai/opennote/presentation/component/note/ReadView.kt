@@ -63,7 +63,8 @@ data class MarkdownStyles(
     val hexPreBackgroundColor: String,
     val hexQuoteBackgroundColor: String,
     val hexLinkColor: String,
-    val hexBorderColor: String
+    val hexBorderColor: String,
+    val backgroundColor: Int
 ) {
     companion object {
         fun fromColorScheme(colorScheme: ColorScheme) = MarkdownStyles(
@@ -72,7 +73,8 @@ data class MarkdownStyles(
             hexPreBackgroundColor = colorScheme.surfaceColorAtElevation(1.dp).toArgb().toHexColor(),
             hexQuoteBackgroundColor = colorScheme.secondaryContainer.toArgb().toHexColor(),
             hexLinkColor = linkColor.toArgb().toHexColor(),
-            hexBorderColor = colorScheme.outline.toArgb().toHexColor()
+            hexBorderColor = colorScheme.outline.toArgb().toHexColor(),
+            backgroundColor = colorScheme.surface.toArgb()
         )
     }
 }
@@ -92,7 +94,6 @@ fun ReadView(
 ) {
 
     val colorScheme = MaterialTheme.colorScheme
-    val backgroundColor = colorScheme.surface
     val markdownStyles = remember(colorScheme) {
         MarkdownStyles.fromColorScheme(colorScheme)
     }
@@ -221,10 +222,6 @@ fun ReadView(
                     });
                 });
             </script>
-            <script type="module">
-                import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
-                mermaid.initialize({ startOnLoad: true });
-            </script>
             <script>
                 document.addEventListener('DOMContentLoaded', () => {
                     document.querySelectorAll('li').forEach(li => {
@@ -235,8 +232,8 @@ fun ReadView(
                 });
             </script>
             <link href="$codeTheme" rel="stylesheet" />
-            <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
-            <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+            <script src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-core.min.js"></script>
+            <script src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/plugins/autoloader/prism-autoloader.min.js"></script>
             <style type="text/css">
                 body { color: ${markdownStyles.hexTextColor}; padding-left: 16px; padding-right: 16px; padding-top: 0; padding-bottom: 0; margin: 0; }
                 img { max-width: 100%; height: auto; }
@@ -261,6 +258,9 @@ fun ReadView(
             </head>
             <body>
             $html
+            <script src="file:///android_asset/mermaid.min.js" type="text/javascript">
+                mermaid.initialize({ startOnLoad: true });
+            </script>
             </body>
             </html>
         """.trimIndent()
@@ -532,7 +532,7 @@ fun ReadView(
             }
         },
         update = {
-            it.setBackgroundColor(backgroundColor.toArgb())
+            it.setBackgroundColor(markdownStyles.backgroundColor)
             it.loadDataWithBaseURL(
                 null,
                 data,

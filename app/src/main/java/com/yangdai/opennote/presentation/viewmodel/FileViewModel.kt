@@ -39,9 +39,11 @@ import com.yangdai.opennote.presentation.state.NoteState
 import com.yangdai.opennote.presentation.state.SettingsState
 import com.yangdai.opennote.presentation.state.TextState
 import com.yangdai.opennote.presentation.util.Constants
+import com.yangdai.opennote.presentation.util.PARSER
 import com.yangdai.opennote.presentation.util.getFileName
 import com.yangdai.opennote.presentation.util.getOrCreateDirectory
-import com.yangdai.opennote.presentation.util.highlight.HighlightExtension
+import com.yangdai.opennote.presentation.util.extension.highlight.HighlightExtension
+import com.yangdai.opennote.presentation.util.extension.properties.Properties
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -71,7 +73,6 @@ import org.commonmark.ext.ins.InsExtension
 import org.commonmark.ext.task.list.items.TaskListItemsExtension
 import org.commonmark.node.AbstractVisitor
 import org.commonmark.node.Heading
-import org.commonmark.parser.IncludeSourceSpans
 import org.commonmark.parser.Parser
 import org.commonmark.renderer.html.HtmlRenderer
 import java.io.OutputStreamWriter
@@ -117,7 +118,11 @@ class FileViewModel @Inject constructor(
     // Markdown 渲染后的 HTML 内容
     @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
     val html = contentSnapshotFlow.debounce(100)
-        .mapLatest { renderer.render(parser.parse(it.toString())) }
+        .mapLatest {
+            var content = it.toString()
+            content = Properties.splitPropertiesAndContent(content).second
+            renderer.render(parser.parse(content))
+        }
         .flowOn(Dispatchers.Default)
         .stateIn(
             scope = viewModelScope,
@@ -135,13 +140,10 @@ class FileViewModel @Inject constructor(
             initialValue = TextState()
         )
 
-    private val parserForOutline =
-        Parser.builder().includeSourceSpans(IncludeSourceSpans.BLOCKS_AND_INLINES).build()
-
     @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
     val outline = contentSnapshotFlow.debounce(500)
         .mapLatest {
-            val document = parserForOutline.parse(it.toString())
+            val document = PARSER.parse(it.toString())
             val root = HeaderNode("", 0, IntRange.EMPTY)
             val headerStack = mutableListOf(root)
             document.accept(object : AbstractVisitor() {

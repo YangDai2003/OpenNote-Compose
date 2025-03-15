@@ -54,6 +54,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import com.yangdai.opennote.R
+import com.yangdai.opennote.presentation.util.findAllIndices
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlin.math.PI
@@ -183,8 +184,6 @@ fun StandardTextField(
                 state.setTextAndPlaceCursorAtEnd(newText)
             } else if (findAndReplaceState.replaceType == ReplaceType.CURRENT) {
                 if (findAndReplaceState.searchWord.isBlank()) return@LaunchedEffect
-                // 获取所有匹配位置
-                val indices = findAllIndices(state.text.toString(), findAndReplaceState.searchWord)
                 // 检查索引是否有效
                 if (indices.isEmpty() || currentIndex >= indices.size) return@LaunchedEffect
                 // 获取要替换的位置
@@ -388,7 +387,9 @@ fun StandardTextField(
                                 // 处理空列表项
                                 if (selection.start == currentLineEnd &&
                                     (trimmedLine == "- [ ]" || trimmedLine == "-" || trimmedLine == "*" || trimmedLine == "+"
-                                            || trimmedLine.matches(Regex("^\\d+\\.$")) || trimmedLine.matches(Regex("^\\d+\\)$")))
+                                            || trimmedLine.matches(Regex("^\\d+\\.$")) || trimmedLine.matches(
+                                        Regex("^\\d+\\)$")
+                                    ))
                                 ) {
                                     state.edit {
                                         delete(currentLineStart, currentLineEnd)
@@ -404,12 +405,14 @@ fun StandardTextField(
                                                 ?: 1
                                         "$nextNumber. " // 有序列表
                                     }
+
                                     trimmedLine.matches(Regex("^\\d+\\)\\s.*")) -> {
                                         val nextNumber =
                                             trimmedLine.substringBefore(")").toIntOrNull()?.plus(1)
                                                 ?: 1
                                         "$nextNumber) " // 有序列表
                                     }
+
                                     trimmedLine.startsWith("- ") -> "- " // 无序列表
                                     trimmedLine.startsWith("* ") -> "* "
                                     trimmedLine.startsWith("+ ") -> "+ "
@@ -437,9 +440,7 @@ fun StandardTextField(
         state = state,
         textStyle = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface),
         cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
-        onTextLayout = { result ->
-            textLayoutResult = result.invoke()
-        },
+        onTextLayout = { result -> textLayoutResult = result.invoke() },
         keyboardOptions = KeyboardOptions(
             capitalization = KeyboardCapitalization.Sentences,
             keyboardType = KeyboardType.Text,
@@ -496,18 +497,6 @@ fun StandardTextField(
             }
         }
     )
-}
-
-private fun findAllIndices(text: String, word: String): List<Pair<Int, Int>> {
-    if (word.isBlank()) return emptyList()
-
-    return buildList {
-        var index = text.indexOf(word)
-        while (index != -1) {
-            add(index to (index + word.length))
-            index = text.indexOf(word, index + 1)
-        }
-    }
 }
 
 private fun drawWavyUnderline(

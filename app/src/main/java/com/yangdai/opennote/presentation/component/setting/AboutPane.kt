@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -76,10 +77,9 @@ fun AboutPane() {
 
     Column(
         Modifier
-            .fillMaxSize()
+            .padding(horizontal = 8.dp)
             .verticalScroll(rememberScrollState()),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
 
         val packageInfo = context.packageManager.getPackageInfo(
@@ -156,7 +156,6 @@ fun AboutPane() {
 
         ListItem(
             modifier = Modifier
-                .padding(horizontal = 8.dp)
                 .padding(bottom = 8.dp)
                 .clip(CircleShape)
                 .clickable { showSponsorDialog = true },
@@ -171,7 +170,6 @@ fun AboutPane() {
 
         ListItem(
             modifier = Modifier
-                .padding(horizontal = 8.dp)
                 .padding(bottom = 8.dp)
                 .clip(CircleShape)
                 .clickable {
@@ -192,7 +190,6 @@ fun AboutPane() {
 
         ListItem(
             modifier = Modifier
-                .padding(horizontal = 8.dp)
                 .padding(bottom = 8.dp)
                 .clip(CircleShape)
                 .clickable {
@@ -213,7 +210,6 @@ fun AboutPane() {
 
         ListItem(
             modifier = Modifier
-                .padding(horizontal = 8.dp)
                 .padding(bottom = 8.dp)
                 .clip(CircleShape)
                 .clickable {
@@ -235,7 +231,6 @@ fun AboutPane() {
 
         ListItem(
             modifier = Modifier
-                .padding(horizontal = 8.dp)
                 .padding(bottom = 8.dp)
                 .clip(CircleShape)
                 .clickable {
@@ -255,7 +250,6 @@ fun AboutPane() {
 
         ListItem(
             modifier = Modifier
-                .padding(horizontal = 8.dp)
                 .padding(bottom = 8.dp)
                 .clip(CircleShape)
                 .clickable {
@@ -272,7 +266,6 @@ fun AboutPane() {
 
         ListItem(
             modifier = Modifier
-                .padding(horizontal = 8.dp)
                 .padding(bottom = 8.dp)
                 .clip(CircleShape)
                 .clickable {
@@ -294,6 +287,8 @@ fun AboutPane() {
                 )
             },
             headlineContent = { Text(text = stringResource(R.string.share_this_app)) })
+
+        Spacer(Modifier.navigationBarsPadding())
     }
 
     if (showSponsorDialog) {

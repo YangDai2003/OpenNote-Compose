@@ -5,8 +5,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
@@ -50,11 +50,7 @@ fun EditorPane(sharedViewModel: SharedViewModel) {
     val settingsState by sharedViewModel.settingsStateFlow.collectAsStateWithLifecycle()
     val hapticFeedback = LocalHapticFeedback.current
 
-    Column(
-        Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-    ) {
+    Column(Modifier.verticalScroll(rememberScrollState())) {
 
         ListItem(
             leadingContent = {
@@ -113,7 +109,7 @@ fun EditorPane(sharedViewModel: SharedViewModel) {
 
         SingleChoiceSegmentedButtonRow(
             modifier = Modifier
-                .fillMaxSize()
+                .fillMaxWidth()
                 .padding(horizontal = 16.dp)
                 .padding(bottom = 16.dp)
         ) {
@@ -180,7 +176,7 @@ fun EditorPane(sharedViewModel: SharedViewModel) {
 
         SingleChoiceSegmentedButtonRow(
             modifier = Modifier
-                .fillMaxSize()
+                .fillMaxWidth()
                 .padding(horizontal = 16.dp)
                 .padding(bottom = 16.dp)
         ) {
@@ -244,7 +240,7 @@ fun EditorPane(sharedViewModel: SharedViewModel) {
 
         SingleChoiceSegmentedButtonRow(
             modifier = Modifier
-                .fillMaxSize()
+                .fillMaxWidth()
                 .padding(horizontal = 16.dp)
                 .padding(bottom = 16.dp)
         ) {
@@ -323,5 +319,7 @@ fun EditorPane(sharedViewModel: SharedViewModel) {
                 )
             }
         )
+
+        Spacer(Modifier.navigationBarsPadding())
     }
 }

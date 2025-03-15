@@ -473,7 +473,6 @@ fun NoteScreen(
                 contentAlignment = Alignment.TopCenter
             ) {
                 if (it) FindAndReplaceField(
-                    isStandard = noteState.isStandard,
                     state = searchState,
                     onStateUpdate = { searchState = it })
                 else BasicTextField(
