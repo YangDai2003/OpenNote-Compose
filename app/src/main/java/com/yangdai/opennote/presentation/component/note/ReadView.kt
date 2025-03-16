@@ -13,6 +13,7 @@ import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.print.PrintAttributes
 import android.print.PrintManager
+import android.util.LruCache
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.JavascriptInterface
@@ -32,6 +33,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
@@ -92,7 +94,8 @@ fun ReadView(
     printEnabled: MutableState<Boolean>,
     launchShareIntent: MutableState<Boolean>
 ) {
-
+    val context = LocalContext.current
+    val activity = LocalActivity.current
     val colorScheme = MaterialTheme.colorScheme
     val markdownStyles = remember(colorScheme) {
         MarkdownStyles.fromColorScheme(colorScheme)
@@ -105,182 +108,22 @@ fun ReadView(
         }
     }
 
-    val data by remember(html, markdownStyles, codeTheme) {
+    var template by rememberSaveable { mutableStateOf("") }
+
+    LaunchedEffect(Unit) {
+        withContext(Dispatchers.IO) {
+            template = try {
+                context.assets.open("template.html").bufferedReader().use { it.readText() }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                ""
+            }
+        }
+    }
+
+    val data by remember(html, markdownStyles, codeTheme, isAppInDarkMode, template) {
         mutableStateOf(
-            """
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1">
-            <meta name="color-scheme" content="${if (isAppInDarkMode) "dark" else "light"}">
-            
-            <!-- Preconnect to CDN resources -->
-            <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
-            
-            <!-- Critical CSS -->
-            <style type="text/css">
-                body { 
-                    color: ${markdownStyles.hexTextColor}; 
-                    background-color: ${markdownStyles.backgroundColor.toHexColor()} !important;
-                    padding: 0 16px; 
-                    margin: 0; 
-                }
-                img { 
-                    max-width: 100%; 
-                    height: auto; 
-                    -webkit-touch-callout: none;
-                    pointer-events: auto !important;
-                    draggable: false;
-                }
-                a { color: ${markdownStyles.hexLinkColor}; }
-                p code, td code { 
-                    background-color: ${markdownStyles.hexCodeBackgroundColor}; 
-                    padding: 4px 4px 2px 4px; 
-                    margin: 4px; 
-                    border-radius: 4px; 
-                    font-family: monospace; 
-                }
-                pre { 
-                    background-color: ${markdownStyles.hexPreBackgroundColor}; 
-                    display: block; 
-                    padding: 16px; 
-                    overflow-x: auto; 
-                    margin: 16px 0;
-                }
-                blockquote { 
-                    border-left: 4px solid ${markdownStyles.hexQuoteBackgroundColor}; 
-                    padding: 0; 
-                    margin: 16px 0; 
-                }
-                blockquote > * { margin-left: 16px; padding: 0; }
-                blockquote blockquote { margin: 16px; }
-                table { 
-                    border-collapse: collapse; 
-                    display: block; 
-                    overflow-x: auto; 
-                    margin: 16px 0; 
-                }
-                th, td { 
-                    border: 1px solid ${markdownStyles.hexBorderColor}; 
-                    padding: 6px 13px; 
-                    line-height: 1.5; 
-                }
-                tr:nth-child(even) { background-color: ${markdownStyles.hexPreBackgroundColor}; }
-                video::-webkit-media-controls-fullscreen-button { display: none !important; }
-                video, audio { width: 100%; }
-            </style>
-            
-            <!-- Async CSS loading -->
-            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.21/dist/katex.min.css" integrity="sha384-zh0CIslj+VczCZtlzBcjt5ppRcsAmDnRem7ESsYwWwg3m/OaJ2l4x7YBZl9Kxxib" crossorigin="anonymous">
-            <link rel="stylesheet" href="$codeTheme">
-            
-            <!-- Core functionality -->
-            <script>
-                // Initialize handler objects
-                const handlers = {
-                    processMediaItems: () => {
-                        handlers.processImages();
-                        handlers.processAudio();
-                        handlers.processVideos();
-                        handlers.processCheckboxLists();
-                    },
-                    
-                    processImages: () => {
-                        document.querySelectorAll('img').forEach((img, index) => {
-                            const imageName = img.getAttribute('src');
-                            const id = 'img_' + index;
-                            img.setAttribute('data-id', id);
-                            img.setAttribute('loading', 'lazy');
-                            window.mediaPathHandler.processMedia(imageName, id, "image");
-                            
-                            let touchStartTime;
-                            
-                            img.onclick = () => window.imageInterface.onImageClick(img.src);
-                            img.oncontextmenu = e => { e.preventDefault(); return false; };
-                            img.draggable = false;
-                            
-                            img.addEventListener('touchstart', () => {
-                                touchStartTime = Date.now();
-                            });
-                            
-                            img.addEventListener('touchend', e => {
-                                if (Date.now() - touchStartTime >= 500) {
-                                    e.preventDefault();
-                                }
-                            });
-                        });
-                    },
-                    
-                    processAudio: () => {
-                        document.querySelectorAll('audio').forEach((audio, index) => {
-                            const audioName = audio.getAttribute('src');
-                            const id = 'audio_' + index;
-                            audio.setAttribute('data-id', id);
-                            audio.controls = true;
-                            audio.controlsList = "nodownload";
-                            window.mediaPathHandler.processMedia(audioName, id, "audio");
-                            
-                            audio.oncontextmenu = e => { e.preventDefault(); return false; };
-                        });
-                    },
-                    
-                    processVideos: () => {
-                        document.querySelectorAll('video').forEach((video, index) => {
-                            const videoName = video.getAttribute('src');
-                            const id = 'video_' + index;
-                            video.setAttribute('data-id', id);
-                            video.controls = true;
-                            video.controlsList = "nodownload nofullscreen";
-                            window.mediaPathHandler.processMedia(videoName, id, "video");
-                            
-                            video.oncontextmenu = e => { e.preventDefault(); return false; };
-                        });
-                    },
-                    
-                    processCheckboxLists: () => {
-                        document.querySelectorAll('li').forEach(li => {
-                            if (li.querySelector('input[type="checkbox"]')) {
-                                li.style.listStyleType = 'none';
-                            }
-                        });
-                    }
-                };
-                
-                // Execute on page load
-                document.addEventListener('DOMContentLoaded', () => {
-                    handlers.processMediaItems();
-                    
-                    // Initialize Mermaid if available
-                    if (typeof mermaid !== 'undefined') {
-                        mermaid.initialize({ startOnLoad: true });
-                    }
-                });
-            </script>
-        </head>
-        <body>
-            $html
-            
-            <!-- Deferred JavaScript -->
-            <script src="file:///android_asset/mermaid.min.js" defer></script>
-            <script src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-core.min.js" defer></script>
-            <script src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/plugins/autoloader/prism-autoloader.min.js" defer></script>
-            
-            <!-- KaTeX rendering -->
-            <script src="https://cdn.jsdelivr.net/npm/katex@0.16.21/dist/katex.min.js" integrity="sha384-Rma6DA2IPUwhNxmrB/7S3Tno0YY7sFu9WSYMCuulLhIqYSGZ2gKCJWIqhBWqMQfh" crossorigin="anonymous" defer></script>
-            <script src="https://cdn.jsdelivr.net/npm/katex@0.16.21/dist/contrib/auto-render.min.js" integrity="sha384-hCXGrW6PitJEwbkoStFjeJxv+fSOOQKOPbJxSfM6G5sWZjAyWhXiTIIAmQqnlLlh" crossorigin="anonymous" defer 
-                onload="renderMathInElement(document.body, {
-                    delimiters: [
-                        {left: '$$', right: '$$', display: true},
-                        {left: '$', right: '$', display: false},
-                        {left: '\\\\(', right: '\\\\)', display: false},
-                        {left: '\\\\[', right: '\\\\]', display: true}
-                    ],
-                    throwOnError: false
-                });"></script>
-        </body>
-        </html>
-        """.trimIndent()
+            processHtml(html, markdownStyles, codeTheme, isAppInDarkMode, template)
         )
     }
 
@@ -288,9 +131,7 @@ fun ReadView(
     val coroutineScope = rememberCoroutineScope()
 
     var webView by remember { mutableStateOf<WebView?>(null) }
-    val imageCache = remember(rootUri) {
-        mutableMapOf<String, String>()
-    }
+
     var showDialog by remember { mutableStateOf(false) }
     var clickedImageUrl by remember { mutableStateOf("") }
 
@@ -323,7 +164,6 @@ fun ReadView(
         )
     }
 
-    val activity = LocalActivity.current
     LaunchedEffect(printEnabled.value) {
         if (!printEnabled.value) return@LaunchedEffect
         webView?.let {
@@ -331,7 +171,6 @@ fun ReadView(
         }
         printEnabled.value = false
     }
-    val context = LocalContext.current
     LaunchedEffect(launchShareIntent.value) {
         if (!launchShareIntent.value) return@LaunchedEffect
         withContext(Dispatchers.IO) {
@@ -351,37 +190,38 @@ fun ReadView(
     var videosDir by remember { mutableStateOf<DocumentFile?>(null) }
     LaunchedEffect(rootUri) {
         withContext(Dispatchers.IO) {
+            MediaCache.clearCaches()
             imagesDir = try {
                 DocumentFile.fromTreeUri(context.applicationContext, rootUri)
                     ?.findFile(Constants.File.OPENNOTE)
                     ?.findFile(Constants.File.OPENNOTE_IMAGES)
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 null
             }
             audioDir = try {
                 DocumentFile.fromTreeUri(context.applicationContext, rootUri)
                     ?.findFile(Constants.File.OPENNOTE)
                     ?.findFile(Constants.File.OPENNOTE_AUDIO)
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 null
             }
             videosDir = try {
                 DocumentFile.fromTreeUri(context.applicationContext, rootUri)
                     ?.findFile(Constants.File.OPENNOTE)
                     ?.findFile(Constants.File.OPENNOTE_VIDEOS)
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 null
             }
             // 目录加载完成后，重新触发媒体处理
             withContext(Dispatchers.Main) {
                 webView?.evaluateJavascript(
                     """
-                (function() {
-                    setupImageHandlers();
-                    setupAudioHandlers();
-                    setupVideoHandlers();
-                })();
-            """.trimIndent(), null
+        (function() {
+            if (handlers && typeof handlers.processMediaItems === 'function') {
+                handlers.processMediaItems();
+            }
+        })();
+        """.trimIndent(), null
                 )
             }
         }
@@ -422,108 +262,101 @@ fun ReadView(
                         @JavascriptInterface
                         fun processMedia(mediaName: String, id: String, mediaType: String) {
                             coroutineScope.launch(Dispatchers.IO) {
-                                val mediaUri = when (mediaType) {
+                                when (mediaType) {
                                     "image" -> {
                                         // Check cache first for images
-                                        if (imageCache.containsKey(mediaName)) {
-                                            withContext(Dispatchers.Main) {
-                                                webView?.evaluateJavascript(
-                                                    """
-                                    (function() {
-                                        const img = document.querySelector('img[data-id="$id"]');
-                                        if (img) img.src = '${imageCache[mediaName]}';
-                                    })();
-                                    """.trimIndent(), null
-                                                )
-                                            }
+                                        MediaCache.getImageUri(mediaName)?.let {
+                                            updateImageInWebView(id, it)
                                             return@launch
                                         }
 
                                         val file =
                                             imagesDir?.listFiles()?.find { it.name == mediaName }
                                         val uri = file?.uri?.toString().orEmpty()
-
-                                        // Update image cache
                                         if (uri.isNotEmpty()) {
-                                            imageCache[mediaName] = uri
+                                            MediaCache.cacheImageUri(mediaName, uri)
+                                            updateImageInWebView(id, uri)
                                         }
-                                        uri
-                                    }
-
-                                    "audio" -> {
-                                        val file =
-                                            audioDir?.listFiles()?.find { it.name == mediaName }
-                                        file?.uri?.toString().orEmpty()
                                     }
 
                                     "video" -> {
                                         val file =
                                             videosDir?.listFiles()?.find { it.name == mediaName }
-                                        file?.uri?.toString().orEmpty()
-                                    }
+                                        val uri = file?.uri ?: return@launch
+                                        val uriString = uri.toString()
 
-                                    else -> ""
-                                }
-
-                                if (mediaUri.isEmpty()) return@launch
-
-                                withContext(Dispatchers.Main) {
-                                    when (mediaType) {
-                                        "image" -> {
-                                            webView?.evaluateJavascript(
-                                                """
-                                (function() {
-                                    const img = document.querySelector('img[data-id="$id"]');
-                                    if (img) img.src = '$mediaUri';
-                                })();
-                                """.trimIndent(), null
-                                            )
-                                        }
-
-                                        "audio" -> {
-                                            webView?.evaluateJavascript(
-                                                """
-                                (function() {
-                                    const audio = document.querySelector('audio[data-id="$id"]');
-                                    if (audio) audio.src = '$mediaUri';
-                                })();
-                                """.trimIndent(), null
-                                            )
-                                        }
-
-                                        "video" -> {
-                                            // Generate thumbnail for videos
-                                            val thumbnail = withContext(Dispatchers.IO) {
-                                                val retriever = MediaMetadataRetriever()
-                                                try {
-                                                    retriever.setDataSource(
-                                                        context.applicationContext,
-                                                        mediaUri.toUri()
+                                        // Get thumbnail from cache or generate new one
+                                        val thumbnail =
+                                            MediaCache.getVideoThumbnail(mediaName) ?: run {
+                                                val newThumbnail =
+                                                    MediaCache.generateVideoThumbnail(context, uri)
+                                                if (newThumbnail.isNotEmpty()) {
+                                                    MediaCache.cacheVideoThumbnail(
+                                                        mediaName,
+                                                        newThumbnail
                                                     )
-                                                    val bitmap = retriever.getFrameAtTime(0)
-                                                    val base64 = bitmapToBase64(bitmap)
-                                                    "data:image/jpeg;base64,$base64"
-                                                } catch (e: Exception) {
-                                                    ""
-                                                } finally {
-                                                    retriever.release()
                                                 }
+                                                newThumbnail
                                             }
 
-                                            webView?.evaluateJavascript(
-                                                """
-                                (function() {
-                                    const video = document.querySelector('video[data-id="$id"]');
-                                    if (video) {
-                                        video.src = '$mediaUri';
-                                        video.poster = '$thumbnail';
+                                        updateVideoInWebView(id, uriString, thumbnail)
                                     }
-                                })();
-                                """.trimIndent(), null
-                                            )
+
+                                    "audio" -> {
+                                        val file =
+                                            audioDir?.listFiles()?.find { it.name == mediaName }
+                                        val uri = file?.uri?.toString().orEmpty()
+                                        if (uri.isNotEmpty()) {
+                                            updateAudioInWebView(id, uri)
                                         }
                                     }
                                 }
+                            }
+                        }
+
+                        private suspend fun updateImageInWebView(id: String, uri: String) {
+                            withContext(Dispatchers.Main) {
+                                webView?.evaluateJavascript(
+                                    """
+                    (function() {
+                        const img = document.querySelector('img[data-id="$id"]');
+                        if (img) img.src = '$uri';
+                    })();
+                    """.trimIndent(), null
+                                )
+                            }
+                        }
+
+                        private suspend fun updateVideoInWebView(
+                            id: String,
+                            uri: String,
+                            thumbnail: String
+                        ) {
+                            withContext(Dispatchers.Main) {
+                                webView?.evaluateJavascript(
+                                    """
+                    (function() {
+                        const video = document.querySelector('video[data-id="$id"]');
+                        if (video) {
+                            video.src = '$uri';
+                            video.poster = '$thumbnail';
+                        }
+                    })();
+                    """.trimIndent(), null
+                                )
+                            }
+                        }
+
+                        private suspend fun updateAudioInWebView(id: String, uri: String) {
+                            withContext(Dispatchers.Main) {
+                                webView?.evaluateJavascript(
+                                    """
+                    (function() {
+                        const audio = document.querySelector('audio[data-id="$id"]');
+                        if (audio) audio.src = '$uri';
+                    })();
+                    """.trimIndent(), null
+                                )
                             }
                         }
                     },
@@ -558,7 +391,6 @@ fun ReadView(
             )
         },
         onReset = {
-            imageCache.clear()
             it.clearHistory()
             it.stopLoading()
             it.destroy()
@@ -577,8 +409,7 @@ private fun shareBitmap(context: Context, webView: WebView, noteName: String) {
     // 创建临时文件
     val file = File(context.cacheDir, "${noteName}_${System.currentTimeMillis()}_preview.jpg")
 
-    val bitmap = convertHtmlToBitmap(webView)
-    if (bitmap == null) return
+    val bitmap = convertHtmlToBitmap(webView) ?: return
     val canvas = Canvas(bitmap)
     webView.draw(canvas)
 
@@ -607,27 +438,34 @@ private fun shareBitmap(context: Context, webView: WebView, noteName: String) {
 }
 
 private fun convertHtmlToBitmap(webView: WebView): Bitmap? {
-    webView.measure(
-        View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED),
-        View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
-    )
-    //layout of webview
-    webView.layout(0, 0, webView.measuredWidth, webView.measuredHeight)
+    var bitmap: Bitmap? = null
+    try {
+        webView.measure(
+            View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED),
+            View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
+        )
+        //layout of webview
+        webView.layout(0, 0, webView.measuredWidth, webView.measuredHeight)
 
-    webView.isDrawingCacheEnabled = true
-    webView.buildDrawingCache()
-    //create Bitmap if measured height and width >0
-    val b = if (webView.measuredWidth > 0 && webView.measuredHeight > 0)
-        createBitmap(webView.measuredWidth, webView.measuredHeight)
-    else null
-    // Draw bitmap on canvas
-    b?.let {
-        Canvas(b).apply {
-            drawBitmap(it, 0f, b.height.toFloat(), Paint())
-            webView.draw(this)
+        webView.isDrawingCacheEnabled = true
+        webView.buildDrawingCache()
+        //create Bitmap if measured height and width >0
+        bitmap = if (webView.measuredWidth > 0 && webView.measuredHeight > 0)
+            createBitmap(webView.measuredWidth, webView.measuredHeight)
+        else null
+        // Draw bitmap on canvas
+        bitmap?.let {
+            Canvas(bitmap).apply {
+                drawBitmap(it, 0f, bitmap.height.toFloat(), Paint())
+                webView.draw(this)
+            }
         }
+        return bitmap
+    } catch (e: Exception) {
+        e.printStackTrace()
+        bitmap?.recycle()
+        return null
     }
-    return b
 }
 
 private fun createWebPrintJob(webView: WebView, activity: Activity?, name: String) {
@@ -649,17 +487,71 @@ private fun createWebPrintJob(webView: WebView, activity: Activity?, name: Strin
     }
 }
 
-@OptIn(ExperimentalEncodingApi::class)
-private fun bitmapToBase64(bitmap: Bitmap?): String {
-    if (bitmap == null) return ""
-    return ByteArrayOutputStream().use { outputStream ->
-        // Use a more efficient compression quality based on bitmap size
-        val quality = when {
-            bitmap.byteCount > 4 * 1024 * 1024 -> 40 // Large images
-            bitmap.byteCount > 1024 * 1024 -> 60 // Medium images
-            else -> 80 // Small images
+private fun processHtml(
+    html: String,
+    markdownStyles: MarkdownStyles,
+    codeTheme: String,
+    isAppInDarkMode: Boolean,
+    template: String
+): String {
+    return template
+        .replace("{{CONTENT}}", html)
+        .replace("{{TEXT_COLOR}}", markdownStyles.hexTextColor)
+        .replace("{{BACKGROUND_COLOR}}", markdownStyles.backgroundColor.toHexColor())
+        .replace("{{CODE_BACKGROUND}}", markdownStyles.hexCodeBackgroundColor)
+        .replace("{{PRE_BACKGROUND}}", markdownStyles.hexPreBackgroundColor)
+        .replace("{{QUOTE_BACKGROUND}}", markdownStyles.hexQuoteBackgroundColor)
+        .replace("{{LINK_COLOR}}", markdownStyles.hexLinkColor)
+        .replace("{{BORDER_COLOR}}", markdownStyles.hexBorderColor)
+        .replace("{{COLOR_SCHEME}}", if (isAppInDarkMode) "dark" else "light")
+        .replace("{{CODE_THEME}}", codeTheme)
+}
+
+// Create a media cache manager as a singleton object
+object MediaCache {
+    private const val MAX_CACHE_SIZE = 100
+    private const val THUMBNAIL_QUALITY = 70
+
+    private val imageCache = LruCache<String, String>(MAX_CACHE_SIZE)
+    private val videoThumbnailCache = LruCache<String, String>(MAX_CACHE_SIZE)
+
+    fun getImageUri(key: String): String? = imageCache.get(key)
+
+    fun cacheImageUri(key: String, uri: String) {
+        imageCache.put(key, uri)
+    }
+
+    fun getVideoThumbnail(key: String): String? = videoThumbnailCache.get(key)
+
+    @OptIn(ExperimentalEncodingApi::class)
+    fun generateVideoThumbnail(context: Context, mediaUri: Uri): String {
+        val retriever = MediaMetadataRetriever()
+        try {
+            retriever.setDataSource(context, mediaUri)
+            val bitmap = retriever.getFrameAtTime(0) ?: return ""
+            return ByteArrayOutputStream().use { outputStream ->
+                // Dynamic quality based on image size
+                val quality = when {
+                    bitmap.byteCount > 2 * 1024 * 1024 -> 50
+                    else -> THUMBNAIL_QUALITY
+                }
+                bitmap.compress(Bitmap.CompressFormat.JPEG, quality, outputStream)
+                "data:image/jpeg;base64,${Base64.encode(outputStream.toByteArray())}"
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return ""
+        } finally {
+            retriever.release()
         }
-        bitmap.compress(Bitmap.CompressFormat.JPEG, quality, outputStream)
-        Base64.encode(outputStream.toByteArray())
+    }
+
+    fun cacheVideoThumbnail(key: String, thumbnail: String) {
+        videoThumbnailCache.put(key, thumbnail)
+    }
+
+    fun clearCaches() {
+        imageCache.evictAll()
+        videoThumbnailCache.evictAll()
     }
 }
