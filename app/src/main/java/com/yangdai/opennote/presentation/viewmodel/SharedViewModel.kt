@@ -140,9 +140,8 @@ class SharedViewModel @Inject constructor(
         else combine(
             folders.map { folder ->
                 useCases.getNotesCountByFolderId(folder.id).map { count -> folder to count }
-            }) { countPairs ->
-            countPairs.toList()
-        }
+            }
+        ) { countPairs -> countPairs.toList() }
     }.flowOn(Dispatchers.IO)
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000L), emptyList())
 
@@ -224,7 +223,8 @@ class SharedViewModel @Inject constructor(
 
     // 当前笔记的初始化状态，用于比较是否有修改
     private var _oNote: NoteEntity = NoteEntity(
-        timestamp = System.currentTimeMillis(), isMarkdown = appDataStoreRepository.getBooleanValue(
+        timestamp = System.currentTimeMillis(),
+        isMarkdown = appDataStoreRepository.getBooleanValue(
             Constants.Preferences.IS_DEFAULT_LITE_MODE, false
         ).not()
     )
