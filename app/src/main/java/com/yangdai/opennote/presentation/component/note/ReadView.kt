@@ -122,6 +122,7 @@ fun ReadView(
             <style type="text/css">
                 body { 
                     color: ${markdownStyles.hexTextColor}; 
+                    background-color: ${markdownStyles.backgroundColor.toHexColor()} !important;
                     padding: 0 16px; 
                     margin: 0; 
                 }
@@ -548,7 +549,6 @@ fun ReadView(
             }
         },
         update = {
-            it.setBackgroundColor(markdownStyles.backgroundColor)
             it.loadDataWithBaseURL(
                 null,
                 data,
