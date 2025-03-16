@@ -54,6 +54,7 @@ import com.yangdai.opennote.data.di.AppModule
 import com.yangdai.opennote.data.local.entity.NoteEntity
 import com.yangdai.opennote.presentation.util.Constants
 import com.yangdai.opennote.presentation.util.Constants.LINK
+import com.yangdai.opennote.presentation.util.extension.properties.Properties.splitPropertiesAndContent
 
 private val transparentColorProviders = colorProviders(
     primary = ColorProvider(Color.Transparent, Color.Transparent),
@@ -223,18 +224,19 @@ class NoteListWidget : GlanceAppWidget() {
                                     )
                                 )
                         ) {
+                            if (it.title.isNotEmpty())
+                                Text(
+                                    modifier = GlanceModifier.fillMaxWidth(),
+                                    text = it.title,
+                                    style = TextStyle(
+                                        color = GlanceTheme.colors.onSurface,
+                                        fontSize = titleSize
+                                    ),
+                                    maxLines = 1
+                                )
                             Text(
                                 modifier = GlanceModifier.fillMaxWidth(),
-                                text = it.title,
-                                style = TextStyle(
-                                    color = GlanceTheme.colors.onSurface,
-                                    fontSize = titleSize
-                                ),
-                                maxLines = 1
-                            )
-                            Text(
-                                modifier = GlanceModifier.fillMaxWidth(),
-                                text = it.content,
+                                text = it.content.splitPropertiesAndContent().second,
                                 style = TextStyle(
                                     color = GlanceTheme.colors.onSurfaceVariant,
                                     fontSize = contentSize

@@ -17,7 +17,7 @@ import androidx.compose.ui.unit.sp
 import com.yangdai.opennote.presentation.theme.linkColor
 import com.yangdai.opennote.presentation.util.extension.highlight.Highlight
 import com.yangdai.opennote.presentation.util.extension.highlight.HighlightExtension
-import com.yangdai.opennote.presentation.util.extension.properties.Properties
+import com.yangdai.opennote.presentation.util.extension.properties.Properties.splitPropertiesAndContent
 import org.commonmark.ext.gfm.strikethrough.Strikethrough
 import org.commonmark.ext.gfm.strikethrough.StrikethroughExtension
 import org.commonmark.ext.gfm.tables.TableRow
@@ -461,7 +461,11 @@ fun findTagRanges(text: String): StyleRanges {
 }
 
 fun parseMarkdownContent(text: String): AnnotatedString {
-    val textWithoutProperties = Properties.splitPropertiesAndContent(text).second
+    if (text.isBlank()) return AnnotatedString(text)
+    val textWithoutProperties =
+        text.splitPropertiesAndContent().second
+            .replace("- [ ]", "☐")
+            .replace("- [x]", "☑")
     val styleRanges = findTagRanges(textWithoutProperties)
 
     return buildAnnotatedString {

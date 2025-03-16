@@ -26,7 +26,7 @@ import com.yangdai.opennote.presentation.util.STRIKETHROUGH_STYLE
 import com.yangdai.opennote.presentation.util.SYMBOL_STYLE
 import com.yangdai.opennote.presentation.util.StyleRanges
 import com.yangdai.opennote.presentation.util.UNDERLINE_STYLE
-import com.yangdai.opennote.presentation.util.extension.properties.Properties
+import com.yangdai.opennote.presentation.util.extension.properties.Properties.getPropertiesRange
 import com.yangdai.opennote.presentation.util.findTagRanges
 import com.yangdai.opennote.presentation.util.overlaps
 
@@ -39,7 +39,7 @@ class LiteTextVisualTransformation(
 
     override fun filter(string: AnnotatedString): TransformedText {
         val text = string.text
-        val propertiesRange = Properties.getPropertiesRange(text)
+        val propertiesRange = text.getPropertiesRange()
         var styleRanges = findTagRanges(text)
         if (propertiesRange != null) {
             styleRanges = StyleRanges(

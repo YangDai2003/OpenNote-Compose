@@ -48,6 +48,7 @@ object Constants {
         const val WIDGET_TEXT_SIZE = "WIDGET_TEXT_SIZE"
         const val WIDGET_TEXT_LINES = "WIDGET_TEXT_LINES"
         const val WIDGET_BACKGROUND_COLOR = "WIDGET_BACKGROUND_COLOR"
+        const val WIDGET_DISPLAY_MODE = "WIDGET_DISPLAY_MODE"
     }
 
     object Editor {

@@ -27,6 +27,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.yangdai.opennote.R
 import com.yangdai.opennote.presentation.state.WidgetBackgroundColor.Companion.toInt
+import com.yangdai.opennote.presentation.state.WidgetDisplayMode.Companion.toInt
 import com.yangdai.opennote.presentation.state.WidgetTextSize.Companion.toInt
 import com.yangdai.opennote.presentation.util.Constants
 import com.yangdai.opennote.presentation.viewmodel.WidgetViewModel
@@ -61,35 +62,20 @@ fun WidgetPane(
                 .padding(horizontal = 16.dp)
                 .padding(bottom = 16.dp)
         ) {
-            SegmentedButton(
-                shape = SegmentedButtonDefaults.itemShape(index = 0, count = fontSizeOptions.size),
-                onClick = {
-                    hapticFeedback.performHapticFeedback(HapticFeedbackType.SegmentTick)
-                    widgetViewModel.putPreferenceValue(Constants.Widget.WIDGET_TEXT_SIZE, 0)
-                },
-                selected = settingsState.textSize.toInt() == 0
-            ) {
-                Text(fontSizeOptions[0], maxLines = 1, modifier = Modifier.basicMarquee())
-            }
-            SegmentedButton(
-                shape = SegmentedButtonDefaults.itemShape(index = 1, count = fontSizeOptions.size),
-                onClick = {
-                    hapticFeedback.performHapticFeedback(HapticFeedbackType.SegmentTick)
-                    widgetViewModel.putPreferenceValue(Constants.Widget.WIDGET_TEXT_SIZE, 1)
-                },
-                selected = settingsState.textSize.toInt() == 1
-            ) {
-                Text(fontSizeOptions[1], maxLines = 1, modifier = Modifier.basicMarquee())
-            }
-            SegmentedButton(
-                shape = SegmentedButtonDefaults.itemShape(index = 2, count = fontSizeOptions.size),
-                onClick = {
-                    hapticFeedback.performHapticFeedback(HapticFeedbackType.SegmentTick)
-                    widgetViewModel.putPreferenceValue(Constants.Widget.WIDGET_TEXT_SIZE, 2)
-                },
-                selected = settingsState.textSize.toInt() == 2
-            ) {
-                Text(fontSizeOptions[2], maxLines = 1, modifier = Modifier.basicMarquee())
+            fontSizeOptions.forEachIndexed { index, label ->
+                SegmentedButton(
+                    shape = SegmentedButtonDefaults.itemShape(
+                        index = index,
+                        count = fontSizeOptions.size
+                    ),
+                    onClick = {
+                        hapticFeedback.performHapticFeedback(HapticFeedbackType.SegmentTick)
+                        widgetViewModel.putPreferenceValue(Constants.Widget.WIDGET_TEXT_SIZE, index)
+                    },
+                    selected = settingsState.textSize.toInt() == index
+                ) {
+                    Text(label, maxLines = 1, modifier = Modifier.basicMarquee())
+                }
             }
         }
 
@@ -133,27 +119,65 @@ fun WidgetPane(
                 .padding(horizontal = 16.dp)
                 .padding(bottom = 16.dp)
         ) {
-            SegmentedButton(
-                shape = SegmentedButtonDefaults.itemShape(index = 0, count = colorOptions.size),
-                onClick = {
-                    hapticFeedback.performHapticFeedback(HapticFeedbackType.SegmentTick)
-                    widgetViewModel.putPreferenceValue(Constants.Widget.WIDGET_BACKGROUND_COLOR, 0)
-                },
-                selected = settingsState.backgroundColor.toInt() == 0
-            ) {
-                Text(colorOptions[0], maxLines = 1, modifier = Modifier.basicMarquee())
-            }
-            SegmentedButton(
-                shape = SegmentedButtonDefaults.itemShape(index = 1, count = colorOptions.size),
-                onClick = {
-                    hapticFeedback.performHapticFeedback(HapticFeedbackType.SegmentTick)
-                    widgetViewModel.putPreferenceValue(Constants.Widget.WIDGET_BACKGROUND_COLOR, 1)
-                },
-                selected = settingsState.backgroundColor.toInt() == 1
-            ) {
-                Text(colorOptions[1], maxLines = 1, modifier = Modifier.basicMarquee())
+            colorOptions.forEachIndexed { index, label ->
+                SegmentedButton(
+                    shape = SegmentedButtonDefaults.itemShape(
+                        index = index,
+                        count = colorOptions.size
+                    ),
+                    onClick = {
+                        hapticFeedback.performHapticFeedback(HapticFeedbackType.SegmentTick)
+                        widgetViewModel.putPreferenceValue(
+                            Constants.Widget.WIDGET_BACKGROUND_COLOR,
+                            index
+                        )
+                    },
+                    selected = index == settingsState.backgroundColor.toInt(),
+                    label = {
+                        Text(label, maxLines = 1, modifier = Modifier.basicMarquee())
+                    },
+                )
+
             }
         }
+
+//        HorizontalDivider()
+//
+//        ListItem(
+//            headlineContent = { Text(text = stringResource(R.string.display_style)) }
+//        )
+//
+//        val displayStyles = listOf(
+//            stringResource(R.string.raw),
+//            stringResource(R.string.preview)
+//        )
+//
+//        SingleChoiceSegmentedButtonRow(
+//            modifier = Modifier
+//                .fillMaxWidth()
+//                .padding(horizontal = 16.dp)
+//                .padding(bottom = 16.dp),
+//        ) {
+//            displayStyles.forEachIndexed { index, label ->
+//                SegmentedButton(
+//                    shape = SegmentedButtonDefaults.itemShape(
+//                        index = index,
+//                        count = displayStyles.size
+//                    ),
+//                    onClick = {
+//                        hapticFeedback.performHapticFeedback(HapticFeedbackType.SegmentTick)
+//                        widgetViewModel.putPreferenceValue(
+//                            Constants.Widget.WIDGET_DISPLAY_MODE,
+//                            index
+//                        )
+//                    },
+//                    selected = index == settingsState.displayMode.toInt(),
+//                    label = {
+//                        Text(label, maxLines = 1, modifier = Modifier.basicMarquee())
+//                    },
+//                )
+//            }
+//        }
 
         Spacer(Modifier.navigationBarsPadding())
     }

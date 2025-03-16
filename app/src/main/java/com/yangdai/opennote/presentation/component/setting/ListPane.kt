@@ -175,7 +175,7 @@ fun ListPane(sharedViewModel: SharedViewModel) {
                         SegmentedButton(
                             shape = SegmentedButtonDefaults.itemShape(
                                 index = index,
-                                count = overflowStyles.size
+                                count = displayStyles.size
                             ),
                             onClick = {
                                 hapticFeedback.performHapticFeedback(HapticFeedbackType.SegmentTick)

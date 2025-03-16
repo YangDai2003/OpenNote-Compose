@@ -6,7 +6,8 @@ import androidx.compose.runtime.Stable
 data class WidgetState(
     val textSize: WidgetTextSize = WidgetTextSize.MEDIUM,
     val textLines: Int = 1,
-    val backgroundColor: WidgetBackgroundColor = WidgetBackgroundColor.MATERIAL3
+    val backgroundColor: WidgetBackgroundColor = WidgetBackgroundColor.MATERIAL3,
+    val displayMode: WidgetDisplayMode = WidgetDisplayMode.RAW
 )
 
 enum class WidgetTextSize(private val value: Int) {
@@ -27,5 +28,15 @@ enum class WidgetBackgroundColor(private val value: Int) {
     companion object {
         fun fromInt(value: Int) = entries.firstOrNull { it.value == value } ?: MATERIAL3
         fun WidgetBackgroundColor.toInt() = value
+    }
+}
+
+enum class WidgetDisplayMode(private val value: Int) {
+    RAW(0),
+    PREVIEW(1);
+
+    companion object {
+        fun fromInt(value: Int) = entries.firstOrNull { it.value == value } ?: RAW
+        fun WidgetDisplayMode.toInt() = value
     }
 }

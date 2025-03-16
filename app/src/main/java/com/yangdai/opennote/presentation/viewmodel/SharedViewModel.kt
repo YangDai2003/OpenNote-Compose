@@ -61,10 +61,10 @@ import com.yangdai.opennote.presentation.util.Constants
 import com.yangdai.opennote.presentation.util.PARSER
 import com.yangdai.opennote.presentation.util.decryptBackupDataWithCompatibility
 import com.yangdai.opennote.presentation.util.encryptBackupData
+import com.yangdai.opennote.presentation.util.extension.highlight.HighlightExtension
+import com.yangdai.opennote.presentation.util.extension.properties.Properties.splitPropertiesAndContent
 import com.yangdai.opennote.presentation.util.getFileName
 import com.yangdai.opennote.presentation.util.getOrCreateDirectory
-import com.yangdai.opennote.presentation.util.extension.highlight.HighlightExtension
-import com.yangdai.opennote.presentation.util.extension.properties.Properties
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -172,7 +172,7 @@ class SharedViewModel @Inject constructor(
     val html = contentSnapshotFlow.debounce(100)
         .mapLatest {
             var content = it.toString()
-            content = Properties.splitPropertiesAndContent(content).second
+            content = content.splitPropertiesAndContent().second
             renderer.render(parser.parse(content))
         }
         .flowOn(Dispatchers.Default)

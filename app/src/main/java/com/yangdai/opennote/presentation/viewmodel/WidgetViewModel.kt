@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.yangdai.opennote.domain.repository.WidgetDataStoreRepository
 import com.yangdai.opennote.presentation.state.WidgetBackgroundColor
+import com.yangdai.opennote.presentation.state.WidgetDisplayMode
 import com.yangdai.opennote.presentation.state.WidgetState
 import com.yangdai.opennote.presentation.state.WidgetTextSize
 import com.yangdai.opennote.presentation.util.Constants
@@ -25,12 +26,14 @@ class WidgetViewModel @Inject constructor(
     val widgetSettingsState: StateFlow<WidgetState> = combine(
         widgetDataStoreRepository.intFlow(Constants.Widget.WIDGET_TEXT_SIZE),
         widgetDataStoreRepository.intFlow(Constants.Widget.WIDGET_TEXT_LINES),
-        widgetDataStoreRepository.intFlow(Constants.Widget.WIDGET_BACKGROUND_COLOR)
-    ) { v1, v2, v3 ->
+        widgetDataStoreRepository.intFlow(Constants.Widget.WIDGET_BACKGROUND_COLOR),
+        widgetDataStoreRepository.intFlow(Constants.Widget.WIDGET_DISPLAY_MODE)
+    ) { v1, v2, v3, v4 ->
         WidgetState(
             textSize = WidgetTextSize.fromInt(v1),
             textLines = v2,
-            backgroundColor = WidgetBackgroundColor.fromInt(v3)
+            backgroundColor = WidgetBackgroundColor.fromInt(v3),
+            displayMode = WidgetDisplayMode.fromInt(v4)
         )
     }.flowOn(Dispatchers.IO).stateIn(
         scope = viewModelScope, started = SharingStarted.Eagerly, initialValue = WidgetState()
