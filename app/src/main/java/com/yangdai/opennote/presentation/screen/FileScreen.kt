@@ -3,6 +3,7 @@ package com.yangdai.opennote.presentation.screen
 import android.content.ClipData
 import android.content.Intent
 import android.provider.CalendarContract
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -12,7 +13,6 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.draggable
 import androidx.compose.foundation.gestures.rememberDraggableState
@@ -52,7 +52,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.VerticalDragHandle
 import androidx.compose.material3.adaptive.currentWindowSize
@@ -111,7 +110,7 @@ import com.yangdai.opennote.presentation.component.note.NoteSideSheetItem
 import com.yangdai.opennote.presentation.component.note.ReadView
 import com.yangdai.opennote.presentation.component.note.StandardTextField
 import com.yangdai.opennote.presentation.component.note.TemplateFilesList
-import com.yangdai.opennote.presentation.event.DatabaseEvent
+import com.yangdai.opennote.presentation.event.FileDataEvent
 import com.yangdai.opennote.presentation.event.FileEvent
 import com.yangdai.opennote.presentation.util.Constants
 import com.yangdai.opennote.presentation.util.TemplateProcessor
@@ -159,9 +158,15 @@ fun FileScreen(
                 if (documentFile?.exists() == true && documentFile.canRead() && documentFile.canWrite()) {
                     val fileName = documentFile.name.orEmpty()
                     val fileContent = runCatching {
-                        appContext.contentResolver.openInputStream(uri)?.bufferedReader()
-                            ?.readText().orEmpty()
-                    }.getOrDefault("")
+                        appContext.contentResolver.openInputStream(uri)?.use { inputStream ->
+                            inputStream.bufferedReader().use { reader ->
+                                reader.readText()
+                            }
+                        }.orEmpty()
+                    }.getOrElse { exception ->
+                        Log.e("FileScreen", "Error reading file: ${exception.message}", exception)
+                        ""
+                    }
                     withContext(Dispatchers.Main) {
                         oFileContent = fileContent
                         viewModel.titleState.setTextAndPlaceCursorAtEnd(fileName)
@@ -258,8 +263,8 @@ fun FileScreen(
     val photoPicker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickMultipleVisualMedia(maxItems = 10)
     ) { uris ->
-        if (uris.isNotEmpty()) viewModel.onDatabaseEvent(
-            DatabaseEvent.ImportImages(
+        if (uris.isNotEmpty()) viewModel.onFileDataEvent(
+            FileDataEvent.ImportImages(
                 context.applicationContext, uris
             )
         )
@@ -268,8 +273,8 @@ fun FileScreen(
     val videoPicker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia()
     ) { uri ->
-        if (uri != null) viewModel.onDatabaseEvent(
-            DatabaseEvent.ImportVideo(
+        if (uri != null) viewModel.onFileDataEvent(
+            FileDataEvent.ImportVideo(
                 context.applicationContext, uri
             )
         )
@@ -322,13 +327,7 @@ fun FileScreen(
             },
         topBar = {
             TopAppBar(
-                title = {
-                    Text(
-                        modifier = Modifier.basicMarquee(),
-                        text = viewModel.titleState.text.toString(),
-                        maxLines = 1
-                    )
-                },
+                title = {},
                 navigationIcon = {
                     IconButtonWithTooltip(
                         imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
@@ -498,8 +497,8 @@ fun FileScreen(
                                 )
                             },
                             onImageReceived = {
-                                viewModel.onDatabaseEvent(
-                                    DatabaseEvent.ImportImages(
+                                viewModel.onFileDataEvent(
+                                    FileDataEvent.ImportImages(
                                         context.applicationContext, it
                                     )
                                 )
@@ -584,8 +583,8 @@ fun FileScreen(
                                     )
                                 },
                                 onImageReceived = {
-                                    viewModel.onDatabaseEvent(
-                                        DatabaseEvent.ImportImages(
+                                    viewModel.onFileDataEvent(
+                                        FileDataEvent.ImportImages(
                                             context.applicationContext, it
                                         )
                                     )
@@ -688,6 +687,11 @@ fun FileScreen(
             }
         },
         drawerContent = {
+
+            NoteSideSheetItem(
+                key = stringResource(R.string.file),
+                value = viewModel.titleState.text.toString()
+            )
 
             NoteSideSheetItem(
                 key = stringResource(R.string.mode),
@@ -819,8 +823,8 @@ fun FileScreen(
 
     if (showExportDialog) {
         ExportDialog(onDismissRequest = { showExportDialog = false }, onConfirm = {
-            viewModel.onDatabaseEvent(
-                DatabaseEvent.ExportFiles(
+            viewModel.onFileDataEvent(
+                FileDataEvent.ExportFiles(
                     context.applicationContext, listOf(
                         NoteEntity(
                             title = viewModel.titleState.text.toString(),

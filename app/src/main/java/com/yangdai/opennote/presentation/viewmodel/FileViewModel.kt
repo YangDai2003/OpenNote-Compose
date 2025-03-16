@@ -32,7 +32,7 @@ import com.yangdai.opennote.presentation.component.note.strikeThrough
 import com.yangdai.opennote.presentation.component.note.tab
 import com.yangdai.opennote.presentation.component.note.unTab
 import com.yangdai.opennote.presentation.component.note.underline
-import com.yangdai.opennote.presentation.event.DatabaseEvent
+import com.yangdai.opennote.presentation.event.FileDataEvent
 import com.yangdai.opennote.presentation.event.FileEvent
 import com.yangdai.opennote.presentation.state.DataActionState
 import com.yangdai.opennote.presentation.state.NoteState
@@ -41,6 +41,7 @@ import com.yangdai.opennote.presentation.state.TextState
 import com.yangdai.opennote.presentation.util.Constants
 import com.yangdai.opennote.presentation.util.PARSER
 import com.yangdai.opennote.presentation.util.extension.highlight.HighlightExtension
+import com.yangdai.opennote.presentation.util.extension.properties.Properties.getPropertiesRange
 import com.yangdai.opennote.presentation.util.extension.properties.Properties.splitPropertiesAndContent
 import com.yangdai.opennote.presentation.util.getFileName
 import com.yangdai.opennote.presentation.util.getOrCreateDirectory
@@ -131,7 +132,7 @@ class FileViewModel @Inject constructor(
         )
 
     @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
-    val textState = contentSnapshotFlow.debounce(500)
+    val textState = contentSnapshotFlow.debounce(1000)
         .mapLatest { TextState.fromText(it) }
         .flowOn(Dispatchers.Default)
         .stateIn(
@@ -141,23 +142,29 @@ class FileViewModel @Inject constructor(
         )
 
     @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
-    val outline = contentSnapshotFlow.debounce(500)
+    val outline = contentSnapshotFlow.debounce(1000)
         .mapLatest {
-            val document = PARSER.parse(it.toString())
+            val content = it.toString()
+            val propertiesRange = content.getPropertiesRange()
+            val document = PARSER.parse(content)
             val root = HeaderNode("", 0, IntRange.EMPTY)
             val headerStack = mutableListOf(root)
             document.accept(object : AbstractVisitor() {
                 override fun visit(heading: Heading) {
                     val span = heading.sourceSpans.first()
                     val range = span.inputIndex until (span.inputIndex + span.length)
-                    val title = it.substring(range).replace("#", "").trim()
-                    val node = HeaderNode(title, heading.level, range)
 
-                    while (headerStack.last().level >= heading.level) {
-                        headerStack.removeAt(headerStack.lastIndex)
+                    // Skip headings that are inside the properties section
+                    if (propertiesRange == null || !propertiesRange.contains(range.first)) {
+                        val title = it.substring(range).replace("#", "").trim()
+                        val node = HeaderNode(title, heading.level, range)
+
+                        while (headerStack.last().level >= heading.level) {
+                            headerStack.removeAt(headerStack.lastIndex)
+                        }
+                        headerStack.last().children.add(node)
+                        headerStack.add(node)
                     }
-                    headerStack.last().children.add(node)
-                    headerStack.add(node)
                     visitChildren(heading)
                 }
             })
@@ -274,10 +281,10 @@ class FileViewModel @Inject constructor(
         _dataActionState.update { it.copy(loading = true, infinite = infinite) }
     }
 
-    fun onDatabaseEvent(event: DatabaseEvent) {
+    fun onFileDataEvent(event: FileDataEvent) {
         when (event) {
 
-            is DatabaseEvent.ImportVideo -> {
+            is FileDataEvent.ImportVideo -> {
                 val context = event.context
                 val uri = event.uri
 
@@ -319,7 +326,7 @@ class FileViewModel @Inject constructor(
                 }
             }
 
-            is DatabaseEvent.ImportImages -> {
+            is FileDataEvent.ImportImages -> {
                 val context = event.context
                 val contentResolver = context.contentResolver
                 val uriList = event.uriList
@@ -378,9 +385,7 @@ class FileViewModel @Inject constructor(
                 }
             }
 
-            is DatabaseEvent.ImportFiles -> {}
-
-            is DatabaseEvent.ExportFiles -> {
+            is FileDataEvent.ExportFiles -> {
 
                 val context = event.context
                 val notes = event.notes
@@ -437,14 +442,6 @@ class FileViewModel @Inject constructor(
                     _dataActionState.update { it.copy(progress = 1f) }
                 }
             }
-
-            is DatabaseEvent.Backup -> {}
-
-            is DatabaseEvent.Recovery -> {}
-
-            is DatabaseEvent.RemoveUselessFiles -> {}
-
-            DatabaseEvent.Reset -> {}
         }
     }
 }

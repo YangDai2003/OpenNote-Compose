@@ -107,23 +107,29 @@ fun NoteSideSheet(
     val actionWidthPx = remember(density) { with(density) { 48.dp.toPx() } }
 
     // Offset for the drawer animation
-    val offsetX = remember { Animatable(if (isDrawerOpen) 0f else drawerWidthPx + actionWidthPx) }
-
+    val offsetX = remember { Animatable(drawerWidthPx + actionWidthPx) }
     // Offset for the mask animation
-    val maskAlpha = remember { Animatable(if (isDrawerOpen) 0.6f else 0f) }
+    val maskAlpha = remember { Animatable(0f) }
 
-    // Launch animation when the drawer state changes
+    // Launch animations when the drawer state changes
     LaunchedEffect(isDrawerOpen) {
         val targetMaskAlpha = if (isDrawerOpen) 0.6f else 0f
-        maskAlpha.animateTo(
-            targetValue = targetMaskAlpha, animationSpec = tween(durationMillis = animationDuration)
-        )
-    }
-    LaunchedEffect(isDrawerOpen) {
         val targetOffsetX = if (isDrawerOpen) 0f else drawerWidthPx + actionWidthPx
-        offsetX.animateTo(
-            targetValue = targetOffsetX, animationSpec = tween(durationMillis = animationDuration)
-        )
+
+        // Launch animations in parallel
+        launch {
+            maskAlpha.animateTo(
+                targetValue = targetMaskAlpha,
+                animationSpec = tween(durationMillis = animationDuration)
+            )
+        }
+
+        launch {
+            offsetX.animateTo(
+                targetValue = targetOffsetX,
+                animationSpec = tween(durationMillis = animationDuration)
+            )
+        }
     }
 
     PredictiveBackHandler(enabled = isDrawerOpen) { progress: Flow<BackEventCompat> ->      // code for gesture back started
@@ -132,11 +138,14 @@ fun NoteSideSheet(
                 scope.launch {
                     val newOffset = drawerWidthPx + drawerWidthPx * (event.progress - 1f)
                     offsetX.snapTo(newOffset)
+                    val newAlpha = 0.6f * (1f - event.progress)
+                    maskAlpha.snapTo(newAlpha)
                 }
             }
             onDismiss()
         } catch (_: CancellationException) {
             offsetX.animateTo(0f)
+            maskAlpha.animateTo(0f)
         }
     }
 

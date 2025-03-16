@@ -62,6 +62,7 @@ import com.yangdai.opennote.presentation.util.PARSER
 import com.yangdai.opennote.presentation.util.decryptBackupDataWithCompatibility
 import com.yangdai.opennote.presentation.util.encryptBackupData
 import com.yangdai.opennote.presentation.util.extension.highlight.HighlightExtension
+import com.yangdai.opennote.presentation.util.extension.properties.Properties.getPropertiesRange
 import com.yangdai.opennote.presentation.util.extension.properties.Properties.splitPropertiesAndContent
 import com.yangdai.opennote.presentation.util.getFileName
 import com.yangdai.opennote.presentation.util.getOrCreateDirectory
@@ -182,7 +183,7 @@ class SharedViewModel @Inject constructor(
         )
 
     @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
-    val textState = contentSnapshotFlow.debounce(500)
+    val textState = contentSnapshotFlow.debounce(1000)
         .mapLatest { TextState.fromText(it) }
         .flowOn(Dispatchers.Default)
         .stateIn(
@@ -192,23 +193,29 @@ class SharedViewModel @Inject constructor(
         )
 
     @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
-    val outline = contentSnapshotFlow.debounce(500)
+    val outline = contentSnapshotFlow.debounce(1000)
         .mapLatest {
-            val document = PARSER.parse(it.toString())
+            val content = it.toString()
+            val propertiesRange = content.getPropertiesRange()
+            val document = PARSER.parse(content)
             val root = HeaderNode("", 0, IntRange.EMPTY)
             val headerStack = mutableListOf(root)
             document.accept(object : AbstractVisitor() {
                 override fun visit(heading: Heading) {
                     val span = heading.sourceSpans.first()
                     val range = span.inputIndex until (span.inputIndex + span.length)
-                    val title = it.substring(range).replace("#", "").trim()
-                    val node = HeaderNode(title, heading.level, range)
 
-                    while (headerStack.last().level >= heading.level) {
-                        headerStack.removeAt(headerStack.lastIndex)
+                    // Skip headings that are inside the properties section
+                    if (propertiesRange == null || !propertiesRange.contains(range.first)) {
+                        val title = it.substring(range).replace("#", "").trim()
+                        val node = HeaderNode(title, heading.level, range)
+
+                        while (headerStack.last().level >= heading.level) {
+                            headerStack.removeAt(headerStack.lastIndex)
+                        }
+                        headerStack.last().children.add(node)
+                        headerStack.add(node)
                     }
-                    headerStack.last().children.add(node)
-                    headerStack.add(node)
                     visitChildren(heading)
                 }
             })

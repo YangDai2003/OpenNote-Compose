@@ -46,8 +46,7 @@ fun Intent.parseSharedContent(context: Context): SharedContent {
                             }
 
                             "file" -> {
-                                val file = uri.toFile()
-                                file.bufferedReader().use { reader ->
+                                uri.toFile().bufferedReader().use { reader ->
                                     text = reader.readText()
                                 }
                             }
