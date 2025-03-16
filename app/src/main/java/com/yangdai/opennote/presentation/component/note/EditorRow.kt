@@ -159,7 +159,7 @@ fun RichTextEditorRow(
 
     var isExpanded by rememberSaveable { mutableStateOf(false) }
 
-    Column(modifier = Modifier.fillMaxWidth()) {
+    Column {
 
         EditorDivider(
             Modifier.fillMaxWidth(),
@@ -325,11 +325,7 @@ fun MarkdownEditorRow(
 
     var isExpanded by rememberSaveable { mutableStateOf(false) }
 
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .navigationBarsPadding()
-    ) {
+    Column {
 
         EditorDivider(
             Modifier.fillMaxWidth(),
@@ -340,6 +336,7 @@ fun MarkdownEditorRow(
         Row(
             Modifier
                 .fillMaxWidth()
+                .navigationBarsPadding()
                 .height(40.dp)
                 .horizontalScroll(rememberScrollState()),
             verticalAlignment = Alignment.CenterVertically

@@ -108,161 +108,177 @@ fun ReadView(
     val data by remember(html, markdownStyles, codeTheme) {
         mutableStateOf(
             """
-            <!DOCTYPE html>
-            <html>
-            <head>
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1">
-            <script>
-                function handleImageClick(src) {
-                    window.imageInterface.onImageClick(src);
-                }
-                
-                function setupVideoHandlers() {
-                    document.querySelectorAll('video').forEach((video, index) => {
-                        const videoName = video.getAttribute('src');
-                        const id = 'video_' + index;
-                        video.setAttribute('data-id', id);
-                        window.mediaPathHandler.processMedia(videoName, id, "video");
-                        
-                        // 设置视频控件样式
-                        video.style.width = '100%';
-                        video.controls = true;
-                        
-                        // 禁用下载和全屏
-                        video.controlsList = "nodownload nofullscreen";
-                        
-                        // 禁用右键菜单
-                        video.oncontextmenu = function(e) {
-                            e.preventDefault();
-                            return false;
-                        };
-                    });
-                }
-                
-                function setupAudioHandlers() {
-                    document.querySelectorAll('audio').forEach((audio, index) => {
-                        const audioName = audio.getAttribute('src');
-                        const id = 'audio_' + index;
-                        audio.setAttribute('data-id', id);
-                        window.mediaPathHandler.processMedia(audioName, id, "audio");
-                        
-                        // 设置音频控件样式
-                        audio.style.width = '100%';
-                        audio.controls = true;
-                        
-                        // 禁用下载
-                        audio.controlsList = "nodownload";
-                        
-                        // 禁用右键菜单
-                        audio.oncontextmenu = function(e) {
-                            e.preventDefault();
-                            return false;
-                        };
-                    });
-                }
-
-                function setupImageHandlers() {
-                    document.querySelectorAll('img').forEach((img, index) => {
-                        const imageName = img.getAttribute('src');
-                        const id = 'img_' + index;
-                        img.setAttribute('data-id', id);
-                        window.mediaPathHandler.processMedia(imageName, id, "image");
-                        
-                        let touchTimeout;
-                        let touchStartTime;
-                        
-                        img.onclick = function() {
-                            handleImageClick(this.src);
-                        };
-                        
-                        img.oncontextmenu = function(e) {
-                            return false;
-                        };
-                        
-                        img.addEventListener('touchstart', function(e) {
-                            touchStartTime = Date.now();
-                        });
-                        
-                        img.addEventListener('touchend', function(e) {
-                            // 如果触摸时间小于500ms,认为是点击操作
-                            if (Date.now() - touchStartTime < 500) {
-                                return; // 允许点击事件继续传播
-                            }
-                            e.preventDefault(); // 阻止长按操作
-                        });
-                        
-                        // 禁用拖拽
-                        img.draggable = false;
-                    });
-                }
-                
-                document.addEventListener('DOMContentLoaded', () => {
-                    setupImageHandlers();
-                    setupAudioHandlers();
-                    setupVideoHandlers();
-                });
-            </script>
-            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.21/dist/katex.min.css" integrity="sha384-zh0CIslj+VczCZtlzBcjt5ppRcsAmDnRem7ESsYwWwg3m/OaJ2l4x7YBZl9Kxxib" crossorigin="anonymous">
-            <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.21/dist/katex.min.js" integrity="sha384-Rma6DA2IPUwhNxmrB/7S3Tno0YY7sFu9WSYMCuulLhIqYSGZ2gKCJWIqhBWqMQfh" crossorigin="anonymous"></script>
-            <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.21/dist/contrib/auto-render.min.js" integrity="sha384-hCXGrW6PitJEwbkoStFjeJxv+fSOOQKOPbJxSfM6G5sWZjAyWhXiTIIAmQqnlLlh" crossorigin="anonymous"
-                 onload="renderMathInElement(document.body);"></script>
-            <script>
-                document.addEventListener("DOMContentLoaded", function() {
-                    renderMathInElement(document.body, {
-                      // customised options
-                      // • auto-render specific keys, e.g.:
-                      delimiters: [
-                          {left: '$$', right: '$$', display: true},
-                          {left: '$', right: '$', display: false},
-                          {left: '\\(', right: '\\)', display: false},
-                          {left: '\\[', right: '\\]', display: true}
-                      ],
-                      // • rendering keys, e.g.:
-                      throwOnError : false
-                    });
-                });
-            </script>
-            <script>
-                document.addEventListener('DOMContentLoaded', () => {
-                    document.querySelectorAll('li').forEach(li => {
-                        if (li.querySelector('input[type="checkbox"]')) {
-                            li.style.listStyleType = 'none';
-                        }
-                    });
-                });
-            </script>
-            <link href="$codeTheme" rel="stylesheet" />
-            <script src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-core.min.js"></script>
-            <script src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/plugins/autoloader/prism-autoloader.min.js"></script>
+            <meta name="color-scheme" content="${if (isAppInDarkMode) "dark" else "light"}">
+            
+            <!-- Preconnect to CDN resources -->
+            <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+            
+            <!-- Critical CSS -->
             <style type="text/css">
-                body { color: ${markdownStyles.hexTextColor}; padding-left: 16px; padding-right: 16px; padding-top: 0; padding-bottom: 0; margin: 0; }
-                img { max-width: 100%; height: auto; }
-                img {
-                    -webkit-touch-callout: none; /* 禁用长按呼出菜单 */
-                    pointer-events: auto !important; /* 确保点击事件可以工作 */
+                body { 
+                    color: ${markdownStyles.hexTextColor}; 
+                    padding: 0 16px; 
+                    margin: 0; 
+                }
+                img { 
+                    max-width: 100%; 
+                    height: auto; 
+                    -webkit-touch-callout: none;
+                    pointer-events: auto !important;
+                    draggable: false;
                 }
                 a { color: ${markdownStyles.hexLinkColor}; }
-                p code { background-color: ${markdownStyles.hexCodeBackgroundColor}; padding: 4px 4px 2px 4px; margin: 4px; border-radius: 4px; font-family: monospace; }
-                td code { background-color: ${markdownStyles.hexCodeBackgroundColor}; padding: 4px 4px 2px 4px; margin: 4px; border-radius: 4px; font-family: monospace; }
-                pre { background-color: ${markdownStyles.hexPreBackgroundColor}; display: block; padding: 16px; overflow-x: auto; }
-                blockquote { border-left: 4px solid ${markdownStyles.hexQuoteBackgroundColor}; padding-left: 0px; margin-left: 0px; padding-right: 0px; margin-right: 0px; }
-                blockquote > * { margin-left: 16px; padding: 0px; }
-                blockquote blockquote { margin: 16px; }
-                table { border-collapse: collapse; display: block; white-space: nowrap; overflow-x: auto; margin-right: 1px; }
-                th, td { border: 1px solid ${markdownStyles.hexBorderColor}; padding: 6px 13px; line-height: 1.5; }
-                tr:nth-child(even) { background-color: ${markdownStyles.hexPreBackgroundColor}; }
-                video::-webkit-media-controls-fullscreen-button {
-                    display: none !important;
+                p code, td code { 
+                    background-color: ${markdownStyles.hexCodeBackgroundColor}; 
+                    padding: 4px 4px 2px 4px; 
+                    margin: 4px; 
+                    border-radius: 4px; 
+                    font-family: monospace; 
                 }
+                pre { 
+                    background-color: ${markdownStyles.hexPreBackgroundColor}; 
+                    display: block; 
+                    padding: 16px; 
+                    overflow-x: auto; 
+                    margin: 16px 0;
+                }
+                blockquote { 
+                    border-left: 4px solid ${markdownStyles.hexQuoteBackgroundColor}; 
+                    padding: 0; 
+                    margin: 16px 0; 
+                }
+                blockquote > * { margin-left: 16px; padding: 0; }
+                blockquote blockquote { margin: 16px; }
+                table { 
+                    border-collapse: collapse; 
+                    display: block; 
+                    overflow-x: auto; 
+                    margin: 16px 0; 
+                }
+                th, td { 
+                    border: 1px solid ${markdownStyles.hexBorderColor}; 
+                    padding: 6px 13px; 
+                    line-height: 1.5; 
+                }
+                tr:nth-child(even) { background-color: ${markdownStyles.hexPreBackgroundColor}; }
+                video::-webkit-media-controls-fullscreen-button { display: none !important; }
+                video, audio { width: 100%; }
             </style>
-            </head>
-            <body>
-            $html
-            <script src="file:///android_asset/mermaid.min.js" type="text/javascript">
-                mermaid.initialize({ startOnLoad: true });
+            
+            <!-- Async CSS loading -->
+            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.21/dist/katex.min.css" integrity="sha384-zh0CIslj+VczCZtlzBcjt5ppRcsAmDnRem7ESsYwWwg3m/OaJ2l4x7YBZl9Kxxib" crossorigin="anonymous">
+            <link rel="stylesheet" href="$codeTheme">
+            
+            <!-- Core functionality -->
+            <script>
+                // Initialize handler objects
+                const handlers = {
+                    processMediaItems: () => {
+                        handlers.processImages();
+                        handlers.processAudio();
+                        handlers.processVideos();
+                        handlers.processCheckboxLists();
+                    },
+                    
+                    processImages: () => {
+                        document.querySelectorAll('img').forEach((img, index) => {
+                            const imageName = img.getAttribute('src');
+                            const id = 'img_' + index;
+                            img.setAttribute('data-id', id);
+                            img.setAttribute('loading', 'lazy');
+                            window.mediaPathHandler.processMedia(imageName, id, "image");
+                            
+                            let touchStartTime;
+                            
+                            img.onclick = () => window.imageInterface.onImageClick(img.src);
+                            img.oncontextmenu = e => { e.preventDefault(); return false; };
+                            img.draggable = false;
+                            
+                            img.addEventListener('touchstart', () => {
+                                touchStartTime = Date.now();
+                            });
+                            
+                            img.addEventListener('touchend', e => {
+                                if (Date.now() - touchStartTime >= 500) {
+                                    e.preventDefault();
+                                }
+                            });
+                        });
+                    },
+                    
+                    processAudio: () => {
+                        document.querySelectorAll('audio').forEach((audio, index) => {
+                            const audioName = audio.getAttribute('src');
+                            const id = 'audio_' + index;
+                            audio.setAttribute('data-id', id);
+                            audio.controls = true;
+                            audio.controlsList = "nodownload";
+                            window.mediaPathHandler.processMedia(audioName, id, "audio");
+                            
+                            audio.oncontextmenu = e => { e.preventDefault(); return false; };
+                        });
+                    },
+                    
+                    processVideos: () => {
+                        document.querySelectorAll('video').forEach((video, index) => {
+                            const videoName = video.getAttribute('src');
+                            const id = 'video_' + index;
+                            video.setAttribute('data-id', id);
+                            video.controls = true;
+                            video.controlsList = "nodownload nofullscreen";
+                            window.mediaPathHandler.processMedia(videoName, id, "video");
+                            
+                            video.oncontextmenu = e => { e.preventDefault(); return false; };
+                        });
+                    },
+                    
+                    processCheckboxLists: () => {
+                        document.querySelectorAll('li').forEach(li => {
+                            if (li.querySelector('input[type="checkbox"]')) {
+                                li.style.listStyleType = 'none';
+                            }
+                        });
+                    }
+                };
+                
+                // Execute on page load
+                document.addEventListener('DOMContentLoaded', () => {
+                    handlers.processMediaItems();
+                    
+                    // Initialize Mermaid if available
+                    if (typeof mermaid !== 'undefined') {
+                        mermaid.initialize({ startOnLoad: true });
+                    }
+                });
             </script>
-            </body>
-            </html>
+        </head>
+        <body>
+            $html
+            
+            <!-- Deferred JavaScript -->
+            <script src="file:///android_asset/mermaid.min.js" defer></script>
+            <script src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-core.min.js" defer></script>
+            <script src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/plugins/autoloader/prism-autoloader.min.js" defer></script>
+            
+            <!-- KaTeX rendering -->
+            <script src="https://cdn.jsdelivr.net/npm/katex@0.16.21/dist/katex.min.js" integrity="sha384-Rma6DA2IPUwhNxmrB/7S3Tno0YY7sFu9WSYMCuulLhIqYSGZ2gKCJWIqhBWqMQfh" crossorigin="anonymous" defer></script>
+            <script src="https://cdn.jsdelivr.net/npm/katex@0.16.21/dist/contrib/auto-render.min.js" integrity="sha384-hCXGrW6PitJEwbkoStFjeJxv+fSOOQKOPbJxSfM6G5sWZjAyWhXiTIIAmQqnlLlh" crossorigin="anonymous" defer 
+                onload="renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\\\(', right: '\\\\)', display: false},
+                        {left: '\\\\[', right: '\\\\]', display: true}
+                    ],
+                    throwOnError: false
+                });"></script>
+        </body>
+        </html>
         """.trimIndent()
         )
     }
