@@ -2,15 +2,19 @@
 <html lang="">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
     <meta name="color-scheme" content="{{COLOR_SCHEME}}">
+    <meta name="theme-color" content="{{BACKGROUND_COLOR}}">
     <!-- Pre connect to CDN resources -->
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 
     <style>
+        :root {
+            color-scheme: {{COLOR_SCHEME}};
+        }
         body {
             color: {{TEXT_COLOR}};
-            background-color: {{BACKGROUND_COLOR}} !important;
+            background-color: {{BACKGROUND_COLOR}};
             padding: 0 16px;
             margin: 0;
         }
@@ -18,8 +22,9 @@
             max-width: 100%;
             height: auto;
             -webkit-touch-callout: none;
-            pointer-events: auto !important;
-            draggable: false;
+            -webkit-user-select: none;
+            user-select: none;
+            pointer-events: auto;
         }
         a { color: {{LINK_COLOR}}; }
         p code, td code {
@@ -143,7 +148,10 @@
 
             // Initialize Mermaid if available
             if (typeof mermaid !== 'undefined') {
-                mermaid.initialize({ startOnLoad: true });
+                mermaid.initialize({
+                    startOnLoad: true,
+                    theme: '{{COLOR_SCHEME}}' === 'dark' ? 'dark' : 'default'
+                });
             }
         });
     </script>
