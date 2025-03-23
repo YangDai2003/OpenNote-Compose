@@ -83,7 +83,7 @@ OpenNote'un Markdown, LaTeX Matematik ve Mermaid Diyagramları ile nasıl kullan
 - **Programlama Dili**: Kotlin
 - **Derleme Aracı**: Gradle (Kotlin DSL)
 - **Android Sürümü**: Uygulama Android SDK 35 sürümünü hedefler ve Android SDK 29 ve üzeri cihazlarla uyumludur.
-- **Kotlin Sürümü**: 2.1.10
+- **Kotlin Sürümü**: 2.1.20
 - **Java Sürümü**: Java 17
 
 ## 🛠️ Mimari

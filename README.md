@@ -84,8 +84,8 @@ the [Guide](Guide.md).
 - **Build Tool**: Gradle with Kotlin DSL
 - **Android Version**: The application targets Android SDK version 35 and is compatible with devices
   running Android SDK version 29 and above.
-- **Kotlin Version**: The application uses Kotlin version 2.1.10.
-- **Java Version**: The application uses Java version 17.
+- **Kotlin Version**: 2.1.20.
+- **Java Version**: JVM Target 17.
 
 ## 🛠️ Architecture
 
