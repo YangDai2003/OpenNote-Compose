@@ -1,0 +1,218 @@
+/**
+ * Your theme's name
+ * If this is an adaptation of an existing theme, credit the creator and/or leave a link to it!
+ * Optional: Your name and/or username
+ */
+
+/**
+ * Prism supports IE11, which does not support CSS variables
+ * However, you are encouraged to leave a list of colours you use here
+ * so that when we transition to Prism V2 (and drop support for IE11),
+ * the transition will be a little easier!
+ */
+
+/**
+ * How to use this template:
+ *
+ * This file contains all the boilerplate necessary for a Prism theme along with template rules for you to fill in.
+ *
+ * All properties with the value `unset` are for you to change.
+ * You should fill in all `color` and `background` properties.
+ * If you don't need an `unset` property (e.g. `border-radius`), then feel free to remove it.
+ * You are also free to add more properties that aren't stated, such as `text-shadow`.
+ * If you wish to style the plugins, you may grab their selectors from their respective .css files in the template folder.
+ *
+ * Your finished theme should have all `unset` properties either filled in or removed.
+ */
+
+/* Set the main properties of the code, code blocks, and inline code */
+code[class*="language-"],
+pre[class*="language-"] {
+	background: #f8f8f8;
+	color: #000000;
+	font-family: "JetBrains Mono", Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace; /* this is the default */
+	/* The following properties are standard, please leave them as they are */
+	font-size: 1em;
+	direction: ltr;
+	text-align: left;
+	white-space: pre;
+	word-spacing: normal;
+	word-break: normal;
+	line-height: 1.5;
+	/* The default is 4, but you could change it if you really, really want to */
+	-moz-tab-size: 4;
+	-o-tab-size: 4;
+	tab-size: 4;
+	/* The following properties are also standard */
+	-webkit-hyphens: none;
+	-moz-hyphens: none;
+	-ms-hyphens: none;
+	hyphens: none;
+}
+
+/* Optional: What the code looks like when highlighted */
+code[class*="language-"]::-moz-selection,
+code[class*="language-"] ::-moz-selection,
+pre[class*="language-"]::-moz-selection,
+pre[class*="language-"] ::-moz-selection {
+	background: #b5d5ff;
+}
+
+code[class*="language-"]::selection,
+code[class*="language-"] ::selection,
+pre[class*="language-"]::selection,
+pre[class*="language-"] ::selection {
+	background: #b5d5ff;
+}
+
+/* Properties specific to code blocks */
+pre[class*="language-"] {
+	padding: 1em; /* this is standard */
+	margin: 0.5em 0; /* this is the default */
+	overflow: auto; /* this is standard */
+	border-radius: 0;
+}
+
+/* Properties specific to inline code */
+:not(pre) > code[class*="language-"] {
+	padding: 0.1em; /* this is the default */
+	border-radius: 0;
+	white-space: normal; /* this is standard */
+}
+
+/**
+ * These are the minimum tokens you must style, you can rearrange them and/or style more tokens as you want
+ * The concepts behind these standard tokens, as well as some examples, can be found here: https://prismjs.com/tokens.html
+ */
+.token.comment {
+    color: #008000;
+}
+
+.token.prolog {
+    color: #008000;
+}
+
+.token.cdata {
+    color: #008000;
+}
+
+.token.doctype {
+    color: #008000;
+}
+
+.token.punctuation {
+    color: #000000;
+}
+
+.token.entity {
+    color: #0000ff;
+}
+
+.token.attr-name {
+    color: #e50000;
+}
+
+.token.class-name {
+    color: #267f99;
+}
+
+.token.boolean {
+    color: #0000ff;
+}
+
+.token.constant {
+    color: #267f99;
+}
+
+.token.number {
+    color: #098658;
+}
+
+.token.atrule {
+    color: #af00db;
+}
+
+.token.keyword {
+    color: #0000ff;
+}
+
+.token.property {
+    color: #e50000;
+}
+
+.token.tag {
+    color: #800000;
+}
+
+.token.symbol {
+    color: #267f99;
+}
+
+.token.deleted {
+    color: #ce0000;
+}
+
+.token.important {
+    color: #0000ff;
+}
+
+.token.selector {
+    color: #800000;
+}
+
+.token.string {
+    color: #a31515;
+}
+
+.token.char {
+    color: #a31515;
+}
+
+.token.builtin {
+    color: #267f99;
+}
+
+.token.inserted {
+    color: #09885a;
+}
+
+.token.regex {
+    color: #ff0000;
+}
+
+.token.attr-value {
+    color: #0000ff;
+}
+
+.token.variable {
+    color: #267f99;
+}
+
+.token.operator {
+    color: #000000;
+}
+
+.token.function {
+    color: #795e26;
+}
+
+.token.url {
+    color: #0000ff;
+}
+
+/* The following rules are pretty similar across themes, but feel free to adjust them */
+.token.bold {
+	font-weight: bold;
+}
+
+.token.italic {
+	font-style: italic;
+}
+
+.token.entity {
+	cursor: help;
+}
+
+.token.namespace {
+	opacity: 0.7;
+}

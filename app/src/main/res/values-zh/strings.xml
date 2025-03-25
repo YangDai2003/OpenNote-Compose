@@ -29,7 +29,7 @@
     <string name="delete_all">全部删除</string>
     <string name="move">移动</string>
     <string name="checked">已勾选：</string>
-    <string name="modify">文件夹</string>
+    <string name="modify">自定义</string>
     <string name="warning">警告</string>
     <string name="deleting_a_folder_will_also_delete_all_the_notes_it_contains_and_they_cannot_be_restored_do_you_want_to_continue">删除文件夹将同时删除其包含的所有笔记，且不可恢复，是否继续操作?</string>
     <string name="restore">恢复</string>
@@ -100,7 +100,7 @@
     <string name="unlock_to_use_open_note">解锁以使用 Open Note</string>
     <string name="cloud">云服务</string>
     <string name="sync">同步</string>
-    <string name="the_feature_is_still_under_construction_and_is_still_unavailable">功能仍在构建中，暂不可用。</string>
+    <string name="the_feature_is_still_under_construction">功能仍在测试中。</string>
     <string name="url">网址</string>
     <string name="username">用户名</string>
     <string name="pass">密码</string>
@@ -188,7 +188,6 @@
     <string name="center">居中</string>
     <string name="right">靠右</string>
     <string name="explore_and_share_community_note_templates">在社区探索或分享笔记模板</string>
-    <string name="scroll_sync">滚动同步</string>
     <string name="widget">小部件</string>
     <string name="color">颜色</string>
     <string name="small">小</string>
@@ -201,4 +200,6 @@
     <string name="create_text_file">创建文本文件</string>
     <string name="raw">原始</string>
     <string name="display_style">展示风格</string>
+    <string name="line_numbers">行号</string>
+    <string name="sample_note">示例笔记</string>
 </resources>

@@ -44,8 +44,6 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.outlined.AddAlert
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.EditNote
-import androidx.compose.material.icons.outlined.Link
-import androidx.compose.material.icons.outlined.LinkOff
 import androidx.compose.material.icons.outlined.LocalPrintshop
 import androidx.compose.material.icons.outlined.Save
 import androidx.compose.material.icons.outlined.Search
@@ -134,6 +132,7 @@ import com.yangdai.opennote.presentation.component.note.moveCursorRightStateless
 import com.yangdai.opennote.presentation.event.DatabaseEvent
 import com.yangdai.opennote.presentation.event.NoteEvent
 import com.yangdai.opennote.presentation.event.UiEvent
+import com.yangdai.opennote.presentation.navigation.Screen
 import com.yangdai.opennote.presentation.util.Constants
 import com.yangdai.opennote.presentation.util.SharedContent
 import com.yangdai.opennote.presentation.util.TemplateProcessor
@@ -154,7 +153,8 @@ fun NoteScreen(
     noteId: Long,
     isLargeScreen: Boolean,
     sharedContent: SharedContent?,
-    navigateUp: () -> Unit
+    navigateUp: () -> Unit,
+    navigateToScreen: (Screen) -> Unit
 ) {
     val noteState by viewModel.noteStateFlow.collectAsStateWithLifecycle()
     val folderNoteCounts by viewModel.folderWithNoteCountsFlow.collectAsStateWithLifecycle()
@@ -183,7 +183,6 @@ fun NoteScreen(
     val pagerState = rememberPagerState(pageCount = { 2 })
     val isReadViewAtStart = appSettings.isDefaultViewForReading && noteId != -1L
     var isReadView by rememberSaveable { mutableStateOf(isReadViewAtStart) }
-    var isEditorAndPreviewSynced by rememberSaveable { mutableStateOf(false) }
     var isSearching by remember { mutableStateOf(false) }
     var selectedHeader by remember { mutableStateOf<IntRange?>(null) }
     var searchState by remember { mutableStateOf(FindAndReplaceState()) }
@@ -375,15 +374,6 @@ fun NoteScreen(
                         isReadView = !isReadView
                     }
 
-                    if (noteState.isStandard)
-                        IconButtonWithTooltip(
-                            imageVector = if (isEditorAndPreviewSynced) Icons.Outlined.LinkOff else Icons.Outlined.Link,
-                            contentDescription = stringResource(R.string.scroll_sync),
-                            shortCutDescription = stringResource(R.string.scroll_sync)
-                        ) {
-                            isEditorAndPreviewSynced = !isEditorAndPreviewSynced
-                        }
-
                     IconButtonWithTooltip(
                         painter = R.drawable.right_panel_open,
                         contentDescription = "Open Drawer",
@@ -546,6 +536,7 @@ fun NoteScreen(
             if (!noteState.isStandard) LiteTextField(
                 modifier = Modifier.fillMaxSize(),
                 readMode = isReadView,
+                showLineNumbers = appSettings.showLineNumbers,
                 state = viewModel.contentState,
                 scrollState = scrollState,
                 headerRange = selectedHeader,
@@ -566,9 +557,9 @@ fun NoteScreen(
                         StandardTextField(
                             modifier = Modifier
                                 .fillMaxHeight()
-                                .weight(editorWeight)
-                                .padding(start = 16.dp, end = 8.dp),
+                                .weight(editorWeight),
                             readMode = isReadView,
+                            showLineNumbers = appSettings.showLineNumbers,
                             state = viewModel.contentState,
                             scrollState = scrollState,
                             isLintActive = appSettings.isLintActive,
@@ -639,7 +630,6 @@ fun NoteScreen(
                             launchShareIntent = launchShareIntent,
                             rootUri = appSettings.storagePath.toUri(),
                             scrollState = scrollState,
-                            scrollSynchronized = isEditorAndPreviewSynced,
                             isAppInDarkMode = appSettings.isAppInDarkMode
                         )
                     }
@@ -651,11 +641,10 @@ fun NoteScreen(
                     when (currentPage) {
                         0 -> {
                             StandardTextField(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .padding(horizontal = 16.dp),
+                                modifier = Modifier.fillMaxSize(),
                                 state = viewModel.contentState,
                                 readMode = isReadView,
+                                showLineNumbers = appSettings.showLineNumbers,
                                 scrollState = scrollState,
                                 isLintActive = appSettings.isLintActive,
                                 headerRange = selectedHeader,
@@ -699,7 +688,6 @@ fun NoteScreen(
                                 printEnabled = triggerPrint,
                                 launchShareIntent = launchShareIntent,
                                 rootUri = appSettings.storagePath.toUri(),
-                                scrollSynchronized = isEditorAndPreviewSynced,
                                 scrollState = scrollState,
                                 isAppInDarkMode = appSettings.isAppInDarkMode
                             )
@@ -716,6 +704,7 @@ fun NoteScreen(
         isLargeScreen = isLargeScreen,
         outline = outline,
         onHeaderClick = { selectedHeader = it },
+        navigateTo = { navigateToScreen(it) },
         actionContent = {
             IconButtonWithTooltip(
                 imageVector = Icons.Outlined.SwapHoriz,

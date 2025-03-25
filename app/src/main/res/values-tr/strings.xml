@@ -37,7 +37,7 @@
     <string name="delete_all">Hepsini sil</string>
     <string name="move">Taşı</string>
     <string name="checked">"Seçilen: "</string>
-    <string name="modify">Klasör</string>
+    <string name="modify">Özelleştir</string>
     <string name="warning">Uyarı</string>
     <string name="deleting_a_folder_will_also_delete_all_the_notes_it_contains_and_they_cannot_be_restored_do_you_want_to_continue">Bir klasör silindiğinde, içindeki tüm notlar da silinecek ve geri getirilemez. Devam etmek istiyor musunuz?</string>
     <string name="restore">Geri yükle</string>
@@ -99,7 +99,7 @@
     <string name="unlock_to_use_open_note">Open Note\'u kullanmak için kilidi açın</string>
     <string name="cloud">Bulut servisi</string>
     <string name="sync">Senkronize et</string>
-    <string name="the_feature_is_still_under_construction_and_is_still_unavailable">Bu özellik hâlâ inşaat aşamasında ve kullanılamaz durumda.</string>
+    <string name="the_feature_is_still_under_construction">Bu özellik halen test aşamasındadır.</string>
     <string name="url">URL</string>
     <string name="username">Kullanıcı ismi</string>
     <string name="pass">Şifre</string>
@@ -187,7 +187,6 @@
     <string name="center">Orta</string>
     <string name="right">Sağ</string>
     <string name="explore_and_share_community_note_templates">Topluluk ile not şablonlarını keşfedin ve paylaşın</string>
-    <string name="scroll_sync">Kaydırma Senkronizasyonu</string>
     <string name="widget">Widget</string>
     <string name="color">Renk</string>
     <string name="small">Küçük</string>
@@ -200,4 +199,6 @@
     <string name="create_text_file">Metin dosyası oluştur</string>
     <string name="raw">Ham</string>
     <string name="display_style">Görüntüleme Stili</string>
+    <string name="line_numbers">Satır numaraları</string>
+    <string name="sample_note">Örnek Not</string>
 </resources>

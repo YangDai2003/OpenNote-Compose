@@ -289,7 +289,7 @@ fun DataPane(sharedViewModel: SharedViewModel) {
                     },
                     colors = ButtonDefaults.textButtonColors().copy(
                         containerColor = MaterialTheme.colorScheme.errorContainer,
-                        contentColor = MaterialTheme.colorScheme.error
+                        contentColor = MaterialTheme.colorScheme.onErrorContainer
                     )
                 ) {
                     Text(text = stringResource(id = R.string.reset))

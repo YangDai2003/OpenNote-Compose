@@ -6,12 +6,11 @@ import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -77,7 +76,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
@@ -113,10 +112,12 @@ import com.yangdai.opennote.presentation.navigation.Screen
 import com.yangdai.opennote.presentation.state.ListNoteContentDisplayMode
 import com.yangdai.opennote.presentation.state.ListNoteContentOverflowStyle
 import com.yangdai.opennote.presentation.state.ListNoteContentSize
+import com.yangdai.opennote.presentation.util.SampleNote
+import com.yangdai.opennote.presentation.util.SharedContent
 import com.yangdai.opennote.presentation.util.rememberDateTimeFormatter
 import com.yangdai.opennote.presentation.viewmodel.SharedViewModel
 import kotlinx.coroutines.launch
-
+import kotlinx.serialization.json.Json
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -437,49 +438,49 @@ fun MainScreen(
                     targetValue = if (isPressed) 0.9f else 1f,
                     label = "scale"
                 )
+                val positionX by animateDpAsState(
+                    targetValue = if (isAddNoteFabVisible) 0.dp else 72.dp,
+                    label = "translationX"
+                )
 
-                AnimatedVisibility(
-                    visible = isAddNoteFabVisible,
-                    enter = fadeIn() + slideInHorizontally { it },
-                    exit = fadeOut() + slideOutHorizontally { it }
-                ) {
-                    Surface(
-                        modifier = Modifier
-                            .scale(scale)
-                            .combinedClickable(
-                                interactionSource = interactionSource,
-                                indication = null,
-                                role = Role.Button,
-                                onClickLabel = "Create Note",
-                                onClick = {
-                                    hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
-                                    viewModel.onListEvent(
-                                        ListEvent.OpenOrCreateNote(
-                                            null,
-                                            currentFolder.id
-                                        )
-                                    )
-                                    navigateToScreen(Screen.Note(-1L))
-                                },
-                                onLongClickLabel = "Action Menu",
-                                onLongClick = {
-                                    isCreateOptionDialogVisible = true
-                                }
-                            ),
-                        shape = FloatingActionButtonDefaults.shape,
-                        color = FloatingActionButtonDefaults.containerColor,
-                        tonalElevation = 6.dp,
-                        shadowElevation = 6.dp,
-                    ) {
-                        Box(
-                            modifier = Modifier.defaultMinSize(56.dp, 56.dp),
-                            contentAlignment = Alignment.Center,
-                        ) {
-                            Icon(imageVector = Icons.Outlined.Add, contentDescription = "Add")
+                Surface(
+                    modifier = Modifier
+                        .graphicsLayer {
+                            scaleX = scale
+                            scaleY = scale
+                            translationX = positionX.toPx()
                         }
+                        .combinedClickable(
+                            interactionSource = interactionSource,
+                            indication = null,
+                            role = Role.Button,
+                            onClickLabel = "Create Note",
+                            onClick = {
+                                hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
+                                viewModel.onListEvent(
+                                    ListEvent.OpenOrCreateNote(
+                                        null,
+                                        currentFolder.id
+                                    )
+                                )
+                                navigateToScreen(Screen.Note(-1L))
+                            },
+                            onLongClickLabel = "Action Menu",
+                            onLongClick = {
+                                isCreateOptionDialogVisible = true
+                            }
+                        ),
+                    shape = FloatingActionButtonDefaults.shape,
+                    color = FloatingActionButtonDefaults.containerColor,
+                    shadowElevation = 6.dp
+                ) {
+                    Box(
+                        modifier = Modifier.defaultMinSize(56.dp, 56.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(imageVector = Icons.Outlined.Add, contentDescription = "Add")
                     }
                 }
-
             }
         ) { innerPadding ->
 
@@ -668,9 +669,8 @@ fun MainScreen(
     }
 
     if (isCreateOptionDialogVisible) {
-        FullscreenCreateOptionDialog(onDismiss = {
-            isCreateOptionDialogVisible = false
-        }) { type ->
+        val context = LocalContext.current
+        FullscreenCreateOptionDialog(onDismiss = { isCreateOptionDialogVisible = false }) { type ->
             when (type) {
                 ActionType.CreateTextFile -> {
                     isCreateOptionDialogVisible = false
@@ -691,6 +691,20 @@ fun MainScreen(
                         )
                     )
                     navigateToScreen(Screen.Note(-1L))
+                }
+
+                ActionType.SampleNote -> {
+                    navigateToScreen(
+                        Screen.Note(
+                            id = -1L,
+                            sharedContent = Json.encodeToString<SharedContent>(
+                                SharedContent(
+                                    fileName = context.getString(R.string.sample_note),
+                                    content = SampleNote
+                                )
+                            )
+                        )
+                    )
                 }
             }
         }

@@ -259,8 +259,7 @@ class SharedViewModel @Inject constructor(
         getNotes()
     }
 
-    @Suppress("TYPE_INTERSECTION_AS_REIFIED_WARNING")
-    val settingsStateFlow: StateFlow<SettingsState> = combine(
+    val settingsStateFlow: StateFlow<SettingsState> = combine<Any, SettingsState>(
         appDataStoreRepository.intFlow(Constants.Preferences.APP_THEME),
         appDataStoreRepository.intFlow(Constants.Preferences.APP_COLOR),
         appDataStoreRepository.booleanFlow(Constants.Preferences.BIOMETRIC_AUTH_ENABLED),
@@ -283,7 +282,8 @@ class SharedViewModel @Inject constructor(
         appDataStoreRepository.intFlow(Constants.Preferences.ENUM_CONTENT_SIZE),
         appDataStoreRepository.intFlow(Constants.Preferences.ENUM_DISPLAY_MODE),
         appDataStoreRepository.booleanFlow(Constants.Preferences.IS_AUTO_SAVE_ENABLED),
-        appDataStoreRepository.intFlow(Constants.Preferences.TITLE_ALIGN)
+        appDataStoreRepository.intFlow(Constants.Preferences.TITLE_ALIGN),
+        appDataStoreRepository.booleanFlow(Constants.Preferences.SHOW_LINE_NUMBERS)
     ) { values ->
         SettingsState(
             theme = AppTheme.fromInt(values[0] as Int),
@@ -308,7 +308,8 @@ class SharedViewModel @Inject constructor(
             enumContentSize = ListNoteContentSize.fromInt(values[19] as Int),
             enumDisplayMode = ListNoteContentDisplayMode.fromInt(values[20] as Int),
             isAutoSaveEnabled = values[21] as Boolean,
-            titleAlignment = values[22] as Int
+            titleAlignment = values[22] as Int,
+            showLineNumbers = values[23] as Boolean
         )
     }.flowOn(Dispatchers.IO).stateIn(
         scope = viewModelScope, started = SharingStarted.Eagerly, initialValue = SettingsState()
@@ -585,6 +586,14 @@ class SharedViewModel @Inject constructor(
                             isMarkdown = appDataStoreRepository.booleanFlow(Constants.Preferences.IS_DEFAULT_LITE_MODE)
                                 .first().not()
                         )
+                    } else if (event.id == -1L && event.sharedContent != null) {
+                        _oNote = NoteEntity(
+                            title = event.sharedContent.fileName,
+                            content = event.sharedContent.content,
+                            timestamp = System.currentTimeMillis(),
+                            isMarkdown = appDataStoreRepository.booleanFlow(Constants.Preferences.IS_DEFAULT_LITE_MODE)
+                                .first().not()
+                        )
                     }
                     noteStateFlow.update { noteState ->
                         noteState.copy(
@@ -594,11 +603,8 @@ class SharedViewModel @Inject constructor(
                             timestamp = _oNote.timestamp
                         )
                     }
-                    val sharedContentName = event.sharedContent?.fileName.orEmpty()
-                    val sharedContent = event.sharedContent?.content.orEmpty()
-
-                    titleState.setTextAndPlaceCursorAtEnd(_oNote.title + sharedContentName)
-                    contentState.setTextAndPlaceCursorAtEnd(_oNote.content + sharedContent)
+                    titleState.setTextAndPlaceCursorAtEnd(_oNote.title)
+                    contentState.setTextAndPlaceCursorAtEnd(_oNote.content)
                 }
             }
 

@@ -2,11 +2,11 @@
 <html lang="">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="color-scheme" content="{{COLOR_SCHEME}}">
     <meta name="theme-color" content="{{BACKGROUND_COLOR}}">
-    <!-- Pre connect to CDN resources -->
-    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <title>Markdown</title>
 
     <style>
         :root {
@@ -17,6 +17,7 @@
             background-color: {{BACKGROUND_COLOR}};
             padding: 0 16px;
             margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         }
         img {
             max-width: 100%;
@@ -33,6 +34,7 @@
             margin: 4px;
             border-radius: 4px;
             font-family: monospace;
+            font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace;
         }
         pre {
             background-color: {{PRE_BACKGROUND}};
@@ -65,123 +67,130 @@
     </style>
 
     <!-- Async CSS loading -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.21/dist/katex.min.css"
-          integrity="sha384-zh0CIslj+VczCZtlzBcjt5ppRcsAmDnRem7ESsYwWwg3m/OaJ2l4x7YBZl9Kxxib"
-          crossorigin="anonymous">
-    <link rel="stylesheet" href="{{CODE_THEME}}">
-
-    <!-- Core functionality -->
-    <script>
-        // Initialize handler objects
-        const handlers = {
-            processMediaItems: () => {
-                handlers.processImages();
-                handlers.processAudio();
-                handlers.processVideos();
-                handlers.processCheckboxLists();
-            },
-
-            processImages: () => {
-                document.querySelectorAll('img').forEach((img, index) => {
-                    const imageName = img.getAttribute('src');
-                    const id = 'img_' + index;
-                    img.setAttribute('data-id', id);
-                    img.setAttribute('loading', 'lazy');
-                    window.mediaPathHandler.processMedia(imageName, id, "image");
-
-                    let touchStartTime;
-
-                    img.onclick = () => window.imageInterface.onImageClick(img.src);
-                    img.oncontextmenu = e => { e.preventDefault(); return false; };
-                    img.draggable = false;
-
-                    img.addEventListener('touchstart', () => {
-                        touchStartTime = Date.now();
-                    });
-
-                    img.addEventListener('touchend', e => {
-                        if (Date.now() - touchStartTime >= 500) {
-                            e.preventDefault();
-                        }
-                    });
-                });
-            },
-
-            processAudio: () => {
-                document.querySelectorAll('audio').forEach((audio, index) => {
-                    const audioName = audio.getAttribute('src');
-                    const id = 'audio_' + index;
-                    audio.setAttribute('data-id', id);
-                    audio.controls = true;
-                    audio.controlsList = "nodownload";
-                    window.mediaPathHandler.processMedia(audioName, id, "audio");
-
-                    audio.oncontextmenu = e => { e.preventDefault(); return false; };
-                });
-            },
-
-            processVideos: () => {
-                document.querySelectorAll('video').forEach((video, index) => {
-                    const videoName = video.getAttribute('src');
-                    const id = 'video_' + index;
-                    video.setAttribute('data-id', id);
-                    video.controls = true;
-                    video.controlsList = "nodownload nofullscreen";
-                    window.mediaPathHandler.processMedia(videoName, id, "video");
-
-                    video.oncontextmenu = e => { e.preventDefault(); return false; };
-                });
-            },
-
-            processCheckboxLists: () => {
-                document.querySelectorAll('li').forEach(li => {
-                    if (li.querySelector('input[type="checkbox"]')) {
-                        li.style.listStyleType = 'none';
-                    }
-                });
-            }
-        };
-
-        // Execute on page load
-        document.addEventListener('DOMContentLoaded', () => {
-            handlers.processMediaItems();
-
-            // Initialize Mermaid if available
-            if (typeof mermaid !== 'undefined') {
-                mermaid.initialize({
-                    startOnLoad: true,
-                    theme: '{{COLOR_SCHEME}}' === 'dark' ? 'dark' : 'default'
-                });
-            }
-        });
-    </script>
-    <title>Markdown</title>
+    <link rel="stylesheet" href="file:///android_asset/katex/katex.min.css">
+    <link rel="stylesheet" href="file:///android_asset/prism/prism-theme-light.css"
+          id="prism-light-theme">
+    <link rel="stylesheet" href="file:///android_asset/prism/prism-theme-dark.css"
+          id="prism-dark-theme">
 </head>
 <body>
-{{CONTENT}}
+<main>{{CONTENT}}</main>
 
-<!-- Deferred JavaScript -->
-<script src="file:///android_asset/mermaid.min.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-core.min.js"
-        defer></script>
+<script>
+    // Initialize handler objects
+    const handlers = {
+        processMediaItems: () => {
+            handlers.processImages();
+            handlers.processAudio();
+            handlers.processVideos();
+            handlers.processCheckboxLists();
+        },
+
+        processImages: () => {
+            document.querySelectorAll('img').forEach((img, index) => {
+                const imageName = img.getAttribute('src');
+                const id = 'img_' + index;
+                img.setAttribute('data-id', id);
+                img.setAttribute('loading', 'lazy');
+                window.mediaPathHandler.processMedia(imageName, id, "image");
+
+                let touchStartTime;
+
+                img.onclick = () => window.imageInterface.onImageClick(img.src);
+                img.oncontextmenu = e => { e.preventDefault(); return false; };
+                img.draggable = false;
+
+                img.addEventListener('touchstart', () => {
+                    touchStartTime = Date.now();
+                });
+
+                img.addEventListener('touchend', e => {
+                    if (Date.now() - touchStartTime >= 500) {
+                        e.preventDefault();
+                    }
+                });
+            });
+        },
+
+        processAudio: () => {
+            document.querySelectorAll('audio').forEach((audio, index) => {
+                const audioName = audio.getAttribute('src');
+                const id = 'audio_' + index;
+                audio.setAttribute('data-id', id);
+                audio.controls = true;
+                audio.controlsList = "nodownload";
+                window.mediaPathHandler.processMedia(audioName, id, "audio");
+
+                audio.oncontextmenu = e => { e.preventDefault(); return false; };
+            });
+        },
+
+        processVideos: () => {
+            document.querySelectorAll('video').forEach((video, index) => {
+                const videoName = video.getAttribute('src');
+                const id = 'video_' + index;
+                video.setAttribute('data-id', id);
+                video.controls = true;
+                video.controlsList = "nodownload nofullscreen";
+                window.mediaPathHandler.processMedia(videoName, id, "video");
+
+                video.oncontextmenu = e => { e.preventDefault(); return false; };
+            });
+        },
+
+        processCheckboxLists: () => {
+            document.querySelectorAll('li').forEach(li => {
+                if (li.querySelector('input[type="checkbox"]')) {
+                    li.style.listStyleType = 'none';
+                }
+            });
+        }
+    };
+
+    // 执行初始化函数
+    document.addEventListener('DOMContentLoaded', () => {
+        handlers.processMediaItems();
+        const lightTheme = document.getElementById('prism-light-theme');
+        const darkTheme = document.getElementById('prism-dark-theme');
+
+        // Set initial state based on COLOR_SCHEME
+        const isDarkMode = '{{COLOR_SCHEME}}' === 'dark';
+        lightTheme.disabled = isDarkMode;
+        darkTheme.disabled = !isDarkMode;
+
+        // 初始化 Mermaid（如果可用）
+        if (typeof mermaid !== 'undefined') {
+            mermaid.initialize({
+                startOnLoad: true,
+                theme: '{{COLOR_SCHEME}}' === 'dark' ? 'dark' : 'default'
+            });
+        }
+
+        // 初始化KaTeX渲染
+        if (typeof renderMathInElement !== 'undefined') {
+            renderMathInElement(document.body, {
+                delimiters: [
+                  {left: "$$", right: "$$", display: true},
+                  {left: "$", right: "$", display: false},
+                  {left: "\\(", right: "\\)", display: false},
+                  {left: "\\begin{equation}", right: "\\end{equation}", display: true},
+                  {left: "\\begin{align}", right: "\\end{align}", display: true},
+                  {left: "\\begin{alignat}", right: "\\end{alignat}", display: true},
+                  {left: "\\begin{gather}", right: "\\end{gather}", display: true},
+                  {left: "\\begin{CD}", right: "\\end{CD}", display: true},
+                  {left: "\\[", right: "\\]", display: true}
+                ],
+                throwOnError: false
+            });
+        }
+    });
+</script>
+
+<script src="file:///android_asset/mermaid.min.js"></script>
+<script src="file:///android_asset/katex/katex.min.js"></script>
+<script src="file:///android_asset/katex/auto-render.min.js"></script>
+<script src="file:///android_asset/prism/prism-core.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/plugins/autoloader/prism-autoloader.min.js"
-        defer></script>
-
-<!-- KaTeX rendering -->
-<script src="https://cdn.jsdelivr.net/npm/katex@0.16.21/dist/katex.min.js"
-        integrity="sha384-Rma6DA2IPUwhNxmrB/7S3Tno0YY7sFu9WSYMCuulLhIqYSGZ2gKCJWIqhBWqMQfh"
-        crossorigin="anonymous" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/katex@0.16.21/dist/contrib/auto-render.min.js"
-        integrity="sha384-hCXGrW6PitJEwbkoStFjeJxv+fSOOQKOPbJxSfM6G5sWZjAyWhXiTIIAmQqnlLlh"
-        crossorigin="anonymous" defer
-        onload="renderMathInElement(document.body, {
-            delimiters: [
-                {left: '$$', right: '$$', display: true},
-                {left: '$', right: '$', display: false},
-                {left: '\\\\(', right: '\\\\)', display: false},
-                {left: '\\\\[', right: '\\\\]', display: true}
-            ],
-            throwOnError: false
-        });"></script>
+        async></script>
 </body>
 </html>

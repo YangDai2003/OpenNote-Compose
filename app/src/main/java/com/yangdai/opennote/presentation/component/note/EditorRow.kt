@@ -1,6 +1,7 @@
 package com.yangdai.opennote.presentation.component.note
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -14,9 +15,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.FormatIndentDecrease
 import androidx.compose.material.icons.automirrored.outlined.FormatIndentIncrease
 import androidx.compose.material.icons.automirrored.outlined.List
-import androidx.compose.material.icons.automirrored.outlined.Redo
 import androidx.compose.material.icons.automirrored.outlined.TextSnippet
-import androidx.compose.material.icons.automirrored.outlined.Undo
 import androidx.compose.material.icons.outlined.AddChart
 import androidx.compose.material.icons.outlined.CheckBox
 import androidx.compose.material.icons.outlined.Code
@@ -35,6 +34,7 @@ import androidx.compose.material.icons.outlined.StrikethroughS
 import androidx.compose.material.icons.outlined.TableChart
 import androidx.compose.material.icons.outlined.Title
 import androidx.compose.material.icons.outlined.VideoFile
+import androidx.compose.material3.BottomAppBarDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -169,7 +169,6 @@ fun RichTextEditorRow(
 
         Row(
             Modifier
-                .fillMaxWidth()
                 .height(40.dp)
                 .horizontalScroll(rememberScrollState()),
             verticalAlignment = Alignment.CenterVertically
@@ -325,268 +324,260 @@ fun MarkdownEditorRow(
 
     var isExpanded by rememberSaveable { mutableStateOf(false) }
 
-    Column {
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .background(BottomAppBarDefaults.containerColor)
+            .navigationBarsPadding()
+            .height(48.dp)
+            .horizontalScroll(rememberScrollState()),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
 
-        EditorDivider(
-            Modifier.fillMaxWidth(),
-            color = MaterialTheme.colorScheme.surfaceVariant,
-            thickness = 4.dp
-        )
-
-        Row(
-            Modifier
-                .fillMaxWidth()
-                .navigationBarsPadding()
-                .height(40.dp)
-                .horizontalScroll(rememberScrollState()),
-            verticalAlignment = Alignment.CenterVertically
+        IconButtonWithTooltip(
+            enabled = canUndo,
+            painter = R.drawable.undo,
+            contentDescription = stringResource(id = R.string.undo),
+            shortCutDescription = "Ctrl + Z"
         ) {
+            onEdit(Constants.Editor.UNDO)
+        }
 
-            IconButtonWithTooltip(
-                enabled = canUndo,
-                imageVector = Icons.AutoMirrored.Outlined.Undo,
-                contentDescription = stringResource(id = R.string.undo),
-                shortCutDescription = "Ctrl + Z"
+        IconButtonWithTooltip(
+            enabled = canRedo,
+            painter = R.drawable.redo,
+            contentDescription = stringResource(id = R.string.redo),
+            shortCutDescription = "Ctrl + Y"
+        ) {
+            onEdit(Constants.Editor.REDO)
+        }
+
+        IconButtonWithTooltip(
+            imageVector = Icons.Outlined.Title,
+            contentDescription = "Heading Level"
+        ) {
+            isExpanded = !isExpanded
+        }
+
+        AnimatedVisibility(visible = isExpanded) {
+            Row(
+                modifier = Modifier.fillMaxHeight(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Start
             ) {
-                onEdit(Constants.Editor.UNDO)
-            }
 
-            IconButtonWithTooltip(
-                enabled = canRedo,
-                imageVector = Icons.AutoMirrored.Outlined.Redo,
-                contentDescription = stringResource(id = R.string.redo),
-                shortCutDescription = "Ctrl + Y"
-            ) {
-                onEdit(Constants.Editor.REDO)
-            }
-
-            IconButtonWithTooltip(
-                imageVector = Icons.Outlined.Title,
-                contentDescription = "Heading Level"
-            ) {
-                isExpanded = !isExpanded
-            }
-
-            AnimatedVisibility(visible = isExpanded) {
-                Row(
-                    modifier = Modifier.fillMaxHeight(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Start
+                IconButtonWithTooltip(
+                    painter = R.drawable.format_h1,
+                    contentDescription = "H1",
+                    shortCutDescription = "Ctrl + 1"
                 ) {
+                    onEdit(Constants.Editor.H1)
+                }
 
-                    IconButtonWithTooltip(
-                        painter = R.drawable.format_h1,
-                        contentDescription = "H1",
-                        shortCutDescription = "Ctrl + 1"
-                    ) {
-                        onEdit(Constants.Editor.H1)
-                    }
+                IconButtonWithTooltip(
+                    painter = R.drawable.format_h2,
+                    contentDescription = "H2",
+                    shortCutDescription = "Ctrl + 2"
+                ) {
+                    onEdit(Constants.Editor.H2)
+                }
 
-                    IconButtonWithTooltip(
-                        painter = R.drawable.format_h2,
-                        contentDescription = "H2",
-                        shortCutDescription = "Ctrl + 2"
-                    ) {
-                        onEdit(Constants.Editor.H2)
-                    }
+                IconButtonWithTooltip(
+                    painter = R.drawable.format_h3,
+                    contentDescription = "H3",
+                    shortCutDescription = "Ctrl + 3"
+                ) {
+                    onEdit(Constants.Editor.H3)
+                }
 
-                    IconButtonWithTooltip(
-                        painter = R.drawable.format_h3,
-                        contentDescription = "H3",
-                        shortCutDescription = "Ctrl + 3"
-                    ) {
-                        onEdit(Constants.Editor.H3)
-                    }
+                IconButtonWithTooltip(
+                    painter = R.drawable.format_h4,
+                    contentDescription = "H4",
+                    shortCutDescription = "Ctrl + 4"
+                ) {
+                    onEdit(Constants.Editor.H4)
+                }
 
-                    IconButtonWithTooltip(
-                        painter = R.drawable.format_h4,
-                        contentDescription = "H4",
-                        shortCutDescription = "Ctrl + 4"
-                    ) {
-                        onEdit(Constants.Editor.H4)
-                    }
+                IconButtonWithTooltip(
+                    painter = R.drawable.format_h5,
+                    contentDescription = "H5",
+                    shortCutDescription = "Ctrl + 5"
+                ) {
+                    onEdit(Constants.Editor.H5)
+                }
 
-                    IconButtonWithTooltip(
-                        painter = R.drawable.format_h5,
-                        contentDescription = "H5",
-                        shortCutDescription = "Ctrl + 5"
-                    ) {
-                        onEdit(Constants.Editor.H5)
-                    }
-
-                    IconButtonWithTooltip(
-                        painter = R.drawable.format_h6,
-                        contentDescription = "H6",
-                        shortCutDescription = "Ctrl + 6"
-                    ) {
-                        onEdit(Constants.Editor.H6)
-                    }
+                IconButtonWithTooltip(
+                    painter = R.drawable.format_h6,
+                    contentDescription = "H6",
+                    shortCutDescription = "Ctrl + 6"
+                ) {
+                    onEdit(Constants.Editor.H6)
                 }
             }
-
-            IconButtonWithTooltip(
-                imageVector = Icons.Outlined.FormatBold,
-                contentDescription = stringResource(id = R.string.bold),
-                shortCutDescription = "Ctrl + B"
-            ) {
-                onEdit(Constants.Editor.BOLD)
-            }
-
-            IconButtonWithTooltip(
-                imageVector = Icons.Outlined.FormatItalic,
-                contentDescription = stringResource(id = R.string.italic),
-                shortCutDescription = "Ctrl + I"
-            ) {
-                onEdit(Constants.Editor.ITALIC)
-            }
-
-            IconButtonWithTooltip(
-                imageVector = Icons.Outlined.FormatUnderlined,
-                contentDescription = stringResource(id = R.string.underline),
-                shortCutDescription = "Ctrl + U"
-            ) {
-                onEdit(Constants.Editor.UNDERLINE)
-            }
-
-            IconButtonWithTooltip(
-                imageVector = Icons.Outlined.StrikethroughS,
-                contentDescription = stringResource(id = R.string.strikethrough),
-                shortCutDescription = "Ctrl + D"
-            ) {
-                onEdit(Constants.Editor.STRIKETHROUGH)
-            }
-
-            IconButtonWithTooltip(
-                imageVector = Icons.Outlined.FormatPaint,
-                contentDescription = stringResource(id = R.string.mark),
-                shortCutDescription = "Ctrl + M"
-            ) {
-                onEdit(Constants.Editor.MARK)
-            }
-
-            IconButtonWithTooltip(
-                imageVector = Icons.Outlined.Code,
-                contentDescription = stringResource(id = R.string.code),
-                shortCutDescription = "Ctrl + Shift + K"
-            ) {
-                onEdit(Constants.Editor.INLINE_CODE)
-            }
-
-            IconButtonWithTooltip(
-                imageVector = Icons.Outlined.DataArray,
-                contentDescription = "Brackets"
-            ) {
-                onEdit(Constants.Editor.INLINE_BRACKETS)
-            }
-
-            IconButtonWithTooltip(
-                imageVector = Icons.Outlined.DataObject,
-                contentDescription = "Braces"
-            ) {
-                onEdit(Constants.Editor.INLINE_BRACES)
-            }
-
-            IconButtonWithTooltip(
-                imageVector = Icons.AutoMirrored.Outlined.FormatIndentIncrease,
-                contentDescription = "Tab"
-            ) {
-                onEdit(Constants.Editor.TAB)
-            }
-
-            IconButtonWithTooltip(
-                imageVector = Icons.AutoMirrored.Outlined.FormatIndentDecrease,
-                contentDescription = "unTab"
-            ) {
-                onEdit(Constants.Editor.UN_TAB)
-            }
-
-            IconButtonWithTooltip(
-                painter = R.drawable.function,
-                contentDescription = stringResource(id = R.string.math),
-                shortCutDescription = "Ctrl + Shift + M"
-            ) {
-                onEdit(Constants.Editor.INLINE_MATH)
-            }
-
-            IconButtonWithTooltip(
-                imageVector = Icons.Outlined.FormatQuote,
-                contentDescription = stringResource(id = R.string.quote),
-                shortCutDescription = "Ctrl + Shift + Q"
-            ) {
-                onEdit(Constants.Editor.QUOTE)
-            }
-
-            IconButtonWithTooltip(
-                imageVector = Icons.Outlined.HorizontalRule,
-                contentDescription = stringResource(id = R.string.horizontal_rule),
-                shortCutDescription = "Ctrl + Shift + R"
-            ) {
-                onEdit(Constants.Editor.RULE)
-            }
-
-            IconButtonWithTooltip(
-                imageVector = Icons.Outlined.TableChart,
-                contentDescription = stringResource(id = R.string.table),
-                shortCutDescription = "Ctrl + T",
-                onClick = onTableButtonClick
-            )
-
-            IconButtonWithTooltip(
-                imageVector = Icons.Outlined.AddChart,
-                contentDescription = stringResource(id = R.string.mermaid_diagram),
-                shortCutDescription = "Ctrl + Shift + D"
-            ) {
-                onEdit(Constants.Editor.DIAGRAM)
-            }
-
-            IconButtonWithTooltip(
-                imageVector = Icons.AutoMirrored.Outlined.List,
-                contentDescription = stringResource(id = R.string.list),
-                shortCutDescription = "Ctrl + Shift + L",
-                onClick = onListButtonClick
-            )
-
-            IconButtonWithTooltip(
-                imageVector = Icons.Outlined.CheckBox,
-                contentDescription = stringResource(id = R.string.task_list),
-                shortCutDescription = "Ctrl + Shift + T",
-                onClick = onTaskButtonClick
-            )
-
-            IconButtonWithTooltip(
-                imageVector = Icons.Outlined.Link,
-                contentDescription = stringResource(id = R.string.link),
-                shortCutDescription = "Ctrl + K",
-                onClick = onLinkButtonClick
-            )
-
-            IconButtonWithTooltip(
-                imageVector = Icons.Outlined.Mic,
-                contentDescription = stringResource(id = R.string.audio),
-                shortCutDescription = "Ctrl + Shift + A",
-                onClick = onAudioButtonClick
-            )
-
-            IconButtonWithTooltip(
-                imageVector = Icons.Outlined.VideoFile,
-                contentDescription = stringResource(id = R.string.video),
-                shortCutDescription = "Ctrl + Shift + V",
-                onClick = onVideoButtonClick
-            )
-
-            IconButtonWithTooltip(
-                imageVector = Icons.Outlined.Image,
-                contentDescription = stringResource(id = R.string.image),
-                shortCutDescription = "Ctrl + Shift + I",
-                onClick = onImageButtonClick
-            )
-
-            IconButtonWithTooltip(
-                imageVector = Icons.AutoMirrored.Outlined.TextSnippet,
-                contentDescription = stringResource(id = R.string.templates),
-                shortCutDescription = "Ctrl + Shift + P",
-                onClick = onTemplateClick
-            )
         }
+
+        IconButtonWithTooltip(
+            imageVector = Icons.Outlined.FormatBold,
+            contentDescription = stringResource(id = R.string.bold),
+            shortCutDescription = "Ctrl + B"
+        ) {
+            onEdit(Constants.Editor.BOLD)
+        }
+
+        IconButtonWithTooltip(
+            imageVector = Icons.Outlined.FormatItalic,
+            contentDescription = stringResource(id = R.string.italic),
+            shortCutDescription = "Ctrl + I"
+        ) {
+            onEdit(Constants.Editor.ITALIC)
+        }
+
+        IconButtonWithTooltip(
+            imageVector = Icons.Outlined.FormatUnderlined,
+            contentDescription = stringResource(id = R.string.underline),
+            shortCutDescription = "Ctrl + U"
+        ) {
+            onEdit(Constants.Editor.UNDERLINE)
+        }
+
+        IconButtonWithTooltip(
+            imageVector = Icons.Outlined.StrikethroughS,
+            contentDescription = stringResource(id = R.string.strikethrough),
+            shortCutDescription = "Ctrl + D"
+        ) {
+            onEdit(Constants.Editor.STRIKETHROUGH)
+        }
+
+        IconButtonWithTooltip(
+            imageVector = Icons.Outlined.FormatPaint,
+            contentDescription = stringResource(id = R.string.mark),
+            shortCutDescription = "Ctrl + M"
+        ) {
+            onEdit(Constants.Editor.MARK)
+        }
+
+        IconButtonWithTooltip(
+            imageVector = Icons.Outlined.Code,
+            contentDescription = stringResource(id = R.string.code),
+            shortCutDescription = "Ctrl + Shift + K"
+        ) {
+            onEdit(Constants.Editor.INLINE_CODE)
+        }
+
+        IconButtonWithTooltip(
+            imageVector = Icons.Outlined.DataArray,
+            contentDescription = "Brackets"
+        ) {
+            onEdit(Constants.Editor.INLINE_BRACKETS)
+        }
+
+        IconButtonWithTooltip(
+            imageVector = Icons.Outlined.DataObject,
+            contentDescription = "Braces"
+        ) {
+            onEdit(Constants.Editor.INLINE_BRACES)
+        }
+
+        IconButtonWithTooltip(
+            imageVector = Icons.AutoMirrored.Outlined.FormatIndentIncrease,
+            contentDescription = "Tab"
+        ) {
+            onEdit(Constants.Editor.TAB)
+        }
+
+        IconButtonWithTooltip(
+            imageVector = Icons.AutoMirrored.Outlined.FormatIndentDecrease,
+            contentDescription = "unTab"
+        ) {
+            onEdit(Constants.Editor.UN_TAB)
+        }
+
+        IconButtonWithTooltip(
+            painter = R.drawable.function,
+            contentDescription = stringResource(id = R.string.math),
+            shortCutDescription = "Ctrl + Shift + M"
+        ) {
+            onEdit(Constants.Editor.INLINE_MATH)
+        }
+
+        IconButtonWithTooltip(
+            imageVector = Icons.Outlined.FormatQuote,
+            contentDescription = stringResource(id = R.string.quote),
+            shortCutDescription = "Ctrl + Shift + Q"
+        ) {
+            onEdit(Constants.Editor.QUOTE)
+        }
+
+        IconButtonWithTooltip(
+            imageVector = Icons.Outlined.HorizontalRule,
+            contentDescription = stringResource(id = R.string.horizontal_rule),
+            shortCutDescription = "Ctrl + Shift + R"
+        ) {
+            onEdit(Constants.Editor.RULE)
+        }
+
+        IconButtonWithTooltip(
+            imageVector = Icons.Outlined.TableChart,
+            contentDescription = stringResource(id = R.string.table),
+            shortCutDescription = "Ctrl + T",
+            onClick = onTableButtonClick
+        )
+
+        IconButtonWithTooltip(
+            imageVector = Icons.Outlined.AddChart,
+            contentDescription = stringResource(id = R.string.mermaid_diagram),
+            shortCutDescription = "Ctrl + Shift + D"
+        ) {
+            onEdit(Constants.Editor.DIAGRAM)
+        }
+
+        IconButtonWithTooltip(
+            imageVector = Icons.AutoMirrored.Outlined.List,
+            contentDescription = stringResource(id = R.string.list),
+            shortCutDescription = "Ctrl + Shift + L",
+            onClick = onListButtonClick
+        )
+
+        IconButtonWithTooltip(
+            imageVector = Icons.Outlined.CheckBox,
+            contentDescription = stringResource(id = R.string.task_list),
+            shortCutDescription = "Ctrl + Shift + T",
+            onClick = onTaskButtonClick
+        )
+
+        IconButtonWithTooltip(
+            imageVector = Icons.Outlined.Link,
+            contentDescription = stringResource(id = R.string.link),
+            shortCutDescription = "Ctrl + K",
+            onClick = onLinkButtonClick
+        )
+
+        IconButtonWithTooltip(
+            imageVector = Icons.Outlined.Mic,
+            contentDescription = stringResource(id = R.string.audio),
+            shortCutDescription = "Ctrl + Shift + A",
+            onClick = onAudioButtonClick
+        )
+
+        IconButtonWithTooltip(
+            imageVector = Icons.Outlined.VideoFile,
+            contentDescription = stringResource(id = R.string.video),
+            shortCutDescription = "Ctrl + Shift + V",
+            onClick = onVideoButtonClick
+        )
+
+        IconButtonWithTooltip(
+            imageVector = Icons.Outlined.Image,
+            contentDescription = stringResource(id = R.string.image),
+            shortCutDescription = "Ctrl + Shift + I",
+            onClick = onImageButtonClick
+        )
+
+        IconButtonWithTooltip(
+            imageVector = Icons.AutoMirrored.Outlined.TextSnippet,
+            contentDescription = stringResource(id = R.string.templates),
+            shortCutDescription = "Ctrl + Shift + P",
+            onClick = onTemplateClick
+        )
     }
 }

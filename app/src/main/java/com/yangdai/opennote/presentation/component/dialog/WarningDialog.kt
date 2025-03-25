@@ -32,7 +32,7 @@ fun WarningDialog(
             },
             colors = ButtonDefaults.buttonColors().copy(
                 containerColor = MaterialTheme.colorScheme.errorContainer,
-                contentColor = MaterialTheme.colorScheme.error
+                contentColor = MaterialTheme.colorScheme.onErrorContainer
             )
         ) {
             Text(text = stringResource(id = android.R.string.ok))

@@ -230,8 +230,6 @@ fun SettingsListPane(
                     supportingText = stringResource(R.string.backup) + "  •  " + stringResource(R.string.recovery)
                 )
 
-                // TODO 云同步
-
                 SettingsSectionDivider()
 
                 SettingItem(

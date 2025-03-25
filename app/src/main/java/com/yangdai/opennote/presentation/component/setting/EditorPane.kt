@@ -12,8 +12,12 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.FormatAlignLeft
+import androidx.compose.material.icons.automirrored.outlined.FormatAlignRight
 import androidx.compose.material.icons.automirrored.outlined.MenuBook
 import androidx.compose.material.icons.outlined.EditNote
+import androidx.compose.material.icons.outlined.FormatAlignCenter
+import androidx.compose.material.icons.outlined.FormatListNumbered
 import androidx.compose.material.icons.outlined.FormatSize
 import androidx.compose.material.icons.outlined.Save
 import androidx.compose.material.icons.outlined.Spellcheck
@@ -113,49 +117,32 @@ fun EditorPane(sharedViewModel: SharedViewModel) {
                 .padding(horizontal = 16.dp)
                 .padding(bottom = 16.dp)
         ) {
-            SegmentedButton(
-                shape = SegmentedButtonDefaults.itemShape(index = 0, count = viewOptions.size),
-                onClick = {
-                    hapticFeedback.performHapticFeedback(HapticFeedbackType.SegmentTick)
-                    sharedViewModel.putPreferenceValue(
-                        Constants.Preferences.IS_DEFAULT_VIEW_FOR_READING,
-                        false
-                    )
-                },
-                selected = !settingsState.isDefaultViewForReading
-            ) {
-                Row(
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically
+            viewOptions.forEachIndexed { index, option ->
+                SegmentedButton(
+                    shape = SegmentedButtonDefaults.itemShape(
+                        index = index,
+                        count = viewOptions.size
+                    ),
+                    onClick = {
+                        hapticFeedback.performHapticFeedback(HapticFeedbackType.SegmentTick)
+                        sharedViewModel.putPreferenceValue(
+                            Constants.Preferences.IS_DEFAULT_VIEW_FOR_READING,
+                            index == 1
+                        )
+                    },
+                    selected = settingsState.isDefaultViewForReading == (index == 1)
                 ) {
-                    Icon(
-                        imageVector = Icons.Outlined.EditNote, contentDescription = "EditNote"
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(viewOptions[0], maxLines = 1, modifier = Modifier.basicMarquee())
-                }
-            }
-            SegmentedButton(
-                shape = SegmentedButtonDefaults.itemShape(index = 1, count = viewOptions.size),
-                onClick = {
-                    hapticFeedback.performHapticFeedback(HapticFeedbackType.SegmentTick)
-                    sharedViewModel.putPreferenceValue(
-                        Constants.Preferences.IS_DEFAULT_VIEW_FOR_READING,
-                        true
-                    )
-                },
-                selected = settingsState.isDefaultViewForReading
-            ) {
-                Row(
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Outlined.MenuBook,
-                        contentDescription = "ReadMode"
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(viewOptions[1], maxLines = 1, modifier = Modifier.basicMarquee())
+                    Row(
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = if (index == 0) Icons.Outlined.EditNote else Icons.AutoMirrored.Outlined.MenuBook,
+                            contentDescription = option
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(option, maxLines = 1, modifier = Modifier.basicMarquee())
+                    }
                 }
             }
         }
@@ -180,50 +167,33 @@ fun EditorPane(sharedViewModel: SharedViewModel) {
                 .padding(horizontal = 16.dp)
                 .padding(bottom = 16.dp)
         ) {
-            SegmentedButton(
-                shape = SegmentedButtonDefaults.itemShape(index = 0, count = modeOptions.size),
-                onClick = {
-                    hapticFeedback.performHapticFeedback(HapticFeedbackType.SegmentTick)
-                    sharedViewModel.putPreferenceValue(
-                        Constants.Preferences.IS_DEFAULT_LITE_MODE,
-                        false
-                    )
-                },
-                selected = !settingsState.isDefaultLiteMode
-            ) {
-                Row(
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically
+            modeOptions.forEachIndexed { index, option ->
+                SegmentedButton(
+                    shape = SegmentedButtonDefaults.itemShape(
+                        index = index,
+                        count = modeOptions.size
+                    ),
+                    onClick = {
+                        hapticFeedback.performHapticFeedback(HapticFeedbackType.SegmentTick)
+                        sharedViewModel.putPreferenceValue(
+                            Constants.Preferences.IS_DEFAULT_LITE_MODE,
+                            index == 1
+                        )
+                    },
+                    selected = settingsState.isDefaultLiteMode == (index == 1)
                 ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.standard),
-                        contentDescription = "StandardMode"
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(modeOptions[0], maxLines = 1, modifier = Modifier.basicMarquee())
-                }
-            }
-            SegmentedButton(
-                shape = SegmentedButtonDefaults.itemShape(index = 1, count = modeOptions.size),
-                onClick = {
-                    hapticFeedback.performHapticFeedback(HapticFeedbackType.SegmentTick)
-                    sharedViewModel.putPreferenceValue(
-                        Constants.Preferences.IS_DEFAULT_LITE_MODE,
-                        true
-                    )
-                },
-                selected = settingsState.isDefaultLiteMode
-            ) {
-                Row(
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.lite),
-                        contentDescription = "LiteMode"
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(modeOptions[1], maxLines = 1, modifier = Modifier.basicMarquee())
+                    Row(
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            painter = if (index == 0) painterResource(id = R.drawable.standard)
+                            else painterResource(id = R.drawable.lite),
+                            contentDescription = null
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(option, maxLines = 1, modifier = Modifier.basicMarquee())
+                    }
                 }
             }
         }
@@ -237,6 +207,13 @@ fun EditorPane(sharedViewModel: SharedViewModel) {
             stringResource(R.string.center),
             stringResource(R.string.right)
         )
+        val alignIcons = remember {
+            listOf(
+                Icons.AutoMirrored.Outlined.FormatAlignLeft,
+                Icons.Outlined.FormatAlignCenter,
+                Icons.AutoMirrored.Outlined.FormatAlignRight
+            )
+        }
 
         SingleChoiceSegmentedButtonRow(
             modifier = Modifier
@@ -244,7 +221,7 @@ fun EditorPane(sharedViewModel: SharedViewModel) {
                 .padding(horizontal = 16.dp)
                 .padding(bottom = 16.dp)
         ) {
-            alignOptions.forEachIndexed { index, _ ->
+            alignOptions.forEachIndexed { index, option ->
                 SegmentedButton(
                     shape = SegmentedButtonDefaults.itemShape(
                         index = index,
@@ -256,7 +233,17 @@ fun EditorPane(sharedViewModel: SharedViewModel) {
                     },
                     selected = settingsState.titleAlignment == index
                 ) {
-                    Text(alignOptions[index], maxLines = 1, modifier = Modifier.basicMarquee())
+                    Row(
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = alignIcons[index],
+                            contentDescription = null
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(option, maxLines = 1, modifier = Modifier.basicMarquee())
+                    }
                 }
             }
         }
@@ -281,6 +268,33 @@ fun EditorPane(sharedViewModel: SharedViewModel) {
                             hapticFeedback.performHapticFeedback(HapticFeedbackType.ToggleOff)
                         sharedViewModel.putPreferenceValue(
                             Constants.Preferences.IS_AUTO_SAVE_ENABLED,
+                            checked
+                        )
+                    }
+                )
+            }
+        )
+
+        HorizontalDivider()
+
+        ListItem(
+            leadingContent = {
+                Icon(
+                    imageVector = Icons.Outlined.FormatListNumbered,
+                    contentDescription = "Line Numbers"
+                )
+            },
+            headlineContent = { Text(text = stringResource(R.string.line_numbers)) },
+            trailingContent = {
+                Switch(
+                    checked = settingsState.showLineNumbers,
+                    onCheckedChange = { checked ->
+                        if (checked)
+                            hapticFeedback.performHapticFeedback(HapticFeedbackType.ToggleOn)
+                        else
+                            hapticFeedback.performHapticFeedback(HapticFeedbackType.ToggleOff)
+                        sharedViewModel.putPreferenceValue(
+                            Constants.Preferences.SHOW_LINE_NUMBERS,
                             checked
                         )
                     }

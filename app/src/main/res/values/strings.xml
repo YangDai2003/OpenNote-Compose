@@ -38,7 +38,7 @@
     <string name="delete_all">All delete</string>
     <string name="move">Move</string>
     <string name="checked">"Selected: "</string>
-    <string name="modify">Folder</string>
+    <string name="modify">Modify</string>
     <string name="warning">Warning</string>
     <string name="deleting_a_folder_will_also_delete_all_the_notes_it_contains_and_they_cannot_be_restored_do_you_want_to_continue">Deleting a folder will also delete all the notes it contains and they cannot be restored. Do you want to continue?</string>
     <string name="restore">Restore</string>
@@ -102,7 +102,7 @@
     <string name="unlock_to_use_open_note">Unlock to use Open Note</string>
     <string name="cloud">Cloud service</string>
     <string name="sync">Sync</string>
-    <string name="the_feature_is_still_under_construction_and_is_still_unavailable">The feature is still under construction and is still unavailable.</string>
+    <string name="the_feature_is_still_under_construction">This feature is still under testing.</string>
     <string name="url">URL</string>
     <string name="username">Username</string>
     <string name="pass">Password</string>
@@ -190,7 +190,6 @@
     <string name="center">Center</string>
     <string name="right">Right</string>
     <string name="explore_and_share_community_note_templates">Explore and Share Note Templates with the Community</string>
-    <string name="scroll_sync">Scroll Sync</string>
     <string name="widget">Widget</string>
     <string name="color">Color</string>
     <string name="small">Small</string>
@@ -203,4 +202,6 @@
     <string name="create_text_file">Create a text file</string>
     <string name="raw">Raw</string>
     <string name="display_style">Display Style</string>
+    <string name="line_numbers">Line numbers</string>
+    <string name="sample_note">Sample Note</string>
 </resources>

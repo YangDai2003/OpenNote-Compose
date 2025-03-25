@@ -95,7 +95,8 @@ fun AnimatedNavHost(
             sharedContent = if (route.sharedContent.isNotBlank())
                 Json.decodeFromString<SharedContent>(route.sharedContent)
             else null,
-            navigateUp = { navController.navigateBackWithHapticFeedback(hapticFeedback) }
+            navigateUp = { navController.navigateBackWithHapticFeedback(hapticFeedback) },
+            navigateToScreen = { navController.navigate(it) }
         )
     }
 
@@ -104,7 +105,8 @@ fun AnimatedNavHost(
         FileScreen(
             uriStr = uri,
             isLargeScreen = isLargeScreen,
-            navigateUp = { navController.navigateBackWithHapticFeedback(hapticFeedback) }
+            navigateUp = { navController.navigateBackWithHapticFeedback(hapticFeedback) },
+            navigateToScreen = { navController.navigate(it) }
         )
     }
 

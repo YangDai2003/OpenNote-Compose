@@ -27,7 +27,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.yangdai.opennote.R
 import com.yangdai.opennote.presentation.state.WidgetBackgroundColor.Companion.toInt
-import com.yangdai.opennote.presentation.state.WidgetDisplayMode.Companion.toInt
 import com.yangdai.opennote.presentation.state.WidgetTextSize.Companion.toInt
 import com.yangdai.opennote.presentation.util.Constants
 import com.yangdai.opennote.presentation.viewmodel.WidgetViewModel

@@ -47,14 +47,10 @@ class LiteTextVisualTransformation(
                 boldRanges = styleRanges.boldRanges.filter { !it.overlaps(propertiesRange) },
                 italicRanges = styleRanges.italicRanges.filter { !it.overlaps(propertiesRange) },
                 boldItalicRanges = styleRanges.boldItalicRanges.filter {
-                    !it.overlaps(
-                        propertiesRange
-                    )
+                    !it.overlaps(propertiesRange)
                 },
                 strikethroughRanges = styleRanges.strikethroughRanges.filter {
-                    !it.overlaps(
-                        propertiesRange
-                    )
+                    !it.overlaps(propertiesRange)
                 },
                 underlineRanges = styleRanges.underlineRanges.filter { !it.overlaps(propertiesRange) },
                 highlightRanges = styleRanges.highlightRanges.filter { !it.overlaps(propertiesRange) },
@@ -62,14 +58,10 @@ class LiteTextVisualTransformation(
                 markerRanges = styleRanges.markerRanges.filter { !it.overlaps(propertiesRange) },
                 linkRanges = styleRanges.linkRanges.filter { !it.overlaps(propertiesRange) },
                 fencedCodeBlockInfoRanges = styleRanges.fencedCodeBlockInfoRanges.filter {
-                    !it.overlaps(
-                        propertiesRange
-                    )
+                    !it.overlaps(propertiesRange)
                 },
                 codeBlockContentRanges = styleRanges.codeBlockContentRanges.filter {
-                    !it.overlaps(
-                        propertiesRange
-                    )
+                    !it.overlaps(propertiesRange)
                 }
             )
         }

@@ -4,9 +4,7 @@ class MarkdownLint {
     companion object {
         private val HEADING_REGEX = Regex("^(#{1,6})\\s.+$")
         private val HEADING_WITH_PUNCTUATION = Regex("^#{1,6}\\s.+[.,;:!?]$")
-        private val BLOCKQUOTE_REGEX = Regex("^>\\s.+$")
         private val INVALID_HEADING_SPACE = Regex("^#{1,6}\\s{2,}")
-        private val INVALID_BLOCKQUOTE_SPACE = Regex("^>\\s{2,}")
         private val TRAILING_SPACES = Regex("\\s{3,}$")
         private val CHINESE_LINK_REGEX = Regex("\\[[^\\[\\]]*]（[^（）]*）")
         private val CHINESE_EXCLAMATION_LINK = Regex("！\\[[^\\[\\]]*]")
@@ -58,7 +56,6 @@ class MarkdownLint {
             if (!isInCodeRegion(currentIndex, codeRegions)) {
                 when {
                     line.startsWith("#") -> validateHeading(line, currentIndex, issues)
-                    line.startsWith(">") -> validateBlockquote(line, currentIndex, issues)
                     TRAILING_SPACES.find(line) != null ->
                         issues.add(Issue(currentIndex, currentIndex + line.length))
                 }
@@ -216,25 +213,6 @@ class MarkdownLint {
             }
         }
         return -1
-    }
-
-    private fun validateBlockquote(line: String, lineStart: Int, issues: MutableList<Issue>) {
-        // 检查引用块基本格式
-        if (!BLOCKQUOTE_REGEX.matches(line)) {
-            issues.add(Issue(lineStart, lineStart + line.length))
-            return
-        }
-
-        // 检查>后的空格数
-        val invalidSpaceMatch = INVALID_BLOCKQUOTE_SPACE.find(line)
-        if (invalidSpaceMatch != null) {
-            issues.add(
-                Issue(
-                    lineStart + 1,  // 从>后开始
-                    lineStart + invalidSpaceMatch.range.last + 1  // 到最后一个多余空格
-                )
-            )
-        }
     }
 
     private fun validateHeading(line: String, lineStart: Int, issues: MutableList<Issue>) {

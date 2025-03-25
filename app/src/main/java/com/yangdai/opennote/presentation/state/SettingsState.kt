@@ -1,10 +1,6 @@
 package com.yangdai.opennote.presentation.state
 
 import androidx.compose.runtime.Stable
-import com.yangdai.opennote.presentation.state.AppColor.entries
-import com.yangdai.opennote.presentation.state.AppTheme.entries
-import com.yangdai.opennote.presentation.state.ListNoteContentOverflowStyle.entries
-import com.yangdai.opennote.presentation.state.ListNoteContentSize.entries
 
 @Stable
 data class SettingsState(
@@ -31,8 +27,8 @@ data class SettingsState(
     val enumDisplayMode: ListNoteContentDisplayMode = ListNoteContentDisplayMode.RAW,
     val isAutoSaveEnabled: Boolean = false,
     val titleAlignment: Int = 0,
+    val showLineNumbers: Boolean = false
 )
-
 
 
 enum class AppTheme(private val value: Int) {

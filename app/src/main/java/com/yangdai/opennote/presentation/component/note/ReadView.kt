@@ -9,11 +9,9 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Paint
-import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.print.PrintAttributes
 import android.print.PrintManager
-import android.util.LruCache
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.JavascriptInterface
@@ -48,16 +46,14 @@ import androidx.documentfile.provider.DocumentFile
 import com.yangdai.opennote.presentation.component.image.FullscreenImageDialog
 import com.yangdai.opennote.presentation.theme.linkColor
 import com.yangdai.opennote.presentation.util.Constants
+import com.yangdai.opennote.presentation.util.MediaCache
 import com.yangdai.opennote.presentation.util.rememberCustomTabsIntent
 import com.yangdai.opennote.presentation.util.toHexColor
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileOutputStream
-import kotlin.io.encoding.Base64
-import kotlin.io.encoding.ExperimentalEncodingApi
 
 data class MarkdownStyles(
     val hexTextColor: String,
@@ -88,7 +84,6 @@ fun ReadView(
     html: String,
     rootUri: Uri,
     noteName: String,
-    scrollSynchronized: Boolean,
     scrollState: ScrollState,
     isAppInDarkMode: Boolean,
     printEnabled: MutableState<Boolean>,
@@ -99,13 +94,6 @@ fun ReadView(
     val colorScheme = MaterialTheme.colorScheme
     val markdownStyles = remember(colorScheme) {
         MarkdownStyles.fromColorScheme(colorScheme)
-    }
-    val codeTheme = remember(isAppInDarkMode) {
-        if (isAppInDarkMode) {
-            "https://cdn.jsdelivr.net/npm/prism-themes@1.9.0/themes/prism-material-dark.css"
-        } else {
-            "https://cdn.jsdelivr.net/npm/prism-themes@1.9.0/themes/prism-material-light.css"
-        }
     }
 
     var template by rememberSaveable { mutableStateOf("") }
@@ -121,9 +109,9 @@ fun ReadView(
         }
     }
 
-    val data by remember(html, markdownStyles, codeTheme, isAppInDarkMode, template) {
+    val data by remember(html, markdownStyles, isAppInDarkMode, template) {
         mutableStateOf(
-            processHtml(html, markdownStyles, codeTheme, isAppInDarkMode, template)
+            processHtml(html, markdownStyles, isAppInDarkMode, template)
         )
     }
 
@@ -136,8 +124,6 @@ fun ReadView(
     var clickedImageUrl by remember { mutableStateOf("") }
 
     LaunchedEffect(scrollState.value) {
-        if (!scrollSynchronized) return@LaunchedEffect
-
         val totalHeight = scrollState.maxValue
         val currentScrollPercent = when {
             totalHeight <= 0 -> 0f
@@ -370,18 +356,18 @@ fun ReadView(
                 settings.domStorageEnabled = true
                 settings.javaScriptEnabled = true
                 settings.loadsImagesAutomatically = true
-                settings.defaultTextEncodingName = "UTF-8"
                 isVerticalScrollBarEnabled = false
                 isHorizontalScrollBarEnabled = false
-                settings.setSupportZoom(true)
-                settings.builtInZoomControls = true
+                settings.setSupportZoom(false)
+                settings.builtInZoomControls = false
                 settings.displayZoomControls = false
-                settings.useWideViewPort = false
+                settings.useWideViewPort = true
                 settings.loadWithOverviewMode = false
                 enableSlowWholeDocumentDraw()
             }
         },
         update = {
+            it.setBackgroundColor(markdownStyles.backgroundColor)
             it.loadDataWithBaseURL(
                 null,
                 data,
@@ -490,7 +476,6 @@ private fun createWebPrintJob(webView: WebView, activity: Activity?, name: Strin
 private fun processHtml(
     html: String,
     markdownStyles: MarkdownStyles,
-    codeTheme: String,
     isAppInDarkMode: Boolean,
     template: String
 ): String {
@@ -504,54 +489,4 @@ private fun processHtml(
         .replace("{{LINK_COLOR}}", markdownStyles.hexLinkColor)
         .replace("{{BORDER_COLOR}}", markdownStyles.hexBorderColor)
         .replace("{{COLOR_SCHEME}}", if (isAppInDarkMode) "dark" else "light")
-        .replace("{{CODE_THEME}}", codeTheme)
-}
-
-// Create a media cache manager as a singleton object
-object MediaCache {
-    private const val MAX_CACHE_SIZE = 100
-    private const val THUMBNAIL_QUALITY = 70
-
-    private val imageCache = LruCache<String, String>(MAX_CACHE_SIZE)
-    private val videoThumbnailCache = LruCache<String, String>(MAX_CACHE_SIZE)
-
-    fun getImageUri(key: String): String? = imageCache.get(key)
-
-    fun cacheImageUri(key: String, uri: String) {
-        imageCache.put(key, uri)
-    }
-
-    fun getVideoThumbnail(key: String): String? = videoThumbnailCache.get(key)
-
-    @OptIn(ExperimentalEncodingApi::class)
-    fun generateVideoThumbnail(context: Context, mediaUri: Uri): String {
-        val retriever = MediaMetadataRetriever()
-        try {
-            retriever.setDataSource(context, mediaUri)
-            val bitmap = retriever.getFrameAtTime(0) ?: return ""
-            return ByteArrayOutputStream().use { outputStream ->
-                // Dynamic quality based on image size
-                val quality = when {
-                    bitmap.byteCount > 2 * 1024 * 1024 -> 50
-                    else -> THUMBNAIL_QUALITY
-                }
-                bitmap.compress(Bitmap.CompressFormat.JPEG, quality, outputStream)
-                "data:image/jpeg;base64,${Base64.encode(outputStream.toByteArray())}"
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-            return ""
-        } finally {
-            retriever.release()
-        }
-    }
-
-    fun cacheVideoThumbnail(key: String, thumbnail: String) {
-        videoThumbnailCache.put(key, thumbnail)
-    }
-
-    fun clearCaches() {
-        imageCache.evictAll()
-        videoThumbnailCache.evictAll()
-    }
 }

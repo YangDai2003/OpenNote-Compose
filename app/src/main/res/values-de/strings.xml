@@ -38,7 +38,7 @@
     <string name="delete_all">Alles löschen</string>
     <string name="move">Verschieben</string>
     <string name="checked">Ausgewählt: </string>
-    <string name="modify">Ordner</string>
+    <string name="modify">Anpassen</string>
     <string name="warning">Warnung</string>
     <string name="deleting_a_folder_will_also_delete_all_the_notes_it_contains_and_they_cannot_be_restored_do_you_want_to_continue">Das Löschen eines Ordners löscht auch alle darin enthaltenen Notizen, und diese können nicht wiederhergestellt werden. Möchten Sie fortfahren?</string>
     <string name="restore">Wiederherstellen</string>
@@ -100,7 +100,7 @@
     <string name="unlock_to_use_open_note">Freischalten, um Open Note zu verwenden</string>
     <string name="cloud">Cloud-Dienst</string>
     <string name="sync">Sync</string>
-    <string name="the_feature_is_still_under_construction_and_is_still_unavailable">Die Funktion befindet sich noch in der Entwicklung und ist derzeit nicht verfügbar.</string>
+    <string name="the_feature_is_still_under_construction">Diese Funktion wird noch getestet.</string>
     <string name="url">URL</string>
     <string name="username">Benutzername</string>
     <string name="pass">Passwort</string>
@@ -188,7 +188,6 @@
     <string name="center">Mitte</string>
     <string name="right">Rechts</string>
     <string name="explore_and_share_community_note_templates">Erkunde und teile Notizvorlagen mit der Community</string>
-    <string name="scroll_sync">Scroll Sync</string>
     <string name="widget">Widget</string>
     <string name="color">Farbe</string>
     <string name="large">Groß</string>
@@ -201,4 +200,6 @@
     <string name="create_text_file">Textdatei erstellen</string>
     <string name="raw">Roh</string>
     <string name="display_style">Anzeigestil</string>
+    <string name="line_numbers">Zeilennummern</string>
+    <string name="sample_note">Beispielnotiz</string>
 </resources>

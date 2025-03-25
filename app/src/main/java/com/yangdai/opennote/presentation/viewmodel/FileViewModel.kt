@@ -177,19 +177,21 @@ class FileViewModel @Inject constructor(
             initialValue = HeaderNode("", 0, IntRange.EMPTY)
         )
 
-    val settingsStateFlow: StateFlow<SettingsState> = combine(
+    val settingsStateFlow: StateFlow<SettingsState> = combine<Any, SettingsState>(
         appDataStoreRepository.booleanFlow(Constants.Preferences.IS_APP_IN_DARK_MODE),
         appDataStoreRepository.booleanFlow(Constants.Preferences.IS_LINT_ACTIVE),
         appDataStoreRepository.stringFlow(Constants.Preferences.STORAGE_PATH),
         appDataStoreRepository.stringFlow(Constants.Preferences.DATE_FORMATTER),
-        appDataStoreRepository.stringFlow(Constants.Preferences.TIME_FORMATTER)
-    ) { v1, v2, v3, v4, v5 ->
+        appDataStoreRepository.stringFlow(Constants.Preferences.TIME_FORMATTER),
+        appDataStoreRepository.booleanFlow(Constants.Preferences.SHOW_LINE_NUMBERS)
+    ) { values ->
         SettingsState(
-            isAppInDarkMode = v1,
-            isLintActive = v2,
-            storagePath = v3,
-            dateFormatter = v4,
-            timeFormatter = v5
+            isAppInDarkMode = values[0] as Boolean,
+            isLintActive = values[1] as Boolean,
+            storagePath = values[2] as String,
+            dateFormatter = values[3] as String,
+            timeFormatter = values[4] as String,
+            showLineNumbers = values[5] as Boolean
         )
     }.flowOn(Dispatchers.IO).stateIn(
         scope = viewModelScope, started = SharingStarted.Eagerly, initialValue = SettingsState()

@@ -3,7 +3,6 @@ package com.yangdai.opennote.presentation.screen
 import android.content.ClipData
 import android.content.Intent
 import android.provider.CalendarContract
-import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -37,8 +36,6 @@ import androidx.compose.material.icons.automirrored.outlined.MenuBook
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.outlined.AddAlert
 import androidx.compose.material.icons.outlined.EditNote
-import androidx.compose.material.icons.outlined.Link
-import androidx.compose.material.icons.outlined.LinkOff
 import androidx.compose.material.icons.outlined.LocalPrintshop
 import androidx.compose.material.icons.outlined.Save
 import androidx.compose.material.icons.outlined.Search
@@ -112,6 +109,7 @@ import com.yangdai.opennote.presentation.component.note.StandardTextField
 import com.yangdai.opennote.presentation.component.note.TemplateFilesList
 import com.yangdai.opennote.presentation.event.FileDataEvent
 import com.yangdai.opennote.presentation.event.FileEvent
+import com.yangdai.opennote.presentation.navigation.Screen
 import com.yangdai.opennote.presentation.util.Constants
 import com.yangdai.opennote.presentation.util.TemplateProcessor
 import com.yangdai.opennote.presentation.util.getOrCreateDirectory
@@ -132,7 +130,8 @@ fun FileScreen(
     viewModel: FileViewModel = hiltViewModel(),
     uriStr: String,
     isLargeScreen: Boolean,
-    navigateUp: () -> Unit
+    navigateUp: () -> Unit,
+    navigateToScreen: (Screen) -> Unit
 ) {
     val noteState by viewModel.noteStateFlow.collectAsStateWithLifecycle()
     val html by viewModel.html.collectAsStateWithLifecycle()
@@ -163,10 +162,7 @@ fun FileScreen(
                                 reader.readText()
                             }
                         }.orEmpty()
-                    }.getOrElse { exception ->
-                        Log.e("FileScreen", "Error reading file: ${exception.message}", exception)
-                        ""
-                    }
+                    }.getOrDefault("")
                     withContext(Dispatchers.Main) {
                         oFileContent = fileContent
                         viewModel.titleState.setTextAndPlaceCursorAtEnd(fileName)
@@ -211,7 +207,6 @@ fun FileScreen(
 
     val pagerState = rememberPagerState(pageCount = { 2 })
     var isReadView by rememberSaveable { mutableStateOf(false) }
-    var isEditorAndPreviewSynced by rememberSaveable { mutableStateOf(false) }
     var isSearching by remember { mutableStateOf(false) }
     var selectedHeader by remember { mutableStateOf<IntRange?>(null) }
     var searchState by remember { mutableStateOf(FindAndReplaceState()) }
@@ -366,15 +361,6 @@ fun FileScreen(
                         isReadView = !isReadView
                     }
 
-                    if (noteState.isStandard)
-                        IconButtonWithTooltip(
-                            imageVector = if (isEditorAndPreviewSynced) Icons.Outlined.LinkOff else Icons.Outlined.Link,
-                            contentDescription = stringResource(R.string.scroll_sync),
-                            shortCutDescription = stringResource(R.string.scroll_sync)
-                        ) {
-                            isEditorAndPreviewSynced = !isEditorAndPreviewSynced
-                        }
-
                     IconButtonWithTooltip(
                         painter = R.drawable.right_panel_open,
                         contentDescription = "Open Drawer",
@@ -446,6 +432,7 @@ fun FileScreen(
             if (!noteState.isStandard) LiteTextField(
                 modifier = Modifier.fillMaxSize(),
                 readMode = isReadView,
+                showLineNumbers = appSettings.showLineNumbers,
                 state = viewModel.contentState,
                 scrollState = scrollState,
                 headerRange = selectedHeader,
@@ -466,9 +453,9 @@ fun FileScreen(
                         StandardTextField(
                             modifier = Modifier
                                 .fillMaxHeight()
-                                .weight(editorWeight)
-                                .padding(start = 16.dp, end = 8.dp),
+                                .weight(editorWeight),
                             readMode = isReadView,
+                            showLineNumbers = appSettings.showLineNumbers,
                             state = viewModel.contentState,
                             scrollState = scrollState,
                             isLintActive = appSettings.isLintActive,
@@ -539,7 +526,6 @@ fun FileScreen(
                             launchShareIntent = launchShareIntent,
                             rootUri = appSettings.storagePath.toUri(),
                             scrollState = scrollState,
-                            scrollSynchronized = isEditorAndPreviewSynced,
                             isAppInDarkMode = appSettings.isAppInDarkMode
                         )
                     }
@@ -551,11 +537,10 @@ fun FileScreen(
                     when (currentPage) {
                         0 -> {
                             StandardTextField(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .padding(horizontal = 16.dp),
+                                modifier = Modifier.fillMaxSize(),
                                 state = viewModel.contentState,
                                 readMode = isReadView,
+                                showLineNumbers = appSettings.showLineNumbers,
                                 scrollState = scrollState,
                                 isLintActive = appSettings.isLintActive,
                                 headerRange = selectedHeader,
@@ -599,7 +584,6 @@ fun FileScreen(
                                 printEnabled = triggerPrint,
                                 launchShareIntent = launchShareIntent,
                                 rootUri = appSettings.storagePath.toUri(),
-                                scrollSynchronized = isEditorAndPreviewSynced,
                                 scrollState = scrollState,
                                 isAppInDarkMode = appSettings.isAppInDarkMode
                             )
@@ -616,6 +600,7 @@ fun FileScreen(
         isLargeScreen = isLargeScreen,
         outline = outline,
         onHeaderClick = { selectedHeader = it },
+        navigateTo = { navigateToScreen(it) },
         actionContent = {
             IconButtonWithTooltip(
                 imageVector = Icons.Outlined.SwapHoriz,

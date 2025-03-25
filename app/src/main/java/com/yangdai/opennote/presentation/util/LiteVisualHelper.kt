@@ -119,7 +119,7 @@ val CODE_STYLE = SpanStyle(
 val CODE_BLOCK_STYLE = SpanStyle(fontFamily = FontFamily.Monospace)
 val SEARCH_WORD_STYLE = SpanStyle(background = Color.Cyan.copy(alpha = 0.5f))
 val CURRENT_SEARCH_WORD_STYLE = SpanStyle(background = Color.Green.copy(alpha = 0.5f))
-val MARKER_STYLE = SpanStyle(color = Color(0xFFCE8D6E))
+val MARKER_STYLE = SpanStyle(color = Color(0xFFCE8D6E), fontFamily = FontFamily.Monospace)
 val KEYWORD_STYLE = SpanStyle(color = Color(0xFFC67CBA))
 val LINK_STYLE = SpanStyle(color = linkColor, textDecoration = TextDecoration.Underline)
 
@@ -423,9 +423,10 @@ fun findTagRanges(text: String): StyleRanges {
                 markerRanges.add(openingFence until (openingFence + openingMarkerLength)) // ```
                 fencedCodeBlockInfoRanges.add(openingFence + openingMarkerLength until (openingFence + openingMarkerLength + infoString)) // language
 
-                val blockContent = fencedCodeBlock.literal ?: ""
+                val blockContentLength =
+                    if (fencedCodeBlock.literal.isEmpty()) 0 else fencedCodeBlock.literal.length + 1
                 val fence =
-                    openingFence + openingMarkerLength + infoString + blockContent.length + 1 // +1 for \n after info string
+                    openingFence + openingMarkerLength + infoString + blockContentLength
                 codeBlockContentRanges.add((openingFence + openingMarkerLength + infoString) until fence) // content
 
                 val closingMarkerLength = fencedCodeBlock.closingFenceLength ?: return

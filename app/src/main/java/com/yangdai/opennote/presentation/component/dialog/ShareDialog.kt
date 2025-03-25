@@ -58,7 +58,7 @@ fun ShareDialog(
             }
 
             if (isStandard)
-                TextOptionButton(buttonText = stringResource(R.string.image) + " (BETA)") {
+                TextOptionButton(buttonText = stringResource(R.string.image)) {
                     onConfirm(ShareType.IMAGE)
                 }
         }

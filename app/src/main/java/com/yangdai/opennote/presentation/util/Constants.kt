@@ -42,6 +42,7 @@ object Constants {
         const val ENUM_DISPLAY_MODE = "ENUM_DISPLAY_MODE"
         const val IS_AUTO_SAVE_ENABLED = "IS_AUTO_SAVE_ENABLED"
         const val TITLE_ALIGN = "TITLE_ALIGN"
+        const val SHOW_LINE_NUMBERS = "LINE_NUMBERS"
     }
 
     object Widget {
@@ -85,3 +86,139 @@ object Constants {
         const val TEXT = "text"
     }
 }
+
+val SampleNote = """
+    # Markdown Syntax Guide
+
+    ## Headings
+
+    ```
+    # Heading 1
+    ## Heading 2
+    ### Heading 3
+    #### Heading 4
+    ##### Heading 5
+    ###### Heading 6
+    ```
+
+    ## Text Formatting
+
+    **Bold text** or __also bold__
+
+    *Italic text* or _also italic_
+
+    ***Bold and italic*** or ___also bold and italic___
+
+    <del>Strikethrough</del> or ~~also Strikethrough~~
+
+    <ins>Underline</ins> or ++also underline++
+
+    <mark>Highlighted text</mark> or ==also highlighted==
+
+    ## Lists
+
+    ### Unordered Lists
+
+    * Item 1
+    * Item 2
+        + Nested item 2.1
+        + Nested item 2.2
+            - Deeply nested item
+    * Item 3
+
+    ### Ordered Lists
+
+    1. First item
+    2. Second item
+        1. Nested numbered item
+        2. Another nested item
+    3. Third item
+
+    ### Task Lists
+
+    - [x] Completed task
+    - [ ] Incomplete task
+    - [ ] Another task
+        - [x] Nested completed subtask
+        - [ ] Nested incomplete subtask
+    - [x] One more completed task
+
+    ## Links
+
+    [OpenNote](https://github.com/YangDai2003/OpenNote-Compose)
+
+    ## Images
+
+    ![Kotlin](https://kotlinlang.org/docs/images/mascot-in-action.png)
+
+    ## Blockquotes
+
+    > This is a blockquote
+    >
+    > It can span multiple lines
+    >
+    > > Nested blockquotes are also possible
+
+    ## Code
+
+    Inline `code` with backticks
+
+    ```kotlin
+    fun createConfetti() {
+        val colors = listOf("🔴", "🟠", "🟡", "🟢", "🔵", "🟣")
+        repeat(20) {
+            val color = colors.random()
+            val position = (1..80).random()
+            println(" ".repeat(position) + color)
+            Thread.sleep(50)
+        }
+        println("🎉 Surprise! 🎉")
+    }
+    ```
+
+    ## Footnotes
+
+    Here is a sentence with a footnote[^1].
+
+    [^1]: This is the footnote content.
+
+    ## Tables
+
+    | Header 1 | Header 2 | Header 3 |
+    |------------|------------|------------|
+    | Cell 1 | Cell 2 | Cell 3 |
+    | Cell 4 | Cell 5 | Cell 6 |
+    | Cell 7 | Cell 8 | Cell 9 |
+
+    ### Table Alignment
+
+    | Left-aligned | Center-aligned | Right-aligned |
+    |:---------------|:-------------------:|---------------:|
+    | Left         |     Center     |         Right |
+    | Left         |     Center     |         Right |
+
+    ## Horizontal Rule
+
+    ---
+
+    or
+
+    ***
+
+    or
+
+    ___
+
+    ## HTML in Markdown
+
+    Markdown supports HTML tags when you need more control over formatting:
+
+    <div style="color: red; text-align: center;">
+      <p>This text is red and centered using HTML.</p>
+    </div>
+
+    <details>
+      <summary>Click to expand!</summary>
+    This content is hidden by default but can be expanded by clicking.
+    </details>
+""".trimIndent()

@@ -43,7 +43,8 @@ import com.yangdai.opennote.R
 enum class ActionType {
     CreateTextFile,
     EditTextFile,
-    CreateNote
+    CreateNote,
+    SampleNote
 }
 
 @Composable
@@ -74,10 +75,12 @@ fun FullscreenCreateOptionDialog(
             modifier = Modifier
                 .fillMaxSize()
                 .navigationBarsPadding()
-                .padding(16.dp),
-            contentAlignment = Alignment.BottomEnd
+                .padding(16.dp)
         ) {
-            Column(horizontalAlignment = Alignment.End) {
+            Column(
+                modifier = Modifier.align(Alignment.BottomEnd),
+                horizontalAlignment = Alignment.End
+            ) {
                 AnimatedVisibility(
                     visible = graphicVisible,
                     enter = EnterTransition.None,
@@ -146,6 +149,17 @@ fun FullscreenCreateOptionDialog(
                         Icon(imageVector = Icons.Outlined.Close, contentDescription = "Close")
                     }
                 }
+            }
+
+            FilledTonalButton(
+                modifier = Modifier
+                    .align(Alignment.BottomStart)
+                    .padding(bottom = 4.dp),
+                onClick = {
+                    onOptionSelected(ActionType.SampleNote)
+                }
+            ) {
+                Text(stringResource(R.string.sample_note))
             }
         }
     }

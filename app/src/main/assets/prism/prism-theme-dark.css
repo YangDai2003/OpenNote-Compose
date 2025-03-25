@@ -1,0 +1,189 @@
+code[class*="language-"],
+pre[class*="language-"] {
+    background: #2b2b2b;
+    color: #a9b7c6;
+	font-family: "JetBrains Mono", Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace; /* this is the default */
+	/* The following properties are standard, please leave them as they are */
+	font-size: 1em;
+	direction: ltr;
+	text-align: left;
+	white-space: pre;
+	word-spacing: normal;
+	word-break: normal;
+	line-height: 1.5;
+	/* The default is 4, but you could change it if you really, really want to */
+	-moz-tab-size: 4;
+	-o-tab-size: 4;
+	tab-size: 4;
+	/* The following properties are also standard */
+	-webkit-hyphens: none;
+	-moz-hyphens: none;
+	-ms-hyphens: none;
+	hyphens: none;
+}
+
+code[class*="language-"]::-moz-selection,
+pre[class*="language-"]::-moz-selection,
+code[class*="language-"] ::-moz-selection,
+pre[class*="language-"] ::-moz-selection {
+  background: #214283;
+}
+
+code[class*="language-"]::selection,
+pre[class*="language-"]::selection,
+code[class*="language-"] ::selection,
+pre[class*="language-"] ::selection {
+  background: #214283;
+}
+
+/* Properties specific to code blocks */
+pre[class*="language-"] {
+	padding: 1em; /* this is standard */
+	margin: 0.5em 0; /* this is the default */
+	overflow: auto; /* this is standard */
+	border-radius: 0;
+}
+
+/* Properties specific to inline code */
+:not(pre) > code[class*="language-"] {
+	padding: 0.1em; /* this is the default */
+	border-radius: 0;
+	white-space: normal; /* this is standard */
+}
+
+/**
+ * These are the minimum tokens you must style, you can rearrange them and/or style more tokens as you want
+ * The concepts behind these standard tokens, as well as some examples, can be found here: https://prismjs.com/tokens.html
+ */
+.token.comment {
+    color: #808080;
+}
+
+.token.prolog {
+    color: #808080;
+}
+
+.token.cdata {
+    color: #808080;
+}
+
+.token.doctype {
+    color: #808080;
+}
+
+.token.punctuation {
+    color: #a9b7c6;
+}
+
+.token.entity {
+    color: #cc7832;
+}
+
+.token.attr-name {
+    color: #bababa;
+}
+
+.token.class-name {
+    color: #a9b7c6;
+}
+
+.token.boolean {
+    color: #cc7832;
+}
+
+.token.constant {
+    color: #9876aa;
+}
+
+.token.number {
+    color: #6897bb;
+}
+
+.token.atrule {
+    color: #cc7832;
+}
+
+.token.keyword {
+    color: #cc7832;
+}
+
+.token.property {
+    color: #bababa;
+}
+
+.token.tag {
+    color: #ffc66d;
+}
+
+.token.symbol {
+    color: #6a8759;
+}
+
+.token.deleted {
+    color: #cc7832;
+}
+
+.token.important {
+    color: #cc7832;
+}
+
+.token.selector {
+    color: #bababa;
+}
+
+.token.string {
+    color: #6a8759;
+}
+
+.token.char {
+    color: #6a8759;
+}
+
+.token.builtin {
+    color: #a9b7c6;
+}
+
+.token.inserted {
+    color: #6a8759;
+}
+
+.token.regex {
+    color: #6a8759;
+}
+
+.token.attr-value {
+    color: #a5c261;
+}
+
+.token.variable {
+    color: #9876aa;
+}
+
+.token.operator {
+    color: #a9b7c6;
+}
+
+.token.function {
+    color: #ffc66d;
+}
+
+.token.url {
+    color: #287bde;
+}
+
+/* The following rules are pretty similar across themes, but feel free to adjust them */
+.token.bold {
+	font-weight: bold;
+}
+
+.token.italic {
+	font-style: italic;
+}
+
+.token.entity {
+	cursor: help;
+}
+
+.token.namespace {
+	opacity: 0.7;
+}
