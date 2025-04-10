@@ -4,7 +4,6 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
@@ -30,12 +29,14 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -46,6 +47,7 @@ import com.yangdai.opennote.data.local.entity.FolderEntity
 import com.yangdai.opennote.presentation.navigation.Screen
 import com.yangdai.opennote.presentation.navigation.Screen.Folders
 import com.yangdai.opennote.presentation.navigation.Screen.Settings
+import com.yangdai.opennote.presentation.util.getAppName
 
 @Composable
 fun DrawerContent(
@@ -60,6 +62,9 @@ fun DrawerContent(
         .fillMaxWidth()
         .verticalScroll(rememberScrollState())
 ) {
+    val context = LocalContext.current
+    val appName = remember { context.getAppName() }
+
 
     Row(
         modifier = Modifier
@@ -68,6 +73,14 @@ fun DrawerContent(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
+        Text(
+            text = appName,
+            style = MaterialTheme.typography.titleLarge,
+            color = MaterialTheme.colorScheme.onSurface,
+            fontWeight = FontWeight.SemiBold,
+            modifier = Modifier.weight(1f)
+        )
+
         if (showLock)
             IconButton(onClick = onLockClick) {
                 Icon(
@@ -76,8 +89,6 @@ fun DrawerContent(
                     tint = MaterialTheme.colorScheme.onSurface
                 )
             }
-
-        Spacer(modifier = Modifier.weight(1f))
 
         IconButton(onClick = { navigateTo(Settings) }) {
             Icon(
