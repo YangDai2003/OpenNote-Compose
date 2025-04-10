@@ -133,5 +133,3 @@ fun Int.toHexColor(): String {
 fun IntRange.overlaps(other: IntRange): Boolean {
     return this.first <= other.last && other.first <= this.last
 }
-
-fun Context.getAppName(): String = applicationInfo.loadLabel(packageManager).toString()
