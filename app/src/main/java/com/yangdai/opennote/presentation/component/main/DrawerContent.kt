@@ -4,7 +4,6 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
@@ -60,7 +59,6 @@ fun DrawerContent(
         .fillMaxWidth()
         .verticalScroll(rememberScrollState())
 ) {
-
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -68,6 +66,14 @@ fun DrawerContent(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
+        Text(
+            text = stringResource(R.string.app_name),
+            style = MaterialTheme.typography.titleLarge,
+            color = MaterialTheme.colorScheme.onSurface,
+            fontWeight = FontWeight.SemiBold,
+            modifier = Modifier.weight(1f)
+        )
+
         if (showLock)
             IconButton(onClick = onLockClick) {
                 Icon(
@@ -76,8 +82,6 @@ fun DrawerContent(
                     tint = MaterialTheme.colorScheme.onSurface
                 )
             }
-
-        Spacer(modifier = Modifier.weight(1f))
 
         IconButton(onClick = { navigateTo(Settings) }) {
             Icon(
