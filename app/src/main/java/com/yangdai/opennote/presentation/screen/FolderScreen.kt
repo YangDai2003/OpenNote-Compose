@@ -1,17 +1,20 @@
 package com.yangdai.opennote.presentation.screen
 
 import androidx.activity.compose.LocalActivity
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.hoverable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -19,6 +22,7 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyGridItemScope
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.filled.Folder
@@ -51,13 +55,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush.Companion.horizontalGradient
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -164,7 +168,6 @@ fun LazyGridItemScope.FolderItem(
     }
 
     val dismissState = rememberSwipeToDismissBoxState(
-        positionalThreshold = { it * 0.3f },
         confirmValueChange = { value ->
             when (value) {
                 SwipeToDismissBoxValue.StartToEnd -> {
@@ -194,34 +197,54 @@ fun LazyGridItemScope.FolderItem(
     SwipeToDismissBox(
         state = dismissState,
         backgroundContent = {
-            Row(
-                modifier = Modifier
+            val direction = dismissState.targetValue
+            val progress = dismissState.progress
+            val iconOffset = 30.dp * (progress * 1.5f)
+            val backgroundColor by animateColorAsState(
+                when (direction) {
+                    SwipeToDismissBoxValue.StartToEnd -> folderColor.copy(alpha = 0.1f)
+                    SwipeToDismissBoxValue.EndToStart -> colorScheme.errorContainer
+                    SwipeToDismissBoxValue.Settled -> Color.Unspecified
+                }
+            )
+            val cornerLeftRadius =
+                if (direction == SwipeToDismissBoxValue.StartToEnd) 16.dp * (progress * 6f) else 0.dp
+            val cornerRightRadius =
+                if (direction == SwipeToDismissBoxValue.EndToStart) 16.dp * (progress * 6f) else 0.dp
+            Box(
+                Modifier
                     .fillMaxSize()
-                    .background(
-                        brush = horizontalGradient(
-                            colors = listOf(
-                                folderColor.copy(alpha = 0.2f),
-                                folderColor.copy(alpha = 0.1f),
-                                colorScheme.errorContainer
-                            )
+                    .clip(
+                        shape = RoundedCornerShape(
+                            topStart = cornerLeftRadius,
+                            topEnd = cornerRightRadius,
+                            bottomStart = cornerLeftRadius,
+                            bottomEnd = cornerRightRadius
                         )
                     )
-                    .padding(horizontal = 20.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                    .background(backgroundColor)
+                    .padding(horizontal = 20.dp)
             ) {
-                Icon(
-                    imageVector = Icons.Outlined.DriveFileRenameOutline,
-                    contentDescription = null,
-                    tint = folderColor,
-                    modifier = Modifier.size(30.dp)
-                )
-                Icon(
-                    imageVector = Icons.Outlined.Delete,
-                    contentDescription = null,
-                    tint = colorScheme.onErrorContainer,
-                    modifier = Modifier.size(30.dp)
-                )
+                if (direction == SwipeToDismissBoxValue.StartToEnd)
+                    Icon(
+                        imageVector = Icons.Outlined.DriveFileRenameOutline,
+                        contentDescription = null,
+                        tint = folderColor,
+                        modifier = Modifier
+                            .align(Alignment.CenterStart)
+                            .size(30.dp)
+                            .offset { IntOffset(x = iconOffset.roundToPx(), y = 0) }
+                    )
+                if (direction == SwipeToDismissBoxValue.EndToStart)
+                    Icon(
+                        imageVector = Icons.Outlined.Delete,
+                        contentDescription = null,
+                        tint = colorScheme.onErrorContainer,
+                        modifier = Modifier
+                            .align(Alignment.CenterEnd)
+                            .size(30.dp)
+                            .offset { IntOffset(x = -iconOffset.roundToPx(), y = 0) }
+                    )
             }
         },
         modifier = Modifier
@@ -238,7 +261,6 @@ fun LazyGridItemScope.FolderItem(
             }
     ) {
         ElevatedCard {
-            // Folder Header
             Row(
                 modifier = Modifier
                     .fillMaxWidth()

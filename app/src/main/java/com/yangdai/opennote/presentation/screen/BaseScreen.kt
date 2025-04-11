@@ -43,10 +43,14 @@ fun BaseScreen(
     val isCreatingPass by sharedViewModel.isCreatingPassword.collectAsStateWithLifecycle()
     val activity = LocalActivity.current
 
-    if (settingsState.isScreenProtected) {
-        activity?.window?.addFlags(android.view.WindowManager.LayoutParams.FLAG_SECURE)
-    } else {
-        activity?.window?.clearFlags(android.view.WindowManager.LayoutParams.FLAG_SECURE)
+    LaunchedEffect(settingsState.isScreenProtected) {
+        activity?.window?.let { window ->
+            if (settingsState.isScreenProtected) {
+                window.addFlags(android.view.WindowManager.LayoutParams.FLAG_SECURE)
+            } else {
+                window.clearFlags(android.view.WindowManager.LayoutParams.FLAG_SECURE)
+            }
+        }
     }
 
     // Check if the user is logged in

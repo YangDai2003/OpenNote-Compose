@@ -5,7 +5,6 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Build
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -82,14 +81,11 @@ fun AboutPane() {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
 
-        val packageInfo = context.packageManager.getPackageInfo(
-            context.packageName, 0
-        )
-        val version = packageInfo.versionName
+        val packageInfo = context.packageManager
+            .getPackageInfo(context.packageName, 0)
+        val version = remember(packageInfo) { packageInfo.versionName }
         var pressAMP by remember { mutableFloatStateOf(16f) }
-        val animatedPress by animateFloatAsState(
-            targetValue = pressAMP, animationSpec = tween(), label = ""
-        )
+        val animatedPress by animateFloatAsState(pressAMP)
 
         val haptic = LocalHapticFeedback.current
 
@@ -174,26 +170,6 @@ fun AboutPane() {
                 .clip(CircleShape)
                 .clickable {
                     customTabsIntent.launchUrl(
-                        context, "https://github.com/YangDai2003/OpenNote-Compose".toUri()
-                    )
-                },
-            colors = ListItemDefaults.colors()
-                .copy(containerColor = MaterialTheme.colorScheme.surfaceContainerLowest),
-            leadingContent = {
-                Icon(
-                    imageVector = Icons.Outlined.Commit, contentDescription = "code"
-                )
-            },
-            headlineContent = {
-                Text(text = stringResource(R.string.source_code))
-            })
-
-        ListItem(
-            modifier = Modifier
-                .padding(bottom = 8.dp)
-                .clip(CircleShape)
-                .clickable {
-                    customTabsIntent.launchUrl(
                         context, "https://github.com/YangDai2003/OpenNote-Compose/issues".toUri()
                     )
                 },
@@ -206,6 +182,26 @@ fun AboutPane() {
             },
             headlineContent = {
                 Text(text = stringResource(R.string.report_a_bug_or_request_a_feature))
+            })
+
+        ListItem(
+            modifier = Modifier
+                .padding(bottom = 8.dp)
+                .clip(CircleShape)
+                .clickable {
+                    customTabsIntent.launchUrl(
+                        context, "https://github.com/YangDai2003/OpenNote-Compose".toUri()
+                    )
+                },
+            colors = ListItemDefaults.colors()
+                .copy(containerColor = MaterialTheme.colorScheme.surfaceContainerLowest),
+            leadingContent = {
+                Icon(
+                    imageVector = Icons.Outlined.Commit, contentDescription = "code"
+                )
+            },
+            headlineContent = {
+                Text(text = stringResource(R.string.source_code))
             })
 
         ListItem(

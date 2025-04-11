@@ -179,7 +179,7 @@ fun TextFieldBuffer.underline() = inlineWrap("++")
 
 fun TextFieldBuffer.strikeThrough() = inlineWrap("~~")
 
-fun TextFieldBuffer.mark() = inlineWrap("<mark>", "</mark>")
+fun TextFieldBuffer.highlight() = inlineWrap("==")
 
 fun TextFieldBuffer.inlineBrackets() = inlineWrap("[", "]")
 

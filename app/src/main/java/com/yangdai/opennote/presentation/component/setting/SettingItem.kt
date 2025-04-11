@@ -16,14 +16,18 @@ fun SettingItem(
     headlineText: String,
     supportingText: String,
     modifier: Modifier = Modifier,
-    overlineContent: @Composable (() -> Unit)? = null,
     leadingContent: @Composable (() -> Unit)? = null,
-    trailingContent: @Composable (() -> Unit)? = null,
     colors: ListItemColors = ListItemDefaults.colors(containerColor = Color.Transparent),
     tonalElevation: Dp = ListItemDefaults.Elevation,
     shadowElevation: Dp = ListItemDefaults.Elevation
 ) = ListItem(
-    headlineContent = { Text(text = headlineText) },
+    modifier = modifier,
+    headlineContent = {
+        Text(
+            text = headlineText,
+            maxLines = 1
+        )
+    },
     supportingContent = {
         Text(
             text = supportingText,
@@ -31,10 +35,7 @@ fun SettingItem(
             modifier = Modifier.basicMarquee()
         )
     },
-    modifier = modifier,
-    overlineContent = overlineContent,
     leadingContent = leadingContent,
-    trailingContent = trailingContent,
     colors = colors,
     tonalElevation = tonalElevation,
     shadowElevation = shadowElevation
@@ -45,8 +46,6 @@ fun SettingItem(
 fun SettingItemPreview() {
     SettingItem(
         headlineText = "Headline",
-        supportingText = "Supporting",
-        leadingContent = { Text("Leading") },
-        trailingContent = { Text("Trailing") }
+        supportingText = "Supporting"
     )
 }

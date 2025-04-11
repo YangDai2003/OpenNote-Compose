@@ -252,7 +252,7 @@ fun StandardTextField(
                                         }
 
                                         Key.M -> {
-                                            state.edit { mark() }
+                                            state.edit { highlight() }
                                             true
                                         }
 

@@ -1,6 +1,7 @@
 package com.yangdai.opennote.presentation.component.dialog
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -8,6 +9,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Done
 import androidx.compose.material3.AlertDialog
@@ -19,6 +21,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -71,7 +74,18 @@ fun ProgressDialog(
                             )
                         else
                             if (!infinite)
-                                Text(text = "${(progress * 100).toInt()}%")
+                                Box(
+                                    modifier = Modifier
+                                        .size(48.dp)
+                                        .clip(CircleShape)
+                                        .background(MaterialTheme.colorScheme.primaryContainer),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = "${(progress * 100).toInt()}%",
+                                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                                    )
+                                }
                     }
                 }
                 if (message.isNotEmpty()) {
@@ -92,22 +106,17 @@ fun ProgressDialog(
 
 @Composable
 @Preview
-fun ProgressDialogPreview1() {
-    ProgressDialog(isLoading = true, progress = 1f, onDismissRequest = {})
-}
-
-@Composable
-@Preview
-fun ProgressDialogPreview2() {
+fun ProgressDialogPreview() {
     ProgressDialog(
         isLoading = true,
-        progress = 0.3f,
-        message = "exception",
-        onDismissRequest = {})
+        progress = 0.4f,
+        message = "Loading...",
+        onDismissRequest = {}
+    )
 }
 
 @Composable
 @Preview
-fun ProgressDialogPreview3() {
+fun ProgressDialogPreview1() {
     ProgressDialog(isLoading = true, progress = 0.3f, infinite = true, onDismissRequest = {})
 }

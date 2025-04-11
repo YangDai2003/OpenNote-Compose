@@ -1,106 +1,70 @@
 package com.yangdai.opennote.presentation.util
 
+import android.content.Intent
 import android.os.Build
+import android.provider.Settings
 import androidx.appcompat.app.AppCompatActivity
+import androidx.biometric.AuthenticationRequest
+import androidx.biometric.AuthenticationResult
 import androidx.biometric.BiometricManager
-import androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_STRONG
-import androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_WEAK
-import androidx.biometric.BiometricManager.Authenticators.DEVICE_CREDENTIAL
 import androidx.biometric.BiometricPrompt
+import androidx.biometric.registerForAuthenticationResult
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
 
-class BiometricPromptManager(
-    private val activity: AppCompatActivity
-) {
+class BiometricPromptManager(activity: AppCompatActivity) {
     private val resultChannel = Channel<BiometricPromptResult>()
     val promptResult = resultChannel.receiveAsFlow()
-    fun showBiometricPrompt(
-        title: String,
-        negativeButtonText: String
-    ) {
-        val manager = BiometricManager.from(activity)
-        val authenticators = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R)
-            BIOMETRIC_STRONG or BIOMETRIC_WEAK or DEVICE_CREDENTIAL
-        else
-            BIOMETRIC_STRONG or BIOMETRIC_WEAK
 
-        val promptInfo = BiometricPrompt.PromptInfo.Builder()
-            .setTitle(title)
-            .setAllowedAuthenticators(authenticators)
-
-        // Only set negative button text if device credential authentication is not allowed
-        if (authenticators and DEVICE_CREDENTIAL == 0) {
-            promptInfo.setNegativeButtonText(negativeButtonText)
+    val requestAuthentication = activity.registerForAuthenticationResult(
+        onAuthFailedCallback = {
+            resultChannel.trySend(BiometricPromptResult.AuthenticationFailed)
         }
-
-        when (manager.canAuthenticate(authenticators)) {
-            BiometricManager.BIOMETRIC_SUCCESS -> {
-                BiometricPrompt(
-                    activity,
-                    object : BiometricPrompt.AuthenticationCallback() {
-                        override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
-                            super.onAuthenticationSucceeded(result)
-                            resultChannel.trySend(BiometricPromptResult.AuthenticationSucceeded)
-
-                        }
-
-                        override fun onAuthenticationFailed() {
-                            super.onAuthenticationFailed()
-                            resultChannel.trySend(BiometricPromptResult.AuthenticationFailed)
-
-                        }
-
-                        override fun onAuthenticationError(
-                            errorCode: Int,
-                            errString: CharSequence
-                        ) {
-                            super.onAuthenticationError(errorCode, errString)
-                            resultChannel.trySend(
-                                BiometricPromptResult.AuthenticationError(
-                                    errString.toString()
-                                )
-                            )
-
-                        }
-                    }).authenticate(promptInfo.build())
+    ) { result: AuthenticationResult ->
+        when (result) {
+            is AuthenticationResult.Error -> {
+                if (result.errorCode == BiometricPrompt.ERROR_NO_BIOMETRICS) {
+                    resultChannel.trySend(BiometricPromptResult.AuthenticationNotEnrolled)
+                } else {
+                    resultChannel.trySend(
+                        BiometricPromptResult.AuthenticationError(
+                            "${"${result.errorCode} "}${result.errString}"
+                        )
+                    )
+                }
             }
 
-            BiometricManager.BIOMETRIC_ERROR_NO_HARDWARE -> {
-                resultChannel.trySend(BiometricPromptResult.FeatureUnavailable)
-                return
-            }
-
-            BiometricManager.BIOMETRIC_ERROR_HW_UNAVAILABLE -> {
-                resultChannel.trySend(BiometricPromptResult.HardwareUnavailable)
-                return
-            }
-
-            BiometricManager.BIOMETRIC_ERROR_NONE_ENROLLED -> {
-                resultChannel.trySend(BiometricPromptResult.AuthenticationNotEnrolled)
-                return
-            }
-
-            BiometricManager.BIOMETRIC_ERROR_SECURITY_UPDATE_REQUIRED -> {
-                resultChannel.trySend(BiometricPromptResult.FeatureUnavailable)
-                return
-            }
-
-            BiometricManager.BIOMETRIC_ERROR_UNSUPPORTED -> {
-                resultChannel.trySend(BiometricPromptResult.FeatureUnavailable)
-                return
-            }
-
-            BiometricManager.BIOMETRIC_STATUS_UNKNOWN -> {
-                resultChannel.trySend(BiometricPromptResult.FeatureUnavailable)
-                return
+            is AuthenticationResult.Success -> {
+                resultChannel.trySend(BiometricPromptResult.AuthenticationSucceeded)
             }
         }
     }
 
+    fun showBiometricPrompt(title: String, negativeButtonText: String) {
+        val authRequest = AuthenticationRequest.biometricRequest(
+            title = title,
+            authFallback = AuthenticationRequest.Biometric.Fallback.NegativeButton(
+                negativeButtonText = negativeButtonText
+            )
+        ) {
+            setMinStrength(AuthenticationRequest.Biometric.Strength.Class2)
+            setIsConfirmationRequired(false)
+        }
+        requestAuthentication.launch(authRequest)
+    }
+
+    fun createEnrollBiometricsIntent(): Intent? {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            Intent(Settings.ACTION_BIOMETRIC_ENROLL).apply {
+                putExtra(
+                    Settings.EXTRA_BIOMETRIC_AUTHENTICATORS_ALLOWED,
+                    BiometricManager.Authenticators.BIOMETRIC_WEAK
+                )
+            }
+        } else null
+    }
+
     sealed interface BiometricPromptResult {
-        data object HardwareUnavailable : BiometricPromptResult
-        data object FeatureUnavailable : BiometricPromptResult
         data object AuthenticationFailed : BiometricPromptResult
         data class AuthenticationError(val errString: String) : BiometricPromptResult
         data object AuthenticationSucceeded : BiometricPromptResult

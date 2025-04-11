@@ -26,7 +26,7 @@ import com.yangdai.opennote.presentation.component.note.inlineBrackets
 import com.yangdai.opennote.presentation.component.note.inlineCode
 import com.yangdai.opennote.presentation.component.note.inlineMath
 import com.yangdai.opennote.presentation.component.note.italic
-import com.yangdai.opennote.presentation.component.note.mark
+import com.yangdai.opennote.presentation.component.note.highlight
 import com.yangdai.opennote.presentation.component.note.quote
 import com.yangdai.opennote.presentation.component.note.strikeThrough
 import com.yangdai.opennote.presentation.component.note.tab
@@ -214,7 +214,7 @@ class FileViewModel @Inject constructor(
                     Constants.Editor.ITALIC -> contentState.edit { italic() }
                     Constants.Editor.UNDERLINE -> contentState.edit { underline() }
                     Constants.Editor.STRIKETHROUGH -> contentState.edit { strikeThrough() }
-                    Constants.Editor.MARK -> contentState.edit { mark() }
+                    Constants.Editor.MARK -> contentState.edit { highlight() }
                     Constants.Editor.INLINE_CODE -> contentState.edit { inlineCode() }
                     Constants.Editor.INLINE_BRACKETS -> contentState.edit { inlineBrackets() }
                     Constants.Editor.INLINE_BRACES -> contentState.edit { inlineBraces() }
