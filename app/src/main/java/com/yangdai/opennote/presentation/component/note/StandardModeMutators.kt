@@ -206,6 +206,29 @@ fun TextFieldBuffer.quote() {
     )
 }
 
+fun TextFieldBuffer.alert(type: String) {
+    val text = toString()
+    val lineStart = text.take(selection.min)
+        .lastIndexOf('\n')
+        .takeIf { it != -1 }
+        ?.let { it + 1 }
+        ?: 0
+
+    val initialSelection = selection
+    val alertType = "> [!$type]"
+    replace(lineStart, lineStart, alertType)
+    replace(
+        lineStart + alertType.length,
+        lineStart + alertType.length,
+        "\n> "
+    )
+    selection = TextRange(
+        initialSelection.min + type.length + 2,
+        initialSelection.max + type.length + 2
+    )
+}
+
+
 fun TextFieldBuffer.tab() {
     val text = toString()
     val lineStart = text.take(selection.min)
