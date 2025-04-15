@@ -94,11 +94,11 @@
     <string name="code">代码</string>
     <string name="quote">引用</string>
     <string name="alert">警报</string>
-    <string name="caution_alert">警告警报</string>
-    <string name="warning_alert">警告警报</string>
-    <string name="important_alert">重要警报</string>
-    <string name="tip_alert">提示警报</string>
-    <string name="note_alert">注意警报</string>
+    <string name="caution_alert">谨慎提醒</string>
+    <string name="warning_alert">警告提醒</string>
+    <string name="important_alert">重要提醒</string>
+    <string name="tip_alert">提示信息</string>
+    <string name="note_alert">备注提醒</string>
     <string name="math">数学</string>
     <string name="horizontal_rule">分割线</string>
     <string name="task_list">任务列表</string>

@@ -94,11 +94,11 @@
     <string name="code">Code</string>
     <string name="quote">Zitat</string>
     <string name="alert">Alert</string>
-    <string name="caution_alert">Vorsichtsalarm</string>
-    <string name="warning_alert">Warnung Alert</string>
-    <string name="important_alert">Wichtig Alert</string>
-    <string name="tip_alert">Tipp Alert</string>
-    <string name="note_alert">Hinweis Warnung</string>
+    <string name="caution_alert">Vorsicht Alarm</string>
+    <string name="warning_alert">Warnungs Alarm</string>
+    <string name="important_alert">Wichtiger Alarm</string>
+    <string name="tip_alert">Tipp Alarm</string>
+    <string name="note_alert">Notiz Alarm</string>
     <string name="math">Mathe</string>
     <string name="horizontal_rule">Horizontale Linie</string>
     <string name="task_list">Aufgabenliste</string>

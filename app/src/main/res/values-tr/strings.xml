@@ -94,9 +94,9 @@
     <string name="quote">Alıntı</string>
     <string name="alert">Uyanık</string>
     <string name="caution_alert">Dikkat Uyarısı</string>
-    <string name="warning_alert">Uyarı Uyarısı</string>
+    <string name="warning_alert">Uyarı Alarmı</string>
     <string name="important_alert">Önemli Uyarı</string>
-    <string name="tip_alert">Bahşiş Uyarısı</string>
+    <string name="tip_alert">İpucu Uyarısı</string>
     <string name="note_alert">Not Uyarısı</string>
     <string name="math">Matematik</string>
     <string name="horizontal_rule">Yatay Çizgi</string>
