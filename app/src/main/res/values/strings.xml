@@ -95,6 +95,7 @@
     <string name="preview">Preview</string>
     <string name="code">Code</string>
     <string name="quote">Quote</string>
+    <string name="alert">Alert</string>
     <string name="math">Math</string>
     <string name="horizontal_rule">Horizontal Rule</string>
     <string name="task_list">Task List</string>
@@ -204,4 +205,9 @@
     <string name="display_style">Display Style</string>
     <string name="line_numbers">Line numbers</string>
     <string name="sample_note">Sample Note</string>
+    <string name="caution_alert">Caution Alert</string>
+    <string name="warning_alert">Warning Alert</string>
+    <string name="important_alert">Important Alert</string>
+    <string name="tip_alert">Tip Alert</string>
+    <string name="note_alert">Note Alert</string>
 </resources>

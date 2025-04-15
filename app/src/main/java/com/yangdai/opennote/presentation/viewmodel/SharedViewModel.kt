@@ -29,13 +29,14 @@ import com.yangdai.opennote.presentation.component.note.addMermaid
 import com.yangdai.opennote.presentation.component.note.addRule
 import com.yangdai.opennote.presentation.component.note.addTable
 import com.yangdai.opennote.presentation.component.note.addTask
+import com.yangdai.opennote.presentation.component.note.alert
 import com.yangdai.opennote.presentation.component.note.bold
+import com.yangdai.opennote.presentation.component.note.highlight
 import com.yangdai.opennote.presentation.component.note.inlineBraces
 import com.yangdai.opennote.presentation.component.note.inlineBrackets
 import com.yangdai.opennote.presentation.component.note.inlineCode
 import com.yangdai.opennote.presentation.component.note.inlineMath
 import com.yangdai.opennote.presentation.component.note.italic
-import com.yangdai.opennote.presentation.component.note.highlight
 import com.yangdai.opennote.presentation.component.note.quote
 import com.yangdai.opennote.presentation.component.note.strikeThrough
 import com.yangdai.opennote.presentation.component.note.tab
@@ -553,6 +554,11 @@ class SharedViewModel @Inject constructor(
                     Constants.Editor.INLINE_BRACES -> contentState.edit { inlineBraces() }
                     Constants.Editor.INLINE_MATH -> contentState.edit { inlineMath() }
                     Constants.Editor.QUOTE -> contentState.edit { quote() }
+                    Constants.Editor.NOTE -> contentState.edit { alert(event.key.uppercase()) }
+                    Constants.Editor.TIP -> contentState.edit { alert(event.key.uppercase()) }
+                    Constants.Editor.IMPORTANT -> contentState.edit { alert(event.key.uppercase()) }
+                    Constants.Editor.WARNING -> contentState.edit { alert(event.key.uppercase()) }
+                    Constants.Editor.CAUTION -> contentState.edit { alert(event.key.uppercase()) }
                     Constants.Editor.TAB -> contentState.edit { tab() }
                     Constants.Editor.UN_TAB -> contentState.edit { unTab() }
                     Constants.Editor.RULE -> contentState.edit { addRule() }

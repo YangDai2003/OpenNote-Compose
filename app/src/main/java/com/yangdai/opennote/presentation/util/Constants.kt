@@ -78,12 +78,25 @@ object Constants {
         const val TASK = "task"
         const val LIST = "list"
         const val QUOTE = "quote"
+        const val NOTE = "note"
+        const val TIP = "tip"
+        const val IMPORTANT = "important"
+        const val WARNING = "warning"
+        const val CAUTION = "caution"
         const val TAB = "tab"
         const val UN_TAB = "unTab"
         const val RULE = "rule"
         const val DIAGRAM = "diagram"
 
         const val TEXT = "text"
+    }
+
+    enum class AlertType(val value: String) {
+        INFO("info"),
+        TIP("tip"),
+        IMPORTANT("important"),
+        WARNING("warning"),
+        CAUTION("caution"),
     }
 }
 
