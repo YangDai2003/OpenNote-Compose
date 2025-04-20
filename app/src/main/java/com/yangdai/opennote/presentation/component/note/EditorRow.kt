@@ -14,6 +14,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.FormatIndentDecrease
 import androidx.compose.material.icons.automirrored.outlined.FormatIndentIncrease
+import androidx.compose.material.icons.automirrored.outlined.Label
 import androidx.compose.material.icons.automirrored.outlined.List
 import androidx.compose.material.icons.automirrored.outlined.TextSnippet
 import androidx.compose.material.icons.outlined.AddChart
@@ -21,6 +22,7 @@ import androidx.compose.material.icons.outlined.CheckBox
 import androidx.compose.material.icons.outlined.Code
 import androidx.compose.material.icons.outlined.DataArray
 import androidx.compose.material.icons.outlined.DataObject
+import androidx.compose.material.icons.outlined.Feedback
 import androidx.compose.material.icons.outlined.FormatBold
 import androidx.compose.material.icons.outlined.FormatItalic
 import androidx.compose.material.icons.outlined.FormatPaint
@@ -28,12 +30,16 @@ import androidx.compose.material.icons.outlined.FormatQuote
 import androidx.compose.material.icons.outlined.FormatUnderlined
 import androidx.compose.material.icons.outlined.HorizontalRule
 import androidx.compose.material.icons.outlined.Image
+import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.outlined.Lightbulb
 import androidx.compose.material.icons.outlined.Link
 import androidx.compose.material.icons.outlined.Mic
+import androidx.compose.material.icons.outlined.ReportGmailerrorred
 import androidx.compose.material.icons.outlined.StrikethroughS
 import androidx.compose.material.icons.outlined.TableChart
 import androidx.compose.material.icons.outlined.Title
 import androidx.compose.material.icons.outlined.VideoFile
+import androidx.compose.material.icons.outlined.Warning
 import androidx.compose.material3.BottomAppBarDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -77,7 +83,8 @@ fun RichTextEditorRowPreview() {
         onCodeClick = {},
         onBracketsClick = {},
         onBracesClick = {},
-        onTemplateClick = {}
+        onTemplateClick = {},
+        onAlertClick = {},
     )
 }
 
@@ -154,10 +161,13 @@ fun RichTextEditorRow(
     onCodeClick: () -> Unit,
     onBracketsClick: () -> Unit,
     onBracesClick: () -> Unit,
-    onTemplateClick: () -> Unit
+    onTemplateClick: () -> Unit,
+    onAlertClick: (Constants.AlertType) -> Unit,
 ) {
 
     var isExpanded by rememberSaveable { mutableStateOf(false) }
+    var isAlertExpanded by rememberSaveable { mutableStateOf(false) }
+
 
     Column {
 
@@ -303,6 +313,55 @@ fun RichTextEditorRow(
                 shortCutDescription = "Ctrl + Shift + P",
                 onClick = onTemplateClick
             )
+
+
+            IconButtonWithTooltip(
+                imageVector = Icons.AutoMirrored.Outlined.Label,
+                contentDescription = stringResource(id = R.string.alert),
+            ) {
+                isAlertExpanded = !isAlertExpanded
+            }
+
+            AnimatedVisibility(visible = isAlertExpanded) {
+                Row(
+                    modifier = Modifier.fillMaxHeight(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Start
+                ) {
+                    IconButtonWithTooltip(
+                        imageVector = Icons.Outlined.Info,
+                        contentDescription = stringResource(R.string.note_alert),
+                    ) {
+                        onAlertClick(Constants.AlertType.INFO)
+                    }
+
+                    IconButtonWithTooltip(
+                        imageVector = Icons.Outlined.Lightbulb,
+                        contentDescription = stringResource(R.string.tip_alert),
+                    ) {
+                        onAlertClick(Constants.AlertType.TIP)
+                    }
+                    IconButtonWithTooltip(
+                        imageVector = Icons.Outlined.Feedback,
+                        contentDescription = stringResource(R.string.important_alert),
+                    ) {
+                        onAlertClick(Constants.AlertType.IMPORTANT)
+                    }
+                    IconButtonWithTooltip(
+                        imageVector = Icons.Outlined.Warning,
+                        contentDescription = stringResource(R.string.warning_alert),
+                    ) {
+                        onAlertClick(Constants.AlertType.WARNING)
+                    }
+
+                    IconButtonWithTooltip(
+                        imageVector = Icons.Outlined.ReportGmailerrorred,
+                        contentDescription = stringResource(R.string.caution_alert),
+                    ) {
+                        onAlertClick(Constants.AlertType.CAUTION)
+                    }
+                }
+            }
         }
     }
 }
@@ -323,6 +382,8 @@ fun MarkdownEditorRow(
 ) {
 
     var isExpanded by rememberSaveable { mutableStateOf(false) }
+    var isAlertExpanded by rememberSaveable { mutableStateOf(false) }
+
 
     Row(
         Modifier
@@ -506,6 +567,57 @@ fun MarkdownEditorRow(
             shortCutDescription = "Ctrl + Shift + Q"
         ) {
             onEdit(Constants.Editor.QUOTE)
+        }
+
+        IconButtonWithTooltip(
+            imageVector = Icons.AutoMirrored.Outlined.Label,
+            contentDescription = stringResource(id = R.string.alert),
+        ) {
+            isAlertExpanded = !isAlertExpanded
+        }
+
+        AnimatedVisibility(visible = isAlertExpanded) {
+            Row(
+                modifier = Modifier.fillMaxHeight(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Start
+            ) {
+                IconButtonWithTooltip(
+                    imageVector = Icons.Outlined.Info,
+                    contentDescription = stringResource(R.string.note_alert),
+                ) {
+                    onEdit(Constants.Editor.NOTE)
+                }
+
+                IconButtonWithTooltip(
+                    imageVector = Icons.Outlined.Lightbulb,
+                    contentDescription = stringResource(R.string.tip_alert),
+                ) {
+                    onEdit(Constants.Editor.TIP)
+                }
+
+                IconButtonWithTooltip(
+                    imageVector = Icons.Outlined.Feedback,
+                    contentDescription = stringResource(R.string.important_alert),
+                ) {
+                    onEdit(Constants.Editor.IMPORTANT)
+
+                }
+                IconButtonWithTooltip(
+                    imageVector = Icons.Outlined.Warning,
+                    contentDescription = stringResource(R.string.warning_alert),
+                ) {
+                    onEdit(Constants.Editor.WARNING)
+                }
+
+                IconButtonWithTooltip(
+                    imageVector = Icons.Outlined.ReportGmailerrorred,
+                    contentDescription = stringResource(R.string.caution_alert),
+                ) {
+                    onEdit(Constants.Editor.CAUTION)
+
+                }
+            }
         }
 
         IconButtonWithTooltip(
