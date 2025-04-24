@@ -223,8 +223,8 @@ fun TextFieldBuffer.alert(type: String) {
         "\n> "
     )
     selection = TextRange(
-        initialSelection.min + type.length + 2,
-        initialSelection.max + type.length + 2
+        initialSelection.min + type.length + 8,
+        initialSelection.max + type.length + 8
     )
 }
 

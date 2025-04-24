@@ -419,10 +419,7 @@ fun LiteTextField(
                         applyChange(textFieldValue.brackets())
                     }, onBracesClick = {
                         applyChange(textFieldValue.braces())
-                    }, onTemplateClick = onTemplateClick,
-                    onAlertClick = {
-                        applyChange(textFieldValue.alert(it.name))
-                    }
+                    }, onTemplateClick = onTemplateClick
                 )
             }
         }

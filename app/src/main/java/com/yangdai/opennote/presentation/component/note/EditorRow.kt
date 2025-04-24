@@ -83,8 +83,7 @@ fun RichTextEditorRowPreview() {
         onCodeClick = {},
         onBracketsClick = {},
         onBracesClick = {},
-        onTemplateClick = {},
-        onAlertClick = {},
+        onTemplateClick = {}
     )
 }
 
@@ -161,13 +160,10 @@ fun RichTextEditorRow(
     onCodeClick: () -> Unit,
     onBracketsClick: () -> Unit,
     onBracesClick: () -> Unit,
-    onTemplateClick: () -> Unit,
-    onAlertClick: (Constants.AlertType) -> Unit,
+    onTemplateClick: () -> Unit
 ) {
 
     var isExpanded by rememberSaveable { mutableStateOf(false) }
-    var isAlertExpanded by rememberSaveable { mutableStateOf(false) }
-
 
     Column {
 
@@ -313,55 +309,6 @@ fun RichTextEditorRow(
                 shortCutDescription = "Ctrl + Shift + P",
                 onClick = onTemplateClick
             )
-
-
-            IconButtonWithTooltip(
-                imageVector = Icons.AutoMirrored.Outlined.Label,
-                contentDescription = stringResource(id = R.string.alert),
-            ) {
-                isAlertExpanded = !isAlertExpanded
-            }
-
-            AnimatedVisibility(visible = isAlertExpanded) {
-                Row(
-                    modifier = Modifier.fillMaxHeight(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Start
-                ) {
-                    IconButtonWithTooltip(
-                        imageVector = Icons.Outlined.Info,
-                        contentDescription = stringResource(R.string.note_alert),
-                    ) {
-                        onAlertClick(Constants.AlertType.INFO)
-                    }
-
-                    IconButtonWithTooltip(
-                        imageVector = Icons.Outlined.Lightbulb,
-                        contentDescription = stringResource(R.string.tip_alert),
-                    ) {
-                        onAlertClick(Constants.AlertType.TIP)
-                    }
-                    IconButtonWithTooltip(
-                        imageVector = Icons.Outlined.Feedback,
-                        contentDescription = stringResource(R.string.important_alert),
-                    ) {
-                        onAlertClick(Constants.AlertType.IMPORTANT)
-                    }
-                    IconButtonWithTooltip(
-                        imageVector = Icons.Outlined.Warning,
-                        contentDescription = stringResource(R.string.warning_alert),
-                    ) {
-                        onAlertClick(Constants.AlertType.WARNING)
-                    }
-
-                    IconButtonWithTooltip(
-                        imageVector = Icons.Outlined.ReportGmailerrorred,
-                        contentDescription = stringResource(R.string.caution_alert),
-                    ) {
-                        onAlertClick(Constants.AlertType.CAUTION)
-                    }
-                }
-            }
         }
     }
 }

@@ -165,20 +165,3 @@ fun TextFieldValue.header(level: Int): TextFieldValue {
     val headerString = "#".repeat(level)
     return add("$headerString ")
 }
-
-fun TextFieldValue.alert(type: String): TextFieldValue {
-    val alertType = "> [!$type]"
-    val alertContent = text.substring(selection.min, selection.max)
-    val newText = text.replaceRange(
-        selection.min,
-        selection.max,
-        "$alertType $alertContent"
-    )
-    return TextFieldValue(
-        text = newText,
-        selection = TextRange(
-            selection.min + alertType.length,
-            selection.min + alertType.length + alertContent.length
-        )
-    )
-}
