@@ -241,11 +241,9 @@ fun NoteScreen(
         }
     }
 
-    BackHandler(isReadView) {
-        if (isReadView) {
-            focusManager.clearFocus()
-            isReadView = false
-        }
+    BackHandler(isReadView && !appSettings.isDefaultViewForReading) {
+        focusManager.clearFocus()
+        isReadView = false
     }
 
     LaunchedEffect(true) {
