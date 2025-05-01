@@ -228,12 +228,21 @@
         },
 
         processAlerts: () => {
-            // Process GitHub-style markdown alerts
             document.querySelectorAll('blockquote').forEach(blockquote => {
                 const firstParagraph = blockquote.querySelector('p:first-child');
                 if (!firstParagraph) return;
 
-                const alertMatch = firstParagraph.textContent.match(/^\[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\]\s*(.*)/i);
+                // 1. 检查段落的第一个子节点是否是文本节点
+                let firstChildNode = firstParagraph.firstChild;
+                let alertMatch = null;
+
+                if (firstChildNode && firstChildNode.nodeType === Node.TEXT_NODE) {
+                    // 2. 在第一个文本节点的值中查找匹配项
+                    //    注意：这里的 \s* 仍然匹配 tag 后面的空格或换行符
+                    alertMatch = firstChildNode.nodeValue.match(/^\[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\]\s*/i);
+                }
+
+                // 如果第一个子节点不是文本节点，或者文本节点不匹配，则退出
                 if (!alertMatch) return;
 
                 const iconPaths = {
@@ -246,42 +255,71 @@
 
                 const alertType = alertMatch[1].toLowerCase();
                 const alertTitle = alertType.charAt(0).toUpperCase() + alertType.slice(1);
-                const additionalTitleText = alertMatch[2] ? alertMatch[2] : '';
 
                 // Create alert container
                 const alertDiv = document.createElement('div');
                 alertDiv.className = `markdown-alert ${alertType}`;
 
-                // Create title element with SVG icon
+                // Create title element
                 const titleDiv = document.createElement('div');
                 titleDiv.className = 'markdown-alert-title';
-
                 if (iconPaths[alertType]) {
                     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
                     svg.setAttribute('viewBox', '0 0 16 16');
                     svg.setAttribute('width', '16');
                     svg.setAttribute('height', '16');
+                    svg.setAttribute('aria-hidden', 'true');
                     const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
                     path.setAttribute('d', iconPaths[alertType]);
                     svg.appendChild(path);
                     titleDiv.appendChild(svg);
                 }
-
                 const titleText = document.createTextNode(alertTitle);
                 titleDiv.appendChild(titleText);
                 alertDiv.appendChild(titleDiv);
 
-                // Create content paragraph if there's additional text
-                if (additionalTitleText) {
-                    const contentParagraph = document.createElement('p');
-                    contentParagraph.textContent = additionalTitleText;
-                    alertDiv.appendChild(contentParagraph);
+                // 3. 获取匹配到的字符串的实际长度 (e.g., "[!NOTE]\n")
+                const matchedLength = alertMatch[0].length;
+
+                // 4. 修改第一个文本节点的值，移除匹配到的部分
+                firstChildNode.nodeValue = firstChildNode.nodeValue.substring(matchedLength);
+
+                if (firstChildNode.nodeValue.length === 0) {
+                    const nodeToRemove = firstChildNode;
+                    firstChildNode = firstChildNode.nextSibling; // 先移动到下一个兄弟节点
+                    nodeToRemove.remove(); // 再移除空节点
                 }
 
-                // Remove the first paragraph
-                firstParagraph.remove();
+                // 6. 检查紧随其后的节点是否是 <br>，如果是，则移除
+                //    这处理了 Markdown 渲染器可能在 tag 后的换行处插入 <br> 的情况
+                if (firstChildNode && firstChildNode.nodeType === Node.ELEMENT_NODE && firstChildNode.tagName === 'BR') {
+                    const brToRemove = firstChildNode;
+                    firstChildNode = firstChildNode.nextSibling; // 移动到 <br> 之后的节点
+                    brToRemove.remove();
+                }
 
-                // Move remaining content to the alert
+                // 7. 对当前的第一个文本节点（如果存在）执行 trimStart
+                //    这可以清除移除 tag 或 <br> 后可能残留的前导空格
+                if (firstChildNode && firstChildNode.nodeType === Node.TEXT_NODE) {
+                    firstChildNode.nodeValue = firstChildNode.nodeValue.trimStart();
+                    // 如果 trim 后变空，也移除
+                     if (firstChildNode.nodeValue.length === 0) {
+                         firstChildNode.remove();
+                         // 注意：这里我们不需要再追踪 nextSibling，因为段落的整体内容检查会处理
+                     }
+                }
+
+                // 8. 检查整个段落现在是否为空 (没有子节点，或者所有子节点加起来的 textContent 为空)
+                const paragraphIsEmpty = !firstParagraph.hasChildNodes() || firstParagraph.textContent.trim() === '';
+
+                // 9. 将处理过的段落（如果不为空）和 blockquote 中剩余的所有其他内容移动到 alertDiv
+                if (!paragraphIsEmpty) {
+                    alertDiv.appendChild(firstParagraph);
+                } else {
+                    firstParagraph.remove(); // 如果段落变空了，就彻底移除
+                }
+
+                // 移动 blockquote 中的任何剩余子节点（例如多段落情况）
                 while (blockquote.firstChild) {
                     alertDiv.appendChild(blockquote.firstChild);
                 }
