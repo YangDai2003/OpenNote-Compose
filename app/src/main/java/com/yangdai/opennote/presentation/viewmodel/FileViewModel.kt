@@ -42,8 +42,6 @@ import com.yangdai.opennote.presentation.state.TextState
 import com.yangdai.opennote.presentation.util.Constants
 import com.yangdai.opennote.presentation.util.PARSER
 import com.yangdai.opennote.presentation.util.extension.highlight.HighlightExtension
-import com.yangdai.opennote.presentation.util.extension.properties.Properties.getPropertiesRange
-import com.yangdai.opennote.presentation.util.extension.properties.Properties.splitPropertiesAndContent
 import com.yangdai.opennote.presentation.util.getFileName
 import com.yangdai.opennote.presentation.util.getOrCreateDirectory
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -67,6 +65,7 @@ import kotlinx.serialization.json.Json
 import org.commonmark.Extension
 import org.commonmark.ext.autolink.AutolinkExtension
 import org.commonmark.ext.footnotes.FootnotesExtension
+import org.commonmark.ext.front.matter.YamlFrontMatterExtension
 import org.commonmark.ext.gfm.strikethrough.StrikethroughExtension
 import org.commonmark.ext.gfm.tables.TablesExtension
 import org.commonmark.ext.heading.anchor.HeadingAnchorExtension
@@ -107,7 +106,8 @@ class FileViewModel @Inject constructor(
         ImageAttributesExtension.create(),
         StrikethroughExtension.create(),
         TaskListItemsExtension.create(),
-        HighlightExtension.create()
+        HighlightExtension.create(),
+        YamlFrontMatterExtension.create()
     )
     private val parser = Parser.builder().extensions(extensions).build()
     private val renderer = HtmlRenderer.builder().extensions(extensions).build()
@@ -121,9 +121,7 @@ class FileViewModel @Inject constructor(
     @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
     val html = contentSnapshotFlow.debounce(100)
         .mapLatest {
-            var content = it.toString()
-            content = content.splitPropertiesAndContent().second
-            renderer.render(parser.parse(content))
+            renderer.render(parser.parse(it.toString()))
         }
         .flowOn(Dispatchers.Default)
         .stateIn(
@@ -145,9 +143,7 @@ class FileViewModel @Inject constructor(
     @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
     val outline = contentSnapshotFlow.debounce(1000)
         .mapLatest {
-            val content = it.toString()
-            val propertiesRange = content.getPropertiesRange()
-            val document = PARSER.parse(content)
+            val document = PARSER.parse(it.toString())
             val root = HeaderNode("", 0, IntRange.EMPTY)
             val headerStack = mutableListOf(root)
             document.accept(object : AbstractVisitor() {
@@ -155,17 +151,15 @@ class FileViewModel @Inject constructor(
                     val span = heading.sourceSpans.first()
                     val range = span.inputIndex until (span.inputIndex + span.length)
 
-                    // Skip headings that are inside the properties section
-                    if (propertiesRange == null || !propertiesRange.contains(range.first)) {
-                        val title = it.substring(range).replace("#", "").trim()
-                        val node = HeaderNode(title, heading.level, range)
+                    val title = it.substring(range).replace("#", "").trim()
+                    val node = HeaderNode(title, heading.level, range)
 
-                        while (headerStack.last().level >= heading.level) {
-                            headerStack.removeAt(headerStack.lastIndex)
-                        }
-                        headerStack.last().children.add(node)
-                        headerStack.add(node)
+                    while (headerStack.last().level >= heading.level) {
+                        headerStack.removeAt(headerStack.lastIndex)
                     }
+                    headerStack.last().children.add(node)
+                    headerStack.add(node)
+
                     visitChildren(heading)
                 }
             })

@@ -1,5 +1,5 @@
 [versions]
-agp = "8.9.2"
+agp = "8.10.0"
 colorpickerCompose = "1.1.2"
 documentfile = "1.0.1"
 glance = "1.1.1"
@@ -50,6 +50,7 @@ commonmark-ext-gfm-tables = { group = "org.commonmark", name = "commonmark-ext-g
 commonmark-ext-image-attributes = { group = "org.commonmark", name = "commonmark-ext-image-attributes", version.ref = "commonmark" }
 commonmark-ext-task-list-items = { group = "org.commonmark", name = "commonmark-ext-task-list-items", version.ref = "commonmark" }
 commonmark-ext-heading-anchor = { group = "org.commonmark", name = "commonmark-ext-heading-anchor", version.ref = "commonmark" }
+commonmark-ext-yaml-front-matter = { group = "org.commonmark", name = "commonmark-ext-yaml-front-matter", version.ref = "commonmark" }
 
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }

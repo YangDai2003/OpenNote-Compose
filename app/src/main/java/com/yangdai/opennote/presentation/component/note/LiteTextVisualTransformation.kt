@@ -39,37 +39,14 @@ class LiteTextVisualTransformation(
 
     override fun filter(string: AnnotatedString): TransformedText {
         val text = string.text
+        val styleRanges = findTagRanges(text)
         val propertiesRange = text.getPropertiesRange()
-        var styleRanges = findTagRanges(text)
-        if (propertiesRange != null) {
-            styleRanges = StyleRanges(
-                codeRanges = styleRanges.codeRanges.filter { !it.overlaps(propertiesRange) },
-                boldRanges = styleRanges.boldRanges.filter { !it.overlaps(propertiesRange) },
-                italicRanges = styleRanges.italicRanges.filter { !it.overlaps(propertiesRange) },
-                boldItalicRanges = styleRanges.boldItalicRanges.filter {
-                    !it.overlaps(propertiesRange)
-                },
-                strikethroughRanges = styleRanges.strikethroughRanges.filter {
-                    !it.overlaps(propertiesRange)
-                },
-                underlineRanges = styleRanges.underlineRanges.filter { !it.overlaps(propertiesRange) },
-                highlightRanges = styleRanges.highlightRanges.filter { !it.overlaps(propertiesRange) },
-                headerRanges = styleRanges.headerRanges.filter { !it.first.overlaps(propertiesRange) },
-                markerRanges = styleRanges.markerRanges.filter { !it.overlaps(propertiesRange) },
-                linkRanges = styleRanges.linkRanges.filter { !it.overlaps(propertiesRange) },
-                fencedCodeBlockInfoRanges = styleRanges.fencedCodeBlockInfoRanges.filter {
-                    !it.overlaps(propertiesRange)
-                },
-                codeBlockContentRanges = styleRanges.codeBlockContentRanges.filter {
-                    !it.overlaps(propertiesRange)
-                }
-            )
-        }
+
         val annotatedString = buildAnnotatedString {
             // 应用语法内文本样式
             applyTextStyles(styleRanges)
             // 应用语法符号样式
-            applySymbols(string, styleRanges)
+            applySymbols(text, styleRanges)
             if (propertiesRange != null) applyPropertiesStyle(propertiesRange)
             if (!readMode)
                 applySearchWordStyle(searchWordRanges, currentSearchWordIndex)
@@ -170,7 +147,7 @@ class LiteTextVisualTransformation(
     }
 
     private fun AnnotatedString.Builder.applySymbols(
-        text: AnnotatedString, ranges: StyleRanges
+        text: String, ranges: StyleRanges
     ) {
         if (selection.start < 0 || selection.end < 0 || readMode) {
             applySymbolsCommon(ranges, null)

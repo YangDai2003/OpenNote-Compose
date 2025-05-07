@@ -18,6 +18,7 @@ import com.yangdai.opennote.presentation.theme.linkColor
 import com.yangdai.opennote.presentation.util.extension.highlight.Highlight
 import com.yangdai.opennote.presentation.util.extension.highlight.HighlightExtension
 import com.yangdai.opennote.presentation.util.extension.properties.Properties.splitPropertiesAndContent
+import org.commonmark.ext.front.matter.YamlFrontMatterExtension
 import org.commonmark.ext.gfm.strikethrough.Strikethrough
 import org.commonmark.ext.gfm.strikethrough.StrikethroughExtension
 import org.commonmark.ext.gfm.tables.TableRow
@@ -48,7 +49,8 @@ val PARSER: Parser =
             StrikethroughExtension.create(),
             InsExtension.create(),
             HighlightExtension.create(),
-            TablesExtension.create()
+            TablesExtension.create(),
+            YamlFrontMatterExtension.create()
         )
     ).includeSourceSpans(IncludeSourceSpans.BLOCKS_AND_INLINES).build()
 
@@ -413,26 +415,24 @@ fun findTagRanges(text: String): StyleRanges {
         }
 
         override fun visit(fencedCodeBlock: FencedCodeBlock) {
-            val span = fencedCodeBlock.sourceSpans.firstOrNull()
-            if (span != null) {
-                // Get the opening fence marker (```language)
-                val openingFence = span.inputIndex
-                val infoString = fencedCodeBlock.info?.length ?: 0
-                val openingMarkerLength = fencedCodeBlock.openingFenceLength ?: return
+            val span = fencedCodeBlock.sourceSpans.firstOrNull() ?: return
 
-                markerRanges.add(openingFence until (openingFence + openingMarkerLength)) // ```
-                fencedCodeBlockInfoRanges.add(openingFence + openingMarkerLength until (openingFence + openingMarkerLength + infoString)) // language
+            // Get the opening fence marker (```language)
+            val openingFenceStartIndex = span.inputIndex
+            val openingMarkerLength = fencedCodeBlock.openingFenceLength ?: return
+            val infoStringStartIndex = openingFenceStartIndex + openingMarkerLength
+            markerRanges.add(openingFenceStartIndex until infoStringStartIndex) // ```
+            val infoStringLength = fencedCodeBlock.info?.length ?: 0
+            fencedCodeBlockInfoRanges.add(infoStringStartIndex until (infoStringStartIndex + infoStringLength)) // language
 
-                val blockContentLength =
-                    if (fencedCodeBlock.literal.isEmpty()) 0 else fencedCodeBlock.literal.length + 1
-                val fence =
-                    openingFence + openingMarkerLength + infoString + blockContentLength
-                codeBlockContentRanges.add((openingFence + openingMarkerLength + infoString) until fence) // content
-
-                val closingMarkerLength = fencedCodeBlock.closingFenceLength ?: return
-                if (fence + closingMarkerLength <= text.length) {
-                    markerRanges.add(fence until (fence + closingMarkerLength))
-                }
+            val closingMarkerLength = fencedCodeBlock.closingFenceLength ?: return
+            val blockContentLength =
+                if (fencedCodeBlock.literal.isEmpty()) 0 else fencedCodeBlock.literal.length + 1
+            val fence =
+                openingFenceStartIndex + openingMarkerLength + infoStringLength + blockContentLength
+            codeBlockContentRanges.add((openingFenceStartIndex + openingMarkerLength + infoStringLength) until fence) // content
+            if (fence + closingMarkerLength <= text.length) {
+                markerRanges.add(fence until (fence + closingMarkerLength))
             }
         }
 
@@ -470,31 +470,42 @@ fun parseMarkdownContent(text: String): AnnotatedString {
     val styleRanges = findTagRanges(textWithoutProperties)
 
     return buildAnnotatedString {
+        fun safeAddStyle(style: SpanStyle, start: Int, end: Int) {
+            val safeStart = start.coerceAtLeast(0).coerceAtMost(text.length)
+            val safeEnd = end.coerceAtLeast(0).coerceAtMost(text.length)
+            addStyle(style, safeStart, safeEnd)
+        }
+
+        fun safeAddStyle(style: ParagraphStyle, start: Int, end: Int) {
+            val safeStart = start.coerceAtLeast(0).coerceAtMost(text.length)
+            val safeEnd = end.coerceAtLeast(0).coerceAtMost(text.length)
+            addStyle(style, safeStart, safeEnd)
+        }
         styleRanges.apply {
             codeRanges.forEach { range ->
-                addStyle(CODE_STYLE, range.first, range.last + 1)
-                addStyle(SYMBOL_STYLE, range.first, range.first + 1)
-                addStyle(SYMBOL_STYLE, range.last - 1 + 1, range.last + 1)
+                safeAddStyle(CODE_STYLE, range.first, range.last + 1)
+                safeAddStyle(SYMBOL_STYLE, range.first, range.first + 1)
+                safeAddStyle(SYMBOL_STYLE, range.last - 1 + 1, range.last + 1)
             }
             boldItalicRanges.forEach { range ->
-                addStyle(BOLD_ITALIC_STYLE, range.first, range.last + 1)
-                addStyle(SYMBOL_STYLE, range.first, range.first + 3)
-                addStyle(SYMBOL_STYLE, range.last - 3 + 1, range.last + 1)
+                safeAddStyle(BOLD_ITALIC_STYLE, range.first, range.last + 1)
+                safeAddStyle(SYMBOL_STYLE, range.first, range.first + 3)
+                safeAddStyle(SYMBOL_STYLE, range.last - 3 + 1, range.last + 1)
             }
             boldRanges.forEach { range ->
-                addStyle(BOLD_STYLE, range.first, range.last + 1)
-                addStyle(SYMBOL_STYLE, range.first, range.first + 2)
-                addStyle(SYMBOL_STYLE, range.last - 2 + 1, range.last + 1)
+                safeAddStyle(BOLD_STYLE, range.first, range.last + 1)
+                safeAddStyle(SYMBOL_STYLE, range.first, range.first + 2)
+                safeAddStyle(SYMBOL_STYLE, range.last - 2 + 1, range.last + 1)
             }
             italicRanges.forEach { range ->
-                addStyle(ITALIC_STYLE, range.first, range.last + 1)
-                addStyle(SYMBOL_STYLE, range.first, range.first + 1)
-                addStyle(SYMBOL_STYLE, range.last - 1 + 1, range.last + 1)
+                safeAddStyle(ITALIC_STYLE, range.first, range.last + 1)
+                safeAddStyle(SYMBOL_STYLE, range.first, range.first + 1)
+                safeAddStyle(SYMBOL_STYLE, range.last - 1 + 1, range.last + 1)
             }
             highlightRanges.forEach { range ->
-                addStyle(HIGHLIGHT_STYLE, range.first, range.last + 1)
-                addStyle(SYMBOL_STYLE, range.first, range.first + 2)
-                addStyle(SYMBOL_STYLE, range.last - 2 + 1, range.last + 1)
+                safeAddStyle(HIGHLIGHT_STYLE, range.first, range.last + 1)
+                safeAddStyle(SYMBOL_STYLE, range.first, range.first + 2)
+                safeAddStyle(SYMBOL_STYLE, range.last - 2 + 1, range.last + 1)
             }
 
             val combinedRanges = (strikethroughRanges + underlineRanges).distinct()
@@ -507,36 +518,36 @@ fun parseMarkdownContent(text: String): AnnotatedString {
                     hasUnderline -> UNDERLINE_STYLE
                     else -> return@forEach
                 }
-                addStyle(style, range.first, range.last + 1)
+                safeAddStyle(style, range.first, range.last + 1)
             }
 
             strikethroughRanges.forEach { range ->
-                addStyle(SYMBOL_STYLE, range.first, range.first + 2)
-                addStyle(SYMBOL_STYLE, range.last - 2 + 1, range.last + 1)
+                safeAddStyle(SYMBOL_STYLE, range.first, range.first + 2)
+                safeAddStyle(SYMBOL_STYLE, range.last - 2 + 1, range.last + 1)
             }
             underlineRanges.forEach { range ->
-                addStyle(SYMBOL_STYLE, range.first, range.first + 2)
-                addStyle(SYMBOL_STYLE, range.last - 2 + 1, range.last + 1)
+                safeAddStyle(SYMBOL_STYLE, range.first, range.first + 2)
+                safeAddStyle(SYMBOL_STYLE, range.last - 2 + 1, range.last + 1)
             }
 
             headerRanges.forEach { (range, level) ->
-                addStyle(HEADER_STYLES[level - 1], range.first, range.last + 1)
-                addStyle(HEADER_LINE_STYLES[level - 1], range.first, range.last + 1)
-                addStyle(SYMBOL_STYLE, range.first, range.first + level + 1)
+                safeAddStyle(HEADER_STYLES[level - 1], range.first, range.last + 1)
+                safeAddStyle(HEADER_LINE_STYLES[level - 1], range.first, range.last + 1)
+                safeAddStyle(SYMBOL_STYLE, range.first, range.first + level + 1)
             }
 
             // Add styling for list markers
             markerRanges.forEach { range ->
-                addStyle(MARKER_STYLE, range.first, range.last + 1)
+                safeAddStyle(MARKER_STYLE, range.first, range.last + 1)
             }
             linkRanges.forEach { range ->
-                addStyle(LINK_STYLE, range.first, range.last + 1)
+                safeAddStyle(LINK_STYLE, range.first, range.last + 1)
             }
             fencedCodeBlockInfoRanges.forEach { range ->
-                addStyle(KEYWORD_STYLE, range.first, range.last + 1)
+                safeAddStyle(KEYWORD_STYLE, range.first, range.last + 1)
             }
             codeBlockContentRanges.forEach { range ->
-                addStyle(CODE_BLOCK_STYLE, range.first, range.last + 1)
+                safeAddStyle(CODE_BLOCK_STYLE, range.first, range.last + 1)
             }
         }
         append(textWithoutProperties)

@@ -17,8 +17,8 @@ android {
         applicationId = "com.yangdai.opennote"
         minSdk = 29
         targetSdk = 35
-        versionCode = 1630
-        versionName = "1.6.3"
+        versionCode = 1640
+        versionName = "1.6.4"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -112,6 +112,7 @@ dependencies {
     implementation(libs.commonmark.ext.gfm.tables)
     implementation(libs.commonmark.ext.heading.anchor)
     implementation(libs.commonmark.ext.image.attributes)
+    implementation(libs.commonmark.ext.yaml.front.matter)
     implementation(libs.commonmark)
 
     // Room, for local database
