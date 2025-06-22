@@ -17,9 +17,9 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.calculateEndPadding
@@ -56,10 +56,10 @@ import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
@@ -106,6 +106,7 @@ import com.yangdai.opennote.presentation.component.main.AdaptiveNoteCard
 import com.yangdai.opennote.presentation.component.main.AdaptiveTopSearchbar
 import com.yangdai.opennote.presentation.component.main.DrawerContent
 import com.yangdai.opennote.presentation.component.main.Timeline
+import com.yangdai.opennote.presentation.component.note.IconButtonWithTooltip
 import com.yangdai.opennote.presentation.event.DatabaseEvent
 import com.yangdai.opennote.presentation.event.ListEvent
 import com.yangdai.opennote.presentation.navigation.Screen
@@ -328,102 +329,65 @@ fun MainScreen(
                     exit = slideOutVertically { fullHeight -> fullHeight }
                 ) {
                     BottomAppBar {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(horizontal = 16.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Checkbox(
+                                checked = allNotesSelected,
+                                onCheckedChange = { allNotesSelected = it }
+                            )
 
-                            Row(
-                                modifier = Modifier.fillMaxHeight(),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Checkbox(
-                                    checked = allNotesSelected,
-                                    onCheckedChange = { allNotesSelected = it }
-                                )
+                            Text(text = stringResource(R.string.checked))
+                            Text(text = selectedNotesSet.size.toString())
+                        }
 
-                                Text(text = stringResource(R.string.checked))
-                                Text(text = selectedNotesSet.size.toString())
-                            }
+                        Spacer(Modifier.weight(1f))
 
-                            Row(
-                                modifier = Modifier.fillMaxHeight(),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
 
-                                if (selectedNavDrawerIndex == 1) {
-                                    TextButton(onClick = {
-                                        viewModel.onListEvent(
-                                            ListEvent.RestoreNotes(selectedNotesSet)
-                                        )
-                                        initializeNoteSelection()
-                                    }) {
-                                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                            Icon(
-                                                imageVector = Icons.Outlined.RestartAlt,
-                                                contentDescription = "Restore"
-                                            )
-                                            Text(
-                                                text = stringResource(id = R.string.restore),
-                                                maxLines = 1,
-                                                overflow = TextOverflow.Ellipsis
-                                            )
-                                        }
-                                    }
-                                } else {
-                                    TextButton(onClick = { isExportNotesDialogVisible = true }) {
-                                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                            Icon(
-                                                imageVector = Icons.Outlined.Upload,
-                                                contentDescription = "Export"
-                                            )
-                                            Text(
-                                                text = stringResource(id = R.string.export),
-                                                maxLines = 1,
-                                                overflow = TextOverflow.Ellipsis
-                                            )
-                                        }
-                                    }
-
-                                    TextButton(onClick = { isMoveToFolderDialogVisible = true }) {
-                                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                            Icon(
-                                                imageVector = Icons.AutoMirrored.Outlined.DriveFileMove,
-                                                contentDescription = "Move"
-                                            )
-                                            Text(
-                                                text = stringResource(id = R.string.move),
-                                                maxLines = 1,
-                                                overflow = TextOverflow.Ellipsis
-                                            )
-                                        }
-                                    }
-                                }
-
-                                TextButton(onClick = {
+                            if (selectedNavDrawerIndex == 1) {
+                                IconButtonWithTooltip(
+                                    imageVector = Icons.Outlined.RestartAlt,
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    contentDescription = stringResource(id = R.string.restore),
+                                    shortCutDescription = stringResource(id = R.string.restore)
+                                ) {
                                     viewModel.onListEvent(
-                                        ListEvent.DeleteNotes(
-                                            selectedNotesSet,
-                                            selectedNavDrawerIndex != 1
-                                        )
+                                        ListEvent.RestoreNotes(selectedNotesSet)
                                     )
                                     initializeNoteSelection()
-                                }) {
-                                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                        Icon(
-                                            imageVector = Icons.Outlined.Delete,
-                                            contentDescription = "Delete"
-                                        )
-                                        Text(
-                                            text = stringResource(id = R.string.delete),
-                                            maxLines = 1,
-                                            overflow = TextOverflow.Ellipsis
-                                        )
-                                    }
                                 }
+                            } else {
+                                IconButtonWithTooltip(
+                                    imageVector = Icons.Outlined.Upload,
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    contentDescription = stringResource(id = R.string.export),
+                                    shortCutDescription = stringResource(id = R.string.export)
+                                ) {
+                                    isExportNotesDialogVisible = true
+                                }
+
+                                IconButtonWithTooltip(
+                                    imageVector = Icons.AutoMirrored.Outlined.DriveFileMove,
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    contentDescription = stringResource(id = R.string.move),
+                                    shortCutDescription = stringResource(id = R.string.move)
+                                ) {
+                                    isMoveToFolderDialogVisible = true
+                                }
+                            }
+
+                            IconButtonWithTooltip(
+                                imageVector = Icons.Outlined.Delete,
+                                tint = MaterialTheme.colorScheme.primary,
+                                contentDescription = stringResource(id = R.string.delete),
+                                shortCutDescription = stringResource(id = R.string.delete)
+                            ) {
+                                viewModel.onListEvent(
+                                    ListEvent.DeleteNotes(
+                                        selectedNotesSet,
+                                        selectedNavDrawerIndex != 1
+                                    )
+                                )
+                                initializeNoteSelection()
                             }
                         }
                     }

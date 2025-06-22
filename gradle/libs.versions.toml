@@ -1,5 +1,5 @@
 [versions]
-agp = "8.10.0"
+agp = "8.10.1"
 colorpickerCompose = "1.1.2"
 documentfile = "1.1.0"
 glance = "1.1.1"
@@ -7,26 +7,26 @@ kotlin = "2.1.21"
 ksp = "2.1.21-2.0.1"
 kotlinxSerialization = "1.8.1"
 
-composeBom = "2025.05.00"
+composeBom = "2025.06.01"
 activityCompose = "1.10.1"
 ktor = "3.1.2"
-lifecycleRuntimeCompose = "2.9.0"
+lifecycleRuntimeCompose = "2.9.1"
 navigationCompose = "2.9.0"
 
 junit = "4.13.2"
 junitVersion = "1.2.1"
 espressoCore = "3.6.1"
 
-appcompat = "1.7.0"
-hilt = "2.56.1"
+appcompat = "1.7.1"
+hilt = "2.56.2"
 hiltNav = "1.2.0"
-room = "2.7.1"
+room = "2.7.2"
 browser = "1.8.0"
-commonmark = "0.24.0"
-datastorePreferences = "1.1.4"
-workRuntimeKtx = "2.10.1"
+commonmark = "0.25.0"
+datastorePreferences = "1.1.7"
+workRuntimeKtx = "2.10.2"
 coreSplashscreen = "1.2.0-beta02"
-biometricVersion = "1.4.0-alpha03"
+biometricVersion = "1.4.0-alpha04"
 
 [libraries]
 
@@ -65,7 +65,7 @@ androidx-compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-toolin
 androidx-compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
 androidx-compose-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
 androidx-compose-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
-androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3", version = "1.4.0-alpha14" }
+androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3", version = "1.4.0-alpha16" }
 androidx-compose-material3-adaptive = { group = "androidx.compose.material3.adaptive", name = "adaptive" }
 androidx-compose-material3-adaptive-layout = { group = "androidx.compose.material3.adaptive", name = "adaptive-layout" }
 androidx-compose-material3-adaptive-navigation = { group = "androidx.compose.material3.adaptive", name = "adaptive-navigation" }
