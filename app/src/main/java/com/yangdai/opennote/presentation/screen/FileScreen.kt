@@ -214,7 +214,7 @@ fun FileScreen(
         withContext(Dispatchers.Default) {
             searchState = searchState.copy(
                 matchCount = if (searchState.searchWord.isNotBlank())
-                    searchState.searchWord.toRegex()
+                    Regex.escape(searchState.searchWord).toRegex()
                         .findAll(viewModel.contentState.text)
                         .count()
                 else 0
