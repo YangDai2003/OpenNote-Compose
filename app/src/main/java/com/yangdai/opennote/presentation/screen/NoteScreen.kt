@@ -102,6 +102,10 @@ import androidx.compose.ui.util.fastJoinToString
 import androidx.core.content.FileProvider
 import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.yangdai.opennote.MainActivity
 import com.yangdai.opennote.R
@@ -163,6 +167,8 @@ fun NoteScreen(
     val noteTextDetails by viewModel.textState.collectAsStateWithLifecycle()
     val dataAction by viewModel.dataActionStateFlow.collectAsStateWithLifecycle()
     val appSettings by viewModel.settingsStateFlow.collectAsStateWithLifecycle()
+    val lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current
+
 
     // 确保屏幕旋转等配置变更时，不会重复加载笔记
     var lastLoadedNoteId by rememberSaveable { mutableStateOf<Long?>(null) }
@@ -175,6 +181,18 @@ fun NoteScreen(
         onDispose {
             if (!viewModel.shouldShowSnackbar())
                 viewModel.onNoteEvent(NoteEvent.SaveOrUpdate)
+        }
+    }
+
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_STOP) {
+                viewModel.onNoteEvent(NoteEvent.SaveOrUpdate)
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
         }
     }
 
