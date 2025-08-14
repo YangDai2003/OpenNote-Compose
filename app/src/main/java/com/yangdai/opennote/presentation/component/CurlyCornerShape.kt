@@ -80,7 +80,8 @@ class CurlyCornerShape(
             val angleRadians = Math.toRadians(angleDegrees.toDouble())
 
             // calculate the current point
-            val currentPoint = calculateCurlyCirclePoint(centerX, centerY, baseRadius, curlAmplitude, angleRadians)
+            val currentPoint =
+                calculateCurlyCirclePoint(centerX, centerY, baseRadius, curlAmplitude, angleRadians)
 
             path.lineTo(currentPoint.first.toFloat(), currentPoint.second.toFloat())
         }

@@ -123,7 +123,7 @@ fun TextEditorBase(
             newLines.add(0 to layout.getLineTop(0))
 
             // Find all newline characters and map them to layout positions
-            var lineStartIndex = 0
+            var lineStartIndex: Int
             text.forEachIndexed { index, char ->
                 if (char == '\n') {
                     lineStartIndex = index + 1

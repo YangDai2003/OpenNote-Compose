@@ -90,14 +90,6 @@ object Constants {
 
         const val TEXT = "text"
     }
-
-    enum class AlertType(val value: String) {
-        INFO("info"),
-        TIP("tip"),
-        IMPORTANT("important"),
-        WARNING("warning"),
-        CAUTION("caution"),
-    }
 }
 
 val SampleNote = """

@@ -93,7 +93,7 @@ fun ModifyFolderDialog(
                     placeholder = { Text(text = stringResource(R.string.name)) },
                 )
                 LazyRow(
-                    modifier = Modifier.padding(vertical = 16.dp),
+                    modifier = Modifier.padding(top = 16.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
 

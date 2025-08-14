@@ -216,7 +216,7 @@ fun ReadView(
     AndroidView(
         modifier = modifier.clipToBounds(),
         factory = {
-            WebView(it).also { webView = it }.apply {
+            WebView(it).also { wv -> webView = wv }.apply {
                 layoutParams = ViewGroup.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT,
                     ViewGroup.LayoutParams.MATCH_PARENT
@@ -251,8 +251,8 @@ fun ReadView(
                                 when (mediaType) {
                                     "image" -> {
                                         // Check cache first for images
-                                        MediaCache.getImageUri(mediaName)?.let {
-                                            updateImageInWebView(id, it)
+                                        MediaCache.getImageUri(mediaName)?.let { uri ->
+                                            updateImageInWebView(id, uri)
                                             return@launch
                                         }
 

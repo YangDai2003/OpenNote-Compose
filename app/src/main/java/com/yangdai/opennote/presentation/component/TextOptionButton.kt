@@ -29,7 +29,9 @@ fun TextOptionButton(
     buttonText: String,
     onButtonClick: () -> Unit
 ) = TextButton(
-    modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+    modifier = Modifier
+        .fillMaxWidth()
+        .padding(top = 8.dp),
     shape = MaterialTheme.shapes.medium,
     colors = ButtonDefaults.textButtonColors().copy(
         containerColor = MaterialTheme.colorScheme.surfaceVariant

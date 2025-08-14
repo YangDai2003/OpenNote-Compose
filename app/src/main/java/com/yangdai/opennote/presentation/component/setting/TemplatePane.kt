@@ -80,7 +80,7 @@ fun TemplatePane(sharedViewModel: SharedViewModel) {
         runCatching {
             val now = LocalDateTime.now()
             val dateFormatter =
-                DateTimeFormatter.ofPattern(if (currentDateFormatter.isBlank()) "yyyy-MM-DD" else currentDateFormatter)
+                DateTimeFormatter.ofPattern(currentDateFormatter.ifBlank { "yyyy-MM-DD" })
             currentDateFormatted = now.format(dateFormatter)
         }.onFailure {
             isDateInvalid = true
@@ -91,7 +91,7 @@ fun TemplatePane(sharedViewModel: SharedViewModel) {
         runCatching {
             val now = LocalDateTime.now()
             val timeFormatter =
-                DateTimeFormatter.ofPattern(if (currentTimeFormatter.isBlank()) "HH:mm" else currentTimeFormatter)
+                DateTimeFormatter.ofPattern(currentTimeFormatter.ifBlank { "HH:mm" })
             currentTimeFormatted = now.format(timeFormatter)
         }.onFailure {
             isTimeInvalid = true

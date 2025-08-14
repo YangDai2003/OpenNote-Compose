@@ -1,7 +1,6 @@
 package com.yangdai.opennote.presentation.screen
 
 import androidx.activity.compose.LocalActivity
-import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.hoverable
@@ -50,6 +49,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -74,6 +74,7 @@ import com.yangdai.opennote.presentation.component.dialog.WarningDialog
 import com.yangdai.opennote.presentation.event.FolderEvent
 import com.yangdai.opennote.presentation.viewmodel.SharedViewModel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -167,25 +168,8 @@ fun LazyGridItemScope.FolderItem(
         mutableStateOf(if (folder.color != null) Color(folder.color) else colorScheme.primary)
     }
 
-    val dismissState = rememberSwipeToDismissBoxState(
-        confirmValueChange = { value ->
-            when (value) {
-                SwipeToDismissBoxValue.StartToEnd -> {
-                    // Edit action (right swipe)
-                    showModifyDialog = true
-                    false
-                }
-
-                SwipeToDismissBoxValue.EndToStart -> {
-                    // Delete action (left swipe)
-                    showWarningDialog = true
-                    false
-                }
-
-                SwipeToDismissBoxValue.Settled -> true
-            }
-        }
-    )
+    val dismissState = rememberSwipeToDismissBoxState()
+    val scope = rememberCoroutineScope()
     var showContextMenu by remember { mutableStateOf(false) }
     val interactionSource = remember { MutableInteractionSource() }
     val isHovered by interactionSource.collectIsHoveredAsState()
@@ -196,17 +180,33 @@ fun LazyGridItemScope.FolderItem(
 
     SwipeToDismissBox(
         state = dismissState,
+        onDismiss = { dismissDirection ->
+            when (dismissDirection) {
+                SwipeToDismissBoxValue.StartToEnd -> {
+                    // Edit action (right swipe)
+                    showModifyDialog = true
+                    scope.launch { dismissState.reset() }
+                }
+
+                SwipeToDismissBoxValue.EndToStart -> {
+                    // Delete action (left swipe)
+                    showWarningDialog = true
+                    scope.launch { dismissState.reset() }
+                }
+
+                SwipeToDismissBoxValue.Settled -> {}
+            }
+        },
         backgroundContent = {
             val direction = dismissState.targetValue
             val progress = dismissState.progress
             val iconOffset = 30.dp * (progress * 1.5f)
-            val backgroundColor by animateColorAsState(
-                when (direction) {
-                    SwipeToDismissBoxValue.StartToEnd -> folderColor.copy(alpha = 0.1f)
-                    SwipeToDismissBoxValue.EndToStart -> colorScheme.errorContainer
-                    SwipeToDismissBoxValue.Settled -> Color.Unspecified
-                }
-            )
+            val backgroundColor = when (direction) {
+                SwipeToDismissBoxValue.StartToEnd -> folderColor.copy(alpha = 0.1f)
+                SwipeToDismissBoxValue.EndToStart -> colorScheme.errorContainer
+                SwipeToDismissBoxValue.Settled -> Color.Unspecified
+            }
+
             val cornerLeftRadius =
                 if (direction == SwipeToDismissBoxValue.StartToEnd) 16.dp * (progress * 6f) else 0.dp
             val cornerRightRadius =

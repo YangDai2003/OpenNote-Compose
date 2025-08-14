@@ -462,7 +462,7 @@ fun NoteScreen(
             ) {
                 if (it) FindAndReplaceField(
                     state = searchState,
-                    onStateUpdate = { searchState = it })
+                    onStateUpdate = { state -> searchState = state })
                 else BasicTextField(
                     modifier = Modifier
                         .fillMaxWidth()

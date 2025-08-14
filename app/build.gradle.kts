@@ -11,14 +11,14 @@ plugins {
 
 android {
     namespace = "com.yangdai.opennote"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.yangdai.opennote"
         minSdk = 29
-        targetSdk = 35
-        versionCode = 1650
-        versionName = "1.6.5"
+        targetSdk = 36
+        versionCode = 1660
+        versionName = "1.6.6"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {

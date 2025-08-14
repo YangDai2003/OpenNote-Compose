@@ -260,7 +260,7 @@ fun CloudPane() {
                 Text(text = "Test connection")
             }
         }
-        
+
         // Display connection results
         if (isLoading) {
             // Show loading indicator
@@ -296,7 +296,7 @@ fun CloudPane() {
                         style = MaterialTheme.typography.titleMedium,
                         color = MaterialTheme.colorScheme.onPrimaryContainer
                     )
-                    
+
                     connectionResult?.fold(
                         onSuccess = { files ->
                             Text(

@@ -47,7 +47,10 @@ import androidx.compose.ui.text.TextStyle
 fun TypingText(
     text: String,
     modifier: Modifier = Modifier,
-    animationSpec: AnimationSpec<Int> = tween(durationMillis = text.length * 80, easing = LinearEasing),
+    animationSpec: AnimationSpec<Int> = tween(
+        durationMillis = text.length * 80,
+        easing = LinearEasing
+    ),
     style: TextStyle = LocalTextStyle.current,
     reserveSpace: Boolean = true
 ) {

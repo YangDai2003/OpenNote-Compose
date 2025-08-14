@@ -3,12 +3,10 @@ package com.yangdai.opennote.presentation.util.extension.highlight
 import org.commonmark.Extension
 import org.commonmark.parser.Parser
 import org.commonmark.renderer.NodeRenderer
-import org.commonmark.renderer.html.HtmlNodeRendererFactory
 import org.commonmark.renderer.html.HtmlRenderer
 import org.commonmark.renderer.markdown.MarkdownNodeRendererContext
 import org.commonmark.renderer.markdown.MarkdownNodeRendererFactory
 import org.commonmark.renderer.markdown.MarkdownRenderer
-import org.commonmark.renderer.text.TextContentNodeRendererFactory
 import org.commonmark.renderer.text.TextContentRenderer
 
 class HighlightExtension : Parser.ParserExtension, HtmlRenderer.HtmlRendererExtension,
@@ -26,15 +24,15 @@ class HighlightExtension : Parser.ParserExtension, HtmlRenderer.HtmlRendererExte
     }
 
     override fun extend(rendererBuilder: HtmlRenderer.Builder) {
-        rendererBuilder.nodeRendererFactory(HtmlNodeRendererFactory { context ->
+        rendererBuilder.nodeRendererFactory { context ->
             HighlightHtmlNodeRenderer(context)
-        })
+        }
     }
 
     override fun extend(rendererBuilder: TextContentRenderer.Builder) {
-        rendererBuilder.nodeRendererFactory(TextContentNodeRendererFactory { context ->
+        rendererBuilder.nodeRendererFactory { context ->
             HighlightTextContentNodeRenderer(context)
-        })
+        }
     }
 
     override fun extend(rendererBuilder: MarkdownRenderer.Builder) {

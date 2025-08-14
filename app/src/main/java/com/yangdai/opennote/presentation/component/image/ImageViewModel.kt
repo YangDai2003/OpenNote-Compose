@@ -22,8 +22,13 @@ class ImageViewModel : ViewModel() {
             _imageState.value = ImageState.Loading
             try {
                 val isLocalFile = isLocalFile(imageUrl)
-                val imagePath = if (isLocalFile) getLocalFilePath(imageUrl) else downloadAndSaveImage(context, imageUrl)
-                _imageState.value = ImageState.Success(imagePath, !imageUrl.startsWith("content://"), isLocalFile)
+                val imagePath =
+                    if (isLocalFile) getLocalFilePath(imageUrl) else downloadAndSaveImage(
+                        context,
+                        imageUrl
+                    )
+                _imageState.value =
+                    ImageState.Success(imagePath, !imageUrl.startsWith("content://"), isLocalFile)
             } catch (e: Exception) {
                 _imageState.value = ImageState.Error(e.message ?: "Unknown error")
             }

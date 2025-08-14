@@ -17,6 +17,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.hideFromAccessibility
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -127,11 +129,16 @@ fun BaseScreen(
                 }
             }
 
+            val semanticsModifier = if (loggedIn) Modifier else Modifier.clearAndSetSemantics {
+                hideFromAccessibility()
+            }
+
             AnimatedNavHost(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(MaterialTheme.colorScheme.surface)
-                    .blur(blur),
+                    .blur(blur)
+                    .then(semanticsModifier),
                 isLargeScreen = isLargeScreen
             )
 

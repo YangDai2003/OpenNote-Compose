@@ -192,8 +192,8 @@ fun FileScreen(
             val uri = uriStr.toUri()
             coroutineScope.launch(Dispatchers.IO) {
                 appCtx.contentResolver.openFileDescriptor(uri, "rwt")?.use {
-                    FileOutputStream(it.fileDescriptor).use {
-                        it.write(content.toByteArray())
+                    FileOutputStream(it.fileDescriptor).use { ops ->
+                        ops.write(content.toByteArray())
                     }
                 }
             }
