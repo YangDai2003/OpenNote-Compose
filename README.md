@@ -1,4 +1,5 @@
 - [English](README.md)
+- [Italiano](README.it.md)
 - [简体中文](README.zh.md)
 - [Türkçe](README.tr.md)
 
@@ -71,7 +72,7 @@ OpenNote is a modern Android note-taking application built entirely with Compose
 
 ## 🌎 Translations
 
-Currently supports Chinese, English, German and Turkish.
+Currently supports Chinese, English, Italian, German and Turkish.
 
 ## 💡 How to Use OpenNote with Markdown, LaTeX Math, and Mermaid Diagrams?
 
