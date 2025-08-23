@@ -10,7 +10,7 @@
 - [Cosa sono le formule LaTeX?](#cosa-sono-le-formule-latex)
 - [Come si usano le formule LaTeX nel Markdown?](#come-si-usano-le-formule-latex-nel-markdown)
 - [Cosa offre OpenNote?](#cosa-offre-opennote)
-- [Sintassi Markdown di base](#sintassi-markdown-di-base)
+- [Elementi base di sintassi Markdown](#elementi-base-di-sintassi-markdown)
 - [Elementi avanzati di sintassi Markdown](#elementi-avanzati-di-sintassi-markdown)
 - [Sintassi delle formule LaTeX](#sintassi-delle-formule-latex)
 - [Lettere greche](#lettere-greche)
@@ -19,19 +19,17 @@
 
 # Cosa è il Markdown?
 
-Markdown is a plain text format for writing structured documents, based on conventions for
-indicating formatting in email and usenet posts.
-It was developed by John Gruber (with help from Aaron Swartz) and released in 2004 in the form of a
-syntax description and a Perl script (Markdown.pl) for converting Markdown to HTML.
+Markdown è un formato di testo semplice per la scrittura di documenti strutturati, basato su convenzioni per l' indicazione della formattazione nelle e-mail e nei post su Usenet.
+È stato sviluppato da John Gruber (con l'aiuto di Aaron Swartz) e rilasciato nel 2004 sotto forma di una descrizione della sintassi e uno script Perl (Markdown.pl) per la conversione di Markdown in HTML.
 
-In the next decade, dozens of implementations were developed in many languages.
-Some extended the original Markdown syntax with conventions for footnotes, tables, and other
-document elements.
-Some allowed Markdown documents to be rendered in formats other than HTML.
+Nel decennio successivo sono state sviluppate decine di implementazioni in molti linguaggi.
+Alcune hanno esteso la sintassi Markdown originale con convenzioni per note a piè di pagina, tabelle e altri
+elementi del documento.
+Alcuni consentivano la visualizzazione dei documenti Markdown in formati diversi dall'HTML.
 
-Websites like Reddit, StackOverflow, and GitHub had millions of people using Markdown.
-And Markdown started to be used beyond the web, to author books, articles, slide shows, letters, and
-lecture notes.
+Siti web come Reddit, StackOverflow e GitHub hanno portato milioni di persone a utilizzare Markdown.
+E Markdown ha iniziato ad essere utilizzato anche al di fuori del web, per scrivere libri, articoli, presentazioni, lettere e
+appunti di lezioni.
 
 # Cosa è il CommonMark?
 
@@ -75,18 +73,17 @@ You can use the $ and $$ delimiters in GFM to insert math expressions in TeX and
 
 # Cosa offre OpenNote?
 
-OpenNote supports CommonMark and GitHub Flavored Markdown (GFM) syntax, as well as LaTeX math
-syntax.
+OpenNote supporta la sintassi CommonMark e GitHub Flavored Markdown (GFM), oltre alle formule matematiche LaTeX.
 
-This allows users to create richly formatted notes with support for headings, lists, links,
-emphasis, code blocks, tables, and mathematical expressions, and allows notes to be exported in
-various formats including TXT, MD (Markdown), and HTML.
+Ciò consente agli utenti di creare note riccamente formattate con supporto per intestazioni, elenchi, collegamenti,
+enfasi, blocchi di codice, tabelle ed espressioni matematiche, e permette di esportare le note in
+vari formati, tra cui TXT, MD (Markdown) e HTML.
 
-# Elementi avanzati di sintassi Markdown
+# Elementi base di sintassi Markdown
 
 |    Elemento    |              Sintassi              |
 |:--------------:|:----------------------------------:|
-|     Titolo     | `# H1` <br/> `## H2`<br/> `### H3` |
+|  Intestazione  | `# H1` <br/> `## H2`<br/> `### H3` |
 |    Corsivo     |       `_italic_ or *italic*`       |
 |   Grassetto    |       `**bold** or __bold__`       |
 |   Citazione    |           `> Blockquote`           |
@@ -104,28 +101,28 @@ various formats including TXT, MD (Markdown), and HTML.
 |  Sottolineato |          `++Underline++`           |
 |  Evidenziato  |           `==Marking==`            |
 |   Attività    | `- [x] Task 1`<br/> `- [ ] Task 2` |
-|   ID Titolo   |      `# Heading {#custom-id}`      |
+| Riferimento intestazione |      `# Heading {#custom-id}`      |
 
 # Sintassi delle formule LaTeX
 
 |  Elemento   |      Sintassi      |
 |:-----------:|:------------------:|
-|   Inline    |      `$x^2$`       |
-|   Display   |     `$$x^2$$`      |
-|   newline   |    `\\ or \\\\`    |
-| Whitespace  |    `\quad or \`    |
-| Superscript |       `x^2`        |
-|  Subscript  |       `y_1`        |
-| Expression  |       `{x}`        |
-|  Overline   |   `\overline{x}`   |
-|  Underline  |  `\underline{x}`   |
-|  Fraction   |   `\frac{x}{y}`    |
-| Left Paren  |      `\left(`      |
-| Right Paren |     `\right)`      |
-| Parentheses | `\left(x+y\right)` |
-|  Parentesi  | `\left[x+y\right]` |
-|   Braces    | `\left{x+y\right}` |
-|    Root     |   `\sqrt[n]{x}`    |
+|  In linea   |      `$x^2$`       |
+|   Blocco    |     `$$x^2$$`      |
+| Ritorno a capo |    `\\ or \\\\`    |
+|   Spazio    |    `\quad or \`    |
+|  Esponente  |       `x^2`        |
+|  Deponente  |       `y_1`        |
+| Espressione |       `{x}`        |
+|  Sopralineatura   |   `\overline{x}`   |
+|  Sottolineatura  |  `\underline{x}`   |
+|  Frazione   |   `\frac{x}{y}`    |
+| Parentesi sinistra  |      `\left(`      |
+| Parentesi destra |     `\right)`      |
+| Parentesi tonde | `\left(x+y\right)` |
+| Parentesi quadre | `\left[x+y\right]` |
+| Parentesi graffe | `\left{x+y\right}` |
+|    Radice   |   `\sqrt[n]{x}`    |
 |      ×      |      `\times`      |
 |      ÷      |       `\div`       |
 |      ±      |       `\pm`        |
@@ -183,32 +180,32 @@ various formats including TXT, MD (Markdown), and HTML.
 
 |     Element      |    Shortcut    |
 |:----------------:|:--------------:|
-|    Select All    |    `Ctrl+A`    |
-|       Cut        |    `Ctrl+X`    |
-|       Copy       |    `Ctrl+C`    |
-|      Paste       |    `Ctrl+V`    |
-|       Undo       |    `Ctrl+Z`    |
-|       Redo       |    `Ctrl+Y`    |
-| Find and Replace |    `Ctrl+F`    |
-|       Bold       |    `Ctrl+B`    |
-|      Italic      |    `Ctrl+I`    |
-|    Underline     |    `Ctrl+U`    |
-|  Strikethrough   |    `Ctrl+D`    |
-|       Mark       |    `Ctrl+M`    |
-|      Table       |    `Ctrl+T`    |
+|  Seleziona tutto |    `Ctrl+A`    |
+|      Taglia      |    `Ctrl+X`    |
+|       Copia      |    `Ctrl+C`    |
+|      Incolla     |    `Ctrl+V`    |
+|       Annulla    |    `Ctrl+Z`    |
+|       Ripeti     |    `Ctrl+Y`    |
+| Trova e sostituisci |    `Ctrl+F`    |
+|    Grassetto     |    `Ctrl+B`    |
+|      Corsivo     |    `Ctrl+I`    |
+|    Sottolineato  |    `Ctrl+U`    |
+|     Barrato      |    `Ctrl+D`    |
+|     Evidenzia    |    `Ctrl+M`    |
+|      Tabella     |    `Ctrl+T`    |
 |       Link       |    `Ctrl+K`    |
-|     Preview      |    `Ctrl+P`    |
-|     Heading      |   `Ctrl+1~6`   |
-|      Image       | `Ctrl+Shift+I` |
-|       List       | `Ctrl+Shift+L` |
+|     Anteprima    |    `Ctrl+P`    |
+|   Intestazione   |   `Ctrl+1~6`   |
+|     Immagine     | `Ctrl+Shift+I` |
+|       Lista      | `Ctrl+Shift+L` |
 |       Scan       | `Ctrl+Shift+S` |
-|       Code       | `Ctrl+Shift+K` |
-|      Quote       | `Ctrl+Shift+Q` |
-|       Math       | `Ctrl+Shift+M` |
-| Horizontal Rule  | `Ctrl+Shift+R` |
-|       Task       | `Ctrl+Shift+T` |
-| Mermaid Diagram  | `Ctrl+Shift+D` |
-|    Templates     | `Ctrl+Shift+P` |
+|      Codice      | `Ctrl+Shift+K` |
+|     Citazione    | `Ctrl+Shift+Q` |
+| Formula matematica | `Ctrl+Shift+M` |
+| Righello orizzontale | `Ctrl+Shift+R` |
+|     Attività     | `Ctrl+Shift+T` |
+| Diagramma Mermaid | `Ctrl+Shift+D` |
+|      Modelli     | `Ctrl+Shift+P` |
 |      Audio       | `Ctrl+Shift+A` |
 |      Video       | `Ctrl+Shift+V` |
 
