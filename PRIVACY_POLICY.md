@@ -1,3 +1,6 @@
+- [English](PRIVACY_POLICY.md)
+- [Italiano](PRIVACY_POLICY.it.md)
+
 ## Privacy Policy of Open Note
 
 Open Note is an open-source Android app developed by Yang Dai.  
