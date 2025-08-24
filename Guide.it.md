@@ -19,13 +19,13 @@
 
 # Cosa è il Markdown?
 
-Markdown è un formato di testo semplice per la scrittura di documenti strutturati, basato su convenzioni per l' indicazione della formattazione nelle e-mail e nei post su Usenet.
-È stato sviluppato da John Gruber (con l'aiuto di Aaron Swartz) e rilasciato nel 2004 sotto forma di una descrizione della sintassi e uno script Perl (Markdown.pl) per la conversione di Markdown in HTML.
+Markdown è un formato di testo semplice per la scrittura di documenti strutturati, basato su convenzioni per l'indicazione della formattazione nelle e-mail e nei post su Usenet.
+È stato sviluppato da John Gruber (con l'aiuto di Aaron Swartz) e rilasciato nel 2004 sotto forma di una descrizione della sintassi e uno script Perl (Markdown.pl) per la conversione dello stesso in HTML.
 
 Nel decennio successivo sono state sviluppate decine di implementazioni in molti linguaggi.
 Alcune hanno esteso la sintassi Markdown originale con convenzioni per note a piè di pagina, tabelle e altri
 elementi del documento.
-Alcuni consentivano la visualizzazione dei documenti Markdown in formati diversi dall'HTML.
+Alcuni siti consentivano la visualizzazione dei documenti Markdown in formati diversi dall'HTML.
 
 Siti web come Reddit, StackOverflow e GitHub hanno portato milioni di persone a utilizzare Markdown.
 E Markdown ha iniziato ad essere utilizzato anche al di fuori del web, per scrivere libri, articoli, presentazioni, lettere e
@@ -33,43 +33,34 @@ appunti di lezioni.
 
 # Cosa è il CommonMark?
 
-CommonMark was developed to address inconsistencies and ambiguities in Markdown.
+CommonMark è stato sviluppato con l'obiettivo di risolvere le incongruenze e le ambiguità presenti in Markdown.
 
-The CommonMark specification defines rules for elements such as headings, lists, links, emphasis,
-and code blocks, among others.
+La specifica CommonMark definisce le regole per elementi quali intestazioni, elenchi, collegamenti, enfasi
+e blocchi di codice.
 
-By adhering to the CommonMark standard, developers can ensure consistent rendering of Markdown
-content across different applications and platforms.
+Aderendo allo standard CommonMark, gli sviluppatori possono garantire una resa coerente dei contenuti Markdown su diverse applicazioni e piattaforme.
 
 # Cosa è il GitHub Flavored Markdown?
 
-GitHub Flavored Markdown, often shortened as GFM, is the dialect of Markdown that is currently
-supported for user content on GitHub.com and GitHub Enterprise.
+GitHub Flavored Markdown, spesso abbreviato in GFM, è la declinazione di Markdown attualmente supportata per i contenuti degli utenti su GitHub.com e GitHub Enterprise.
 
-This formal specification, based on the CommonMark Spec, defines the syntax and semantics of this
-dialect.
+Questa specifica formale, basata sulla CommonMark Spec, definisce la sintassi e la semantica di questa variante Markdown.
 
-GFM is a strict superset of CommonMark. All the features which are supported in GitHub user content
-and that are not specified on the original CommonMark Spec are hence known as extensions, and
-highlighted as such.
+GFM è un superset rigoroso di CommonMark. Tutte le funzionalità supportate nei contenuti degli utenti GitHub e non specificate nella specifica CommonMark originale sono considerate come estensioni e pertanto, sono evidenziate come tali.
 
-While GFM supports a wide range of inputs, it’s worth noting that GitHub.com and GitHub Enterprise
-perform additional post-processing and sanitization after GFM is converted to HTML to ensure
-security and consistency of the website.
+Sebbene GFM supporti un'ampia gamma di input, vale la pena notare che GitHub.com e GitHub Enterprise eseguono un'ulteriore post-elaborazione e sanificazione dopo la conversione di GFM in HTML per garantire la sicurezza e la coerenza del sito web.
 
 # Cosa sono le formule LaTeX?
 
-LaTeX is a typesetting system commonly used for producing scientific and mathematical documents.
+LaTeX è un sistema di composizione tipografica comunemente utilizzato per la produzione di documenti scientifici e matematici.
 
-LaTeX provides a powerful way to represent mathematical notation in documents, allowing users to
-create complex equations and formulas with ease.
+LaTeX offre un modo efficace per rappresentare la notazione matematica nei documenti, consentendo agli utenti di creare equazioni e formule complesse con facilità.
 
 # Come si usano le formule LaTeX nel Markdown?
 
-Mathematical expressions are key to information sharing amongst engineers, scientists, data
-scientists, and mathematicians.
+Le espressioni matematiche sono fondamentali per la condivisione delle informazioni tra ingegneri, scienziati, data scientists e matematici.
 
-You can use the $ and $$ delimiters in GFM to insert math expressions in TeX and LaTeX style syntax.
+È possibile utilizzare i delimitatori $ e $$ in GFM per inserire espressioni matematiche nella sintassi TeX e LaTeX.
 
 # Cosa offre OpenNote?
 
