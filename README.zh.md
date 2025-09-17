@@ -1,3 +1,6 @@
+> [!IMPORTANT]
+> 项目已停止维护. 请迁移至它的迭代版本 [Kori](https://github.com/YangDai2003/Kori).
+
 - [简体中文](README.zh.md)
 - [English](README.md)
 - [Türkçe](README.tr.md)

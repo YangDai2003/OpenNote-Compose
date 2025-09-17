@@ -1,3 +1,6 @@
+> [!IMPORTANT]
+> This project is no longer being maintained. Please switch to [Kori](https://github.com/YangDai2003/Kori).
+
 - [Türkçe](README.tr.md)
 - [English](README.md)
 - [简体中文](README.zh.md)
