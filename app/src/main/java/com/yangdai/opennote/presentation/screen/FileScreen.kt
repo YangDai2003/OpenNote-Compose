@@ -167,6 +167,8 @@ fun FileScreen(
                         oFileContent = fileContent
                         viewModel.titleState.setTextAndPlaceCursorAtEnd(fileName)
                         viewModel.contentState.setTextAndPlaceCursorAtEnd(fileContent)
+                        viewModel.titleState.undoState.clearHistory()
+                        viewModel.contentState.undoState.clearHistory()
                     }
                 } else {
                     withContext(Dispatchers.Main) {

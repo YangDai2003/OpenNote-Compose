@@ -605,6 +605,8 @@ class SharedViewModel @Inject constructor(
                     }
                     titleState.setTextAndPlaceCursorAtEnd(_oNote.title)
                     contentState.setTextAndPlaceCursorAtEnd(_oNote.content)
+                    titleState.undoState.clearHistory()
+                    contentState.undoState.clearHistory()
                 }
             }
 
