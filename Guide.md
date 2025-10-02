@@ -1,4 +1,5 @@
 - [English](Guide.md)
+- [Italiano](Guide.it.md)
 - [简体中文](Guide.zh.md)
 
 # Navigation
